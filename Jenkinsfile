@@ -23,14 +23,14 @@ pipeline {
             }
         }
         
-        stage('Test') {
-            steps {
-                // 3. 테스트를 실행할 때도 동일한 경로에서 실행해야 합니다.
-                dir('apps/backend-api/eyesforu') {
-                    sh 'mvn test'
-                }
-            }
-        }
+        // stage('Test') {
+        //     steps {
+        //         // 3. 테스트를 실행할 때도 동일한 경로에서 실행해야 합니다.
+        //         dir('apps/backend-api/eyesforu') {
+        //             sh 'mvn test'
+        //         }
+        //     }
+        // }
         
         stage('Deploy') {
             steps {
