@@ -34,7 +34,18 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                echo '서버 배포 준비 중...'
+                // pom.xml과 Dockerfile이 있는 폴더로 이동해서 작업합니다.
+                dir('apps/backend-api/eyesforu') {
+                    // 1. 도커 이미지 빌드 (이름을 'eyesforu-backend'로 지정)
+                    sh 'docker build -t eyesforu-backend .'
+                    
+                    // 2. 혹시 기존에 돌고 있는 똑같은 이름의 컨테이너가 있다면 중지하고 삭제합니다. (처음엔 실패할 수 있으니 || true 추가)
+                    sh 'docker stop eyesforu-backend || true'
+                    sh 'docker rm eyesforu-backend || true'
+                    
+                    // 3. 방금 만든 새 이미지를 컨테이너로 실행합니다. (8080 포트 사용)
+                    sh 'docker run -d -p 8080:8080 --name eyesforu-backend eyesforu-backend'
+                }
             }
         }
     }
