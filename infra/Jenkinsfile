@@ -15,28 +15,58 @@ pipeline {
         stage('Change Summary') {
             steps {
                 script {
-                    def changedPaths = []
-                    (currentBuild.changeSets ?: []).each { changeSet ->
-                        changeSet.items.each { item ->
-                            item.affectedFiles.each { file ->
-                                changedPaths << file.path
+                    def rawBranch = env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'dev'
+                    def targetBranch = rawBranch.tokenize('/').last()
+                    if (!(targetBranch in ['dev', 'master'])) {
+                        targetBranch = 'dev'
+                    }
+
+                    def parentCount = sh(
+                        script: "git rev-list --parents -n 1 HEAD | awk '{print NF}'",
+                        returnStdout: true
+                    ).trim()
+                    def isMergeRequest = env.gitlabMergeRequestIid?.trim()
+                    def diffCommand = parentCount == '3'
+                        ? 'git diff --name-only HEAD^1 HEAD'
+                        : (isMergeRequest
+                            ? "git diff --name-only origin/${targetBranch}...HEAD"
+                            : 'git diff --name-only HEAD^ HEAD')
+                    def diffOutput = sh(script: "${diffCommand} 2>/dev/null || git diff --name-only HEAD^ HEAD", returnStdout: true).trim()
+                    def changedPaths = diffOutput ? diffOutput.readLines() : []
+
+                    if (!changedPaths) {
+                        (currentBuild.changeSets ?: []).each { changeSet ->
+                            changeSet.items.each { item ->
+                                item.affectedFiles.each { file ->
+                                    changedPaths << file.path
+                                }
                             }
                         }
                     }
 
                     def changedServices = []
-                    if (changedPaths.any { it.startsWith('apps/backend-api/') }) {
+                    def backendChanged = changedPaths.any { it.startsWith('apps/backend-api/') }
+                    def adminFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }
+                    def reporterFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }
+                    def infraChanged = changedPaths.any { it.startsWith('infra/') }
+
+                    if (backendChanged) {
                         changedServices << 'Backend'
                     }
-                    if (changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }) {
+                    if (adminFrontendChanged) {
                         changedServices << 'Admin Frontend'
                     }
-                    if (changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }) {
+                    if (reporterFrontendChanged) {
                         changedServices << 'Reporter Frontend'
                     }
-                    if (changedPaths.any { it.startsWith('infra/') }) {
+                    if (infraChanged) {
                         changedServices << 'Infrastructure'
                     }
+
+                    env.BACKEND_CHANGED = backendChanged ? 'true' : 'false'
+                    env.ADMIN_FRONTEND_CHANGED = adminFrontendChanged ? 'true' : 'false'
+                    env.REPORTER_FRONTEND_CHANGED = reporterFrontendChanged ? 'true' : 'false'
+                    env.INFRA_CHANGED = infraChanged ? 'true' : 'false'
 
                     env.CHANGED_SERVICES = changedServices ? changedServices.join(' · ') : 'No service path detected'
                 }
@@ -67,7 +97,7 @@ pipeline {
 
         stage('Backend Build & Test') {
             when {
-                changeset 'apps/backend-api/**'
+                expression { env.BACKEND_CHANGED == 'true' }
             }
             steps {
                 dir('apps/backend-api/eyesonu') {
@@ -78,10 +108,7 @@ pipeline {
 
         stage('Backend Deploy') {
             when {
-                anyOf {
-                    changeset 'apps/backend-api/**'
-                    changeset 'infra/**'
-                }
+                expression { env.BACKEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
             }
             steps {
                 dir('apps/backend-api/eyesonu') {
@@ -101,10 +128,7 @@ pipeline {
 
         stage('Admin Frontend Deploy') {
             when {
-                anyOf {
-                    changeset 'apps/frontend/admin-dashboard/**'
-                    changeset 'infra/**'
-                }
+                expression { env.ADMIN_FRONTEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
             }
             steps {
                 dir('apps/frontend/admin-dashboard') {
@@ -123,10 +147,7 @@ pipeline {
 
         stage('Reporter Frontend Deploy') {
             when {
-                anyOf {
-                    changeset 'apps/frontend/reporter-webapp/**'
-                    changeset 'infra/**'
-                }
+                expression { env.REPORTER_FRONTEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
             }
             steps {
                 dir('apps/frontend/reporter-webapp') {
@@ -145,7 +166,7 @@ pipeline {
 
         stage('Infrastructure Validation') {
             when {
-                changeset 'infra/**'
+                expression { env.INFRA_CHANGED == 'true' }
             }
             steps {
                 echo 'Infrastructure files changed. Review compose and deployment settings.'
