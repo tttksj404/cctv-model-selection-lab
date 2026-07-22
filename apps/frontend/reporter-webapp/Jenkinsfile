@@ -47,7 +47,7 @@ pipeline {
     post {
         success {
             mattermostSend color: '#00d1b2', 
-            message: """### 🎊 배포 완료! [백엔드] 🎊
+            message: """### 🎊 배포 완료! [프론트엔드 - 신고자 화면] 🎊
             > **📦 프로젝트:** `${env.JOB_NAME}` (Build **#${env.BUILD_NUMBER}**)
             > **🌱 브랜치:** `${env.gitlabSourceBranch ?: 'dev'}`
             > **👤 작업자:** ${env.gitlabUserName ?: 'GitLab Webhook'}
@@ -57,7 +57,7 @@ pipeline {
         }
         failure {
             mattermostSend color: '#ff3860', 
-            message: """### 🚨 배포 실패! [백엔드] 🚨
+            message: """### 🚨 배포 실패! [프론트엔드 - 신고자 화면] 🚨
             > **📦 프로젝트:** `${env.JOB_NAME}` (Build **#${env.BUILD_NUMBER}**)
             > **🌱 브랜치:** `${env.gitlabSourceBranch ?: 'dev'}`
             > **👤 작업자:** ${env.gitlabUserName ?: 'GitLab Webhook'}
