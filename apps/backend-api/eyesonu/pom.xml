@@ -114,6 +114,11 @@
 			<version>4.0.1</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- H2 인메모리 데이터베이스 (테스트용) -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
