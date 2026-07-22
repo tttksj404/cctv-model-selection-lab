@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: "${TEST_DB_URL:jdbc:mysql://localhost:3306/eyesonu_test?serverTimezone=UTC&characterEncoding=UTF-8}"
+    username: ${TEST_DB_USERNAME:eyesonu_test}
+    password: ${TEST_DB_PASSWORD:eyesonu_test_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      initialization-fail-timeout: -1
+  rabbitmq:
+    host: ${TEST_RABBITMQ_HOST:localhost}
+    port: ${TEST_RABBITMQ_PORT:5672}
+    username: ${TEST_RABBITMQ_USERNAME:eyesonu_test}
+    password: ${TEST_RABBITMQ_PASSWORD:eyesonu_test_password}
+    virtual-host: ${TEST_RABBITMQ_VIRTUAL_HOST:/eyesonu-test}
+    listener:
+      simple:
+        auto-startup: false
+      direct:
+        auto-startup: false
+  flyway:
+    enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+eyesonu:
+  storage:
+    s3:
+      endpoint: ${TEST_S3_ENDPOINT:http://localhost:9000}
+      region: ${TEST_S3_REGION:ap-northeast-2}
+      bucket: ${TEST_S3_BUCKET:eyesonu-test}
+      path-style-access: ${TEST_S3_PATH_STYLE_ACCESS:true}
+      access-key: ${TEST_S3_ACCESS_KEY:eyesonu-test}
+      secret-key: ${TEST_S3_SECRET_KEY:eyesonu-test-secret}

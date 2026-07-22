@@ -1,0 +1,81 @@
+# Environment variables and secrets
+.env
+.env.*
+!**/.env.example
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse / STS
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# Visual Studio Code
+.vscode/
+
+# Java / Maven / Gradle
+**/target/
+**/build/
+**/out/
+.gradle/
+*.class
+
+# Keep Maven Wrapper files under version control
+!**/mvnw
+!**/mvnw.cmd
+!**/.mvn/wrapper/maven-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.properties
+
+# Python / Jetson
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node.js / frontend
+node_modules/
+dist/
+coverage/
+.vite/
+.next/
+.nuxt/
+
+# AI, camera, and local data artifacts
+**/models/
+**/captures/
+**/datasets/
+**/artifacts/
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
