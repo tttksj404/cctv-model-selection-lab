@@ -1,4 +1,4 @@
-# EyesForU REST API 명세서
+# EyesOnU REST API 명세서
 
 ## 1. 문서 개요
 
