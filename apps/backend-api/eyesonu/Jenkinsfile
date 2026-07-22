@@ -9,11 +9,11 @@ pipeline {
     stages {
         stage('Build & Test') {
             when {
-                // 💡 apps/backend/eyesforu 폴더에 변경이 있을 때만 실행!
-                changeset "apps/backend/eyesforu/**" 
+                // 💡 apps/backend-api/eyesonu 폴더에 변경이 있을 때만 실행!
+                changeset "apps/backend-api/eyesonu/**"
             }
             steps {
-                dir('apps/backend/eyesforu') { // 💡 해당 폴더 안으로 이동해서 실행
+                dir('apps/backend-api/eyesonu') { // 💡 해당 폴더 안으로 이동해서 실행
                     echo "🛠️ 백엔드 빌드를 시작합니다..."
                     // (주의: H2 DB 설정이 아직 안 되었다면 'mvn clean package -DskipTests' 로 테스트를 건너뛰셔도 됩니다)
                     sh 'mvn clean package' 
@@ -23,10 +23,10 @@ pipeline {
         
         stage('Docker Build & Deploy') {
             when {
-                changeset "apps/backend/eyesforu/**"
+                changeset "apps/backend-api/eyesonu/**"
             }
             steps {
-                dir('apps/backend/eyesforu') { // 💡 배포할 때도 폴더 안으로 이동
+                dir('apps/backend-api/eyesonu') { // 💡 배포할 때도 폴더 안으로 이동
                     echo "🐳 도커 이미지 빌드 및 배포를 시작합니다..."
                     
                     // 1. 기존 컨테이너 및 이미지 삭제 (오류 무시)
