@@ -52,6 +52,7 @@ pipeline {
 
                     env.TARGET_BRANCH = targetBranch
                     env.DEPLOY_ENV = isProduction ? 'prod' : 'dev'
+                    env.BACKEND_PROFILE = isProduction ? 'prod' : 'local'
                     env.BACKEND_IMAGE = "eyesforu-backend-${env.DEPLOY_ENV}"
                     env.ADMIN_FRONTEND_IMAGE = "eyesforu-frontend-${env.DEPLOY_ENV}"
                     env.REPORTER_FRONTEND_IMAGE = "eyesforu-frontend-reporter-${env.DEPLOY_ENV}"
@@ -59,7 +60,7 @@ pipeline {
                     env.ADMIN_FRONTEND_PORT = isProduction ? '13000' : '3000'
                     env.REPORTER_FRONTEND_PORT = isProduction ? '13001' : '3001'
 
-                    echo "Deploy target: ${env.TARGET_BRANCH} (${env.DEPLOY_ENV})"
+                    echo "Deploy target: ${env.TARGET_BRANCH} (${env.DEPLOY_ENV}), backend profile: ${env.BACKEND_PROFILE}"
                 }
             }
         }
@@ -91,6 +92,7 @@ pipeline {
                         docker build -t ${BACKEND_IMAGE} .
                         docker run -d -p 127.0.0.1:${BACKEND_PORT}:8080 --name ${BACKEND_IMAGE} \
                           -e TZ=Asia/Seoul \
+                          -e SPRING_PROFILES_ACTIVE=${BACKEND_PROFILE} \
                           ${BACKEND_IMAGE}
                     '''
                 }
