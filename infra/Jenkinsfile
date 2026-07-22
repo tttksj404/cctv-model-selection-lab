@@ -55,7 +55,7 @@ pipeline {
                     env.BACKEND_IMAGE = "eyesforu-backend-${env.DEPLOY_ENV}"
                     env.ADMIN_FRONTEND_IMAGE = "eyesforu-frontend-${env.DEPLOY_ENV}"
                     env.REPORTER_FRONTEND_IMAGE = "eyesforu-frontend-reporter-${env.DEPLOY_ENV}"
-                    env.BACKEND_PORT = isProduction ? '18080' : '8080'
+                    env.BACKEND_PORT = isProduction ? '18081' : '8080'
                     env.ADMIN_FRONTEND_PORT = isProduction ? '13000' : '3000'
                     env.REPORTER_FRONTEND_PORT = isProduction ? '13001' : '3001'
 
