@@ -5,12 +5,6 @@ pipeline {
         maven 'maven-3.x'
     }
 
-    environment {
-        BACKEND_IMAGE = 'eyesforu-backend'
-        ADMIN_FRONTEND_IMAGE = 'eyesforu-frontend'
-        REPORTER_FRONTEND_IMAGE = 'eyesforu-frontend-reporter'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -49,6 +43,27 @@ pipeline {
             }
         }
 
+        stage('Resolve Deployment Target') {
+            steps {
+                script {
+                    def rawBranch = env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'dev'
+                    def targetBranch = rawBranch.tokenize('/').last()
+                    def isProduction = targetBranch == 'master'
+
+                    env.TARGET_BRANCH = targetBranch
+                    env.DEPLOY_ENV = isProduction ? 'prod' : 'dev'
+                    env.BACKEND_IMAGE = "eyesforu-backend-${env.DEPLOY_ENV}"
+                    env.ADMIN_FRONTEND_IMAGE = "eyesforu-frontend-${env.DEPLOY_ENV}"
+                    env.REPORTER_FRONTEND_IMAGE = "eyesforu-frontend-reporter-${env.DEPLOY_ENV}"
+                    env.BACKEND_PORT = isProduction ? '18080' : '8080'
+                    env.ADMIN_FRONTEND_PORT = isProduction ? '13000' : '3000'
+                    env.REPORTER_FRONTEND_PORT = isProduction ? '13001' : '3001'
+
+                    echo "Deploy target: ${env.TARGET_BRANCH} (${env.DEPLOY_ENV})"
+                }
+            }
+        }
+
         stage('Backend Build & Test') {
             when {
                 changeset 'apps/backend-api/**'
@@ -67,11 +82,11 @@ pipeline {
             steps {
                 dir('apps/backend-api/eyesonu') {
                     sh '''
-                        docker stop ${BACKEND_IMAGE} || true
-                        docker rm ${BACKEND_IMAGE} || true
+                        docker stop ${BACKEND_IMAGE} eyesforu-backend || true
+                        docker rm ${BACKEND_IMAGE} eyesforu-backend || true
                         docker rmi ${BACKEND_IMAGE} || true
                         docker build -t ${BACKEND_IMAGE} .
-                        docker run -d -p 8080:8080 --name ${BACKEND_IMAGE} \
+                        docker run -d -p ${BACKEND_PORT}:8080 --name ${BACKEND_IMAGE} \
                           -e TZ=Asia/Seoul \
                           ${BACKEND_IMAGE}
                     '''
@@ -86,11 +101,11 @@ pipeline {
             steps {
                 dir('apps/frontend/admin-dashboard') {
                     sh '''
-                        docker stop ${ADMIN_FRONTEND_IMAGE} || true
-                        docker rm ${ADMIN_FRONTEND_IMAGE} || true
+                        docker stop ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
+                        docker rm ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
                         docker rmi ${ADMIN_FRONTEND_IMAGE} || true
                         docker build -t ${ADMIN_FRONTEND_IMAGE} .
-                        docker run -d -p 3000:80 --name ${ADMIN_FRONTEND_IMAGE} \
+                        docker run -d -p ${ADMIN_FRONTEND_PORT}:80 --name ${ADMIN_FRONTEND_IMAGE} \
                           -e TZ=Asia/Seoul \
                           ${ADMIN_FRONTEND_IMAGE}
                     '''
@@ -105,11 +120,11 @@ pipeline {
             steps {
                 dir('apps/frontend/reporter-webapp') {
                     sh '''
-                        docker stop ${REPORTER_FRONTEND_IMAGE} || true
-                        docker rm ${REPORTER_FRONTEND_IMAGE} || true
+                        docker stop ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
+                        docker rm ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
                         docker rmi ${REPORTER_FRONTEND_IMAGE} || true
                         docker build -t ${REPORTER_FRONTEND_IMAGE} .
-                        docker run -d -p 3001:80 --name ${REPORTER_FRONTEND_IMAGE} \
+                        docker run -d -p ${REPORTER_FRONTEND_PORT}:80 --name ${REPORTER_FRONTEND_IMAGE} \
                           -e TZ=Asia/Seoul \
                           ${REPORTER_FRONTEND_IMAGE}
                     '''
@@ -131,7 +146,7 @@ pipeline {
         success {
             script {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
-                def targetBranch = env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
+                def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
                 mattermostSend color: '#00d1b2', message: """### ✅ 배포 완료! [EyesForU CI] 🚀
@@ -149,7 +164,7 @@ pipeline {
         failure {
             script {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
-                def targetBranch = env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
+                def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
                 mattermostSend color: '#ff3860', message: """### 🚨 배포 실패! [EyesForU CI] 🚨
