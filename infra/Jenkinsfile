@@ -1,0 +1,107 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven-3.x'
+    }
+
+    environment {
+        BACKEND_IMAGE = 'eyesforu-backend'
+        ADMIN_FRONTEND_IMAGE = 'eyesforu-frontend'
+        REPORTER_FRONTEND_IMAGE = 'eyesforu-frontend-reporter'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Backend Build & Test') {
+            when {
+                changeset 'apps/backend-api/**'
+            }
+            steps {
+                dir('apps/backend-api/eyesonu') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Backend Deploy') {
+            when {
+                changeset 'apps/backend-api/**'
+            }
+            steps {
+                dir('apps/backend-api/eyesonu') {
+                    sh '''
+                        docker stop ${BACKEND_IMAGE} || true
+                        docker rm ${BACKEND_IMAGE} || true
+                        docker rmi ${BACKEND_IMAGE} || true
+                        docker build -t ${BACKEND_IMAGE} .
+                        docker run -d -p 8080:8080 --name ${BACKEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${BACKEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Admin Frontend Deploy') {
+            when {
+                changeset 'apps/frontend/admin-dashboard/**'
+            }
+            steps {
+                dir('apps/frontend/admin-dashboard') {
+                    sh '''
+                        docker stop ${ADMIN_FRONTEND_IMAGE} || true
+                        docker rm ${ADMIN_FRONTEND_IMAGE} || true
+                        docker rmi ${ADMIN_FRONTEND_IMAGE} || true
+                        docker build -t ${ADMIN_FRONTEND_IMAGE} .
+                        docker run -d -p 3000:80 --name ${ADMIN_FRONTEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${ADMIN_FRONTEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Reporter Frontend Deploy') {
+            when {
+                changeset 'apps/frontend/reporter-webapp/**'
+            }
+            steps {
+                dir('apps/frontend/reporter-webapp') {
+                    sh '''
+                        docker stop ${REPORTER_FRONTEND_IMAGE} || true
+                        docker rm ${REPORTER_FRONTEND_IMAGE} || true
+                        docker rmi ${REPORTER_FRONTEND_IMAGE} || true
+                        docker build -t ${REPORTER_FRONTEND_IMAGE} .
+                        docker run -d -p 3001:80 --name ${REPORTER_FRONTEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${REPORTER_FRONTEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Infrastructure Validation') {
+            when {
+                changeset 'infra/**'
+            }
+            steps {
+                echo 'Infrastructure files changed. Review compose and deployment settings.'
+            }
+        }
+    }
+
+    post {
+        success {
+            mattermostSend color: '#00d1b2', message: "[CI succeeded] ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+        failure {
+            mattermostSend color: '#ff3860', message: "[CI failed] ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+    }
+}
