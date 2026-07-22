@@ -1,0 +1,168 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven-3.x'
+    }
+
+    environment {
+        BACKEND_IMAGE = 'eyesforu-backend'
+        ADMIN_FRONTEND_IMAGE = 'eyesforu-frontend'
+        REPORTER_FRONTEND_IMAGE = 'eyesforu-frontend-reporter'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Change Summary') {
+            steps {
+                script {
+                    def changedPaths = []
+                    (currentBuild.changeSets ?: []).each { changeSet ->
+                        changeSet.items.each { item ->
+                            item.affectedFiles.each { file ->
+                                changedPaths << file.path
+                            }
+                        }
+                    }
+
+                    def changedServices = []
+                    if (changedPaths.any { it.startsWith('apps/backend-api/') }) {
+                        changedServices << 'Backend'
+                    }
+                    if (changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }) {
+                        changedServices << 'Admin Frontend'
+                    }
+                    if (changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }) {
+                        changedServices << 'Reporter Frontend'
+                    }
+                    if (changedPaths.any { it.startsWith('infra/') }) {
+                        changedServices << 'Infrastructure'
+                    }
+
+                    env.CHANGED_SERVICES = changedServices ? changedServices.join(' · ') : 'No service path detected'
+                }
+            }
+        }
+
+        stage('Backend Build & Test') {
+            when {
+                changeset 'apps/backend-api/**'
+            }
+            steps {
+                dir('apps/backend-api/eyesonu') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Backend Deploy') {
+            when {
+                changeset 'apps/backend-api/**'
+            }
+            steps {
+                dir('apps/backend-api/eyesonu') {
+                    sh '''
+                        docker stop ${BACKEND_IMAGE} || true
+                        docker rm ${BACKEND_IMAGE} || true
+                        docker rmi ${BACKEND_IMAGE} || true
+                        docker build -t ${BACKEND_IMAGE} .
+                        docker run -d -p 8080:8080 --name ${BACKEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${BACKEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Admin Frontend Deploy') {
+            when {
+                changeset 'apps/frontend/admin-dashboard/**'
+            }
+            steps {
+                dir('apps/frontend/admin-dashboard') {
+                    sh '''
+                        docker stop ${ADMIN_FRONTEND_IMAGE} || true
+                        docker rm ${ADMIN_FRONTEND_IMAGE} || true
+                        docker rmi ${ADMIN_FRONTEND_IMAGE} || true
+                        docker build -t ${ADMIN_FRONTEND_IMAGE} .
+                        docker run -d -p 3000:80 --name ${ADMIN_FRONTEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${ADMIN_FRONTEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Reporter Frontend Deploy') {
+            when {
+                changeset 'apps/frontend/reporter-webapp/**'
+            }
+            steps {
+                dir('apps/frontend/reporter-webapp') {
+                    sh '''
+                        docker stop ${REPORTER_FRONTEND_IMAGE} || true
+                        docker rm ${REPORTER_FRONTEND_IMAGE} || true
+                        docker rmi ${REPORTER_FRONTEND_IMAGE} || true
+                        docker build -t ${REPORTER_FRONTEND_IMAGE} .
+                        docker run -d -p 3001:80 --name ${REPORTER_FRONTEND_IMAGE} \
+                          -e TZ=Asia/Seoul \
+                          ${REPORTER_FRONTEND_IMAGE}
+                    '''
+                }
+            }
+        }
+
+        stage('Infrastructure Validation') {
+            when {
+                changeset 'infra/**'
+            }
+            steps {
+                echo 'Infrastructure files changed. Review compose and deployment settings.'
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
+                def targetBranch = env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
+                def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+
+                mattermostSend color: '#00d1b2', message: """### ✅ 배포 완료! [EyesForU CI] 🚀
+> **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
+> **트리거:** `${triggerType}`
+> **대상 브랜치:** `${targetBranch}`
+> **작업자:** `${actor}`
+> **변경 범위:** ${env.CHANGED_SERVICES ?: '확인 불가'}
+
+변경된 서비스의 빌드 및 배포가 정상적으로 완료되었습니다.
+
+🔗 [Jenkins에서 상세 로그 확인하기](${env.BUILD_URL})"""
+            }
+        }
+        failure {
+            script {
+                def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
+                def targetBranch = env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
+                def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+
+                mattermostSend color: '#ff3860', message: """### 🚨 배포 실패! [EyesForU CI] 🚨
+> **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
+> **트리거:** `${triggerType}`
+> **대상 브랜치:** `${targetBranch}`
+> **작업자:** `${actor}`
+> **변경 범위:** ${env.CHANGED_SERVICES ?: '확인 불가'}
+
+파이프라인 실행 중 오류가 발생했습니다. Jenkins 로그를 확인해 주세요.
+
+🔗 [Jenkins에서 오류 로그 확인하기](${env.BUILD_URL})"""
+            }
+        }
+    }
+}
