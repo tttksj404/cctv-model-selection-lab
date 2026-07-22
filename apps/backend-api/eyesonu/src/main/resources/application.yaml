@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: eyesonu
+  profiles:
+    default: none
+  jackson:
+    time-zone: UTC
