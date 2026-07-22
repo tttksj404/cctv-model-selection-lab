@@ -66,11 +66,11 @@
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
-| `POST` | `/admin/cameras` | 카메라 등록 | 이름, Raspberry Pi ID, 좌표, 주소, RTSP URL | `201`, `400`, `409` |
+| `POST` | `/admin/cameras` | 카메라 등록 | 이름, 카메라 코드, 좌표, 주소, RTSP URL | `201`, `400`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | `cameraId` | `200`, `404` |
 | `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보 수정 | 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
-| `POST` | `/device/cameras/{raspberryId}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404` |
-| `POST` | `/device/cameras/{raspberryId}/recordings` | 녹화 메타데이터 등록 | 촬영 시간, Object Key, 파일 크기, 업로드 상태 | `201`, `400`, `403`, `409` |
+| `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404` |
+| `POST` | `/device/cameras/{cameraCode}/recordings` | 녹화 메타데이터 등록 | 촬영 시간, Object Key, 파일 크기, 업로드 상태 | `201`, `400`, `403`, `409` |
 | `PATCH` | `/device/recordings/{recordingId}/upload-status` | 녹화 업로드 상태 갱신 | `uploadStatus`, `fileSize` | `200`, `400`, `403`, `404` |
 | `GET` | `/admin/recordings` | 녹화 목록 | 카메라, 업로드 상태, 촬영 기간, 페이지 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세 | `recordingId` | `200`, `404` |
@@ -187,7 +187,7 @@
 
 ### 3.6 주요 검증 규칙
 
-- `phone`, `caseNumber`, `raspberryId`, `loginId`는 앞뒤 공백을 제거한 후 검증한다.
+- `phone`, `caseNumber`, `cameraCode`, `loginId`는 앞뒤 공백을 제거한 후 검증한다.
 - 위도는 `-90`~`90`, 경도는 `-180`~`180` 범위여야 한다.
 - `lastSeenLat`와 `lastSeenLng`는 함께 제공하거나 모두 생략한다.
 - `similarity`, `similarityThreshold`는 `0.0000`~`1.0000` 범위여야 한다.
@@ -603,7 +603,7 @@
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
-| `POST` | `/admin/cameras` | 카메라 등록 | 카메라·라즈베리파이 정보 | `201`, `400`, `409` |
+| `POST` | `/admin/cameras` | 카메라 등록 | 카메라·장치 식별 정보 | `201`, `400`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | Path: `cameraId` | `200`, `404` |
 | `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보 수정 | 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
 
@@ -612,7 +612,7 @@
 ```json
 {
   "cameraName": "Zone A 복도",
-  "raspberryId": "RPI-ZONE-A-01",
+  "cameraCode": "camera-01",
   "latitude": 37.5015000,
   "longitude": 127.0402000,
   "address": "서울특별시 강남구",
@@ -620,13 +620,14 @@
 }
 ```
 
-- `raspberryId`는 중복될 수 없다.
+- `cameraCode`는 카메라 종류와 관계없이 직접 지정하는 외부 식별자이며 중복될 수 없다.
+- 외부 장치는 `cameraCode`를 사용하고, 관리자 API와 DB 관계에서는 숫자 `cameraId`를 사용한다.
 - `rtspUrl`은 생성·수정 요청에서만 받고 조회 응답에는 포함하지 않는다.
 - 최초 상태는 `OFFLINE`이다.
 
 ### 7.2 장치 Heartbeat
 
-`POST /api/v1/device/cameras/{raspberryId}/heartbeat`
+`POST /api/v1/device/cameras/{cameraCode}/heartbeat`
 
 인증: `X-Device-Key`
 주요 응답: `204`, `400`, `401`, `403`, `404`
@@ -639,7 +640,7 @@
 }
 ```
 
-- Device Key에 연결된 장치와 `raspberryId`가 다르면 `403 ACCESS_DENIED`이다.
+- Device Key에 연결된 장치와 `cameraCode`가 다르면 `403 ACCESS_DENIED`이다.
 - 정상 처리 시 카메라의 `lastHeartbeat`, `status`, `updatedAt`을 갱신한다.
 - `204 No Content`를 반환한다.
 
@@ -647,7 +648,7 @@
 
 | 메서드 | 경로 | 인증 | 설명 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/device/cameras/{raspberryId}/recordings` | Device Key | 녹화 파일 메타데이터 등록 | `201`, `400`, `403`, `409` |
+| `POST` | `/device/cameras/{cameraCode}/recordings` | Device Key | 녹화 파일 메타데이터 등록 | `201`, `400`, `403`, `409` |
 | `PATCH` | `/device/recordings/{recordingId}/upload-status` | Device Key | 업로드 상태·파일 정보 갱신 | `200`, `400`, `403`, `404` |
 | `GET` | `/admin/recordings` | ADMIN | 녹화 목록 조회 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | ADMIN | 녹화 상세 조회 | `200`, `404` |
@@ -658,7 +659,7 @@
 {
   "startTime": "2026-07-20T01:50:00Z",
   "endTime": "2026-07-20T02:00:00Z",
-  "objectKey": "recordings/RPI-ZONE-A-01/2026/07/20/015000.mp4",
+  "objectKey": "recordings/camera-01/2026/07/20/015000.mp4",
   "fileSize": 104857600,
   "uploadStatus": "PENDING"
 }
@@ -697,13 +698,13 @@
 ```json
 {
   "caseId": 101,
-  "raspberryId": "RPI-ZONE-B-01",
+  "cameraCode": "camera-02",
   "detectedTime": "2026-07-20T02:00:12Z",
   "similarity": 0.8421
 }
 ```
 
-필수 필드: `caseId`, `raspberryId`, `detectedTime`, `similarity`, `image`
+필수 필드: `caseId`, `cameraCode`, `detectedTime`, `similarity`, `image`
 
 신규 등록 응답 `201 Created`:
 
@@ -741,7 +742,7 @@
 
 검증 순서:
 
-1. Device Key와 `raspberryId`의 연결 관계를 검증한다.
+1. Device Key와 `cameraCode`의 연결 관계를 검증한다.
 2. 사건과 카메라가 존재하고 사건이 종료되지 않았는지 검증한다.
 3. 카메라가 해당 사건의 활성 탐색 대상으로 지정됐는지 확인한다.
 4. `Idempotency-Key` 중복 여부를 확인한다.
@@ -753,7 +754,7 @@
 | 조건 | 응답 |
 | --- | --- |
 | 미등록 Device Key | `401 INVALID_DEVICE_KEY` |
-| 다른 장치의 `raspberryId` 사용 | `403 ACCESS_DENIED` |
+| 다른 장치의 `cameraCode` 사용 | `403 ACCESS_DENIED` |
 | 존재하지 않는 사건·카메라 | `404 RESOURCE_NOT_FOUND` |
 | 종료된 사건 또는 비활성 탐색 카메라 | `422 BUSINESS_RULE_VIOLATION` |
 | 유사도 범위 오류·필수 필드 누락 | `400 VALIDATION_ERROR` |
@@ -869,7 +870,7 @@
 | 탐색 종료가 시작보다 빠름 | `400 VALIDATION_ERROR` |
 | 탐색 카메라 없이 분석 작업 요청 | `422 BUSINESS_RULE_VIOLATION` |
 | 미등록 Device Key로 Heartbeat 또는 후보 전송 | `401 INVALID_DEVICE_KEY` |
-| Device Key와 다른 `raspberryId` 사용 | `403 ACCESS_DENIED` |
+| Device Key와 다른 `cameraCode` 사용 | `403 ACCESS_DENIED` |
 | 동일 후보 이벤트 재전송 | 최초 생성 결과를 `200`과 `duplicate=true`로 반환 |
 | 후보 판정 `version` 불일치 | `409 OPTIMISTIC_LOCK_CONFLICT`와 최신 후보 정보 반환 |
 | 존재하지 않는 사건·카메라·후보 요청 | `404 RESOURCE_NOT_FOUND` |
