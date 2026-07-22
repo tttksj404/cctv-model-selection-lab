@@ -54,7 +54,7 @@ docker compose --env-file infra/.env -f infra/compose.local.yml ps -a
 
 | 서비스 | 주소 | 용도 |
 | --- | --- | --- |
-| MySQL | `localhost:3307` | 애플리케이션 데이터베이스 |
+| MySQL 8.0.46 | `localhost:3307` | 애플리케이션 데이터베이스 |
 | RabbitMQ | `localhost:5672` | AMQP 연결 |
 | RabbitMQ Management | `http://localhost:15672` | 큐 관리 UI |
 | MinIO S3 API | `http://localhost:9000` | S3 호환 API |
@@ -169,6 +169,13 @@ docker compose --env-file infra/.env -f infra/compose.local.yml down -v
 ```
 
 > `down -v`는 MySQL, RabbitMQ, MinIO의 로컬 데이터를 복구할 수 없게 삭제합니다. 초기화가 필요한 경우에만 사용하세요.
+
+### MySQL 8.4 데이터가 남아 있는 경우
+
+로컬 Compose는 MySQL 8.0.46을 사용합니다. MySQL 8.4에서 생성한 `mysql_data` 볼륨을 MySQL 8.0.46 컨테이너에 직접 연결하지 마세요. MySQL은 데이터 디렉터리를 이전 버전에서 직접 여는 다운그레이드를 지원하지 않습니다.
+
+- 기존 데이터가 필요하면 MySQL 8.4에서 논리 백업한 뒤 새 MySQL 8.0.46 볼륨으로 복원합니다.
+- 기존 데이터가 불필요하고 RabbitMQ와 MinIO 데이터도 함께 삭제해도 되는 경우에만 위의 `down -v` 명령으로 로컬 인프라를 초기화합니다.
 
 ## 7. 문제 해결
 
