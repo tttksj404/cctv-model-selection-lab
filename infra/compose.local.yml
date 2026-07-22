@@ -2,7 +2,7 @@ name: eyesonu-local
 
 services:
   mysql:
-    image: mysql:8.4.10
+    image: mysql:8.0.46
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:?Copy infra/.env.example to infra/.env and set MYSQL_DATABASE}
