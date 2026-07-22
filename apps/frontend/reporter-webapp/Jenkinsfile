@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+    
+    environment {
+        IMAGE_NAME = 'eyesforu-frontend-reporter'
+    }
+
+    stages {
+        stage('Frontend Build') {
+            when {
+                // 💡 신고자 웹 폴더에 변경이 있을 때만 실행
+                changeset "apps/frontend/reporter-web/**" 
+            }
+            steps {
+                dir('apps/frontend/reporter-web') {
+                    echo "🚀 프론트엔드(신고자 웹) 빌드를 시작합니다..."
+                }
+            }
+        }
+        
+        stage('Docker Build & Deploy') {
+            when {
+                changeset "apps/frontend/reporter-web/**"
+            }
+            steps {
+                dir('apps/frontend/reporter-web') {
+                    echo "🐳 프론트엔드(신고자 웹) 도커 배포를 시작합니다..."
+                    
+                    sh '''
+                        docker stop ${IMAGE_NAME} || true
+                        docker rm ${IMAGE_NAME} || true
+                        docker rmi ${IMAGE_NAME} || true
+                        
+                        docker build -t ${IMAGE_NAME} .
+                        
+                        # 💡 관리자용 포트(3000)와 겹치지 않게 3001로 설정
+                        docker run -d -p 3001:80 --name ${IMAGE_NAME} \
+                          -e TZ=Asia/Seoul \
+                          ${IMAGE_NAME}
+                    '''
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            mattermostSend color: '#28a745', 
+            message: """✅ **[프론트(신고자) 배포 성공]**
+            * **프로젝트:** ${env.JOB_NAME} #${env.BUILD_NUMBER}
+            * **작업자:** ${env.gitlabUserName ?: 'GitLab'}"""
+        }
+        failure {
+            mattermostSend color: '#dc3545', 
+            message: """🚨 **[프론트(신고자) 배포 실패]**
+            * **프로젝트:** ${env.JOB_NAME} #${env.BUILD_NUMBER}
+            * **작업자:** ${env.gitlabUserName ?: '알 수 없음'}"""
+        }
+    }
+}
