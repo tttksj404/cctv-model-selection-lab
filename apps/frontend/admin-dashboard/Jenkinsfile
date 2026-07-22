@@ -51,7 +51,7 @@ pipeline {
         success {
             script {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
-                mattermostSend color: '#00d1b2', message: """### 🎊 배포 완료! [백엔드] 🎊
+                mattermostSend color: '#00d1b2', message: """### 🎊 배포 완료! [프론트엔드 - 대시보드] 🎊
 > **📦 빌드 번호:** Build **#${env.BUILD_NUMBER}**
 > **⚡ 트리거 유형:** `${triggerType}`
 > **🌿 작업 브랜치:** `${env.gitlabSourceBranch ?: env.gitlabBranch ?: '수동 빌드'}`
@@ -65,7 +65,7 @@ pipeline {
         failure {
             script {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
-                mattermostSend color: '#ff3860', message: """### 🚨 배포 실패! [백엔드] 🚨
+                mattermostSend color: '#ff3860', message: """### 🚨 배포 실패! [프론트엔드 - 대시보드] 🚨
 > **📦 빌드 번호:** Build **#${env.BUILD_NUMBER}**
 > **⚡ 트리거 유형:** `${triggerType}`
 > **🌿 작업 브랜치:** `${env.gitlabSourceBranch ?: env.gitlabBranch ?: '수동 빌드'}`
