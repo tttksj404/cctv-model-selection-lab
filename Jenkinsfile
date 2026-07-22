@@ -15,6 +15,9 @@ pipeline {
         }
         
         stage('Build') {
+            when {
+                changeset "apps/backend-api/**"
+            }
             steps {
                 // 2. pom.xml이 있는 정확한 경로로 이동하여 빌드합니다.
                 dir('apps/backend-api/eyesonu') {
@@ -24,6 +27,9 @@ pipeline {
         }
         
         stage('Test') {
+            when {
+                changeset "apps/backend-api/**"
+            }
             steps {
                 // 3. 테스트를 실행할 때도 동일한 경로에서 실행해야 합니다.
                 dir('apps/backend-api/eyesonu') {
@@ -33,6 +39,9 @@ pipeline {
         }
         
         stage('Deploy') {
+            when {
+                changeset "apps/backend-api/**"
+            }
             steps {
                 // pom.xml과 Dockerfile이 있는 폴더로 이동해서 작업합니다.
                 dir('apps/backend-api/eyesonu') {
