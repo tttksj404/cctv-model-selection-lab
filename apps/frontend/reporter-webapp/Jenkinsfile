@@ -9,10 +9,10 @@ pipeline {
         stage('Frontend Build') {
             when {
                 // 💡 신고자 웹 폴더에 변경이 있을 때만 실행
-                changeset "apps/frontend/reporter-web/**" 
+                changeset "apps/frontend/reporter-webapp/**"
             }
             steps {
-                dir('apps/frontend/reporter-web') {
+                dir('apps/frontend/reporter-webapp') {
                     echo "🚀 프론트엔드(신고자 웹) 빌드를 시작합니다..."
                 }
             }
@@ -20,10 +20,10 @@ pipeline {
         
         stage('Docker Build & Deploy') {
             when {
-                changeset "apps/frontend/reporter-web/**"
+                changeset "apps/frontend/reporter-webapp/**"
             }
             steps {
-                dir('apps/frontend/reporter-web') {
+                dir('apps/frontend/reporter-webapp') {
                     echo "🐳 프론트엔드(신고자 웹) 도커 배포를 시작합니다..."
                     
                     sh '''

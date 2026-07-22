@@ -9,10 +9,10 @@ pipeline {
         stage('Frontend Build') {
             when {
                 // 💡 관리자 대시보드 폴더에 변경이 있을 때만 실행
-                changeset "apps/admin-dashboard/**" 
+                changeset "apps/frontend/admin-dashboard/**"
             }
             steps {
-                dir('apps/admin-dashboard') {
+                dir('apps/frontend/admin-dashboard') {
                     echo "🚀 프론트엔드(대시보드) 빌드를 시작합니다..."
                     // npm 설치 및 빌드 (현재 Dockerfile에서 빌드한다면 이 단계는 생략해도 됩니다)
                     // sh 'npm install'
@@ -23,10 +23,10 @@ pipeline {
         
         stage('Docker Build & Deploy') {
             when {
-                changeset "apps/admin-dashboard/**"
+                changeset "apps/frontend/admin-dashboard/**"
             }
             steps {
-                dir('apps/admin-dashboard') {
+                dir('apps/frontend/admin-dashboard') {
                     echo "🐳 프론트엔드 도커 배포를 시작합니다..."
                     
                     sh '''
