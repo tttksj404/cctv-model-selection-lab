@@ -1,0 +1,107 @@
+name: eyesonu-local
+
+services:
+  mysql:
+    image: mysql:8.4.10
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Copy infra/.env.example to infra/.env and set MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USERNAME:?Copy infra/.env.example to infra/.env and set DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Copy infra/.env.example to infra/.env and set DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Copy infra/.env.example to infra/.env and set MYSQL_ROOT_PASSWORD}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u root --password="$${MYSQL_ROOT_PASSWORD}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:4.3.2-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Copy infra/.env.example to infra/.env and set RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Copy infra/.env.example to infra/.env and set RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:?Copy infra/.env.example to infra/.env and set RABBITMQ_VHOST}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${RABBITMQ_AMQP_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_PASSWORD}
+      MINIO_REGION_NAME: ${S3_REGION:-ap-northeast-2}
+    ports:
+      - "127.0.0.1:${S3_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET:-eyesonu-media}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Copy infra/.env.example to infra/.env and set S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Copy infra/.env.example to infra/.env and set S3_SECRET_KEY}
+    volumes:
+      - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        test "$${S3_BUCKET}" = "eyesonu-media" &&
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${S3_BUCKET}" &&
+        mc anonymous set none "local/$${S3_BUCKET}" &&
+        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}" &&
+        mc admin policy create local eyesonu-app /policies/eyesonu-app.json &&
+        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
+    networks:
+      - backend
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+  minio_data:
+
+networks:
+  backend:
+    driver: bridge
