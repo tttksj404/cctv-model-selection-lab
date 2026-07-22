@@ -77,7 +77,10 @@ pipeline {
 
         stage('Backend Deploy') {
             when {
-                changeset 'apps/backend-api/**'
+                anyOf {
+                    changeset 'apps/backend-api/**'
+                    changeset 'infra/**'
+                }
             }
             steps {
                 dir('apps/backend-api/eyesonu') {
@@ -96,7 +99,10 @@ pipeline {
 
         stage('Admin Frontend Deploy') {
             when {
-                changeset 'apps/frontend/admin-dashboard/**'
+                anyOf {
+                    changeset 'apps/frontend/admin-dashboard/**'
+                    changeset 'infra/**'
+                }
             }
             steps {
                 dir('apps/frontend/admin-dashboard') {
@@ -115,7 +121,10 @@ pipeline {
 
         stage('Reporter Frontend Deploy') {
             when {
-                changeset 'apps/frontend/reporter-webapp/**'
+                anyOf {
+                    changeset 'apps/frontend/reporter-webapp/**'
+                    changeset 'infra/**'
+                }
             }
             steps {
                 dir('apps/frontend/reporter-webapp') {
