@@ -45,28 +45,40 @@ pipeline {
                     }
 
                     def changedServices = []
+                    def deployedServices = []
                     def backendChanged = changedPaths.any { it.startsWith('apps/backend-api/') }
                     def adminFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }
                     def reporterFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }
                     def infraChanged = changedPaths.any { it.startsWith('infra/') }
 
                     if (backendChanged) {
-                        changedServices << 'Backend'
+                        changedServices << '백엔드'
                     }
                     if (adminFrontendChanged) {
-                        changedServices << 'Admin Frontend'
+                        changedServices << '프론트(대시보드)'
                     }
                     if (reporterFrontendChanged) {
-                        changedServices << 'Reporter Frontend'
+                        changedServices << '프론트(신고자)'
                     }
                     if (infraChanged) {
-                        changedServices << 'Infrastructure'
+                        changedServices << '인프라'
+                    }
+
+                    if (adminFrontendChanged || infraChanged) {
+                        deployedServices << '프론트(대시보드)'
+                    }
+                    if (reporterFrontendChanged || infraChanged) {
+                        deployedServices << '프론트(신고자)'
+                    }
+                    if (backendChanged || infraChanged) {
+                        deployedServices << '백엔드'
                     }
 
                     env.BACKEND_CHANGED = backendChanged ? 'true' : 'false'
                     env.ADMIN_FRONTEND_CHANGED = adminFrontendChanged ? 'true' : 'false'
                     env.REPORTER_FRONTEND_CHANGED = reporterFrontendChanged ? 'true' : 'false'
                     env.INFRA_CHANGED = infraChanged ? 'true' : 'false'
+                    env.DEPLOYED_SERVICES = deployedServices ? deployedServices.join('/') : '서비스'
 
                     env.CHANGED_SERVICES = changedServices ? changedServices.join(' · ') : 'No service path detected'
                 }
@@ -181,7 +193,7 @@ pipeline {
                 def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
-                mattermostSend color: '#00d1b2', message: """### ✅ 배포 완료! [EyesForU CI] 🚀
+                mattermostSend color: '#00d1b2', message: """### ✅ ${env.DEPLOYED_SERVICES} 배포 완료! [EyesForU CI] 🚀
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
@@ -199,7 +211,7 @@ pipeline {
                 def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
-                mattermostSend color: '#ff3860', message: """### 🚨 배포 실패! [EyesForU CI] 🚨
+                mattermostSend color: '#ff3860', message: """### 🚨 ${env.DEPLOYED_SERVICES ?: '서비스'} 배포 실패! [EyesForU CI] 🚨
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
