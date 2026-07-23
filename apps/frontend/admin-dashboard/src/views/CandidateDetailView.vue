@@ -9,7 +9,14 @@ const router = useRouter();
 const item = ref(null);
 const decision = ref("confirmed");
 const modalOpen = ref(false);
+const reason = ref("");
 const similarityTone = (similarity) => similarity >= 70 ? "high" : similarity >= 40 ? "medium" : "low";
+const candidateImages = {
+  k1: "/mock/cctv-candidate-1.png",
+  "k1-2": "/mock/cctv-candidate-2.png",
+  "k1-3": "/mock/cctv-candidate-3.png"
+};
+const candidateImage = computed(() => candidateImages[item.value?.id] || "/mock/cctv-candidate-1.png");
 
 const decisionOptions = [
   { value: "confirmed", label: "대상 확정", desc: "실종자로 판단하고 사건 동선에 반영" },
@@ -45,15 +52,15 @@ const submit = async () => {
       <div class="review-compare-grid">
         <div>
           <span class="review-label">원본 실종자 사진</span>
-          <div class="review-image">실종자 기준 사진</div>
+          <div class="review-image"><img src="/mock/missing-person.png" alt="실종자 기준 사진" /></div>
         </div>
         <div>
           <span class="review-label">후보 캡처</span>
-          <div class="review-image capture">{{ item.image }}</div>
+          <div class="review-image capture"><img :src="candidateImage" alt="후보 CCTV 캡처" /></div>
         </div>
       </div>
 
-      <div class="video-player">후보 영상 재생 · 탐지 전후 시점 이동</div>
+      <div class="video-player candidate-video-preview"><img :src="candidateImage" alt="후보 영상 미리보기" /><span>후보 영상 재생 · 탐지 전후 시점 이동</span></div>
     </article>
 
     <aside class="candidate-side-stack">
@@ -88,9 +95,10 @@ const submit = async () => {
           </button>
         </div>
 
-        <label class="review-reason">
-          판정 근거
-          <textarea placeholder="예: 의상 색상과 보행 방향은 유사하지만 얼굴 식별이 일부 제한됨" />
+        <label class="review-reason decision-reason-field">
+          <span class="decision-reason-heading"><strong>판정 근거</strong><small>판정에 참고한 특징과 확인 내용을 작성해 주세요.</small></span>
+          <textarea v-model="reason" maxlength="300" placeholder="예: 네이비색 상의와 보행 방향이 일치하며 얼굴 특징이 기준 사진과 유사함" />
+          <span class="decision-reason-count">{{ reason.length }} / 300</span>
         </label>
 
         <div class="decision-checks">

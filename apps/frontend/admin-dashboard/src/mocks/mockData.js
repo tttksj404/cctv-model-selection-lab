@@ -21,7 +21,7 @@ export const dashboardSummary = [
 ];
 
 export const cases = [
-  { id: "c1", caseNumber: "CASE-2026-0417", name: "박순자", gender: "여", age: 74, photo: "실종자 사진", reportedAt: "2026-07-21 09:52", lastSeenLocation: "강남구 테헤란로 152", lastSeenAt: "2026-07-21 09:40", status: "searching", assignee: "김민준", appearance: "검은색 패딩, 회색 바지, 지팡이 소지", reporter: "박민호(아들) / 010-1022-3311" },
+  { id: "c1", caseNumber: "CASE-2026-0417", name: "윤현준", gender: "남", age: 26, photo: "실종자 사진", reportedAt: "2026-07-21 09:52", lastSeenLocation: "강남구 테헤란로 152", lastSeenAt: "2026-07-21 09:40", status: "searching", assignee: "김민준", appearance: "네이비색 반팔, 검은 바지", reporter: "윤서진(가족) / 010-1022-3311" },
   { id: "c2", caseNumber: "CASE-2026-0416", name: "이도윤", gender: "남", age: 15, photo: "기준 사진", reportedAt: "2026-07-21 08:14", lastSeenLocation: "송파구 올림픽로 300", lastSeenAt: "2026-07-21 07:50", status: "candidate_found", assignee: "정하늘", appearance: "남색 후드티, 청바지, 빨간 백팩", reporter: "이하린(보호자) / 010-7711-2044" },
   { id: "c3", caseNumber: "CASE-2026-0415", name: "최영호", gender: "남", age: 82, photo: "기준 사진", reportedAt: "2026-07-20 14:03", lastSeenLocation: "서초구 반포대로 12", lastSeenAt: "2026-07-20 13:30", status: "received", assignee: "김민준", appearance: "회색 조끼, 갈색 모자, 보행보조기", reporter: "최지우(딸) / 010-9911-8821" },
   { id: "c4", caseNumber: "CASE-2026-0414", name: "한서연", gender: "여", age: 27, photo: "기준 사진", reportedAt: "2026-07-20 08:20", lastSeenLocation: "강동구 천호대로 1080", lastSeenAt: "2026-07-20 07:55", status: "closed", assignee: "정하늘", appearance: "흰색 코트, 검정 스니커즈", reporter: "한지민 / 010-2922-7242" },
@@ -102,9 +102,9 @@ export const auditLogs = [
 ];
 
 export const notifications = [
-  { id: "n1", type: "실시간 후보 탐지", title: "신규 후보 발견", message: "CASE-2026-0417에서 유사도 91% 후보가 탐지되었습니다.", unread: true, route: "/admin/candidates/k1" },
-  { id: "n2", type: "사건 상태 변경", title: "상태 변경", message: "CASE-2026-0416 상태가 후보 발견으로 변경되었습니다.", unread: true, route: "/admin/cases/c2" },
-  { id: "n3", type: "CCTV 연결 없음", title: "CCTV-04 연결 없음", message: "영상 스트림 연결이 지연되고 있습니다.", unread: false, route: "/admin/cameras" }
+  { id: "n1", time: "2026-07-23 09:14", type: "실시간 후보 탐지", title: "신규 후보 발견", message: "CASE-2026-0417에서 유사도 91% 후보가 탐지되었습니다.", unread: true, route: "/admin/candidates/k1" },
+  { id: "n2", time: "2026-07-23 08:52", type: "사건 상태 변경", title: "상태 변경", message: "CASE-2026-0416 상태가 후보 발견으로 변경되었습니다.", unread: true, route: "/admin/cases/c2" },
+  { id: "n3", time: "2026-07-22 22:40", type: "CCTV 연결 없음", title: "CCTV-04 연결 없음", message: "영상 스트림 연결이 지연되고 있습니다.", unread: false, route: "/admin/cameras" }
 ];
 
 export const users = [
