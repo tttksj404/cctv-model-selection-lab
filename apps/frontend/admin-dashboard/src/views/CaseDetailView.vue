@@ -15,6 +15,11 @@ const modalOpen = ref(false);
 const selectedCandidate = ref(null);
 const reviewDecision = ref("confirmed");
 const reviewReason = ref("");
+const candidateImages = ["/mock/cctv-candidate-1.png", "/mock/cctv-candidate-2.png", "/mock/cctv-candidate-3.png"];
+const selectedCandidateImage = computed(() => {
+  const index = candidates.value.findIndex((candidate) => candidate.id === selectedCandidate.value?.id);
+  return candidateImages[Math.max(0, index) % candidateImages.length];
+});
 const statusSteps = [
   { value: "received", label: "접수" },
   { value: "preparing", label: "탐색 준비" },
@@ -65,12 +70,12 @@ const submitCandidateReview = async () => {
             <span v-for="step in statusSteps" :key="step.value" :class="{ active: item.status === step.value }">{{ step.label }}</span>
           </div>
         </div>
-        <div class="profile-block"><div class="portrait">{{ item.photo }}</div><div class="info-grid"><span>성별/나이<strong>{{ item.gender }} · {{ item.age }}</strong></span><span>신고자<strong>{{ item.reporter }}</strong></span><span>신고 시간<strong>{{ item.reportedAt }}</strong></span><span>마지막 목격<strong>{{ item.lastSeenAt }}</strong></span><span>목격 위치<strong>{{ item.lastSeenLocation }}</strong></span><span>담당자<strong>{{ item.assignee }}</strong></span><span class="info-wide">인상착의<strong>{{ item.appearance }}</strong></span><span class="profile-action"><button class="ghost-button" @click="router.push(`/admin/cases/${item.id}/edit`)">사건 정보 수정</button></span></div></div>
+        <div class="profile-block"><div class="portrait"><img src="/mock/missing-person.png" alt="실종자 기준 사진" /></div><div class="info-grid"><span>성별/나이<strong>{{ item.gender }} · {{ item.age }}</strong></span><span>신고자<strong>{{ item.reporter }}</strong></span><span>신고 시간<strong>{{ item.reportedAt }}</strong></span><span>마지막 목격<strong>{{ item.lastSeenAt }}</strong></span><span>목격 위치<strong>{{ item.lastSeenLocation }}</strong></span><span>담당자<strong>{{ item.assignee }}</strong></span><span class="info-wide">인상착의<strong>{{ item.appearance }}</strong></span><span class="profile-action"><button class="ghost-button" @click="router.push(`/admin/cases/${item.id}/edit`)">사건 정보 수정</button></span></div></div>
         <div class="section-heading status-change-heading"><div><h2>상태 변경</h2><p>변경 사유 입력 모달을 거쳐 상태를 변경합니다.</p></div><div class="status-actions"><select v-model="nextStatus"><option value="received">접수</option><option value="preparing">탐색 준비</option><option value="searching">탐색 중</option><option value="candidate_found">후보 발견</option><option value="closed">종료</option></select><button class="primary-button" @click="modalOpen=true">변경</button></div></div>
       </article>
-      <article class="content-panel"><h2>추정 동선</h2><div class="map-panel">Kakao Maps 연동 예정 영역</div><div v-for="(point, index) in orderedPoints" :key="point.time" :class="['timeline-item', index === 0 && 'latest']"><div class="timeline-meta"><time>{{ point.time }}</time><strong>{{ point.camera }}</strong></div><p>{{ point.location }} · {{ point.note }}</p></div></article>
+      <article class="content-panel"><h2>추정 동선</h2><div class="map-panel case-route-map"><div class="route-map-copy"><strong>Kakao Maps</strong><span>탐지된 CCTV 위치를 시간순으로 표시합니다.</span></div><div class="case-map-points"><span v-for="(point, index) in orderedPoints" :key="point.time" :style="{ left: `${12 + index * 23}%`, top: `${66 - index * 13}%` }">{{ index + 1 }}</span></div></div><div v-for="(point, index) in orderedPoints" :key="point.time" :class="['timeline-item', index === 0 && 'latest']"><div class="timeline-meta"><time>{{ point.time }}</time><strong>{{ point.camera }}</strong></div><p>{{ point.location }} · {{ point.note }}</p></div></article>
     </div>
-    <article class="content-panel"><h2>후보 탐지 목록</h2><button v-for="cand in candidates" :key="cand.id" class="candidate-row detail-candidate" @click="openCandidateModal(cand)"><span class="image-placeholder">{{ cand.image }}</span><span class="candidate-meta"><strong>{{ cand.camera }}</strong><small>일치율 {{ cand.similarity }}%</small><small>{{ cand.detectedAt }}</small><small>{{ cand.location }}</small></span></button></article>
+    <article class="content-panel"><h2>후보 탐지 목록</h2><button v-for="(cand, index) in candidates" :key="cand.id" class="candidate-row detail-candidate" @click="openCandidateModal(cand)"><span class="image-placeholder"><img :src="candidateImages[index % candidateImages.length]" :alt="`${cand.camera} 후보 캡처`" /></span><span class="candidate-meta"><strong>{{ cand.camera }}</strong><small>일치율 {{ cand.similarity }}%</small><small>{{ cand.detectedAt }}</small><small>{{ cand.location }}</small></span></button></article>
     <ConfirmModal :open="modalOpen" title="사건 상태를 변경할까요?" message="상태 변경 사유는 감사 로그에 저장됩니다." confirm-text="상태 변경" @close="modalOpen=false" @confirm="changeStatus" />
     <div v-if="selectedCandidate" class="modal-backdrop" @click.self="closeCandidateModal">
       <section class="modal candidate-review-modal">
@@ -81,11 +86,11 @@ const submitCandidateReview = async () => {
         <div class="review-compare-grid">
           <div>
             <span class="review-label">원본 실종자 사진</span>
-            <div class="review-image original">{{ item.photo }}</div>
+            <div class="review-image original"><img src="/mock/missing-person.png" alt="원본 실종자 사진" /></div>
           </div>
           <div>
             <span class="review-label">후보 캡처</span>
-            <div class="review-image capture">{{ selectedCandidate.image }}</div>
+            <div class="review-image capture"><img :src="selectedCandidateImage" alt="후보 CCTV 캡처" /></div>
           </div>
         </div>
         <div class="review-detail-grid">

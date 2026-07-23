@@ -16,7 +16,9 @@ import CameraFormView from "../views/CameraFormView.vue";
 import UsersView from "../views/UsersView.vue";
 import LogsView from "../views/LogsView.vue";
 import NotificationsView from "../views/NotificationsView.vue";
+import NotificationSettingsView from "../views/NotificationSettingsView.vue";
 import SettingsView from "../views/SettingsView.vue";
+import ProfileView from "../views/ProfileView.vue";
 import ReportLookupView from "../views/ReportLookupView.vue";
 import ReportCaseView from "../views/ReportCaseView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
@@ -60,7 +62,9 @@ const routes = [
       { path: "users", component: UsersView, meta: { title: "사용자 관리" } },
       { path: "logs", component: LogsView, meta: { title: "시스템 로그" } },
       { path: "notifications", component: NotificationsView, meta: { title: "알림" } },
-      { path: "settings", component: SettingsView, meta: { title: "설정" } }
+      { path: "notifications/settings", component: NotificationSettingsView, meta: { title: "알림 설정" } },
+      { path: "settings", component: SettingsView, meta: { title: "설정" } },
+      { path: "profile", component: ProfileView, meta: { title: "프로필 관리" } }
     ]
   },
   { path: "/report/lookup", component: ReportLookupView, meta: { public: true, title: "신고자 사건 조회" } },
