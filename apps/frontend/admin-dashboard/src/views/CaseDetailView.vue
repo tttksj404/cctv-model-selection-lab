@@ -23,6 +23,7 @@ const statusSteps = [
   { value: "closed", label: "종료" }
 ];
 const orderedPoints = computed(() => [...points.value].reverse());
+const similarityTone = (similarity) => similarity >= 70 ? "high" : similarity >= 40 ? "medium" : "low";
 onMounted(async () => {
   item.value = await getCaseDetail(route.params.caseId);
   nextStatus.value = item.value.status;
@@ -88,7 +89,7 @@ const submitCandidateReview = async () => {
           </div>
         </div>
         <div class="review-detail-grid">
-          <span>일치율<strong>{{ selectedCandidate.similarity }}%</strong></span>
+          <span>일치율<strong :class="['similarity-score', similarityTone(selectedCandidate.similarity)]">{{ selectedCandidate.similarity }}%</strong></span>
           <span>CCTV<strong>{{ selectedCandidate.camera }}</strong></span>
           <span>탐지 일시<strong>{{ selectedCandidate.detectedAt }}</strong></span>
           <span>위치<strong>{{ selectedCandidate.location }}</strong></span>
