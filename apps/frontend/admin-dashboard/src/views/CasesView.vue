@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { getCases } from "../api/mockApi";
 import BasePagination from "../components/common/BasePagination.vue";
@@ -25,12 +25,15 @@ const load = async () => {
   caseOptions.value = allCases;
   loading.value = false;
 };
-const search = () => { page.value = 1; load(); };
 const selectCase = (caseItem) => {
   filters.keyword = caseItem?.caseNumber || "";
   caseDropdownOpen.value = false;
 };
-const reset = () => { filters.keyword = ""; filters.status = "all"; filters.assignee = ""; caseDropdownOpen.value = false; search(); };
+const reset = () => { filters.keyword = ""; filters.status = "all"; filters.assignee = ""; caseDropdownOpen.value = false; };
+watch(() => [filters.keyword, filters.status, filters.assignee], () => {
+  page.value = 1;
+  load();
+});
 onMounted(load);
 </script>
 
@@ -61,7 +64,6 @@ onMounted(load);
       <label>상태<select v-model="filters.status"><option value="all">전체</option><option value="received">접수</option><option value="searching">탐색 중</option><option value="candidate_found">후보 발견</option><option value="closed">종료</option></select></label>
       <label>담당자<input v-model="filters.assignee" placeholder="김민준" /></label>
       <label class="page-size-field">페이지 크기<select v-model.number="pageSize"><option>10</option><option>20</option></select></label>
-      <button class="search-button" @click="search">검색</button>
       <button class="reset-button" @click="reset">초기화</button>
     </div>
     <StateBlock :loading="loading" :empty="visible.length === 0">
