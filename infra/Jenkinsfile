@@ -85,10 +85,14 @@ pipeline {
                     def rawBranch = env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'dev'
                     def targetBranch = rawBranch.tokenize('/').last()
                     def isProduction = targetBranch == 'master'
+                    def isMergeRequest = env.gitlabMergeRequestIid?.trim()
+                    def canDeploy = targetBranch == 'dev' || !isMergeRequest
 
                     env.TARGET_BRANCH = targetBranch
                     env.DEPLOY_ENV = isProduction ? 'prod' : 'dev'
                     env.BACKEND_PROFILE = isProduction ? 'prod' : 'local'
+                    env.IS_MERGE_REQUEST = isMergeRequest ? 'true' : 'false'
+                    env.CAN_DEPLOY = canDeploy ? 'true' : 'false'
                     env.BACKEND_IMAGE = "eyesforu-backend-${env.DEPLOY_ENV}"
                     env.ADMIN_FRONTEND_IMAGE = "eyesforu-frontend-${env.DEPLOY_ENV}"
                     env.REPORTER_FRONTEND_IMAGE = "eyesforu-frontend-reporter-${env.DEPLOY_ENV}"
@@ -96,7 +100,7 @@ pipeline {
                     env.ADMIN_FRONTEND_PORT = isProduction ? '13000' : '3000'
                     env.REPORTER_FRONTEND_PORT = isProduction ? '13001' : '3001'
 
-                    echo "Deploy target: ${env.TARGET_BRANCH} (${env.DEPLOY_ENV}), backend profile: ${env.BACKEND_PROFILE}"
+                    echo "Deploy target: ${env.TARGET_BRANCH} (${env.DEPLOY_ENV}), backend profile: ${env.BACKEND_PROFILE}, can deploy: ${env.CAN_DEPLOY}"
                 }
             }
         }
@@ -117,7 +121,7 @@ pipeline {
 
         stage('Backend Deploy') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' }
+                expression { env.CAN_DEPLOY == 'true' && env.BACKEND_CHANGED == 'true' }
             }
             steps {
                 script {
@@ -138,9 +142,26 @@ pipeline {
             }
         }
 
+        stage('Admin Frontend Build Validation') {
+            when {
+                expression { env.CAN_DEPLOY == 'false' && env.ADMIN_FRONTEND_CHANGED == 'true' }
+            }
+            steps {
+                script {
+                    dir('apps/frontend/admin-dashboard') {
+                        sh '''
+                            docker build -t ${ADMIN_FRONTEND_IMAGE}-validation .
+                            docker rmi ${ADMIN_FRONTEND_IMAGE}-validation || true
+                        '''
+                    }
+                    env.BUILT_SERVICES = env.BUILT_SERVICES ? "${env.BUILT_SERVICES}/프론트(대시보드)" : '프론트(대시보드)'
+                }
+            }
+        }
+
         stage('Admin Frontend Deploy') {
             when {
-                expression { env.ADMIN_FRONTEND_CHANGED == 'true' }
+                expression { env.CAN_DEPLOY == 'true' && env.ADMIN_FRONTEND_CHANGED == 'true' }
             }
             steps {
                 script {
@@ -160,9 +181,26 @@ pipeline {
             }
         }
 
+        stage('Reporter Frontend Build Validation') {
+            when {
+                expression { env.CAN_DEPLOY == 'false' && env.REPORTER_FRONTEND_CHANGED == 'true' }
+            }
+            steps {
+                script {
+                    dir('apps/frontend/reporter-webapp') {
+                        sh '''
+                            docker build -t ${REPORTER_FRONTEND_IMAGE}-validation .
+                            docker rmi ${REPORTER_FRONTEND_IMAGE}-validation || true
+                        '''
+                    }
+                    env.BUILT_SERVICES = env.BUILT_SERVICES ? "${env.BUILT_SERVICES}/프론트(신고자)" : '프론트(신고자)'
+                }
+            }
+        }
+
         stage('Reporter Frontend Deploy') {
             when {
-                expression { env.REPORTER_FRONTEND_CHANGED == 'true' }
+                expression { env.CAN_DEPLOY == 'true' && env.REPORTER_FRONTEND_CHANGED == 'true' }
             }
             steps {
                 script {
