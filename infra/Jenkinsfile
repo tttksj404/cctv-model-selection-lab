@@ -45,10 +45,11 @@ pipeline {
                     }
 
                     def changedServices = []
-                    def deployedServices = []
                     def backendChanged = changedPaths.any { it.startsWith('apps/backend-api/') }
                     def adminFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }
                     def reporterFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }
+                    def infraChanged = changedPaths.any { it.startsWith('infra/') && it != 'infra/Jenkinsfile' }
+                    def ciChanged = changedPaths.any { it == 'infra/Jenkinsfile' }
 
                     if (backendChanged) {
                         changedServices << '백엔드'
@@ -59,20 +60,19 @@ pipeline {
                     if (reporterFrontendChanged) {
                         changedServices << '프론트(신고자)'
                     }
-                    if (adminFrontendChanged) {
-                        deployedServices << '프론트(대시보드)'
+                    if (infraChanged) {
+                        changedServices << '인프라'
                     }
-                    if (reporterFrontendChanged) {
-                        deployedServices << '프론트(신고자)'
+                    if (ciChanged) {
+                        changedServices << 'CI/CD'
                     }
-                    if (backendChanged) {
-                        deployedServices << '백엔드'
-                    }
-
                     env.BACKEND_CHANGED = backendChanged ? 'true' : 'false'
                     env.ADMIN_FRONTEND_CHANGED = adminFrontendChanged ? 'true' : 'false'
                     env.REPORTER_FRONTEND_CHANGED = reporterFrontendChanged ? 'true' : 'false'
-                    env.DEPLOYED_SERVICES = deployedServices ? deployedServices.join('/') : '서비스'
+                    env.INFRA_CHANGED = infraChanged ? 'true' : 'false'
+                    env.CI_CHANGED = ciChanged ? 'true' : 'false'
+                    env.BUILT_SERVICES = ''
+                    env.DEPLOYED_SERVICES = ''
 
                     env.CHANGED_SERVICES = changedServices ? changedServices.join(' · ') : 'No service path detected'
                 }
@@ -106,8 +106,11 @@ pipeline {
                 expression { env.BACKEND_CHANGED == 'true' }
             }
             steps {
-                dir('apps/backend-api/eyesonu') {
-                    sh 'mvn clean package'
+                script {
+                    dir('apps/backend-api/eyesonu') {
+                        sh 'mvn clean package'
+                    }
+                    env.BUILT_SERVICES = '백엔드'
                 }
             }
         }
@@ -117,17 +120,20 @@ pipeline {
                 expression { env.BACKEND_CHANGED == 'true' }
             }
             steps {
-                dir('apps/backend-api/eyesonu') {
-                    sh '''
-                        docker stop ${BACKEND_IMAGE} eyesforu-backend || true
-                        docker rm ${BACKEND_IMAGE} eyesforu-backend || true
-                        docker rmi ${BACKEND_IMAGE} || true
-                        docker build -t ${BACKEND_IMAGE} .
-                        docker run -d -p 127.0.0.1:${BACKEND_PORT}:8080 --name ${BACKEND_IMAGE} \
-                          -e TZ=Asia/Seoul \
-                          -e SPRING_PROFILES_ACTIVE=${BACKEND_PROFILE} \
-                          ${BACKEND_IMAGE}
-                    '''
+                script {
+                    dir('apps/backend-api/eyesonu') {
+                        sh '''
+                            docker stop ${BACKEND_IMAGE} eyesforu-backend || true
+                            docker rm ${BACKEND_IMAGE} eyesforu-backend || true
+                            docker rmi ${BACKEND_IMAGE} || true
+                            docker build -t ${BACKEND_IMAGE} .
+                            docker run -d -p 127.0.0.1:${BACKEND_PORT}:8080 --name ${BACKEND_IMAGE} \
+                              -e TZ=Asia/Seoul \
+                              -e SPRING_PROFILES_ACTIVE=${BACKEND_PROFILE} \
+                              ${BACKEND_IMAGE}
+                        '''
+                    }
+                    env.DEPLOYED_SERVICES = env.DEPLOYED_SERVICES ? "${env.DEPLOYED_SERVICES}/백엔드" : '백엔드'
                 }
             }
         }
@@ -137,16 +143,19 @@ pipeline {
                 expression { env.ADMIN_FRONTEND_CHANGED == 'true' }
             }
             steps {
-                dir('apps/frontend/admin-dashboard') {
-                    sh '''
-                        docker stop ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
-                        docker rm ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
-                        docker rmi ${ADMIN_FRONTEND_IMAGE} || true
-                        docker build -t ${ADMIN_FRONTEND_IMAGE} .
-                        docker run -d -p 127.0.0.1:${ADMIN_FRONTEND_PORT}:80 --name ${ADMIN_FRONTEND_IMAGE} \
-                          -e TZ=Asia/Seoul \
-                          ${ADMIN_FRONTEND_IMAGE}
-                    '''
+                script {
+                    dir('apps/frontend/admin-dashboard') {
+                        sh '''
+                            docker stop ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
+                            docker rm ${ADMIN_FRONTEND_IMAGE} eyesforu-frontend || true
+                            docker rmi ${ADMIN_FRONTEND_IMAGE} || true
+                            docker build -t ${ADMIN_FRONTEND_IMAGE} .
+                            docker run -d -p 127.0.0.1:${ADMIN_FRONTEND_PORT}:80 --name ${ADMIN_FRONTEND_IMAGE} \
+                              -e TZ=Asia/Seoul \
+                              ${ADMIN_FRONTEND_IMAGE}
+                        '''
+                    }
+                    env.DEPLOYED_SERVICES = env.DEPLOYED_SERVICES ? "${env.DEPLOYED_SERVICES}/프론트(대시보드)" : '프론트(대시보드)'
                 }
             }
         }
@@ -156,16 +165,19 @@ pipeline {
                 expression { env.REPORTER_FRONTEND_CHANGED == 'true' }
             }
             steps {
-                dir('apps/frontend/reporter-webapp') {
-                    sh '''
-                        docker stop ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
-                        docker rm ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
-                        docker rmi ${REPORTER_FRONTEND_IMAGE} || true
-                        docker build -t ${REPORTER_FRONTEND_IMAGE} .
-                        docker run -d -p 127.0.0.1:${REPORTER_FRONTEND_PORT}:80 --name ${REPORTER_FRONTEND_IMAGE} \
-                          -e TZ=Asia/Seoul \
-                          ${REPORTER_FRONTEND_IMAGE}
-                    '''
+                script {
+                    dir('apps/frontend/reporter-webapp') {
+                        sh '''
+                            docker stop ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
+                            docker rm ${REPORTER_FRONTEND_IMAGE} eyesforu-frontend-reporter || true
+                            docker rmi ${REPORTER_FRONTEND_IMAGE} || true
+                            docker build -t ${REPORTER_FRONTEND_IMAGE} .
+                            docker run -d -p 127.0.0.1:${REPORTER_FRONTEND_PORT}:80 --name ${REPORTER_FRONTEND_IMAGE} \
+                              -e TZ=Asia/Seoul \
+                              ${REPORTER_FRONTEND_IMAGE}
+                        '''
+                    }
+                    env.DEPLOYED_SERVICES = env.DEPLOYED_SERVICES ? "${env.DEPLOYED_SERVICES}/프론트(신고자)" : '프론트(신고자)'
                 }
             }
         }
@@ -178,8 +190,15 @@ pipeline {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
                 def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+                def notificationTitle = env.DEPLOYED_SERVICES
+                    ? "${env.DEPLOYED_SERVICES} 배포 완료"
+                    : (env.INFRA_CHANGED == 'true'
+                        ? '인프라 설정 반영 완료'
+                        : (env.CI_CHANGED == 'true'
+                            ? 'CI/CD 설정 반영 완료'
+                            : (env.BUILT_SERVICES ? "${env.BUILT_SERVICES} 빌드 및 테스트 완료" : '변경 사항 확인 완료')))
 
-                mattermostSend color: '#00d1b2', message: """### ✅ ${env.DEPLOYED_SERVICES} 배포 완료! [EyesForU CI] 🚀
+                mattermostSend color: '#00d1b2', message: """### ✅ ${notificationTitle}! [EyesForU CI] 🚀
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
@@ -196,8 +215,13 @@ pipeline {
                 def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
                 def targetBranch = env.TARGET_BRANCH ?: env.gitlabTargetBranch ?: env.gitlabBranch ?: env.GIT_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+                def failureTitle = env.DEPLOYED_SERVICES
+                    ? "${env.DEPLOYED_SERVICES} 배포 실패"
+                    : (env.INFRA_CHANGED == 'true'
+                        ? '인프라 설정 반영 실패'
+                        : (env.CI_CHANGED == 'true' ? 'CI/CD 설정 반영 실패' : '파이프라인 실행 실패'))
 
-                mattermostSend color: '#ff3860', message: """### 🚨 ${env.DEPLOYED_SERVICES ?: '서비스'} 배포 실패! [EyesForU CI] 🚨
+                mattermostSend color: '#ff3860', message: """### 🚨 ${failureTitle}! [EyesForU CI] 🚨
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
