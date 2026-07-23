@@ -5,6 +5,8 @@ import {
   Bell,
   BellRing,
   ClipboardList,
+  ChevronDown,
+  ChevronRight,
   FileSearch,
   Folder,
   Grid2X2,
@@ -29,6 +31,7 @@ const auth = useAuthStore();
 const collapsed = ref(false);
 const mobileOpen = ref(false);
 const dropdownOpen = ref(false);
+const settingsOpen = ref(true);
 const notifications = ref([]);
 const clockString = ref("");
 let clockTimer = null;
@@ -55,6 +58,10 @@ const menuIcons = {
 };
 
 const iconFor = (path) => menuIcons[path] || Folder;
+const settingsPaths = ["/admin/settings", "/admin/cameras", "/admin/users", "/admin/logs", "/admin/notifications"];
+const primaryMenu = computed(() => adminMenu.filter((item) => !settingsPaths.includes(item.path)));
+const settingsMenu = computed(() => adminMenu.filter((item) => settingsPaths.includes(item.path) && item.path !== "/admin/settings"));
+const settingsActive = computed(() => route.path === "/admin/settings");
 const go = (path) => {
   router.push(path);
   mobileOpen.value = false;
@@ -119,7 +126,7 @@ onUnmounted(() => {
 
       <nav>
         <button
-          v-for="item in adminMenu"
+          v-for="item in primaryMenu"
           :key="item.path"
           :class="{ active: route.path.startsWith(item.path) }"
           :title="collapsed ? item.label : undefined"
@@ -130,6 +137,33 @@ onUnmounted(() => {
           </span>
           <span v-if="!collapsed">{{ item.label }}</span>
         </button>
+        <div :class="['sidebar-settings-group', settingsOpen && 'is-open']">
+          <div :class="['sidebar-settings-trigger-row', settingsActive && 'active']">
+            <button
+              :class="['sidebar-settings-trigger', settingsActive && 'active']"
+              :title="collapsed ? '설정' : undefined"
+              @click="go('/admin/settings')"
+            >
+              <span class="menu-symbol"><Settings :size="22" :stroke-width="2" /></span>
+              <span v-if="!collapsed">설정</span>
+            </button>
+            <button v-if="!collapsed" class="sidebar-group-toggle" :aria-label="settingsOpen ? '하위 메뉴 접기' : '하위 메뉴 펼치기'" @click.stop="settingsOpen = !settingsOpen">
+              <ChevronDown v-if="settingsOpen" :size="16" />
+              <ChevronRight v-else :size="16" />
+            </button>
+          </div>
+          <div v-if="!collapsed && settingsOpen" class="sidebar-submenu">
+            <button
+              v-for="item in settingsMenu"
+              :key="item.path"
+              :class="{ active: route.path.startsWith(item.path) }"
+              @click="go(item.path)"
+            >
+              <span class="menu-symbol"><component :is="iconFor(item.path)" :size="18" :stroke-width="2" /></span>
+              <span>{{ item.label }}</span>
+            </button>
+          </div>
+        </div>
       </nav>
 
       <div v-if="!collapsed" class="sidebar-version">v0.2 · Vue MVP</div>
