@@ -49,7 +49,6 @@ pipeline {
                     def backendChanged = changedPaths.any { it.startsWith('apps/backend-api/') }
                     def adminFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/admin-dashboard/') }
                     def reporterFrontendChanged = changedPaths.any { it.startsWith('apps/frontend/reporter-webapp/') }
-                    def infraChanged = changedPaths.any { it.startsWith('infra/') }
 
                     if (backendChanged) {
                         changedServices << '백엔드'
@@ -60,24 +59,19 @@ pipeline {
                     if (reporterFrontendChanged) {
                         changedServices << '프론트(신고자)'
                     }
-                    if (infraChanged) {
-                        changedServices << '인프라'
-                    }
-
-                    if (adminFrontendChanged || infraChanged) {
+                    if (adminFrontendChanged) {
                         deployedServices << '프론트(대시보드)'
                     }
-                    if (reporterFrontendChanged || infraChanged) {
+                    if (reporterFrontendChanged) {
                         deployedServices << '프론트(신고자)'
                     }
-                    if (backendChanged || infraChanged) {
+                    if (backendChanged) {
                         deployedServices << '백엔드'
                     }
 
                     env.BACKEND_CHANGED = backendChanged ? 'true' : 'false'
                     env.ADMIN_FRONTEND_CHANGED = adminFrontendChanged ? 'true' : 'false'
                     env.REPORTER_FRONTEND_CHANGED = reporterFrontendChanged ? 'true' : 'false'
-                    env.INFRA_CHANGED = infraChanged ? 'true' : 'false'
                     env.DEPLOYED_SERVICES = deployedServices ? deployedServices.join('/') : '서비스'
 
                     env.CHANGED_SERVICES = changedServices ? changedServices.join(' · ') : 'No service path detected'
@@ -120,7 +114,7 @@ pipeline {
 
         stage('Backend Deploy') {
             when {
-                expression { env.BACKEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
+                expression { env.BACKEND_CHANGED == 'true' }
             }
             steps {
                 dir('apps/backend-api/eyesonu') {
@@ -140,7 +134,7 @@ pipeline {
 
         stage('Admin Frontend Deploy') {
             when {
-                expression { env.ADMIN_FRONTEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
+                expression { env.ADMIN_FRONTEND_CHANGED == 'true' }
             }
             steps {
                 dir('apps/frontend/admin-dashboard') {
@@ -159,7 +153,7 @@ pipeline {
 
         stage('Reporter Frontend Deploy') {
             when {
-                expression { env.REPORTER_FRONTEND_CHANGED == 'true' || env.INFRA_CHANGED == 'true' }
+                expression { env.REPORTER_FRONTEND_CHANGED == 'true' }
             }
             steps {
                 dir('apps/frontend/reporter-webapp') {
@@ -176,14 +170,6 @@ pipeline {
             }
         }
 
-        stage('Infrastructure Validation') {
-            when {
-                expression { env.INFRA_CHANGED == 'true' }
-            }
-            steps {
-                echo 'Infrastructure files changed. Review compose and deployment settings.'
-            }
-        }
     }
 
     post {
