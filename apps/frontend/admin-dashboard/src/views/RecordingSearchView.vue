@@ -9,7 +9,8 @@ const cases = ref([]);
 const jobs = ref([]);
 const form = ref({ caseNumber: "", searchArea: "", fromDate: "", fromTime: "", toDate: "", toTime: "" });
 const caseDropdownOpen = ref(false);
-const selectedJob = ref(null);
+const cancelTarget = ref(null);
+const cancelModalOpen = ref(false);
 
 const selectedCase = computed(() => cases.value.find((item) => item.caseNumber === form.value.caseNumber) || cases.value[0]);
 
@@ -41,6 +42,14 @@ const requestSearch = () => {
 
 const openCandidateReview = (job) => {
   router.push({ path: "/admin/candidates", query: { caseNumber: job.caseNumber } });
+};
+const pauseJob = (job) => { job.status = "paused"; };
+const resumeJob = (job) => { job.status = "searching"; };
+const requestCancel = (job) => { cancelTarget.value = job; cancelModalOpen.value = true; };
+const cancelJob = () => {
+  if (cancelTarget.value) cancelTarget.value.status = "cancelled";
+  cancelTarget.value = null;
+  cancelModalOpen.value = false;
 };
 </script>
 
@@ -118,33 +127,21 @@ const openCandidateReview = (job) => {
         </div>
         <div class="job-card-actions">
           <button v-if="job.status === 'closed'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button>
-          <button v-else class="ghost-button" @click="selectedJob = job">상세보기</button>
-          <button v-if="job.status === 'failed'" class="ghost-button">재시도</button>
-          <button v-if="job.status === 'searching'" class="ghost-button">취소</button>
+          <button v-if="job.status === 'searching'" class="ghost-button" @click="pauseJob(job)">일시정지</button>
+          <button v-if="job.status === 'paused'" class="primary-button" @click="resumeJob(job)">재시작</button>
+          <button v-if="job.status === 'failed'" class="reset-button">재시도</button>
+          <button v-if="job.status === 'searching' || job.status === 'paused'" class="ghost-button" @click="requestCancel(job)">취소</button>
         </div>
       </article>
     </div>
-
-    <div v-if="selectedJob" class="modal-backdrop" @click.self="selectedJob = null">
-      <section class="modal recording-detail-modal">
-        <div class="section-heading">
-          <div>
-            <h3>탐색 작업 상세</h3>
-            <p>{{ selectedJob.id }} 작업의 조건과 진행 상태입니다.</p>
-          </div>
-          <StatusBadge :status="selectedJob.status" />
-        </div>
-        <div class="recording-detail-grid">
-          <span><small>사건 번호</small><strong>{{ selectedJob.caseNumber }}</strong></span>
-          <span><small>탐색 대상</small><strong>{{ selectedJob.camera }}</strong></span>
-          <span><small>탐색 기간</small><strong>{{ selectedJob.range }}</strong></span>
-          <span><small>진행률</small><strong>{{ selectedJob.progress }}%</strong></span>
-          <span><small>생성 시각</small><strong>{{ selectedJob.createdAt }}</strong></span>
-          <span><small>완료 시각</small><strong>{{ selectedJob.finishedAt || "-" }}</strong></span>
-        </div>
-        <div class="progress recording-detail-progress" :class="`progress-${selectedJob.status}`"><span :style="{ width: `${selectedJob.progress}%` }" /></div>
+    <div v-if="cancelModalOpen" class="modal-backdrop" @click.self="cancelModalOpen = false">
+      <section class="modal">
+        <h3>탐색 작업을 취소할까요?</h3>
+        <p>진행 중인 녹화영상 탐색 작업이 취소됩니다.</p>
+        <textarea placeholder="취소 사유를 적어주세요."></textarea>
         <div class="modal-actions">
-          <button class="ghost-button" @click="selectedJob = null">취소</button>
+          <button class="ghost-button" @click="cancelModalOpen = false">취소</button>
+          <button class="primary-button" @click="cancelJob">취소하기</button>
         </div>
       </section>
     </div>

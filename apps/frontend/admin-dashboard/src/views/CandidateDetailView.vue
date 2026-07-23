@@ -9,6 +9,7 @@ const router = useRouter();
 const item = ref(null);
 const decision = ref("confirmed");
 const modalOpen = ref(false);
+const similarityTone = (similarity) => similarity >= 70 ? "high" : similarity >= 40 ? "medium" : "low";
 
 const decisionOptions = [
   { value: "confirmed", label: "대상 확정", desc: "실종자로 판단하고 사건 동선에 반영" },
@@ -38,7 +39,7 @@ const submit = async () => {
           <span class="eyebrow">후보 상세 검토</span>
           <h2>{{ item.caseNumber }}</h2>
         </div>
-        <span class="similarity-pill">AI 유사도 {{ item.similarity }}%</span>
+        <span :class="['similarity-pill', 'similarity-score', similarityTone(item.similarity)]">AI 유사도 {{ item.similarity }}%</span>
       </div>
 
       <div class="review-compare-grid">
