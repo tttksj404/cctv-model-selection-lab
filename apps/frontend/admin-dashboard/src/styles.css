@@ -451,6 +451,9 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .review-detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px; border: 1px solid #edf0f4; border-radius: 8px; background: #f8fafc; }
 .review-detail-grid span { display: grid; gap: 4px; color: #6b7280; font-size: 13px; }
 .review-detail-grid strong { color: #1f2937; font-size: 14px; word-break: keep-all; }
+.review-detail-grid .similarity-score.high { color: #16803c; }
+.review-detail-grid .similarity-score.medium { color: #b7791f; }
+.review-detail-grid .similarity-score.low { color: #c53030; }
 .review-decision-group { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
 .review-decision-group button { min-height: 38px; border: 1px solid #d6dde6; border-radius: 7px; background: #fff; color: #475569; font-size: 12px; font-weight: 800; }
 .review-decision-group button.active { border-color: #2f7b9b; background: #e9f2f6; color: #1f5c78; }

@@ -9,15 +9,28 @@ import StatusBadge from "../components/common/StatusBadge.vue";
 const router = useRouter();
 const filters = reactive({ keyword: "", status: "all", assignee: "" });
 const rows = ref([]);
+const caseOptions = ref([]);
 const loading = ref(true);
+const caseDropdownOpen = ref(false);
 const page = ref(1);
 const pageSize = ref(10);
 const totalPages = computed(() => Math.max(1, Math.ceil(rows.value.length / pageSize.value)));
 const visible = computed(() => rows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
+const selectedCase = computed(() => caseOptions.value.find((item) => item.caseNumber === filters.keyword));
 const sortClosedLast = (items) => [...items].sort((a, b) => Number(a.status === "closed") - Number(b.status === "closed"));
-const load = async () => { loading.value = true; rows.value = sortClosedLast(await getCases(filters)); loading.value = false; };
+const load = async () => {
+  loading.value = true;
+  const [filteredCases, allCases] = await Promise.all([getCases(filters), getCases()]);
+  rows.value = sortClosedLast(filteredCases);
+  caseOptions.value = allCases;
+  loading.value = false;
+};
 const search = () => { page.value = 1; load(); };
-const reset = () => { filters.keyword = ""; filters.status = "all"; filters.assignee = ""; search(); };
+const selectCase = (caseItem) => {
+  filters.keyword = caseItem?.caseNumber || "";
+  caseDropdownOpen.value = false;
+};
+const reset = () => { filters.keyword = ""; filters.status = "all"; filters.assignee = ""; caseDropdownOpen.value = false; search(); };
 onMounted(load);
 </script>
 
@@ -25,7 +38,26 @@ onMounted(load);
   <section class="content-panel">
     <div class="section-heading"><div><h2>사건 관리</h2><p>검색, 필터, 페이지 이동, 상세 이동을 지원합니다.</p></div><button class="primary-button" @click="router.push('/admin/cases/new')">신규 사건 등록</button></div>
     <div class="filter-bar cases-filter-bar">
-      <label>사건 번호/이름<input v-model="filters.keyword" placeholder="CASE-2026 또는 이름" /></label>
+      <label class="case-select-field">
+        사건 번호
+        <div class="case-picker">
+          <button type="button" class="case-picker-trigger" @click="caseDropdownOpen = !caseDropdownOpen">
+            {{ selectedCase?.caseNumber || "전체 사건" }}
+          </button>
+          <div v-if="caseDropdownOpen" class="case-picker-menu">
+            <button type="button" class="case-picker-option" @click="selectCase()"><span>전체 사건</span></button>
+            <button v-for="c in caseOptions" :key="c.id" type="button" class="case-picker-option" @click="selectCase(c)">
+              <span>{{ c.caseNumber }}</span>
+              <div class="case-hover-card">
+                <strong>{{ c.name }}</strong>
+                <span>{{ c.gender }} · {{ c.age }}세</span>
+                <span>{{ c.lastSeenLocation }}</span>
+                <span>{{ c.reportedAt }} 접수</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </label>
       <label>상태<select v-model="filters.status"><option value="all">전체</option><option value="received">접수</option><option value="searching">탐색 중</option><option value="candidate_found">후보 발견</option><option value="closed">종료</option></select></label>
       <label>담당자<input v-model="filters.assignee" placeholder="김민준" /></label>
       <label class="page-size-field">페이지 크기<select v-model.number="pageSize"><option>10</option><option>20</option></select></label>
