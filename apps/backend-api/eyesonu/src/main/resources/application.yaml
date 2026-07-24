@@ -5,3 +5,14 @@ spring:
     default: none
   jackson:
     time-zone: UTC
+
+server:
+  servlet:
+    session:
+      timeout: 30m
+      tracking-modes: cookie
+      cookie:
+        name: EYESONU_SESSION
+        path: /
+        http-only: true
+        same-site: lax

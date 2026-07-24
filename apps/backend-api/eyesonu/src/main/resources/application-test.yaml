@@ -20,6 +20,12 @@ spring:
   flyway:
     enabled: false
 
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+
 springdoc:
   api-docs:
     enabled: false
@@ -27,6 +33,10 @@ springdoc:
     enabled: false
 
 eyesonu:
+  auth:
+    rate-limit-key-secret: eyesonu-test-rate-limit-key
+    bootstrap:
+      enabled: false
   storage:
     s3:
       endpoint: ${TEST_S3_ENDPOINT:http://localhost:9000}
