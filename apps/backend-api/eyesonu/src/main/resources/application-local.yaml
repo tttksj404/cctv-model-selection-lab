@@ -19,7 +19,20 @@ springdoc:
   swagger-ui:
     enabled: true
 
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+
 eyesonu:
+  auth:
+    rate-limit-key-secret: ${AUTH_RATE_LIMIT_KEY_SECRET:eyesonu-local-rate-limit-key-change-me}
+    bootstrap:
+      enabled: true
+      login-id: ${ADMIN_BOOTSTRAP_LOGIN_ID:admin}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:eyesonu-local-admin!}
+      name: ${ADMIN_BOOTSTRAP_NAME:Local Administrator}
   storage:
     s3:
       endpoint: ${S3_ENDPOINT:http://localhost:9000}

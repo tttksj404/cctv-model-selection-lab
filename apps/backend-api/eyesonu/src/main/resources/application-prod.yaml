@@ -19,7 +19,21 @@ springdoc:
   swagger-ui:
     enabled: false
 
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+
 eyesonu:
+  auth:
+    rate-limit-key-secret: ${AUTH_RATE_LIMIT_KEY_SECRET:}
+    bootstrap:
+      enabled: true
+      login-id: ${ADMIN_BOOTSTRAP_LOGIN_ID:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+      name: ${ADMIN_BOOTSTRAP_NAME:}
   storage:
     s3:
       endpoint: ${S3_ENDPOINT:}
