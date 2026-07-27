@@ -41,3 +41,5 @@ eyesonu:
       path-style-access: ${S3_PATH_STYLE_ACCESS:true}
       access-key: ${S3_ACCESS_KEY}
       secret-key: ${S3_SECRET_KEY}
+
+# CI/CD 배포 연결 확인용
