@@ -18,8 +18,8 @@
 | 구분 | 인증 방식 | 주요 권한 |
 | --- | --- | --- |
 | 신고자·경찰서 접수자 | 인증 없음 | 실종 신고 접수, 사건조회번호와 전화번호를 이용한 진행 상황 조회 |
-| 관리자 | Bearer JWT (`ADMIN`) | 사건, 탐색 조건, 카메라, 후보, 작업 및 감사 로그 관리 |
-| 카메라·Jetson | `X-Device-Key` | Heartbeat, 녹화 메타데이터, AI 후보 이벤트 전송 |
+| 관리자 | `EYESONU_SESSION` 세션 쿠키 (`ADMIN`) | 사건, 탐색 조건, 미디어 서버, 카메라, 후보, 작업 및 감사 로그 관리 |
+| 미디어 서버 | `Authorization: DeviceKey {deviceKey}` (`ROLE_DEVICE`) | Heartbeat, 녹화 메타데이터와 Jetson 후보 이벤트 전송 |
 
 > v1에서는 실종 신고와 신고자 진행 상황 조회에 별도 로그인이나 전화번호 인증을 요구하지 않는다.
 
@@ -33,11 +33,13 @@
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/auth/admin/login` | 관리자 로그인 | `loginId`, `password` | `200`, `401` |
-| `GET` | `/admins/me` | 로그인 관리자 정보 조회 | 없음 | `200`, `401` |
-| `PATCH` | `/admins/me` | 관리자 정보 수정 | `name`, 비밀번호 변경 정보 | `200`, `400`, `401` |
+| `GET` | `/auth/csrf` | CSRF 토큰 발급 | 없음 | `204` |
+| `POST` | `/auth/admin/login` | 관리자 로그인 | `loginId`, `password`, CSRF | `200`, `400`, `401`, `403`, `429`, `503` |
+| `POST` | `/auth/admin/logout` | 관리자 로그아웃 | CSRF | `204`, `403` |
+| `GET` | `/admins/me` | 로그인 관리자 정보 조회 | 세션 | `200`, `401` |
+| `PATCH` | `/admins/me` | 관리자 정보 수정 | 세션, CSRF, `name`, 비밀번호 변경 정보 | `200`, `400`, `401`, `403`, `503` |
 | `POST` | `/cases` | 인증 없는 실종 신고 접수 | 신고자·실종자·마지막 목격 정보, `photo` | `201`, `400`, `409`, `413`, `415` |
-| `POST` | `/cases/status-inquiries` | 신고자 사건 진행 상황 조회 | `caseNumber`, `phone` | `200`, `400`, `404`, `429` |
+| `POST` | `/cases/status-inquiries` | 신고자 사건 진행 상황 조회 | `caseNumber`, `phone` | `200`, `400`, `404`, `429`, `503` |
 
 ### 2.2 관리자 사건·탐색·후보
 
@@ -61,20 +63,25 @@
 | `PATCH` | `/admin/candidates/{candidateId}/review` | 후보 판정 | `reviewStatus`, `reviewComment`, `version` | `200`, `400`, `404`, `409` |
 | `GET` | `/admin/cases/{caseId}/route` | 확정 후보 기반 동선 조회 | `from`, `to` | `200`, `400`, `404` |
 
-### 2.3 카메라·녹화·장치
+### 2.3 미디어 서버·카메라·녹화·장치
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
+| `GET` | `/admin/media-servers` | 미디어 서버 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
+| `POST` | `/admin/media-servers` | 미디어 서버 등록·Device Key 최초 발급 | `serverCode`, `name` | `201`, `400`, `409` |
+| `GET` | `/admin/media-servers/{mediaServerId}` | 미디어 서버 상세 | `mediaServerId` | `200`, `404` |
+| `PATCH` | `/admin/media-servers/{mediaServerId}` | 미디어 서버 정보·상태 수정 | `name`, `status` | `200`, `400`, `404`, `409` |
+| `POST` | `/admin/media-servers/{mediaServerId}/device-key/rotate` | Device Key 즉시 교체 | `mediaServerId` | `200`, `404`, `409` |
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
-| `POST` | `/admin/cameras` | 카메라 등록 | 이름, 카메라 코드, 좌표, 주소, RTSP URL | `201`, `400`, `409` |
+| `POST` | `/admin/cameras` | 카메라 등록 | 미디어 서버, 이름, 카메라 코드, 좌표, 주소, RTSP URL | `201`, `400`, `404`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | `cameraId` | `200`, `404` |
-| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보 수정 | 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
-| `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404` |
-| `POST` | `/device/cameras/{cameraCode}/recordings` | 녹화 메타데이터 등록 | 촬영 시간, Object Key, 파일 크기, 업로드 상태 | `201`, `400`, `403`, `409` |
-| `PATCH` | `/device/recordings/{recordingId}/upload-status` | 녹화 업로드 상태 갱신 | `uploadStatus`, `fileSize` | `200`, `400`, `403`, `404` |
+| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
+| `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | Device Key, `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404`, `429` |
+| `POST` | `/device/cameras/{cameraCode}/recordings` | 녹화 메타데이터 등록 | Device Key, `Idempotency-Key`, 촬영 시간, Object Key, 파일 크기, 업로드 상태 | `201`, `200`, `400`, `401`, `403`, `409`, `429` |
+| `PATCH` | `/device/recordings/{recordingId}/upload-status` | 녹화 업로드 상태 갱신 | Device Key, `uploadStatus`, `fileSize` | `200`, `400`, `401`, `403`, `404`, `429` |
 | `GET` | `/admin/recordings` | 녹화 목록 | 카메라, 업로드 상태, 촬영 기간, 페이지 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세 | `recordingId` | `200`, `404` |
-| `POST` | `/device/candidate-events` | Jetson 후보 이벤트 등록 | 사건, 장치, 탐지 시각, 유사도, 이미지 | `201`, `200`, `400`, `401`, `403`, `404`, `422` |
+| `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | Device Key, `Idempotency-Key`, 사건, 카메라, 탐지 시각, 유사도, 이미지 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `422`, `429` |
 
 ### 2.4 분석 작업·감사 로그
 
@@ -94,13 +101,37 @@
 
 | 헤더 | 필수 여부 | 설명 |
 | --- | --- | --- |
-| `Authorization: Bearer {token}` | 조건부 | 관리자 API 호출 시 필수 |
-| `X-Device-Key: {deviceKey}` | 조건부 | 카메라·Jetson API 호출 시 필수 |
+| `Cookie: EYESONU_SESSION={sessionId}` | 조건부 | 관리자 API 호출 시 필수. 브라우저가 자동으로 전송하는 `HttpOnly` 세션 쿠키 |
+| `X-XSRF-TOKEN: {csrfToken}` | 조건부 | 로그인과 관리자 상태 변경 API 호출 시 `XSRF-TOKEN` 쿠키와 같은 값을 전송 |
+| `Authorization: DeviceKey msk_{deviceKeyId}.{randomSecret}` | 조건부 | 모든 `/device/**` API 호출 시 필수인 미디어 서버 자격 증명 |
 | `Content-Type` | 필수 | `application/json` 또는 `multipart/form-data` |
-| `Idempotency-Key` | 조건부 | 후보 이벤트 전송 시 필수인 클라이언트 생성 고유 키 |
+| `Idempotency-Key` | 조건부 | 녹화 메타데이터와 후보 이벤트 등록 시 필수인 클라이언트 생성 고유 키 |
 | `X-Request-Id` | 선택 | 호출 추적용 ID. 없으면 서버에서 생성 |
 
-### 3.2 성공 응답
+관리자 세션·CSRF 규칙:
+
+- 세션 쿠키 이름은 `EYESONU_SESSION`이며 `HttpOnly`, `SameSite=Lax`, `Path=/` 속성을 사용한다. 운영 프로필에서는 `Secure` 속성도 사용한다.
+- 세션 유효 시간은 마지막 요청부터 30분이며, 관리자 한 명당 세션 하나만 유지한다. 새 로그인은 기존 세션을 만료시킨다.
+- 브라우저는 로그인 전에 `GET /api/v1/auth/csrf`를 호출하고, 응답 쿠키 `XSRF-TOKEN`의 값을 로그인 요청의 `X-XSRF-TOKEN` 헤더에 담는다.
+- 로그인 성공 또는 로그아웃 후에는 `GET /api/v1/auth/csrf`를 다시 호출해 새로운 CSRF 토큰을 사용한다.
+- `GET` 관리자 API는 세션만 필요하고, `POST`·`PATCH`·`DELETE` 관리자 API는 세션과 CSRF 토큰이 모두 필요하다.
+- 인증 API, `/admins/me`, 사건 진행 조회 API의 성공·오류 응답에는 `Cache-Control: no-store`를 적용한다.
+- Device Key 원문을 반환하는 미디어 서버 등록·키 교체 응답에도 `Cache-Control: no-store`를 적용한다.
+
+### 3.2 미디어 서버 Device Key 인증
+
+- `/api/v1/device/**`는 관리자 세션과 분리된 Stateless API다. 세션을 생성하지 않고 CSRF 검사에서 제외하며 `ROLE_DEVICE` 권한이 필요하다.
+- Device Key는 중앙 서버가 `msk_<deviceKeyId>.<randomSecret>` 형식으로 생성한다. `randomSecret`은 암호학적으로 안전한 최소 32바이트 난수다.
+- `deviceKeyId`는 미디어 서버를 조회하기 위한 공개 식별자이며, `randomSecret`만 bcrypt 또는 Argon2 계열의 적응형 단방향 해시로 저장한다.
+- Device Key 원문은 최초 발급과 키 교체 응답에서 각각 한 번만 반환하며 중앙 서버의 DB와 로그에 저장하지 않는다.
+- 인증 필터는 Authorization 헤더와 형식을 확인하고, `deviceKeyId`로 미디어 서버를 조회한 뒤 상태와 secret 해시를 검증한다.
+- 인증에 성공하면 `mediaServerId`, `serverCode`, `ROLE_DEVICE`를 가진 `MediaServerPrincipal`을 SecurityContext에 저장하고 `lastAuthenticatedAt`을 갱신한다.
+- 서비스 계층은 요청의 `cameraCode` 또는 `recordingId`가 인증된 `mediaServerId` 소속인지 검사한다. 다른 미디어 서버 소속이면 `403 ACCESS_DENIED`를 반환한다.
+- 헤더 누락은 `401 AUTHENTICATION_REQUIRED`, 형식 오류·미등록 ID·secret 불일치·`INACTIVE`·`REVOKED` 상태는 원인을 구분하지 않고 `401 INVALID_DEVICE_KEY`를 반환한다.
+- Device API는 HTTPS로만 제공한다. Device Key를 URL·Query Parameter·요청 로그·오류 로그에 포함하지 않으며 IP 제한은 보조 통제로만 사용한다.
+- 미디어 서버마다 서로 다른 Device Key를 사용하며 카메라, Jetson 또는 다른 미디어 서버와 공유하지 않는다. Jetson의 후보 탐지 결과는 해당 카메라를 관리하는 미디어 서버가 중앙 서버로 전달한다.
+
+### 3.3 성공 응답
 
 단건 응답:
 
@@ -135,39 +166,43 @@
 
 생성 API는 `201 Created`와 생성된 리소스를 반환한다. 응답 본문이 필요 없는 삭제 API는 `204 No Content`를 반환한다.
 
-### 3.3 오류 응답
+### 3.4 오류 응답
+
+오류 응답:
 
 ```json
 {
   "timestamp": "2026-07-20T01:30:00Z",
   "status": 400,
   "code": "VALIDATION_ERROR",
-  "message": "요청 값이 올바르지 않습니다.",
-  "fieldErrors": [
-    {
-      "field": "searchEnd",
-      "reason": "searchStart보다 빠를 수 없습니다."
-    }
-  ],
-  "traceId": "42a90b7d6bbf4f38"
+  "message": "요청 값이 올바르지 않습니다."
 }
 ```
 
+| 필드 | 필수 여부 | 설명 |
+| --- | --- | --- |
+| `timestamp` | 필수 | 오류 발생 시각 |
+| `status` | 필수 | HTTP 상태 코드 |
+| `code` | 필수 | 클라이언트가 분기 처리할 오류 코드 |
+| `message` | 필수 | 사용자에게 표시 가능한 오류 메시지 |
+| `fieldErrors` | 선택 | 필드별 검증 실패 정보 |
+| `traceId` | 선택 | 서버 로그 추적 ID |
+
 | HTTP 상태 | 공통 오류 코드 | 사용 조건 |
 | --- | --- | --- |
-| `400 Bad Request` | `INVALID_REQUEST`, `VALIDATION_ERROR`, `INVALID_STATE_TRANSITION` | 형식 오류, 필드 검증 실패, 허용되지 않은 상태 전이 |
-| `401 Unauthorized` | `AUTHENTICATION_REQUIRED`, `INVALID_TOKEN`, `INVALID_DEVICE_KEY` | 인증 정보 누락·만료·위조 |
+| `400 Bad Request` | `INVALID_REQUEST`, `VALIDATION_ERROR`, `CURRENT_PASSWORD_MISMATCH`, `INVALID_STATE_TRANSITION` | 형식 오류, 필드 검증 실패, 현재 비밀번호 불일치, 허용되지 않은 상태 전이 |
+| `401 Unauthorized` | `AUTHENTICATION_REQUIRED`, `SESSION_EXPIRED`, `INVALID_CREDENTIALS`, `INVALID_DEVICE_KEY` | 관리자 세션 누락·만료, 로그인 정보 불일치 또는 장치 인증 실패 |
 | `403 Forbidden` | `ACCESS_DENIED` | 역할 또는 장치 권한 부족 |
 | `404 Not Found` | `RESOURCE_NOT_FOUND`, `INQUIRY_NOT_FOUND` | 리소스 없음 또는 사건조회번호·전화번호 불일치 |
-| `409 Conflict` | `DUPLICATE_RESOURCE`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 버전 충돌, 종료 조건 불충족 |
+| `409 Conflict` | `DUPLICATE_RESOURCE`, `IDEMPOTENCY_KEY_CONFLICT`, `RESOURCE_STATE_CONFLICT`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 멱등 키 충돌, 리소스 상태 충돌, 버전 충돌, 종료 조건 불충족 |
 | `413 Payload Too Large` | `FILE_TOO_LARGE` | 허용 용량을 초과한 파일 |
 | `415 Unsupported Media Type` | `UNSUPPORTED_MEDIA_TYPE` | 지원하지 않는 이미지·영상 형식 |
 | `422 Unprocessable Entity` | `BUSINESS_RULE_VIOLATION` | 문법상 유효하지만 업무 규칙을 위반한 요청 |
-| `429 Too Many Requests` | `RATE_LIMIT_EXCEEDED` | 로그인·사건 진행 조회 등 요청 허용 횟수 초과 |
+| `429 Too Many Requests` | `RATE_LIMIT_EXCEEDED` | 로그인·사건 진행 조회·Device 인증 또는 요청 허용 횟수 초과 |
 | `500 Internal Server Error` | `INTERNAL_SERVER_ERROR` | 처리되지 않은 서버 오류 |
-| `503 Service Unavailable` | `STORAGE_UNAVAILABLE`, `ANALYSIS_SERVICE_UNAVAILABLE` | 저장소 또는 분석 시스템 일시 장애 |
+| `503 Service Unavailable` | `DATABASE_UNAVAILABLE`, `AUTHENTICATION_UNAVAILABLE`, `ADMIN_UPDATE_FAILED`, `STORAGE_UNAVAILABLE`, `ANALYSIS_SERVICE_UNAVAILABLE` | 데이터베이스, 인증, 저장소 또는 분석 시스템 일시 장애 |
 
-### 3.4 페이지네이션과 정렬
+### 3.5 페이지네이션과 정렬
 
 | 파라미터 | 기본값 | 제한 | 설명 |
 | --- | --- | --- | --- |
@@ -177,22 +212,27 @@
 
 잘못된 정렬 필드는 `400 VALIDATION_ERROR`로 처리한다.
 
-### 3.5 파일과 민감 정보
+### 3.6 파일과 민감 정보
 
-- `password`, `photoS3Key`, `imageS3Key`, `clipS3Key`, `s3Key`, `rtspUrl`, Device Key는 외부 응답에 노출하지 않는다.
+- `password`, `photoS3Key`, `imageS3Key`, `clipS3Key`, `s3Key`, `rtspUrl`, `deviceKeyHash`는 외부 응답에 노출하지 않는다.
+- Device Key 원문은 미디어 서버 등록·키 교체 응답에서만 한 번 반환하며 이후 다시 조회할 수 없다.
 - 사진·후보 이미지·클립은 만료 시간이 있는 `photoUrl`, `imageUrl`, `clipUrl`로 반환한다.
 - URL 만료 시 리소스를 다시 조회해 새로운 URL을 발급받는다.
 - 지원 이미지 형식은 JPEG·PNG·WebP, 지원 영상 형식은 MP4(H.264)를 기본으로 한다.
 - 파일 크기 제한은 배포 환경 설정값을 따르며, 초과 시 `413 FILE_TOO_LARGE`를 반환한다.
 
-### 3.6 주요 검증 규칙
+### 3.7 주요 검증 규칙
 
-- `phone`, `caseNumber`, `cameraCode`, `loginId`는 앞뒤 공백을 제거한 후 검증한다.
+- `caseNumber`는 앞뒤 공백을 제거하고 대문자로 변환한 뒤 검증한다. 형식은 `EFU-`와 Crockford Base32 26자로 구성된 총 30자 문자열이다.
+- `phone`은 하이픈과 공백 등 숫자가 아닌 문자를 제거한 뒤 10~11자리인지 검증한다.
+- `cameraCode`는 앞뒤 공백을 제거한 후 검증한다. `loginId`는 앞뒤 공백을 제거하고 소문자로 변환한다.
 - 위도는 `-90`~`90`, 경도는 `-180`~`180` 범위여야 한다.
 - `lastSeenLat`와 `lastSeenLng`는 함께 제공하거나 모두 생략한다.
 - `similarity`, `similarityThreshold`는 `0.0000`~`1.0000` 범위여야 한다.
 - 탐색 종료 시각은 탐색 시작 시각보다 빠를 수 없다.
 - 클라이언트는 S3 Key, 생성·수정 시각, 검토 관리자 ID를 직접 지정할 수 없다.
+
+로그인과 사건 진행 조회의 현행 Rate Limit은 실패 기준 10분 동안 동일 IP·식별자 조합 5회, 동일 IP 전체 30회다. 성공하면 해당 IP·식별자 조합의 실패 횟수는 초기화된다.
 
 ---
 
@@ -216,6 +256,7 @@
 
 | 구분 | 값 |
 | --- | --- |
+| `MediaServerStatus` | `ACTIVE`, `INACTIVE`, `REVOKED` |
 | `CameraStatus` | `ONLINE`, `OFFLINE`, `ERROR` |
 | `UploadStatus` | `PENDING`, `UPLOADING`, `COMPLETED`, `FAILED` |
 | `ReviewStatus` | `PENDING`, `KEPT`, `CONFIRMED`, `REJECTED` |
@@ -227,6 +268,7 @@
 
 | 구분 | 전이 규칙 |
 | --- | --- |
+| 미디어 서버 | 최초 `ACTIVE`; `ACTIVE ↔ INACTIVE`, `ACTIVE → REVOKED`, `INACTIVE → REVOKED`를 허용한다. `REVOKED`는 종단 상태이며 재활성화하거나 Device Key를 교체할 수 없다. |
 | 카메라 | 정상 Heartbeat 수신 시 `ONLINE`, 기준 시간 동안 미수신 시 `OFFLINE`, 장치 오류 보고 시 `ERROR` |
 | 녹화 업로드 | `PENDING → UPLOADING → COMPLETED` 또는 `FAILED`, 재업로드 시 `FAILED → UPLOADING` |
 | 후보 판정 | 최초 `PENDING`; 관리자는 `KEPT`, `CONFIRMED`, `REJECTED` 사이에서 재판정할 수 있으며 모든 변경을 감사 로그에 남김 |
@@ -237,9 +279,24 @@
 
 ## 5. 인증·신고·진행 조회 API
 
-### 5.1 관리자 로그인
+### 5.1 CSRF 토큰 발급
+
+`GET /api/v1/auth/csrf`
+
+- 인증: 없음
+- 요청 본문: 없음
+- 응답: `204 No Content`
+- 응답 헤더: `Set-Cookie: XSRF-TOKEN={token}; Path=/; SameSite=Lax`
+
+응답 본문은 없다. 브라우저는 `XSRF-TOKEN` 쿠키 값을 읽어 로그인과 관리자 상태 변경 요청의 `X-XSRF-TOKEN` 헤더로 전송한다.
+
+### 5.2 관리자 로그인
 
 `POST /api/v1/auth/admin/login`
+
+- 인증: 없음
+- CSRF: 필수
+- Content-Type: `application/json`
 
 요청:
 
@@ -256,19 +313,100 @@
 {
   "timestamp": "2026-07-20T01:30:00Z",
   "data": {
-    "accessToken": "eyJhbGciOi...",
-    "tokenType": "Bearer",
-    "expiresAt": "2026-07-20T03:30:00Z",
-    "admin": {
-      "id": 1,
-      "loginId": "control01",
-      "name": "관제 관리자"
-    }
+    "id": 1,
+    "loginId": "control01",
+    "name": "관제 관리자"
   }
 }
 ```
 
-### 5.2 실종 신고 접수
+로그인 성공 시 `EYESONU_SESSION` 쿠키를 발급한다. 응답 본문에 토큰을 반환하지 않으며 이후 관리자 API는 브라우저가 전송하는 세션 쿠키로 인증한다.
+
+주요 오류:
+
+| 조건 | 응답 |
+| --- | --- |
+| 요청 값 검증 실패 | `400 VALIDATION_ERROR` |
+| 로그인 정보 불일치 | `401 INVALID_CREDENTIALS` |
+| CSRF 토큰 누락 또는 불일치 | `403 ACCESS_DENIED` |
+| 로그인 시도 횟수 초과 | `429 RATE_LIMIT_EXCEEDED` |
+| 인증·데이터베이스 또는 필수 감사 로그 장애 | `503` |
+
+### 5.3 관리자 로그아웃
+
+`POST /api/v1/auth/admin/logout`
+
+- CSRF: 필수
+- 요청 본문: 없음
+- 응답: `204 No Content`
+
+인증된 세션이 있으면 해당 세션을 무효화하고 `EYESONU_SESSION`, `XSRF-TOKEN` 쿠키를 만료시킨다. 세션 유무와 관계없이 올바른 CSRF 토큰이 필요하며, 누락하거나 일치하지 않으면 `403 ACCESS_DENIED`를 반환한다.
+
+### 5.4 로그인 관리자 정보
+
+#### 5.4.1 내 정보 조회
+
+`GET /api/v1/admins/me`
+
+- 인증: 관리자 세션
+- 주요 응답: `200`, `401`
+
+응답 `200 OK`:
+
+```json
+{
+  "timestamp": "2026-07-20T01:35:00Z",
+  "data": {
+    "id": 1,
+    "loginId": "control01",
+    "name": "관제 관리자"
+  }
+}
+```
+
+#### 5.4.2 내 정보 수정
+
+`PATCH /api/v1/admins/me`
+
+- 인증: 관리자 세션
+- CSRF: 필수
+- 주요 응답: `200`, `400`, `401`, `403`, `503`
+
+요청:
+
+```json
+{
+  "name": "통합 관제 관리자",
+  "currentPassword": "current-password",
+  "newPassword": "new-password-1234"
+}
+```
+
+응답 `200 OK`:
+
+```json
+{
+  "timestamp": "2026-07-20T01:40:00Z",
+  "data": {
+    "admin": {
+      "id": 1,
+      "loginId": "control01",
+      "name": "통합 관제 관리자"
+    },
+    "reauthenticationRequired": true
+  }
+}
+```
+
+- `name` 또는 비밀번호 변경 정보 중 하나 이상을 제공해야 한다.
+- `name`은 앞뒤 공백을 제거한 1~50자 문자열이다.
+- 비밀번호 변경 시 `currentPassword`와 `newPassword`를 함께 제공해야 한다.
+- 새 비밀번호는 12~64자이며 UTF-8 기준 72바이트 이하여야 한다.
+- 현재 비밀번호가 일치하지 않으면 `400 CURRENT_PASSWORD_MISMATCH`를 반환한다.
+- 이름만 변경하면 `reauthenticationRequired=false`이며 현재 세션을 유지한다.
+- 비밀번호를 변경하면 `reauthenticationRequired=true`를 반환한 뒤 해당 관리자의 모든 세션을 종료한다.
+
+### 5.5 실종 신고 접수
 
 `POST /api/v1/cases`
 
@@ -309,7 +447,7 @@
   "timestamp": "2026-07-20T01:30:00Z",
   "data": {
     "id": 101,
-    "caseNumber": "EFU-20260720-000101",
+    "caseNumber": "EFU-0123456789ABCDEFGHJKMNPQRS",
     "status": "RECEIVED",
     "reportedAt": "2026-07-20T01:30:00Z"
   }
@@ -320,11 +458,11 @@
 
 1. `REPORTERS`를 신고 접수 정보로 생성하고 `phoneVerified=false`, `verifiedAt=null`로 저장한다.
 2. 사진을 저장한 후 내부 S3 Key를 포함하여 `CASES`를 생성한다.
-3. 사건번호를 중복되지 않게 발급하고 생성 이력을 `AUDIT_LOGS`에 기록한다.
+3. 128비트 난수를 Crockford Base32 26자로 인코딩한 사건번호를 중복되지 않게 발급하고 생성 이력을 `AUDIT_LOGS`에 기록한다.
 
 > `REPORTERS.phoneVerified`와 `verifiedAt`은 향후 인증 기능 확장을 위해 유지하며 v1 신고 흐름에서는 사용하지 않는다.
 
-### 5.3 신고자 사건 진행 조회
+### 5.6 신고자 사건 진행 조회
 
 `POST /api/v1/cases/status-inquiries`
 
@@ -336,7 +474,7 @@
 
 ```json
 {
-  "caseNumber": "EFU-20260720-000101",
+  "caseNumber": "EFU-0123456789ABCDEFGHJKMNPQRS",
   "phone": "01012345678"
 }
 ```
@@ -347,15 +485,11 @@
 {
   "timestamp": "2026-07-20T02:20:00Z",
   "data": {
-    "caseNumber": "EFU-20260720-000101",
+    "caseNumber": "EFU-0123456789ABCDEFGHJKMNPQRS",
     "status": "SEARCHING",
-    "missingName": "김민수",
-    "photoUrl": "https://media.example.com/signed/...",
-    "lastSeenTime": "2026-07-20T00:10:00Z",
-    "lastSeenAddress": "서울특별시 강남구",
     "reportedAt": "2026-07-20T01:30:00Z",
-    "closedAt": null,
-    "confirmedSightings": []
+    "updatedAt": "2026-07-20T02:20:00Z",
+    "closedAt": null
   }
 }
 ```
@@ -366,24 +500,20 @@
 | --- | --- | --- |
 | `caseNumber` | string | 사건 조회번호 |
 | `status` | CaseStatus | 현재 진행 상태 |
-| `missingName` | string | 실종자 이름 |
-| `photoUrl` | string, nullable | 실종자 사진 임시 URL |
-| `lastSeenTime` | datetime | 마지막 목격 시각 |
-| `lastSeenAddress` | string, nullable | 마지막 목격 주소 |
 | `reportedAt` | datetime | 신고 접수 시각 |
+| `updatedAt` | datetime | 사건 정보가 마지막으로 변경된 시각 |
 | `closedAt` | datetime, nullable | 사건 종료 시각 |
-| `confirmedSightings` | array | 관리자가 `CONFIRMED`로 판정한 공개 가능 목격 정보 |
 
 - 사건조회번호와 전화번호가 모두 동일한 사건에 연결될 때만 정보를 반환한다.
 - 둘 중 하나라도 일치하지 않으면 어떤 값이 틀렸는지 구분하지 않고 `404 INQUIRY_NOT_FOUND`를 반환한다.
 
-미확정 후보, 유사도, 원본 CCTV 영상, `cameraId`, 내부 관리자 정보와 감사 로그는 노출하지 않는다.
+실종자 이름·사진·마지막 목격 정보, 후보와 확정 목격 정보, 유사도, 원본 CCTV 영상, `cameraId`, 내부 관리자 정보와 감사 로그는 노출하지 않는다.
 
 ---
 
 ## 6. 관리자 사건 API
 
-이 절의 모든 엔드포인트는 별도 표기가 없으면 ADMIN Bearer JWT가 필요하다.
+이 절의 모든 엔드포인트는 별도 표기가 없으면 ADMIN 세션이 필요하며, 상태 변경 요청에는 CSRF 토큰도 필요하다.
 
 ### 6.1 사건 관리
 
@@ -404,7 +534,7 @@
   "timestamp": "2026-07-20T01:40:00Z",
   "data": {
     "id": 101,
-    "caseNumber": "EFU-20260720-000101",
+    "caseNumber": "EFU-0123456789ABCDEFGHJKMNPQRS",
     "status": "SEARCHING",
     "reporter": {
       "id": 20,
@@ -550,7 +680,7 @@
 
 `GET /api/v1/admin/cases/{caseId}/route`
 
-인증: ADMIN
+인증: ADMIN 세션
 
 주요 응답: `200`, `400`, `404`
 
@@ -596,21 +726,86 @@
 
 ---
 
-## 7. 카메라 및 녹화 API
+## 7. 미디어 서버·카메라 및 녹화 API
 
-### 7.1 관리자 카메라 API
+관리자 조회 API는 ADMIN 세션이 필요하며 등록·수정·키 교체 API는 CSRF 토큰도 필요하다.
+
+### 7.1 관리자 미디어 서버 API
+
+| 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
+| --- | --- | --- | --- | --- |
+| `GET` | `/admin/media-servers` | 미디어 서버 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
+| `POST` | `/admin/media-servers` | 미디어 서버 등록·Device Key 최초 발급 | `serverCode`, `name` | `201`, `400`, `409` |
+| `GET` | `/admin/media-servers/{mediaServerId}` | 미디어 서버 상세 | Path: `mediaServerId` | `200`, `404` |
+| `PATCH` | `/admin/media-servers/{mediaServerId}` | 이름·상태 수정 | `name`, `status` | `200`, `400`, `404`, `409` |
+| `POST` | `/admin/media-servers/{mediaServerId}/device-key/rotate` | Device Key 즉시 교체 | Path: `mediaServerId` | `200`, `404`, `409` |
+
+목록 필터의 `search`는 `serverCode`와 `name`을 대상으로 하며 기본 정렬은 `createdAt,desc`이다.
+
+등록 요청:
+
+```json
+{
+  "serverCode": "rpi5-media-01",
+  "name": "1층 미디어 서버"
+}
+```
+
+등록 응답 `201 Created`:
+
+```json
+{
+  "timestamp": "2026-07-20T01:30:00Z",
+  "data": {
+    "mediaServer": {
+      "id": 11,
+      "serverCode": "rpi5-media-01",
+      "name": "1층 미디어 서버",
+      "deviceKeyId": "a81f2c9d",
+      "status": "ACTIVE",
+      "lastAuthenticatedAt": null,
+      "createdAt": "2026-07-20T01:30:00Z",
+      "updatedAt": "2026-07-20T01:30:00Z"
+    },
+    "deviceKey": "msk_a81f2c9d.q7Rxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+}
+```
+
+수정 요청:
+
+```json
+{
+  "name": "1층 통합 미디어 서버",
+  "status": "INACTIVE"
+}
+```
+
+Device Key 교체 응답은 등록 응답과 같은 구조로 현재 미디어 서버 정보와 새 `deviceKey`를 반환한다.
+
+- `serverCode`와 `deviceKeyId`는 전체 미디어 서버에서 각각 고유하다.
+- 등록 시 상태는 `ACTIVE`이며 서버가 Device Key를 생성한다. 클라이언트는 `deviceKeyId`, `randomSecret`, 해시를 지정할 수 없다.
+- 등록·키 교체 응답 외의 목록·상세·수정 응답은 `deviceKey`와 `deviceKeyHash`를 포함하지 않는다.
+- Device Key 원문은 감사 로그의 변경 전후 값이나 상세 설명에도 기록하지 않는다.
+- 키 교체가 성공하는 즉시 이전 키는 사용할 수 없다. 활성 키를 하나만 보관하므로 무중단 키 교체와 키 이력은 지원하지 않는다.
+- `INACTIVE` 서버는 다시 `ACTIVE`로 전환할 수 있지만 `REVOKED`는 재활성화하거나 키를 교체할 수 없다.
+- `REVOKED` 서버의 상태 변경 또는 키 교체 요청은 `409 RESOURCE_STATE_CONFLICT`를 반환한다.
+- 미디어 서버는 물리 삭제하지 않으며 운영 중지 또는 폐기는 상태 변경으로 처리한다.
+
+### 7.2 관리자 카메라 API
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
-| `POST` | `/admin/cameras` | 카메라 등록 | 카메라·장치 식별 정보 | `201`, `400`, `409` |
+| `POST` | `/admin/cameras` | 카메라 등록 | 미디어 서버·카메라 식별 정보 | `201`, `400`, `404`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | Path: `cameraId` | `200`, `404` |
-| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보 수정 | 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
+| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
 
 카메라 등록 요청:
 
 ```json
 {
+  "mediaServerId": 11,
   "cameraName": "Zone A 복도",
   "cameraCode": "camera-01",
   "latitude": 37.5015000,
@@ -620,17 +815,25 @@
 }
 ```
 
-- `cameraCode`는 카메라 종류와 관계없이 직접 지정하는 외부 식별자이며 중복될 수 없다.
-- 외부 장치는 `cameraCode`를 사용하고, 관리자 API와 DB 관계에서는 숫자 `cameraId`를 사용한다.
+- `mediaServerId`는 카메라의 Heartbeat, 녹화와 후보 이벤트 전송을 담당하는 미디어 서버 ID이며 필수다.
+- 카메라 응답에는 소속 미디어 서버의 `id`, `serverCode`, `name`을 포함한다.
+- `cameraCode`는 외부 식별자이며 전체 카메라에서 고유하다. Device API는 `cameraCode`를, 관리자 API와 DB 관계는 숫자 `cameraId`를 사용한다.
+- 수정 API에서 `mediaServerId`를 변경하면 기존 서버의 접근 권한은 즉시 사라지고 새 서버에 권한이 부여된다. 소속 변경은 감사 로그에 기록한다.
 - `rtspUrl`은 생성·수정 요청에서만 받고 조회 응답에는 포함하지 않는다.
-- 최초 상태는 `OFFLINE`이다.
+- 최초 카메라 상태는 `OFFLINE`이다.
 
-### 7.2 장치 Heartbeat
+### 7.3 미디어 서버 Heartbeat
 
 `POST /api/v1/device/cameras/{cameraCode}/heartbeat`
 
-인증: `X-Device-Key`
-주요 응답: `204`, `400`, `401`, `403`, `404`
+- 인증: `Authorization: DeviceKey {deviceKey}`
+- 주요 응답: `204`, `400`, `401`, `403`, `404`, `429`
+
+```http
+POST /api/v1/device/cameras/camera-01/heartbeat
+Authorization: DeviceKey msk_a81f2c9d.q7Rxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Content-Type: application/json
+```
 
 ```json
 {
@@ -640,20 +843,26 @@
 }
 ```
 
-- Device Key에 연결된 장치와 `cameraCode`가 다르면 `403 ACCESS_DENIED`이다.
-- 정상 처리 시 카메라의 `lastHeartbeat`, `status`, `updatedAt`을 갱신한다.
-- `204 No Content`를 반환한다.
+- `cameraCode`가 인증된 미디어 서버 소속이 아니면 `403 ACCESS_DENIED`를 반환한다.
+- 정상 처리 시 카메라의 `lastHeartbeat`, `status`, `updatedAt`을 갱신하고 `204 No Content`를 반환한다.
 
-### 7.3 녹화 메타데이터 등록
+### 7.4 녹화 메타데이터 API
 
 | 메서드 | 경로 | 인증 | 설명 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/device/cameras/{cameraCode}/recordings` | Device Key | 녹화 파일 메타데이터 등록 | `201`, `400`, `403`, `409` |
-| `PATCH` | `/device/recordings/{recordingId}/upload-status` | Device Key | 업로드 상태·파일 정보 갱신 | `200`, `400`, `403`, `404` |
-| `GET` | `/admin/recordings` | ADMIN | 녹화 목록 조회 | `200`, `400` |
-| `GET` | `/admin/recordings/{recordingId}` | ADMIN | 녹화 상세 조회 | `200`, `404` |
+| `POST` | `/device/cameras/{cameraCode}/recordings` | Device Key | 녹화 파일 메타데이터 등록 | `201`, `200`, `400`, `401`, `403`, `409`, `429` |
+| `PATCH` | `/device/recordings/{recordingId}/upload-status` | Device Key | 업로드 상태·파일 정보 갱신 | `200`, `400`, `401`, `403`, `404`, `429` |
+| `GET` | `/admin/recordings` | ADMIN 세션 | 녹화 목록 조회 | `200`, `400` |
+| `GET` | `/admin/recordings/{recordingId}` | ADMIN 세션 | 녹화 상세 조회 | `200`, `404` |
 
 등록 요청:
+
+```http
+POST /api/v1/device/cameras/camera-01/recordings
+Authorization: DeviceKey msk_a81f2c9d.q7Rxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+```
 
 ```json
 {
@@ -665,9 +874,38 @@
 }
 ```
 
-> `objectKey`는 장치 요청 필드이며 서버가 검증 후 내부 `s3Key`로 저장한다. 관리자 응답에는 `objectKey` 또는 `s3Key` 대신 필요 시 `videoUrl`을 반환한다.
+신규 등록 응답 `201 Created`:
+
+```json
+{
+  "timestamp": "2026-07-20T02:00:01Z",
+  "data": {
+    "id": 501,
+    "cameraId": 1,
+    "startTime": "2026-07-20T01:50:00Z",
+    "endTime": "2026-07-20T02:00:00Z",
+    "fileSize": 104857600,
+    "uploadStatus": "PENDING",
+    "duplicate": false,
+    "createdAt": "2026-07-20T02:00:01Z"
+  }
+}
+```
+
+같은 `Idempotency-Key`와 같은 요청을 다시 전송하면 기존 리소스를 `200 OK`, `duplicate=true`로 반환한다. 같은 키에 다른 요청 내용을 전송하면 `409 IDEMPOTENCY_KEY_CONFLICT`를 반환한다.
+
+- `objectKey`는 서버가 검증 후 내부 `s3Key`로 저장하며 관리자 응답에는 필요 시 `videoUrl`만 반환한다.
+- 다른 Idempotency-Key로 기존 `objectKey`를 등록하면 `409 DUPLICATE_RESOURCE`를 반환한다.
+- `cameraCode`가 인증된 미디어 서버 소속이 아니면 `403 ACCESS_DENIED`를 반환한다.
+- 업로드 상태 변경은 `recordingId`로 녹화본과 카메라를 조회한 뒤 해당 카메라가 인증된 미디어 서버 소속인지 검사한다.
 
 업로드 상태 변경:
+
+```http
+PATCH /api/v1/device/recordings/501/upload-status
+Authorization: DeviceKey msk_a81f2c9d.q7Rxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Content-Type: application/json
+```
 
 ```json
 {
@@ -676,7 +914,7 @@
 }
 ```
 
-관리자 목록 필터: `cameraId`, `uploadStatus`, `startFrom`, `startTo`, 페이지 조건. 기본 정렬은 `startTime,desc`이다.
+관리자 목록 필터는 `cameraId`, `uploadStatus`, `startFrom`, `startTo`, 페이지 조건이며 기본 정렬은 `startTime,desc`이다.
 
 ---
 
@@ -686,12 +924,19 @@
 
 `POST /api/v1/device/candidate-events`
 
-- 인증: `X-Device-Key`
-- 주요 응답: `201`, `200`(중복 재전송), `400`, `401`, `403`, `404`, `413`, `415`, `422`
+- 인증: `Authorization: DeviceKey {deviceKey}`
+- 주요 응답: `201`, `200`(동일 요청 재전송), `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `429`
 - Content-Type: `multipart/form-data`
-- 헤더 `Idempotency-Key`: 장치가 이벤트별로 생성한 고유 문자열
+- 헤더 `Idempotency-Key`: 미디어 서버가 이벤트별로 생성한 필수 고유 문자열
 - `metadata`: 아래 JSON 구조
 - `image`: 필수 후보 크롭 이미지
+
+```http
+POST /api/v1/device/candidate-events
+Authorization: DeviceKey msk_a81f2c9d.q7Rxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Idempotency-Key: 27bc8f50-5cf1-46b1-96c8-73e06f8f84ab
+Content-Type: multipart/form-data
+```
 
 `metadata` 파트:
 
@@ -742,24 +987,30 @@
 
 검증 순서:
 
-1. Device Key와 `cameraCode`의 연결 관계를 검증한다.
-2. 사건과 카메라가 존재하고 사건이 종료되지 않았는지 검증한다.
-3. 카메라가 해당 사건의 활성 탐색 대상으로 지정됐는지 확인한다.
-4. `Idempotency-Key` 중복 여부를 확인한다.
-5. 이미지와 유사도 범위를 검증하고 이미지를 저장한다.
-6. `CANDIDATES`를 생성하고 필요한 클립 생성 작업을 `ANALYSIS_JOBS`에 등록한다.
+1. Device Key를 인증하고 `MediaServerPrincipal`을 생성한다.
+2. `cameraCode`의 카메라가 인증된 미디어 서버 소속인지 확인한다.
+3. 사건과 카메라가 존재하고 사건이 종료되지 않았는지 검증한다.
+4. 카메라가 해당 사건의 활성 탐색 대상으로 지정됐는지 확인한다.
+5. `Idempotency-Key`와 요청 내용의 중복 여부를 확인한다.
+6. 이미지와 유사도 범위를 검증하고 이미지를 저장한다.
+7. `CANDIDATES`를 생성하고 필요한 클립 생성 작업을 `ANALYSIS_JOBS`에 등록한다.
 
 오류:
 
 | 조건 | 응답 |
 | --- | --- |
-| 미등록 Device Key | `401 INVALID_DEVICE_KEY` |
-| 다른 장치의 `cameraCode` 사용 | `403 ACCESS_DENIED` |
+| Device Key 누락 | `401 AUTHENTICATION_REQUIRED` |
+| Device Key 오류 또는 비활성·폐기 미디어 서버 | `401 INVALID_DEVICE_KEY` |
+| 다른 미디어 서버 소속 `cameraCode` 사용 | `403 ACCESS_DENIED` |
 | 존재하지 않는 사건·카메라 | `404 RESOURCE_NOT_FOUND` |
+| 같은 Idempotency-Key에 다른 요청 내용 사용 | `409 IDEMPOTENCY_KEY_CONFLICT` |
 | 종료된 사건 또는 비활성 탐색 카메라 | `422 BUSINESS_RULE_VIOLATION` |
 | 유사도 범위 오류·필수 필드 누락 | `400 VALIDATION_ERROR` |
+| 인증 실패 또는 요청 속도 제한 초과 | `429 RATE_LIMIT_EXCEEDED` |
 
-> `Idempotency-Key`는 중복 요청 제어용 일시 데이터이며 ERD 엔터티의 영속 필드에는 포함하지 않는다.
+같은 `Idempotency-Key`와 같은 요청을 재전송하면 최초 생성 결과를 `200 OK`, `duplicate=true`로 반환한다. `Idempotency-Key`는 중복 요청 제어용 서버 관리 데이터이며 `CANDIDATES`의 비즈니스 필드에는 포함하지 않는다.
+
+Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디어 서버에 결과를 전달한다. 중앙 서버 Device API 호출과 Device Key 보관은 미디어 서버가 담당한다.
 
 ---
 
@@ -767,10 +1018,10 @@
 
 | 메서드 | 경로 | 인증 | 설명 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN | 녹화 영상 분석 작업 생성 | `202`, `400`, `404`, `409` |
-| `GET` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN | 사건별 분석 작업 목록 | `200`, `404` |
-| `GET` | `/admin/analysis-jobs/{jobId}` | ADMIN | 작업 상세 조회 | `200`, `404` |
-| `POST` | `/admin/analysis-jobs/{jobId}/retry` | ADMIN | 실패 작업 재시도 | `202`, `404`, `409` |
+| `POST` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN 세션 | 녹화 영상 분석 작업 생성 | `202`, `400`, `404`, `409` |
+| `GET` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN 세션 | 사건별 분석 작업 목록 | `200`, `404` |
+| `GET` | `/admin/analysis-jobs/{jobId}` | ADMIN 세션 | 작업 상세 조회 | `200`, `404` |
+| `POST` | `/admin/analysis-jobs/{jobId}/retry` | ADMIN 세션 | 실패 작업 재시도 | `202`, `404`, `409` |
 
 작업 생성 요청:
 
@@ -809,7 +1060,7 @@
 
 `GET /api/v1/admin/audit-logs`
 
-인증: ADMIN
+인증: ADMIN 세션
 주요 응답: `200`, `400`, `401`, `403`
 
 | 쿼리 파라미터 | 필수 | 설명 |
@@ -854,12 +1105,28 @@
 | `REPORTERS` | 신고 접수, 사건조회번호·전화번호 기반 진행 조회 | `REPORTERS 1:N CASES` |
 | `CASES` | 신고 접수, 관리자 사건 관리, 신고자 진행 조회 | 탐색 조건·후보·작업·로그의 기준 사건 |
 | `SEARCH_CONDITIONS` | `/admin/cases/{caseId}/search-conditions` | `CASES 1:N SEARCH_CONDITIONS` |
-| `CAMERAS` | 관리자 카메라 관리, Heartbeat, 후보 이벤트 | 녹화·후보의 촬영 카메라 |
+| `MEDIA_SERVERS` | 관리자 미디어 서버 관리, Device Key 인증·교체 | `MEDIA_SERVERS 1:N CAMERAS` |
+| `CAMERAS` | 관리자 카메라 관리, Heartbeat, 후보 이벤트 | 미디어 서버 소속이며 녹화·후보의 촬영 카메라 |
 | `CASE_CAMERAS` | 사건별 카메라 지정·제외 | `CASES N:M CAMERAS` 연결 및 활성 여부 |
 | `RECORDINGS` | 장치 녹화 메타데이터 등록, 관리자 녹화 조회 | `CAMERAS 1:N RECORDINGS` |
 | `CANDIDATES` | 후보 이벤트 등록, 관리자 후보 조회·판정, 동선 | 사건·카메라·검토 관리자 참조 |
 | `ANALYSIS_JOBS` | 분석 작업 생성·조회·재시도, 클립 생성 내부 처리 | 사건 및 녹화본 또는 후보 참조 |
 | `AUDIT_LOGS` | 감사 로그 조회, 모든 주요 변경의 내부 기록 | 관리자·사건과 선택적 연결 |
+
+`MEDIA_SERVERS` 주요 컬럼:
+
+| 컬럼 | 제약·설명 |
+| --- | --- |
+| `id` | 내부 숫자 ID, PK |
+| `server_code` | 외부 식별자, UNIQUE |
+| `name` | 관리자 표시 이름 |
+| `device_key_id` | Device Key의 공개 조회 식별자, UNIQUE |
+| `device_key_hash` | `randomSecret`의 bcrypt 또는 Argon2 계열 해시 |
+| `status` | `ACTIVE`, `INACTIVE`, `REVOKED` |
+| `last_authenticated_at` | 최근 Device Key 인증 성공 시각, nullable |
+| `created_at`, `updated_at` | 생성·수정 시각 |
+
+`CAMERAS.media_server_id`는 `MEDIA_SERVERS.id`를 참조하는 필수 FK다. Device Key는 카메라가 아닌 미디어 서버에만 저장하며 관계는 `MEDIA_SERVERS 1:N CAMERAS 1:N RECORDINGS`다.
 
 ---
 
@@ -869,9 +1136,13 @@
 | --- | --- |
 | 탐색 종료가 시작보다 빠름 | `400 VALIDATION_ERROR` |
 | 탐색 카메라 없이 분석 작업 요청 | `422 BUSINESS_RULE_VIOLATION` |
-| 미등록 Device Key로 Heartbeat 또는 후보 전송 | `401 INVALID_DEVICE_KEY` |
-| Device Key와 다른 `cameraCode` 사용 | `403 ACCESS_DENIED` |
-| 동일 후보 이벤트 재전송 | 최초 생성 결과를 `200`과 `duplicate=true`로 반환 |
+| Device Key 헤더 누락 | `401 AUTHENTICATION_REQUIRED` |
+| Device Key 형식 오류·미등록 ID·secret 불일치·비활성 또는 폐기 서버 | 상세 원인을 숨기고 `401 INVALID_DEVICE_KEY` 반환 |
+| 다른 미디어 서버 소속 `cameraCode` 또는 `recordingId` 사용 | `403 ACCESS_DENIED` |
+| 동일 녹화·후보 요청 재전송 | 최초 생성 결과를 `200`과 `duplicate=true`로 반환 |
+| 같은 Idempotency-Key에 다른 요청 내용 사용 | `409 IDEMPOTENCY_KEY_CONFLICT` |
+| 다른 Idempotency-Key로 같은 `objectKey` 등록 | `409 DUPLICATE_RESOURCE` |
+| Device 인증 실패 또는 요청 속도 제한 초과 | `429 RATE_LIMIT_EXCEEDED` |
 | 후보 판정 `version` 불일치 | `409 OPTIMISTIC_LOCK_CONFLICT`와 최신 후보 정보 반환 |
 | 존재하지 않는 사건·카메라·후보 요청 | `404 RESOURCE_NOT_FOUND` |
 | 실행 중인 작업 또는 미처리 후보가 있는 사건 종료 | `409 CASE_CLOSE_CONFLICT` |
@@ -884,8 +1155,15 @@
 ## 13. 구현 참고사항
 
 - 서버 저장 일시는 모두 UTC를 사용하고 화면에서 KST 등 사용자 시간대로 변환한다.
-- 관리자 JWT의 비밀번호 검증은 단방향 해시를 사용하며 평문 비밀번호를 저장하거나 로그에 남기지 않는다.
+- 관리자 비밀번호 검증은 단방향 해시를 사용하며 평문 비밀번호를 저장하거나 로그에 남기지 않는다.
+- 관리자 API는 Stateful 세션 인증을, Device API는 Stateless Device Key 인증을 사용한다. Device API는 세션을 생성하지 않으며 CSRF 검사에서 제외한다.
+- Device Key 인증 필터 또는 AuthenticationProvider는 헤더 파싱, 미디어 서버 조회, 상태·secret 검증과 `MediaServerPrincipal` 생성을 담당한다.
+- 서비스 계층은 카메라·녹화 소유권과 업무 규칙을 검증한다. 인증 로직과 리소스 소유권 검사를 한 계층에 혼합하지 않는다.
+- Device API는 HTTPS로만 제공하며 Device Key 원문은 최초 발급·교체 시 한 번만 전달하고 DB·소스 코드·Git·요청 및 오류 로그에 저장하지 않는다.
+- 미디어 서버에서는 Device Key를 환경 변수, 실행 계정만 읽을 수 있는 설정 파일 또는 systemd credential로 관리한다.
+- 미디어 서버당 활성 Device Key 하나만 지원하며 키 교체 즉시 이전 키를 무효화한다. 무중단 교체나 키 이력이 필요하면 별도 credentials 테이블을 도입한다.
 - 후보 판정은 `CANDIDATES.version`을 이용한 낙관적 락으로 동시 수정을 방지한다.
 - 후보 이미지·클립·녹화본 저장 실패 시 DB와 객체 저장소 사이의 보상 처리를 수행한다.
-- 장치 Heartbeat의 `OFFLINE` 판정 시간, 관리자 JWT 만료 시간, 임시 미디어 URL 만료 시간, 조회 Rate Limit과 파일 용량은 환경 설정으로 관리한다.
+- 관리자 세션 만료 시간은 현재 30분이며 애플리케이션 설정으로 관리한다.
+- 로그인·사건 진행 조회 Rate Limit은 현재 애플리케이션 상수로 적용한다. 장치 Heartbeat의 `OFFLINE` 판정 시간, 임시 미디어 URL 만료 시간과 파일 용량은 환경 설정으로 관리한다.
 - REST 조회 API는 WebSocket 연결이 끊긴 동안 발생한 후보와 상태 변경을 복구 조회하는 기준 데이터로 사용한다.
