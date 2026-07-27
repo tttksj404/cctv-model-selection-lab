@@ -70,6 +70,11 @@ input::placeholder, textarea::placeholder { color: #98a2b3; }
 .input-suffix { position: relative; }
 .input-suffix input { padding-right: 40px; }
 .input-suffix > span { position: absolute; top: 50%; right: 14px; color: var(--text-secondary); font-size: 13px; font-weight: 500; transform: translateY(-50%); }
+.datetime-field { position: relative; }
+.datetime-input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; min-height: 52px; opacity: 0; cursor: pointer; }
+.datetime-display { display: flex; align-items: center; min-height: 52px; padding: 12px 48px 12px 14px; border: 1px solid #cfd6e1; border-radius: 8px; color: var(--text-primary); background-color: white; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Crect x='3.5' y='4.5' width='13' height='12' rx='1.5' stroke='%23667085' stroke-width='1.5'/%3E%3Cpath d='M6 3v3M14 3v3M4 8h12' stroke='%23667085' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; font-family: inherit; font-size: 16px; font-weight: 400; }
+.datetime-display.empty { color: #98a2b3; }
+.datetime-field:focus-within .datetime-display { border-color: var(--primary); box-shadow: 0 0 0 3px rgb(49 91 199 / 10%); }
 .monospace { font-family: ui-monospace, monospace; }
 .missing-form { margin-top: 12px; }
 .section-divider { display: flex; align-items: center; gap: 12px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
@@ -106,8 +111,21 @@ input::placeholder, textarea::placeholder { color: #98a2b3; }
 .zone-summary button.active { background: var(--primary-light); }
 .zone-summary strong { display: block; color: #344054; font-size: 15px; }
 .zone-summary span { display: block; margin-top: 3px; overflow-wrap: anywhere; color: #5f6d80; font-size: 14px; }
-.option-panel { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: #fafbfc; }
+.option-panel { display: flex; flex-direction: column; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
 .option-panel > strong { font-size: 15px; }
+.option-group { display: flex; flex-direction: column; gap: 10px; }
+.feature-options, .selected-appearance-list, .custom-appearance { padding: 14px; border: 1px solid #e2e8f0; border-radius: 9px; background: white; }
+.option-section-title { display: block; color: #344054; font-size: 14px; font-weight: 750; }
+.feature-options .option-section-title { margin-bottom: 1px; }
+.selected-appearance-list { display: flex; flex-direction: column; gap: 10px; }
+.selected-appearance-list .option-section-title { padding-bottom: 9px; border-bottom: 1px solid #edf0f4; }
+.selected-appearance-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 120px auto; align-items: center; gap: 8px; }
+.appearance-feature-name { width: fit-content; padding: 6px 10px; border: 1px solid #dbe5fb; border-radius: 7px; color: #315bc7; background: #f3f6ff; font-size: 13px; font-weight: 700; }
+.selected-appearance-row select { min-height: 42px; padding: 8px 34px 8px 10px; font-size: 14px; }
+.selection-spacer { min-height: 42px; }
+.custom-appearance { gap: 10px; }
+.remove-appearance { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; color: #667085; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; }
+.remove-appearance:hover { color: #d92d20; background: #fff1f0; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips button { padding: 8px 14px; border: 1px solid #cfd6e1; border-radius: 8px; color: #475467; background: white; font-size: 14px; cursor: pointer; }
 .chips button.selected { border-color: var(--primary); color: var(--primary); background: var(--primary-light); font-weight: 600; }
@@ -178,6 +196,7 @@ input::placeholder, textarea::placeholder { color: #98a2b3; }
 @media (max-width: 380px) {
   .appearance-picker { gap: 8px; }
   .person-figure { width: 100px; }
+  .selected-appearance-row { grid-template-columns: minmax(0, 1fr) 105px 105px auto; gap: 5px; }
   .code-row > strong { font-size: 20px; }
   .progress-steps li { gap: 6px; font-size: 12px; }
 }

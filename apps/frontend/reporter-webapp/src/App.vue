@@ -3,10 +3,22 @@ import { computed, nextTick, reactive, ref, watch } from "vue";
 
 const ZONE_OPTIONS = {
   head: ["안경", "선글라스", "마스크", "모자", "긴머리", "짧은머리", "묶은머리", "곱슬머리", "흰머리", "대머리", "수염", "점·흉터"],
-  top: ["티셔츠", "셔츠", "후드티", "니트", "가디건", "조끼", "재킷", "점퍼", "패딩", "코트", "정장", "한복"],
-  bottom: ["청바지", "면바지", "슬랙스", "반바지", "치마", "레깅스", "트레이닝복", "작업복", "정장바지", "한복"],
+  top: ["티셔츠", "셔츠", "후드티", "니트", "가디건", "조끼", "재킷", "점퍼", "패딩", "코트", "정장"],
+  bottom: ["청바지", "면바지", "슬랙스", "반바지", "치마", "레깅스", "트레이닝복", "작업복", "정장바지"],
   shoes: ["운동화", "구두", "로퍼", "샌들", "슬리퍼", "부츠", "장화", "등산화", "안전화", "맨발"],
 };
+
+const FORM_OPTIONS = {
+  head: [],
+  top: ["긴팔", "반팔", "민소매"],
+  bottom: ["긴바지", "7부바지", "긴치마", "짧은치마"],
+  shoes: [],
+};
+
+const COLOR_OPTIONS = [
+  "검정", "흰색", "회색", "빨강", "주황", "노랑", "초록", "파랑",
+  "남색", "보라", "분홍", "갈색", "베이지", "아이보리", "하늘색",
+];
 
 const ZONE_LABELS = {
   head: "머리 · 얼굴",
@@ -39,13 +51,14 @@ const submittedPhone = ref("");
 const lookupResultVisible = ref(false);
 const lookupError = ref("");
 const appearance = reactive({ head: [], top: [], bottom: [], shoes: [] });
+const appearanceForms = reactive({ head: {}, top: {}, bottom: {}, shoes: {} });
+const appearanceColors = reactive({ head: {}, top: {}, bottom: {}, shoes: {} });
 const appearanceNotes = reactive({ head: "", top: "", bottom: "", shoes: "" });
 const reporter = reactive({ phone: "", emailLocal: "", emailDomain: "" });
 const missing = reactive({
   name: "",
   gender: "",
   ageGroup: "",
-  description: "",
   lastSeenTime: "",
   lastSeenPlace: "",
 });
@@ -57,8 +70,12 @@ let kakaoMarker;
 
 const KAKAO_MAP_APP_KEY = import.meta.env.VITE_KAKAO_MAP_APP_KEY || "";
 
-const activeOptions = computed(() =>
+const activeFeatureOptions = computed(() =>
   activeZone.value ? ZONE_OPTIONS[activeZone.value] : [],
+);
+
+const activeFormOptions = computed(() =>
+  activeZone.value ? FORM_OPTIONS[activeZone.value] : [],
 );
 
 const reportTabActive = computed(() => activeScreen.value !== "status");
@@ -72,6 +89,17 @@ const pageDescription = computed(() =>
     ? "접수 시 발급받은 조회번호로 진행 상태를 확인하세요."
     : "관제실 탐색에 필요한 정보를 입력해 주세요.",
 );
+
+const lastSeenTimeDisplay = computed(() => {
+  if (!missing.lastSeenTime) return "";
+  const [date, time] = missing.lastSeenTime.split("T");
+  const [year, month, day] = date.split("-");
+  const [hour, minute] = time.split(":");
+  const hourNumber = Number(hour);
+  const period = hourNumber < 12 ? "오전" : "오후";
+  const displayHour = String(hourNumber % 12 || 12).padStart(2, "0");
+  return `${year}년 ${month}월 ${day}일 ${period} ${displayHour}시 ${minute}분`;
+});
 
 const kakaoMapSearchUrl = computed(() =>
   `https://map.kakao.com/link/search/${encodeURIComponent(missing.lastSeenPlace.trim())}`,
@@ -150,14 +178,35 @@ function toggleOption(option) {
   const values = appearance[activeZone.value];
   const index = values.indexOf(option);
   if (index === -1) values.push(option);
-  else values.splice(index, 1);
+  else {
+    values.splice(index, 1);
+    delete appearanceColors[activeZone.value][option];
+  }
+}
+
+function appearanceItems(zone) {
+  const selected = appearance[zone];
+  return selected.map((feature) => ({
+    key: feature,
+    label: feature,
+  }));
 }
 
 function appearanceSummary(zone) {
-  const values = [...appearance[zone]];
+  const values = appearanceItems(zone).map(({ key, label }) =>
+    appearanceColors[zone][key]
+      ? `${label} (${appearanceColors[zone][key]})`
+      : label,
+  );
   const note = appearanceNotes[zone].trim();
   if (note) values.push(note);
   return values.length ? values.join(", ") : "선택 안 함";
+}
+
+function removeAppearance(feature) {
+  if (activeZone.value && appearance[activeZone.value].includes(feature)) {
+    toggleOption(feature);
+  }
 }
 
 function choosePhoto() {
@@ -405,32 +454,54 @@ async function copyCode() {
 
             <div v-if="activeZone" class="option-panel">
               <strong>{{ ZONE_LABELS[activeZone] }} 선택 (중복 가능)</strong>
-              <div class="chips">
-                <button
-                  v-for="option in activeOptions"
-                  :key="option"
-                  type="button"
-                  :class="{ selected: appearance[activeZone].includes(option) }"
-                  @click="toggleOption(option)"
+              <div class="option-group feature-options">
+                <span class="option-section-title">특징 선택</span>
+                <div class="chips">
+                  <button
+                    v-for="option in activeFeatureOptions"
+                    :key="option"
+                    type="button"
+                    :class="{ selected: appearance[activeZone].includes(option) }"
+                    @click="toggleOption(option)"
+                  >
+                    {{ option }}
+                  </button>
+                </div>
+              </div>
+              <div v-if="appearance[activeZone].length" class="selected-appearance-list">
+                <span class="option-section-title">선택한 특징 설정</span>
+                <div
+                  v-for="item in appearanceItems(activeZone)"
+                  :key="item.key"
+                  class="selected-appearance-row"
                 >
-                  {{ option }}
-                </button>
+                  <span class="appearance-feature-name">{{ item.label }}</span>
+                  <select
+                    v-if="activeFormOptions.length"
+                    v-model="appearanceForms[activeZone][item.key]"
+                    :aria-label="`${item.key} 형태 선택`"
+                  >
+                    <option value="">형태 선택</option>
+                    <option v-for="form in activeFormOptions" :key="form" :value="form">{{ form }}</option>
+                  </select>
+                  <span v-else class="selection-spacer" aria-hidden="true" />
+                  <select v-model="appearanceColors[activeZone][item.key]" :aria-label="`${item.label} 색상 선택`">
+                    <option value="">색상 선택</option>
+                    <option v-for="color in COLOR_OPTIONS" :key="color" :value="color">{{ color }}</option>
+                  </select>
+                  <button class="remove-appearance" type="button" :aria-label="`${item.key} 삭제`" @click="removeAppearance(item.key)">×</button>
+                </div>
               </div>
               <label class="custom-appearance">
-                <span>목록에 없는 특징 직접 입력</span>
-                <input v-model="appearanceNotes[activeZone]" type="text" :placeholder="`${ZONE_LABELS[activeZone]}의 색상, 무늬, 특징을 입력하세요`" />
+                <span class="option-section-title">목록에 없는 특징이나 색상 직접 입력</span>
+                <input v-model="appearanceNotes[activeZone]" type="text" :placeholder="`${ZONE_LABELS[activeZone]}의 무늬, 특징 또는 기타 색상을 입력하세요`" />
               </label>
             </div>
-
-            <label>
-              추가 설명 (색상, 특징 등)
-              <textarea v-model="missing.description" rows="3" placeholder="예: 회색 지팡이를 짚고 걸음, 오른쪽 다리를 절음" />
-            </label>
             </article>
 
             <article class="card">
             <h2>마지막 목격 정보</h2>
-            <label><span class="label-row"><span>마지막 목격 시각 <b>*</b></span></span><input v-model="missing.lastSeenTime" class="monospace" type="datetime-local" required /></label>
+            <label><span class="label-row"><span>마지막 목격 시각 <b>*</b></span></span><div class="datetime-field"><input v-model="missing.lastSeenTime" class="datetime-input" type="datetime-local" required /><span class="datetime-display" :class="{ empty: !missing.lastSeenTime }">{{ lastSeenTimeDisplay || "연/월/일 오전(오후) 시 분" }}</span></div></label>
             <label><span class="label-row"><span>마지막 목격 장소 <b>*</b></span></span><input v-model="missing.lastSeenPlace" type="text" placeholder="서울시 강남구 테헤란로 152" required /></label>
             <div v-if="missing.lastSeenPlace.trim()" class="map-block">
               <div ref="mapContainer" class="kakao-map" :class="{ fallback: !KAKAO_MAP_APP_KEY }">
