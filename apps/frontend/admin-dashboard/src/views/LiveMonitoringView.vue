@@ -7,8 +7,8 @@ const streams = [
   {
     id: "webrtc-camera-01",
     cameraName: "CCTV-01",
-    protocol: "WebRTC",
-    url: "http://70.12.108.93:8889/camera-01/whep",
+    protocol: "HLS",
+    url: "http://70.12.108.93:8888/camera-01?controls=false&muted=true&autoplay=true&playsinline=true&disablepictureinpicture=true",
     latitude: "37.5010000",
     longitude: "127.0390000",
     address: "강남구 테헤란로 152",
@@ -16,18 +16,32 @@ const streams = [
     lastHeartbeat: "09:52:11"
   },
   {
-    id: "empty-top-right",
-    empty: true
+    id: "webrtc-camera-02",
+    cameraName: "CCTV-02",
+    protocol: "HLS",
+    url: "http://70.12.108.93:8888/camera-02?controls=false&muted=true&autoplay=true&playsinline=true&disablepictureinpicture=true",
+    latitude: "37.5030000",
+    longitude: "127.0420000",
+    address: "媛뺣궓援??곷궪濡?21",
+    status: "ONLINE",
+    lastHeartbeat: "09:52:09"
   },
   {
-    id: "empty-bottom-left",
-    empty: true
+    id: "hls-camera-03",
+    cameraName: "CCTV-03",
+    protocol: "HLS",
+    url: "http://70.12.108.93:8888/camera-03?controls=false&muted=true&autoplay=true&playsinline=true&disablepictureinpicture=true",
+    latitude: "-",
+    longitude: "-",
+    address: "-",
+    status: "ONLINE",
+    lastHeartbeat: "-"
   },
   {
     id: "webrtc-camera-04",
     cameraName: "CCTV-04",
-    protocol: "WebRTC",
-    url: "http://70.12.108.93:8889/camera-04/whep",
+    protocol: "HLS",
+    url: "http://70.12.108.93:8888/camera-04?controls=false&muted=true&autoplay=true&playsinline=true&disablepictureinpicture=true",
     latitude: "37.5080000",
     longitude: "127.0350000",
     address: "강남구 봉은사로 78",
