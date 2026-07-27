@@ -7,46 +7,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
-import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.mediaserver.domain.MediaServer;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @ActiveProfiles("test")
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
 @AutoConfigureMockMvc
-@Import(DeviceKeyAuthenticationApiTests.DeviceTestConfiguration.class)
 class DeviceKeyAuthenticationApiTests {
 
 	private static final String KEY_ID = "0123456789abcdef";
 	private static final String SECRET =
 			"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 	private static final String DEVICE_KEY = "msk_" + KEY_ID + "." + SECRET;
-	private static final String ENDPOINT = "/api/v1/device/cameras/camera-01/recordings";
+	private static final String ENDPOINT = "/api/v1/device/media-server/ping";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -73,7 +64,7 @@ class DeviceKeyAuthenticationApiTests {
 
 	@Test
 	void missingDeviceKeyReturnsAuthenticationRequired() throws Exception {
-		mockMvc.perform(post(ENDPOINT))
+		mockMvc.perform(get(ENDPOINT))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
 	}
@@ -88,7 +79,7 @@ class DeviceKeyAuthenticationApiTests {
 		session.setAttribute(
 				HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 
-		mockMvc.perform(post(ENDPOINT).session(session))
+		mockMvc.perform(get(ENDPOINT).session(session))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
 	}
@@ -117,11 +108,12 @@ class DeviceKeyAuthenticationApiTests {
 
 	@Test
 	void validKeyCreatesPrincipalWithoutSessionOrCsrf() throws Exception {
-		MvcResult result = mockMvc.perform(post(ENDPOINT)
+		MvcResult result = mockMvc.perform(get(ENDPOINT)
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.mediaServerId").value(7))
-				.andExpect(jsonPath("$.serverCode").value("rpi5-media-01"))
+				.andExpect(jsonPath("$.data.authenticated").value(true))
+				.andExpect(jsonPath("$.data.mediaServerId").value(7))
+				.andExpect(jsonPath("$.data.serverCode").value("rpi5-media-01"))
 				.andReturn();
 
 		org.junit.jupiter.api.Assertions.assertNull(result.getRequest().getSession(false));
@@ -146,36 +138,17 @@ class DeviceKeyAuthenticationApiTests {
 		when(mediaServerMapper.findByDeviceKeyId(KEY_ID))
 				.thenThrow(new DataAccessResourceFailureException("database unavailable"));
 
-		mockMvc.perform(post(ENDPOINT)
+		mockMvc.perform(get(ENDPOINT)
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY))
 				.andExpect(status().isServiceUnavailable())
 				.andExpect(jsonPath("$.code").value("AUTHENTICATION_UNAVAILABLE"));
 	}
 
 	private void assertInvalid(String value) throws Exception {
-		mockMvc.perform(post(ENDPOINT)
+		mockMvc.perform(get(ENDPOINT)
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, value))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("INVALID_DEVICE_KEY"));
 	}
 
-	@TestConfiguration
-	static class DeviceTestConfiguration {
-
-		@Bean
-		DeviceTestController deviceTestController() {
-			return new DeviceTestController();
-		}
-	}
-
-	@RestController
-	static class DeviceTestController {
-
-		@PostMapping(ENDPOINT)
-		Map<String, Object> recording(@AuthenticationPrincipal MediaServerPrincipal principal) {
-			return Map.of(
-					"mediaServerId", principal.mediaServerId(),
-					"serverCode", principal.serverCode());
-		}
-	}
 }
