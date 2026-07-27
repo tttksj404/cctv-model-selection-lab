@@ -82,8 +82,13 @@ export const monthlyChartSeries = [
 ];
 
 export const scanJobs = [
-  { id: "scan-1001", caseNumber: "CASE-2026-0417", camera: "CCTV-01~04", range: "07-21 09:00~14:00", status: "searching", progress: 82, createdAt: "14:05", finishedAt: "" },
-  { id: "scan-1002", caseNumber: "CASE-2026-0416", camera: "CCTV-09~11", range: "07-21 07:00~12:00", status: "closed", progress: 100, createdAt: "12:20", finishedAt: "13:02" },
+  { id: "scan-1001-01", caseNumber: "CASE-2026-0417", camera: "CCTV-01", range: "07-21 09:00~14:00", status: "searching", progress: 82, createdAt: "14:05", finishedAt: "" },
+  { id: "scan-1001-02", caseNumber: "CASE-2026-0417", camera: "CCTV-02", range: "07-21 09:00~14:00", status: "searching", progress: 76, createdAt: "14:05", finishedAt: "" },
+  { id: "scan-1001-03", caseNumber: "CASE-2026-0417", camera: "CCTV-03", range: "07-21 09:00~14:00", status: "closed", progress: 100, createdAt: "14:05", finishedAt: "15:21" },
+  { id: "scan-1001-04", caseNumber: "CASE-2026-0417", camera: "CCTV-04", range: "07-21 09:00~14:00", status: "candidate_found", progress: 100, createdAt: "14:05", finishedAt: "15:26" },
+  { id: "scan-1002-09", caseNumber: "CASE-2026-0416", camera: "CCTV-09", range: "07-21 07:00~12:00", status: "closed", progress: 100, createdAt: "12:20", finishedAt: "13:02" },
+  { id: "scan-1002-10", caseNumber: "CASE-2026-0416", camera: "CCTV-10", range: "07-21 07:00~12:00", status: "closed", progress: 100, createdAt: "12:20", finishedAt: "13:02" },
+  { id: "scan-1002-11", caseNumber: "CASE-2026-0416", camera: "CCTV-11", range: "07-21 07:00~12:00", status: "failed", progress: 47, createdAt: "12:20", finishedAt: "" },
   { id: "scan-1003", caseNumber: "CASE-2026-0415", camera: "CCTV-04", range: "07-20 13:00~18:00", status: "failed", progress: 47, createdAt: "10:11", finishedAt: "" }
 ];
 

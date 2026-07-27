@@ -7,12 +7,20 @@ import StatusBadge from "../components/common/StatusBadge.vue";
 const router = useRouter();
 const cases = ref([]);
 const jobs = ref([]);
-const form = ref({ caseNumber: "", searchArea: "", fromDate: "", fromTime: "", toDate: "", toTime: "" });
+const getMidnight = () => {
+  const now = new Date();
+  const date = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return `${date.toISOString().slice(0, 10)}T00:00`;
+};
+const form = ref({ caseNumber: "", searchArea: "", fromAt: getMidnight(), toAt: getMidnight() });
 const caseDropdownOpen = ref(false);
 const cancelTarget = ref(null);
 const cancelModalOpen = ref(false);
 
-const selectedCase = computed(() => cases.value.find((item) => item.caseNumber === form.value.caseNumber) || cases.value[0]);
+const selectedCase = computed(() => cases.value.find((item) => item.caseNumber === form.value.caseNumber));
+const visibleJobs = computed(() => form.value.caseNumber
+  ? jobs.value.filter((job) => job.caseNumber === form.value.caseNumber)
+  : jobs.value);
 
 onMounted(async () => {
   cases.value = await getCases();
@@ -24,9 +32,14 @@ const selectCase = (caseItem) => {
   caseDropdownOpen.value = false;
 };
 
+const selectAllCases = () => {
+  form.value.caseNumber = "";
+  caseDropdownOpen.value = false;
+};
+
 const requestSearch = () => {
-  const from = [form.value.fromDate, form.value.fromTime].filter(Boolean).join(" ");
-  const to = [form.value.toDate, form.value.toTime].filter(Boolean).join(" ");
+  const from = form.value.fromAt;
+  const to = form.value.toAt;
 
   jobs.value.unshift({
     id: `scan-${Date.now()}`,
@@ -38,6 +51,14 @@ const requestSearch = () => {
     createdAt: "now",
     finishedAt: ""
   });
+  const [createdJob] = jobs.value;
+  const cameras = ["CCTV-01", "CCTV-02", "CCTV-03", "CCTV-04"];
+  createdJob.camera = cameras[0];
+  jobs.value.unshift(...cameras.slice(1).map((camera, index) => ({
+    ...createdJob,
+    id: `${createdJob.id}-${String(index + 2).padStart(2, "0")}`,
+    camera
+  })));
 };
 
 const openCandidateReview = (job) => {
@@ -66,9 +87,12 @@ const cancelJob = () => {
           사건
           <div class="case-picker">
             <button type="button" class="case-picker-trigger" @click="caseDropdownOpen = !caseDropdownOpen">
-              {{ selectedCase?.caseNumber || "사건 선택" }}
+              {{ selectedCase?.caseNumber || "전체 사건" }}
             </button>
             <div v-if="caseDropdownOpen" class="case-picker-menu">
+              <button type="button" class="case-picker-option" @click="selectAllCases">
+                <span>전체 사건</span>
+              </button>
               <button v-for="c in cases" :key="c.id" type="button" class="case-picker-option" @click="selectCase(c)">
                 <span>{{ c.caseNumber }}</span>
                 <div class="case-hover-card">
@@ -91,15 +115,13 @@ const cancelJob = () => {
         <label>
           시작
           <div class="custom-datetime">
-            <input v-model="form.fromDate" type="date" />
-            <input v-model="form.fromTime" type="time" />
+            <input v-model="form.fromAt" type="datetime-local" />
           </div>
         </label>
         <label>
           종료
           <div class="custom-datetime">
-            <input v-model="form.toDate" type="date" />
-            <input v-model="form.toTime" type="time" />
+            <input v-model="form.toAt" type="datetime-local" />
           </div>
         </label>
         <button class="search-button" @click="requestSearch">탐색 요청</button>
@@ -107,7 +129,7 @@ const cancelJob = () => {
     </div>
 
     <div class="job-list">
-      <article v-for="job in jobs" :key="job.id" class="job-card">
+      <article v-for="job in visibleJobs" :key="job.id" class="job-card">
         <div class="job-card-head">
           <strong>{{ job.id }}</strong>
           <StatusBadge :status="job.status" />
