@@ -7,6 +7,7 @@ import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper.AdminInsertCommand;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
+import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,9 @@ class MySqlPersistenceIntegrationTests {
 	private AuditLogMapper auditLogMapper;
 
 	@Autowired
+	private MediaServerMapper mediaServerMapper;
+
+	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	@Test
@@ -58,6 +62,44 @@ class MySqlPersistenceIntegrationTests {
 		adminMapper.insert(command);
 		assertTrue(command.getId() > 0);
 		assertEquals("admin", adminMapper.findById(command.getId()).orElseThrow().loginId());
+
+		jdbcTemplate.update("""
+				INSERT INTO media_servers
+				(server_code, name, device_key_id, device_key_hash, status)
+				VALUES (?, ?, ?, ?, 'ACTIVE')
+				""",
+				"rpi5-media-01",
+				"Raspberry Pi 5 Media Server",
+				"0123456789abcdef",
+				"{bcrypt}$2a$12$01234567890123456789012345678901234567890123456789012");
+		Long mediaServerId = mediaServerMapper.findByDeviceKeyId("0123456789abcdef")
+				.orElseThrow()
+				.id();
+		assertTrue(mediaServerId > 0);
+
+		jdbcTemplate.update("""
+				INSERT INTO cameras
+				(media_server_id, camera_name, camera_code, latitude, longitude, address, stream_url)
+				VALUES (?, 'Camera 01', 'camera-01', 37.5015, 127.0402, 'address', 'rtsp://camera/live')
+				""", mediaServerId);
+		assertEquals(
+				0,
+				jdbcTemplate.queryForObject("""
+						SELECT COUNT(*)
+						FROM information_schema.columns
+						WHERE table_schema = DATABASE()
+						  AND table_name = 'cameras'
+						  AND column_name = 'device_key_hash'
+						""", Integer.class));
+		assertEquals(
+				"NO",
+				jdbcTemplate.queryForObject("""
+						SELECT is_nullable
+						FROM information_schema.columns
+						WHERE table_schema = DATABASE()
+						  AND table_name = 'cameras'
+						  AND column_name = 'media_server_id'
+						""", String.class));
 
 		jdbcTemplate.update(
 				"INSERT INTO reporters (name, phone) VALUES (?, ?)", "Reporter", "01012345678");

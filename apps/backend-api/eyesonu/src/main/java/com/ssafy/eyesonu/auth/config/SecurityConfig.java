@@ -2,6 +2,8 @@ package com.ssafy.eyesonu.auth.config;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.service.AuditService;
+import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
+import com.ssafy.eyesonu.auth.device.MediaServerAuthenticationService;
 import com.ssafy.eyesonu.auth.security.AdminAuthenticationProvider;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.auth.security.SecurityErrorWriter;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
@@ -18,22 +21,24 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import tools.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -96,7 +101,44 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain securityFilterChain(
+	@Order(1)
+	SecurityFilterChain mediaServerSecurityFilterChain(
+			HttpSecurity http,
+			ObjectMapper objectMapper,
+			MediaServerAuthenticationService mediaServerAuthenticationService) throws Exception {
+		SecurityErrorWriter errors = new SecurityErrorWriter(objectMapper);
+		DeviceKeyAuthenticationFilter deviceKeyFilter = new DeviceKeyAuthenticationFilter(
+				mediaServerAuthenticationService, errors);
+
+		http
+				.securityMatcher(
+						"/api/v1/device/cameras/**",
+						"/api/v1/device/recordings/**")
+				.cors(cors -> cors.disable())
+				.csrf(csrf -> csrf.disable())
+				.httpBasic(basic -> basic.disable())
+				.formLogin(form -> form.disable())
+				.logout(logout -> logout.disable())
+				.requestCache(cache -> cache.disable())
+				.securityContext(context -> context
+						.securityContextRepository(new NullSecurityContextRepository()))
+				.sessionManagement(session -> session
+						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.exceptionHandling(exceptions -> exceptions
+						.authenticationEntryPoint((request, response, exception) -> errors.write(
+								response, 401, "AUTHENTICATION_REQUIRED", "미디어 서버 인증이 필요합니다."))
+						.accessDeniedHandler((request, response, exception) -> errors.write(
+								response, 403, "ACCESS_DENIED", "접근 권한이 없습니다.")))
+				.authorizeHttpRequests(authorize -> authorize
+						.anyRequest().hasRole("MEDIA_SERVER"))
+				.addFilterBefore(deviceKeyFilter, AnonymousAuthenticationFilter.class);
+
+		return http.build();
+	}
+
+	@Bean
+	@Order(2)
+	SecurityFilterChain applicationSecurityFilterChain(
 			HttpSecurity http,
 			ObjectMapper objectMapper,
 			SecurityContextRepository securityContextRepository,
