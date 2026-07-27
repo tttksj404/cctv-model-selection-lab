@@ -54,7 +54,7 @@ const appearance = reactive({ head: [], top: [], bottom: [], shoes: [] });
 const appearanceForms = reactive({ head: {}, top: {}, bottom: {}, shoes: {} });
 const appearanceColors = reactive({ head: {}, top: {}, bottom: {}, shoes: {} });
 const appearanceNotes = reactive({ head: "", top: "", bottom: "", shoes: "" });
-const reporter = reactive({ phone: "", emailLocal: "", emailDomain: "" });
+const reporter = reactive({ phone: "", emailLocal: "", emailDomain: "", emailCustomDomain: "" });
 const missing = reactive({
   name: "",
   gender: "",
@@ -366,7 +366,7 @@ async function copyCode() {
                 <div class="email-field">
                   <input v-model="reporter.emailLocal" type="text" inputmode="email" aria-label="이메일 아이디" />
                   <span aria-hidden="true">@</span>
-                  <select v-model="reporter.emailDomain" aria-label="이메일 도메인">
+                  <select v-if="reporter.emailDomain !== 'custom'" v-model="reporter.emailDomain" aria-label="이메일 도메인">
                     <option value="" disabled>도메인 선택</option>
                     <option value="naver.com">naver.com</option>
                     <option value="gmail.com">gmail.com</option>
@@ -374,7 +374,9 @@ async function copyCode() {
                     <option value="kakao.com">kakao.com</option>
                     <option value="hanmail.net">hanmail.net</option>
                     <option value="outlook.com">outlook.com</option>
+                    <option value="custom">직접 입력</option>
                   </select>
+                  <input v-else v-model="reporter.emailCustomDomain" type="text" inputmode="email" placeholder="직접 입력 (예: example.com)" aria-label="이메일 도메인 직접 입력" />
                 </div>
               </label>
             </article>
