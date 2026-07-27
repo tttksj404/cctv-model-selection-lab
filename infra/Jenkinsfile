@@ -121,23 +121,65 @@ pipeline {
 
         stage('Backend Deploy') {
             when {
-                expression { env.CAN_DEPLOY == 'true' && env.BACKEND_CHANGED == 'true' }
+                expression {
+                    env.CAN_DEPLOY == 'true' && env.BACKEND_CHANGED == 'true'
+                }
             }
             steps {
                 script {
-                    dir('apps/backend-api/eyesonu') {
-                        sh '''
-                            docker stop ${BACKEND_IMAGE} eyesforu-backend || true
-                            docker rm ${BACKEND_IMAGE} eyesforu-backend || true
-                            docker rmi ${BACKEND_IMAGE} || true
-                            docker build -t ${BACKEND_IMAGE} .
-                            docker run -d -p 127.0.0.1:${BACKEND_PORT}:8080 --name ${BACKEND_IMAGE} \
-                              -e TZ=Asia/Seoul \
-                              -e SPRING_PROFILES_ACTIVE=${BACKEND_PROFILE} \
-                              ${BACKEND_IMAGE}
-                        '''
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'eyesonu-db',
+                            usernameVariable: 'DB_USERNAME',
+                            passwordVariable: 'DB_PASSWORD'
+                        ),
+                        usernamePassword(
+                            credentialsId: 'eyesonu-rabbitmq',
+                            usernameVariable: 'RABBITMQ_USER',
+                            passwordVariable: 'RABBITMQ_PASSWORD'
+                        ),
+                        usernamePassword(
+                            credentialsId: 'eyesonu-s3',
+                            usernameVariable: 'S3_ACCESS_KEY',
+                            passwordVariable: 'S3_SECRET_KEY'
+                        )
+                    ]) {
+                        dir('apps/backend-api/eyesonu') {
+                            sh '''
+                                docker stop ${BACKEND_IMAGE} eyesforu-backend || true
+                                docker rm ${BACKEND_IMAGE} eyesforu-backend || true
+                                docker rmi ${BACKEND_IMAGE} || true
+
+                                docker build -t ${BACKEND_IMAGE} .
+
+                                docker run -d \
+                                -p 127.0.0.1:${BACKEND_PORT}:8080 \
+                                --name ${BACKEND_IMAGE} \
+                                --network eyesonu-local_backend \
+                                -e TZ=Asia/Seoul \
+                                -e SPRING_PROFILES_ACTIVE=${BACKEND_PROFILE} \
+                                -e DB_URL="jdbc:mysql://mysql:3306/eyesonu?serverTimezone=UTC&characterEncoding=UTF-8" \
+                                -e DB_USERNAME="$DB_USERNAME" \
+                                -e DB_PASSWORD="$DB_PASSWORD" \
+                                -e SPRING_RABBITMQ_HOST=rabbitmq \
+                                -e SPRING_RABBITMQ_PORT=5672 \
+                                -e SPRING_RABBITMQ_USERNAME="$RABBITMQ_USER" \
+                                -e SPRING_RABBITMQ_PASSWORD="$RABBITMQ_PASSWORD" \
+                                -e SPRING_RABBITMQ_VIRTUAL_HOST=/eyesonu \
+                                -e S3_ENDPOINT=http://minio:9000 \
+                                -e S3_ACCESS_KEY="$S3_ACCESS_KEY" \
+                                -e S3_SECRET_KEY="$S3_SECRET_KEY" \
+                                -e S3_BUCKET=eyesonu-media \
+                                -e S3_REGION=ap-northeast-2 \
+                                ${BACKEND_IMAGE}
+                            '''
+                        }
                     }
-                    env.DEPLOYED_SERVICES = env.DEPLOYED_SERVICES ? "${env.DEPLOYED_SERVICES}/백엔드" : '백엔드'
+
+                    env.DEPLOYED_SERVICES =
+                        env.DEPLOYED_SERVICES
+                            ? "${env.DEPLOYED_SERVICES}/백엔드"
+                            : '백엔드'
                 }
             }
         }
