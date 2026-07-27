@@ -97,8 +97,8 @@ const lastSeenTimeDisplay = computed(() => {
   const [hour, minute] = time.split(":");
   const hourNumber = Number(hour);
   const period = hourNumber < 12 ? "오전" : "오후";
-  const displayHour = String(hourNumber % 12 || 12).padStart(2, "0");
-  return `${year}년 ${month}월 ${day}일 ${period} ${displayHour}시 ${minute}분`;
+  const displayHour = hourNumber % 12 || 12;
+  return `${year}/${month}/${day} ${period} ${displayHour}:${minute}`;
 });
 
 const kakaoMapSearchUrl = computed(() =>
@@ -501,7 +501,7 @@ async function copyCode() {
 
             <article class="card">
             <h2>마지막 목격 정보</h2>
-            <label><span class="label-row"><span>마지막 목격 시각 <b>*</b></span></span><div class="datetime-field"><input v-model="missing.lastSeenTime" class="datetime-input" type="datetime-local" required /><span class="datetime-display" :class="{ empty: !missing.lastSeenTime }">{{ lastSeenTimeDisplay || "연/월/일 오전(오후) 시 분" }}</span></div></label>
+            <label><span class="label-row"><span>마지막 목격 시각 <b>*</b></span></span><div class="datetime-field"><input v-model="missing.lastSeenTime" class="datetime-input" type="datetime-local" required /><span class="datetime-display" :class="{ empty: !missing.lastSeenTime }">{{ lastSeenTimeDisplay || "년/월/일 오전(오후) 시:분" }}</span></div></label>
             <label><span class="label-row"><span>마지막 목격 장소 <b>*</b></span></span><input v-model="missing.lastSeenPlace" type="text" placeholder="서울시 강남구 테헤란로 152" required /></label>
             <div v-if="missing.lastSeenPlace.trim()" class="map-block">
               <div ref="mapContainer" class="kakao-map" :class="{ fallback: !KAKAO_MAP_APP_KEY }">
