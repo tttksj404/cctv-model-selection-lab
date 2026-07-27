@@ -43,8 +43,6 @@ const requestSearch = () => {
 const openCandidateReview = (job) => {
   router.push({ path: "/admin/candidates", query: { caseNumber: job.caseNumber } });
 };
-const pauseJob = (job) => { job.status = "paused"; };
-const resumeJob = (job) => { job.status = "searching"; };
 const requestCancel = (job) => { cancelTarget.value = job; cancelModalOpen.value = true; };
 const cancelJob = () => {
   if (cancelTarget.value) cancelTarget.value.status = "cancelled";
@@ -127,10 +125,8 @@ const cancelJob = () => {
         </div>
         <div class="job-card-actions">
           <button v-if="job.status === 'closed'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button>
-          <button v-if="job.status === 'searching'" class="ghost-button" @click="pauseJob(job)">일시정지</button>
-          <button v-if="job.status === 'paused'" class="primary-button" @click="resumeJob(job)">재시작</button>
           <button v-if="job.status === 'failed'" class="reset-button">재시도</button>
-          <button v-if="job.status === 'searching' || job.status === 'paused'" class="ghost-button" @click="requestCancel(job)">취소</button>
+          <button v-if="job.status === 'searching'" class="ghost-button" @click="requestCancel(job)">취소</button>
         </div>
       </article>
     </div>

@@ -5,7 +5,6 @@ export const statusMap = {
   candidate_found: { label: "후보 발견", tone: "rose" },
   closed: { label: "종료", tone: "gray" },
   failed: { label: "실패", tone: "red" },
-  paused: { label: "일시정지", tone: "amber" },
   cancelled: { label: "취소됨", tone: "gray" },
   online: { label: "정상", tone: "green" },
   unstable: { label: "연결 불안정", tone: "amber" },
