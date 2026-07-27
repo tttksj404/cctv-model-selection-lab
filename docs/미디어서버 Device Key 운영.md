@@ -56,6 +56,31 @@ X-Device-Key: msk_<keyId>.<secret>
 
 Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배포에서는 HTTPS로만 전송한다.
 
+### 임시 연결 테스트 API
+
+백엔드와 Device Key 연결을 확인하는 동안 다음 임시 API를 사용할 수 있다.
+
+```bash
+curl --fail-with-body \
+  -H "X-Device-Key: ${CENTRAL_API_DEVICE_KEY}" \
+  "${CENTRAL_API_BASE_URL}/api/v1/device/media-server/ping"
+```
+
+정상 응답 예시:
+
+```json
+{
+  "timestamp": "2026-07-27T06:00:00Z",
+  "data": {
+    "authenticated": true,
+    "mediaServerId": 1,
+    "serverCode": "rpi5-media-01"
+  }
+}
+```
+
+이 엔드포인트는 연동 확인 후 제거할 임시 API이며 Device Key 원문은 응답하지 않는다.
+
 ## 4. 비활성화와 교체
 
 키를 폐기할 때는 해당 `media_servers.status`를 `DISABLED`로 바꾼다. 비활성 서버의 요청은

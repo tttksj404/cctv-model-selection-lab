@@ -112,6 +112,7 @@ public class SecurityConfig {
 
 		http
 				.securityMatcher(
+						"/api/v1/device/media-server/**",
 						"/api/v1/device/cameras/**",
 						"/api/v1/device/recordings/**")
 				.cors(cors -> cors.disable())
