@@ -170,8 +170,6 @@ services:
       S3_BUCKET: ${DEV_S3_BUCKET:-eyesonu-media}
       S3_ACCESS_KEY: ${DEV_S3_ACCESS_KEY:?Set DEV_S3_ACCESS_KEY in infra/.env.deploy}
       S3_SECRET_KEY: ${DEV_S3_SECRET_KEY:?Set DEV_S3_SECRET_KEY in infra/.env.deploy}
-    volumes:
-      - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
     entrypoint:
       - /bin/sh
       - -c
@@ -181,7 +179,37 @@ services:
         mc mb --ignore-existing "local/$${S3_BUCKET}"
 
         mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        sed "s/eyesonu-media/$${S3_BUCKET}/g" /policies/eyesonu-app.json > /tmp/eyesonu-app.json
+        cat > /tmp/eyesonu-app.json <<EOF
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads"
+              ],
+              "Resource": [
+                "arn:aws:s3:::$${S3_BUCKET}"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:AbortMultipartUpload",
+                "s3:ListMultipartUploadParts"
+              ],
+              "Resource": [
+                "arn:aws:s3:::$${S3_BUCKET}/*"
+              ]
+            }
+          ]
+        }
+        EOF
         mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
         mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
         mc alias set app http://minio-dev:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
@@ -336,8 +364,6 @@ services:
       S3_BUCKET: ${MASTER_S3_BUCKET:-eyesonu-media}
       S3_ACCESS_KEY: ${MASTER_S3_ACCESS_KEY:?Set MASTER_S3_ACCESS_KEY in infra/.env.deploy}
       S3_SECRET_KEY: ${MASTER_S3_SECRET_KEY:?Set MASTER_S3_SECRET_KEY in infra/.env.deploy}
-    volumes:
-      - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
     entrypoint:
       - /bin/sh
       - -c
@@ -347,7 +373,37 @@ services:
         mc mb --ignore-existing "local/$${S3_BUCKET}"
 
         mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        sed "s/eyesonu-media/$${S3_BUCKET}/g" /policies/eyesonu-app.json > /tmp/eyesonu-app.json
+        cat > /tmp/eyesonu-app.json <<EOF
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads"
+              ],
+              "Resource": [
+                "arn:aws:s3:::$${S3_BUCKET}"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:AbortMultipartUpload",
+                "s3:ListMultipartUploadParts"
+              ],
+              "Resource": [
+                "arn:aws:s3:::$${S3_BUCKET}/*"
+              ]
+            }
+          ]
+        }
+        EOF
         mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
         mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
         mc alias set app http://minio-master:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
