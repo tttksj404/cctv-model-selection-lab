@@ -1,8 +1,12 @@
 package com.ssafy.eyesonu.recording.dto.admin;
 
-import com.ssafy.eyesonu.recording.domain.UploadStatus;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
-public record AdminRecordingSearchCondition(Long cameraId, UploadStatus uploadStatus,
-        LocalDateTime startFrom, LocalDateTime startTo) {
+public record AdminRecordingSearchCondition(
+        Long cameraId,
+        OffsetDateTime startFrom,
+        OffsetDateTime startTo,
+        int page,
+        int size,
+        String sort) {
 }

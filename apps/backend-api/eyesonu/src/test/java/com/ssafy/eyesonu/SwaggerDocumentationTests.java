@@ -1,6 +1,5 @@
 package com.ssafy.eyesonu;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -17,7 +16,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @ActiveProfiles("test")
 @SpringBootTest(
@@ -43,7 +41,7 @@ class SwaggerDocumentationTests {
 
 	@Test
 	void apiDocsExposeImplementedControllersAndFilterLogoutOnly() throws Exception {
-		MvcResult result = mockMvc.perform(get("/v3/api-docs"))
+		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.info.title").value("EyesOnU API"))
 				.andExpect(jsonPath("$.info.version").value("v1"))
@@ -53,6 +51,14 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].patch").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/cases/status-inquiries'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/logout'].post").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings/{recordingId}'].get").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].patch").doesNotExist())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/recordings/{recordingId}/upload-status']").doesNotExist())
 				.andExpect(jsonPath("$.components.schemas.ApiErrorResponse").exists())
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/auth/admin/login'].post.responses['200']"
@@ -67,10 +73,7 @@ class SwaggerDocumentationTests {
 						"$.paths['/api/v1/cases/status-inquiries'].post.responses['200']"
 								+ ".content['application/json'].schema['$ref']").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/csrf'].get.responses['204'].content")
-						.doesNotExist())
-				.andReturn();
-
-		assertFalse(result.getResponse().getContentAsString().contains("\"/api/v1/device/"));
+						.doesNotExist());
 	}
 
 	@Test
@@ -81,6 +84,10 @@ class SwaggerDocumentationTests {
 						.formatted(SwaggerConfig.SESSION_SCHEME)).value("EYESONU_SESSION"))
 				.andExpect(jsonPath("$.components.securitySchemes.%s.name"
 						.formatted(SwaggerConfig.CSRF_SCHEME)).value("X-XSRF-TOKEN"))
+				.andExpect(jsonPath("$.components.securitySchemes.%s.name"
+						.formatted(SwaggerConfig.DEVICE_KEY_SCHEME)).value("X-Device-Key"))
+				.andExpect(jsonPath("$.components.securitySchemes.%s.in"
+						.formatted(SwaggerConfig.DEVICE_KEY_SCHEME)).value("header"))
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/login'].post.security[0].%s"
 						.formatted(SwaggerConfig.CSRF_SCHEME)).isArray())
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].get.security[0].%s"
@@ -99,7 +106,86 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/auth/admin/logout'].post.responses['403']"
 								+ ".content['application/json'].schema['$ref']")
-						.value("#/components/schemas/ApiErrorResponse"));
+						.value("#/components/schemas/ApiErrorResponse"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.security[0].%s"
+								.formatted(SwaggerConfig.DEVICE_KEY_SCHEME)).isArray())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post"
+								+ ".parameters[1].name")
+						.value("Idempotency-Key"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post"
+								+ ".parameters[1].in")
+						.value("header"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post"
+								+ ".parameters[1].required")
+						.value(true))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['200']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['201']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['400']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['401']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['403']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['404']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['409']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['413']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['415']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['422']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['503']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['429']")
+						.doesNotExist());
+	}
+
+	@Test
+	void recordingSchemasMatchThePublishedContract() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.startTime")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.endTime")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.objectKey")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.fileSize")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.uploadStatus")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateResponse.properties.duplicate")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.AdminRecordingListResponse.properties.videoUrl")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.AdminRecordingDetailResponse.properties.videoUrl")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.AdminRecordingListResponse.properties.objectKey")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.AdminRecordingDetailResponse.properties.s3Key")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.PageMeta.properties.totalElements").exists())
+				.andExpect(jsonPath("$.components.schemas.PageMeta.properties.totalPages").exists());
 	}
 
 	@Test

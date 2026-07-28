@@ -111,10 +111,7 @@ public class SecurityConfig {
 				mediaServerAuthenticationService, errors);
 
 		http
-				.securityMatcher(
-						"/api/v1/device/media-server/**",
-						"/api/v1/device/cameras/**",
-						"/api/v1/device/recordings/**")
+				.securityMatcher("/api/v1/device/**")
 				.cors(cors -> cors.disable())
 				.csrf(csrf -> csrf.disable())
 				.httpBasic(basic -> basic.disable())

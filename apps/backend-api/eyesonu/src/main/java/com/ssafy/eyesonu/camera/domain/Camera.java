@@ -1,4 +1,4 @@
 package com.ssafy.eyesonu.camera.domain;
 
-public record Camera(Long id, String cameraCode) {
+public record Camera(Long id, Long mediaServerId, String cameraCode, String cameraName) {
 }

@@ -7,12 +7,38 @@
     <resultMap id="recordingResultMap" type="com.ssafy.eyesonu.recording.domain.Recording">
         <id property="id" column="id"/>
         <result property="cameraId" column="camera_id"/>
-        <result property="startTime" column="start_time"/>
-        <result property="endTime" column="end_time"/>
+        <result property="startTime" column="start_time"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+        <result property="endTime" column="end_time"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
         <result property="s3Key" column="s3_key"/>
         <result property="fileSize" column="file_size"/>
-        <result property="uploadStatus" column="upload_status" javaType="com.ssafy.eyesonu.recording.domain.UploadStatus"/>
-        <result property="createdAt" column="created_at"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="registrationResultMap"
+               type="com.ssafy.eyesonu.recording.domain.RecordingRegistrationResult">
+        <id property="mediaServerId" column="registration_media_server_id"/>
+        <id property="idempotencyKey" column="registration_idempotency_key"/>
+        <result property="requestFingerprint" column="registration_request_fingerprint"/>
+        <association property="recording" resultMap="recordingResultMap" columnPrefix="recording_"/>
+    </resultMap>
+
+    <resultMap id="adminRecordingRowResultMap"
+               type="com.ssafy.eyesonu.recording.domain.AdminRecordingRow">
+        <id property="id" column="id"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="cameraName" column="camera_name"/>
+        <result property="startTime" column="start_time"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+        <result property="endTime" column="end_time"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+        <result property="s3Key" column="s3_key"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
     </resultMap>
 
     <sql id="recordingColumns">
@@ -22,8 +48,33 @@
         end_time,
         s3_key,
         file_size,
-        upload_status,
         created_at
+    </sql>
+
+    <sql id="adminRecordingColumns">
+        r.id,
+        r.camera_id,
+        c.camera_code,
+        c.camera_name,
+        r.start_time,
+        r.end_time,
+        r.s3_key,
+        r.file_size,
+        r.created_at
+    </sql>
+
+    <sql id="adminRecordingWhere">
+        <where>
+            <if test="cameraId != null">
+                AND r.camera_id = #{cameraId}
+            </if>
+            <if test="startFrom != null">
+                AND r.end_time &gt; #{startFrom,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler}
+            </if>
+            <if test="startTo != null">
+                AND r.start_time &lt; #{startTo,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler}
+            </if>
+        </where>
     </sql>
 
     <insert id="insert"
@@ -37,14 +88,14 @@
             end_time,
             s3_key,
             file_size,
-            upload_status
+            created_at
         ) VALUES (
             #{cameraId},
-            #{startTime},
-            #{endTime},
+            #{startTime,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler},
+            #{endTime,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler},
             #{s3Key},
             #{fileSize},
-            #{uploadStatus}
+            UTC_TIMESTAMP(6)
         )
     </insert>
 
@@ -60,31 +111,78 @@
         WHERE s3_key = #{s3Key}
     </select>
 
-    <select id="findAll" resultMap="recordingResultMap">
-        SELECT <include refid="recordingColumns"/>
-        FROM recordings
-        <where>
-            <if test="cameraId != null">
-                AND camera_id = #{cameraId}
-            </if>
-            <if test="uploadStatus != null">
-                AND upload_status = #{uploadStatus}
-            </if>
-            <if test="startFrom != null">
-                AND start_time &gt;= #{startFrom}
-            </if>
-            <if test="startTo != null">
-                AND start_time &lt;= #{startTo}
-            </if>
-        </where>
-        ORDER BY start_time DESC
+    <insert id="insertRegistration"
+            parameterType="com.ssafy.eyesonu.recording.domain.RecordingRegistration">
+        INSERT INTO recording_registration_requests (
+            media_server_id,
+            idempotency_key,
+            request_fingerprint,
+            recording_id,
+            created_at
+        ) VALUES (
+            #{mediaServerId},
+            #{idempotencyKey},
+            #{requestFingerprint},
+            #{recordingId},
+            UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <select id="findRegistrationByKey" resultMap="registrationResultMap">
+        SELECT rr.media_server_id AS registration_media_server_id,
+               rr.idempotency_key AS registration_idempotency_key,
+               rr.request_fingerprint AS registration_request_fingerprint,
+               r.id AS recording_id,
+               r.camera_id AS recording_camera_id,
+               r.start_time AS recording_start_time,
+               r.end_time AS recording_end_time,
+               r.s3_key AS recording_s3_key,
+               r.file_size AS recording_file_size,
+               r.created_at AS recording_created_at
+        FROM recording_registration_requests rr
+        INNER JOIN recordings r ON r.id = rr.recording_id
+        WHERE rr.media_server_id = #{mediaServerId}
+          AND rr.idempotency_key = #{idempotencyKey}
     </select>
 
-    <update id="updateUploadStatusAndFileSize">
-        UPDATE recordings
-        SET upload_status = #{uploadStatus},
-            file_size = #{fileSize}
-        WHERE id = #{id}
-    </update>
+    <select id="countAdminRecordings" resultType="long">
+        SELECT COUNT(*)
+        FROM recordings r
+        <include refid="adminRecordingWhere"/>
+    </select>
+
+    <select id="findAdminPage" resultMap="adminRecordingRowResultMap">
+        SELECT <include refid="adminRecordingColumns"/>
+        FROM recordings r
+        INNER JOIN cameras c ON c.id = r.camera_id
+        <include refid="adminRecordingWhere"/>
+        ORDER BY
+        <choose>
+            <when test="sortField != null and sortField.name() == 'CREATED_AT'">
+                r.created_at
+            </when>
+            <otherwise>
+                r.start_time
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection != null and sortDirection.name() == 'ASC'">
+                ASC
+            </when>
+            <otherwise>
+                DESC
+            </otherwise>
+        </choose>,
+        r.id DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="findAdminDetail" resultMap="adminRecordingRowResultMap">
+        SELECT <include refid="adminRecordingColumns"/>
+        FROM recordings r
+        INNER JOIN cameras c ON c.id = r.camera_id
+        WHERE r.id = #{id}
+    </select>
 
 </mapper>
