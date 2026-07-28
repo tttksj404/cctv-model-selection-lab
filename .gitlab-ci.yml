@@ -1,0 +1,71 @@
+stages:
+  - context
+  - verify
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - when: never
+
+default:
+  interruptible: true
+
+.backend_change_rules:
+  rules: &backend_rules
+    - changes:
+        - apps/backend-api/eyesonu/**/*
+        - .gitlab-ci.yml
+
+.admin_dashboard_change_rules:
+  rules: &admin_dashboard_rules
+    - changes:
+        - apps/frontend/admin-dashboard/**/*
+        - .gitlab-ci.yml
+
+pipeline_context:
+  stage: context
+  image: alpine:3.21
+  script:
+    - echo "Pipeline source=${CI_PIPELINE_SOURCE} ref=${CI_COMMIT_REF_NAME} sha=${CI_COMMIT_SHA}"
+  rules:
+    - when: always
+
+backend_verify:
+  stage: verify
+  image: maven:3.9.16-eclipse-temurin-21
+  variables:
+    MAVEN_REPOSITORY: "${CI_PROJECT_DIR}/.m2/repository"
+  cache:
+    key: "backend-maven"
+    paths:
+      - .m2/repository/
+  before_script:
+    - cd apps/backend-api/eyesonu
+  script:
+    - sh ./mvnw --batch-mode --no-transfer-progress -Dmaven.repo.local="${MAVEN_REPOSITORY}" clean verify
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - apps/backend-api/eyesonu/target/surefire-reports/
+    reports:
+      junit:
+        - apps/backend-api/eyesonu/target/surefire-reports/TEST-*.xml
+  rules: *backend_rules
+
+admin_dashboard_verify:
+  stage: verify
+  image: node:18-alpine
+  variables:
+    NPM_CONFIG_CACHE: "${CI_PROJECT_DIR}/.npm"
+  cache:
+    key: "admin-dashboard-npm"
+    paths:
+      - .npm/
+  before_script:
+    - cd apps/frontend/admin-dashboard
+  script:
+    - npm ci --prefer-offline
+    - npm run build
+  rules: *admin_dashboard_rules
+
