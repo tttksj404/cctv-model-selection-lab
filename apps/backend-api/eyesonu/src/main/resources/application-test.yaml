@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: "${TEST_DB_URL:jdbc:mysql://localhost:3307/eyesonu_test?serverTimezone=UTC&characterEncoding=UTF-8}"
-    username: ${TEST_DB_USERNAME:eyesonu}
-    password: ${TEST_DB_PASSWORD}
+    url: "${TEST_DB_URL:jdbc:mysql://localhost:3308/eyesonu_test?serverTimezone=UTC&characterEncoding=UTF-8}"
+    username: ${TEST_DB_USERNAME:eyesonu_test}
+    password: ${TEST_DB_PASSWORD:eyesonu_test_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       initialization-fail-timeout: -1
