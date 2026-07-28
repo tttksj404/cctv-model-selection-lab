@@ -75,3 +75,4 @@ admin_dashboard_verify:
     - npm ci --prefer-offline
     - npm run build
   rules: *admin_dashboard_rules
+
