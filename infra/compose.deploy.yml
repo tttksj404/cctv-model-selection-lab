@@ -181,7 +181,8 @@ services:
         mc mb --ignore-existing "local/$${S3_BUCKET}"
 
         mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        mc admin policy create local eyesonu-app /policies/eyesonu-app.json
+        sed "s/eyesonu-media/$${S3_BUCKET}/g" /policies/eyesonu-app.json > /tmp/eyesonu-app.json
+        mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
         mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
         mc alias set app http://minio-dev:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
         mc stat "local/$${S3_BUCKET}" >/dev/null
@@ -346,7 +347,8 @@ services:
         mc mb --ignore-existing "local/$${S3_BUCKET}"
 
         mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        mc admin policy create local eyesonu-app /policies/eyesonu-app.json
+        sed "s/eyesonu-media/$${S3_BUCKET}/g" /policies/eyesonu-app.json > /tmp/eyesonu-app.json
+        mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
         mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
         mc alias set app http://minio-master:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
         mc stat "local/$${S3_BUCKET}" >/dev/null
