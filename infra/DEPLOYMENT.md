@@ -139,7 +139,10 @@ docker run --rm \
   -v "$PWD/infra/certbot/www:/var/www/certbot" \
   certbot/certbot:latest renew --webroot -w /var/www/certbot
 
-docker compose -f infra/compose.deploy.yml exec nginx nginx -s reload
+docker compose \
+  --env-file infra/.env.deploy \
+  -f infra/compose.deploy.yml \
+  exec nginx nginx -s reload
 ```
 
 ## 수동 배포 확인
