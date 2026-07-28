@@ -1,5 +1,51 @@
 name: eyesonu-deploy
 
+x-minio-init-entrypoint: &minio-init-entrypoint
+  - /bin/sh
+  - -c
+  - |
+    set -eu
+    mc alias set local "http://$${MINIO_HOST}:9000" "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
+    mc mb --ignore-existing "local/$${S3_BUCKET}"
+
+    mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
+    cat > /tmp/eyesonu-app.json <<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetBucketLocation",
+            "s3:ListBucket",
+            "s3:ListBucketMultipartUploads"
+          ],
+          "Resource": [
+            "arn:aws:s3:::$${S3_BUCKET}"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:AbortMultipartUpload",
+            "s3:ListMultipartUploadParts"
+          ],
+          "Resource": [
+            "arn:aws:s3:::$${S3_BUCKET}/*"
+          ]
+        }
+      ]
+    }
+    EOF
+    mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
+    mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
+    mc alias set app "http://$${MINIO_HOST}:9000" "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
+    mc stat "local/$${S3_BUCKET}" >/dev/null
+    mc ls "app/$${S3_BUCKET}" >/dev/null
+
 services:
   nginx:
     image: nginx:1.27-alpine
@@ -167,54 +213,11 @@ services:
     environment:
       MINIO_ROOT_USER: ${DEV_MINIO_ROOT_USER:?Set DEV_MINIO_ROOT_USER in infra/.env.deploy}
       MINIO_ROOT_PASSWORD: ${DEV_MINIO_ROOT_PASSWORD:?Set DEV_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      MINIO_HOST: minio-dev
       S3_BUCKET: ${DEV_S3_BUCKET:-eyesonu-media}
       S3_ACCESS_KEY: ${DEV_S3_ACCESS_KEY:?Set DEV_S3_ACCESS_KEY in infra/.env.deploy}
       S3_SECRET_KEY: ${DEV_S3_SECRET_KEY:?Set DEV_S3_SECRET_KEY in infra/.env.deploy}
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        set -eu
-        mc alias set local http://minio-dev:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
-        mc mb --ignore-existing "local/$${S3_BUCKET}"
-
-        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        cat > /tmp/eyesonu-app.json <<EOF
-        {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:ListBucket",
-                "s3:ListBucketMultipartUploads"
-              ],
-              "Resource": [
-                "arn:aws:s3:::$${S3_BUCKET}"
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:AbortMultipartUpload",
-                "s3:ListMultipartUploadParts"
-              ],
-              "Resource": [
-                "arn:aws:s3:::$${S3_BUCKET}/*"
-              ]
-            }
-          ]
-        }
-        EOF
-        mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
-        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
-        mc alias set app http://minio-dev:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        mc stat "local/$${S3_BUCKET}" >/dev/null
-        mc ls "app/$${S3_BUCKET}" >/dev/null
+    entrypoint: *minio-init-entrypoint
     networks: [dev]
 
   reporter-master:
@@ -361,54 +364,11 @@ services:
     environment:
       MINIO_ROOT_USER: ${MASTER_MINIO_ROOT_USER:?Set MASTER_MINIO_ROOT_USER in infra/.env.deploy}
       MINIO_ROOT_PASSWORD: ${MASTER_MINIO_ROOT_PASSWORD:?Set MASTER_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      MINIO_HOST: minio-master
       S3_BUCKET: ${MASTER_S3_BUCKET:-eyesonu-media}
       S3_ACCESS_KEY: ${MASTER_S3_ACCESS_KEY:?Set MASTER_S3_ACCESS_KEY in infra/.env.deploy}
       S3_SECRET_KEY: ${MASTER_S3_SECRET_KEY:?Set MASTER_S3_SECRET_KEY in infra/.env.deploy}
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        set -eu
-        mc alias set local http://minio-master:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
-        mc mb --ignore-existing "local/$${S3_BUCKET}"
-
-        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        cat > /tmp/eyesonu-app.json <<EOF
-        {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:ListBucket",
-                "s3:ListBucketMultipartUploads"
-              ],
-              "Resource": [
-                "arn:aws:s3:::$${S3_BUCKET}"
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:AbortMultipartUpload",
-                "s3:ListMultipartUploadParts"
-              ],
-              "Resource": [
-                "arn:aws:s3:::$${S3_BUCKET}/*"
-              ]
-            }
-          ]
-        }
-        EOF
-        mc admin policy create local eyesonu-app /tmp/eyesonu-app.json
-        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
-        mc alias set app http://minio-master:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
-        mc stat "local/$${S3_BUCKET}" >/dev/null
-        mc ls "app/$${S3_BUCKET}" >/dev/null
+    entrypoint: *minio-init-entrypoint
     networks: [prod]
 
 volumes:
