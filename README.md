@@ -165,7 +165,31 @@ Set-Location apps/backend-api/eyesonu
 
 IDE에서도 `src/test` 아래의 테스트 클래스 또는 메서드를 직접 실행할 수 있습니다.
 
-## 6. 종료와 초기화
+## 6. GitLab CI와 Jenkins CD 경계
+
+GitLab CI는 Merge Request의 빌드와 테스트만 담당합니다. Jenkins는 `dev` 또는 `master`에 반영된 커밋을 감지하고 해당 커밋을 직접 checkout하여 Docker 이미지를 빌드하고 서버에 배포합니다.
+
+### 파이프라인 실행 정책
+
+- Merge Request에서 백엔드가 변경되면 Maven 빌드와 일반 테스트를 실행합니다.
+- Merge Request에서 관리자 대시보드가 변경되면 `npm ci`와 Vite 빌드를 실행합니다.
+- `.gitlab-ci.yml`이 변경되면 백엔드와 관리자 대시보드를 모두 검증합니다.
+- 문서나 인프라 파일만 변경되면 경량 파이프라인 정보 작업만 실행합니다.
+- 소스와 패키지 매니페스트가 아직 없는 `apps/frontend/reporter-webapp`은 CI 대상에서 제외합니다.
+- `dev`와 `master` push에서는 GitLab CI 파이프라인을 생성하지 않습니다.
+
+### Jenkins 연동 규칙
+
+GitLab CI는 Jenkins를 호출하거나 JAR, `dist/`, Docker 이미지를 전달하지 않습니다. Jenkins는 `dev` 또는 `master`에 병합된 커밋 SHA를 checkout한 뒤 그 소스로 Docker 이미지를 빌드하고 배포합니다. `infra/Jenkinsfile` 수정과 실제 배포 구성은 Jenkins 담당자의 작업 범위입니다.
+
+### GitLab Runner 요구 사항
+
+- 태그 없는 일반 Linux Docker executor를 사용하고 `Run untagged jobs`를 활성화합니다.
+- Docker-in-Docker와 privileged 모드는 필요하지 않습니다. Docker를 사용할 수 없는 Runner에서는 현재 설정에 따라 MySQL Testcontainers 통합 테스트가 생략될 수 있습니다.
+- 프로젝트의 Merge checks에서 `Pipelines must succeed`를 활성화해야 실패하거나 실행 중인 파이프라인의 Merge Request를 병합할 수 없습니다.
+- Container Registry와 Registry 인증 변수는 GitLab CI에서 사용하지 않습니다.
+
+## 7. 종료와 초기화
 
 저장소 루트에서 실행합니다.
 
@@ -189,7 +213,7 @@ docker compose --env-file infra/.env -f infra/compose.local.yml down -v
 - 기존 데이터가 필요하면 MySQL 8.4에서 논리 백업한 뒤 새 MySQL 8.0.46 볼륨으로 복원합니다.
 - 기존 데이터가 불필요하고 RabbitMQ와 MinIO 데이터도 함께 삭제해도 되는 경우에만 위의 `down -v` 명령으로 로컬 인프라를 초기화합니다.
 
-## 7. 문제 해결
+## 8. 문제 해결
 
 - `docker` 명령을 찾지 못하면 Docker Desktop이 설치 및 실행 중인지 확인한 뒤 PowerShell을 다시 엽니다.
 - `3307`, `5672`, `15672`, `9000`, `9001` 포트를 이미 사용 중이면 해당 프로그램을 종료하거나 `infra/.env`의 로컬 포트를 변경합니다.
