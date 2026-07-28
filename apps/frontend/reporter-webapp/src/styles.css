@@ -121,7 +121,10 @@ input::placeholder, textarea::placeholder { color: #98a2b3; }
 .selected-appearance-list .option-section-title { padding-bottom: 9px; border-bottom: 1px solid #edf0f4; }
 .selected-appearance-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 120px auto; align-items: center; gap: 8px; }
 .appearance-feature-name { width: fit-content; padding: 6px 10px; border: 1px solid #dbe5fb; border-radius: 7px; color: #315bc7; background: #f3f6ff; font-size: 13px; font-weight: 700; }
-.selected-appearance-row select { min-height: 42px; padding: 8px 34px 8px 10px; font-size: 14px; }
+.selected-appearance-row select { min-height: 42px; padding: 8px 34px 8px 10px; color: #94a3b8; font-size: 14px; }
+.selected-appearance-row select.has-selection { color: var(--text-primary); }
+.selected-appearance-row select option { color: var(--text-primary); }
+.selected-appearance-row select option[value=""] { color: #94a3b8; }
 .selection-spacer { min-height: 42px; }
 .custom-appearance { gap: 10px; }
 .remove-appearance { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; color: #667085; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; }
