@@ -1,8 +1,12 @@
 package com.ssafy.eyesonu.recording.mapper;
 
+import com.ssafy.eyesonu.recording.domain.AdminRecordingRow;
 import com.ssafy.eyesonu.recording.domain.Recording;
-import com.ssafy.eyesonu.recording.domain.UploadStatus;
-import java.time.LocalDateTime;
+import com.ssafy.eyesonu.recording.domain.RecordingRegistration;
+import com.ssafy.eyesonu.recording.domain.RecordingRegistrationResult;
+import com.ssafy.eyesonu.recording.domain.RecordingSortDirection;
+import com.ssafy.eyesonu.recording.domain.RecordingSortField;
+import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -16,14 +20,25 @@ public interface RecordingMapper {
 
     Recording findByS3Key(@Param("s3Key") String s3Key);
 
-    List<Recording> findAll(
-            @Param("cameraId") Long cameraId,
-            @Param("uploadStatus") UploadStatus uploadStatus,
-            @Param("startFrom") LocalDateTime startFrom,
-            @Param("startTo") LocalDateTime startTo);
+    int insertRegistration(RecordingRegistration registration);
 
-    int updateUploadStatusAndFileSize(
-            @Param("id") Long id,
-            @Param("uploadStatus") UploadStatus uploadStatus,
-            @Param("fileSize") Long fileSize);
+    RecordingRegistrationResult findRegistrationByKey(
+            @Param("mediaServerId") Long mediaServerId,
+            @Param("idempotencyKey") String idempotencyKey);
+
+    long countAdminRecordings(
+            @Param("cameraId") Long cameraId,
+            @Param("startFrom") Instant startFrom,
+            @Param("startTo") Instant startTo);
+
+    List<AdminRecordingRow> findAdminPage(
+            @Param("cameraId") Long cameraId,
+            @Param("startFrom") Instant startFrom,
+            @Param("startTo") Instant startTo,
+            @Param("sortField") RecordingSortField sortField,
+            @Param("sortDirection") RecordingSortDirection sortDirection,
+            @Param("limit") int limit,
+            @Param("offset") long offset);
+
+    AdminRecordingRow findAdminDetail(@Param("id") Long id);
 }
