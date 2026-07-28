@@ -72,7 +72,7 @@ pipeline {
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" config >/dev/null
                     sh infra/scripts/cleanup-legacy-containers.sh
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                      --profile "$DEPLOY_PROFILE" up -d --build
+                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" ps
                 '''
             }

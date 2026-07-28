@@ -16,6 +16,12 @@ services:
     networks:
       - dev
       - prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/nginx-health | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   reporter-dev:
     profiles: ["dev"]
@@ -25,6 +31,12 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     networks: [dev]
 
   admin-dev:
@@ -35,6 +47,12 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     networks: [dev]
 
   backend-dev:
@@ -45,6 +63,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/v1/auth/csrf"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 45s
     environment:
       TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: ${DEV_BACKEND_PROFILE:-prod}
@@ -167,6 +191,12 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     networks: [prod]
 
   admin-master:
@@ -177,6 +207,12 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     networks: [prod]
 
   backend-master:
@@ -185,6 +221,14 @@ services:
       context: ../apps/backend-api/eyesonu
     image: eyesonu/backend-master:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/v1/auth/csrf"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 45s
     environment:
       TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: prod
