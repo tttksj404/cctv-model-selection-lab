@@ -1,13 +1,12 @@
-# 1단계: Node.js 환경에서 프론트엔드 프로젝트 빌드 (dist 폴더 생성)
-FROM node:18-alpine as build-stage
+FROM node:18-alpine AS build-stage
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 
-# 2단계: 가벼운 Nginx 웹 서버를 통해 빌드된 정적 파일 배포
-FROM nginx:stable-alpine as production-stage
+FROM nginx:stable-alpine AS production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
