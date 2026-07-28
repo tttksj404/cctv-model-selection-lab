@@ -97,6 +97,51 @@ infra/certbot/conf/live/example.com/privkey.pem
 
 `example.com`은 실제 인증서 디렉터리명으로 바꾼다.
 
+### 최초 HTTPS 인증서 발급
+
+최초에는 인증서가 없으므로 HTTPS 설정이 포함된 Nginx를 먼저 실행하면 안 된다. Nginx가 `443` 설정을 읽다가 인증서 파일이 없어 종료되기 때문이다. 다음 순서로 부트스트랩한다.
+
+1. 모든 도메인의 DNS A 레코드를 EC2 공인 IP로 연결한다.
+2. AWS 보안 그룹에서 `80`을 임시 또는 상시로 허용한다.
+3. Nginx 컨테이너가 실행 중이면 중지해 `80`을 비운다.
+4. 저장소 루트에서 Certbot standalone 발급 스크립트를 실행한다.
+
+```bash
+sh infra/scripts/bootstrap-certificates.sh \
+  example.com \
+  admin@example.com \
+  admin.example.com \
+  dev.example.com \
+  admin-dev.example.com
+```
+
+첫 번째 도메인이 인증서 디렉터리 이름이 된다. 따라서 Nginx 설정의 다음 경로와 일치해야 한다.
+
+```text
+infra/certbot/conf/live/example.com/fullchain.pem
+infra/certbot/conf/live/example.com/privkey.pem
+```
+
+인증서 발급이 성공한 뒤에만 Compose로 Nginx와 애플리케이션을 실행한다.
+
+```bash
+docker compose --env-file infra/.env.deploy \
+  -f infra/compose.deploy.yml --profile dev up -d --build
+docker compose --env-file infra/.env.deploy \
+  -f infra/compose.deploy.yml --profile master up -d --build
+```
+
+인증서 갱신은 Nginx가 제공하는 ACME webroot를 사용한다.
+
+```bash
+docker run --rm \
+  -v "$PWD/infra/certbot/conf:/etc/letsencrypt" \
+  -v "$PWD/infra/certbot/www:/var/www/certbot" \
+  certbot/certbot:latest renew --webroot -w /var/www/certbot
+
+docker compose -f infra/compose.deploy.yml exec nginx nginx -s reload
+```
+
 ## 수동 배포 확인
 
 Jenkins agent가 Docker Engine이 설치된 EC2에서 실행되는 경우:
