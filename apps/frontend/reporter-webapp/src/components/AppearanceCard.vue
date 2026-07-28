@@ -63,6 +63,8 @@ function toggleOption(option) {
 
   if (index === -1) {
     values.push(option);
+    appearanceForms[activeZone.value][option] = "";
+    appearanceColors[activeZone.value][option] = "";
   } else {
     values.splice(index, 1);
     delete appearanceColors[activeZone.value][option];
@@ -140,13 +142,34 @@ function removeAppearance(feature) {
         <span class="option-section-title">선택한 특징 설정</span>
         <div v-for="item in appearanceItems(activeZone)" :key="item.key" class="selected-appearance-row">
           <span class="appearance-feature-name">{{ item.label }}</span>
-          <select v-if="activeFormOptions.length" v-model="appearanceForms[activeZone][item.key]" :aria-label="`${item.key} 형태 선택`">
-            <option value="">형태 선택</option>
+          <select
+            v-if="activeFormOptions.length"
+            :value="appearanceForms[activeZone][item.key] || ''"
+            :class="{
+              'has-selection': appearanceForms[activeZone][item.key],
+            }"
+            :aria-label="`${item.key} 형태 선택`"
+            @change="
+              appearanceForms[activeZone][item.key] = $event.target.value
+            "
+          >
+            <option value="" disabled>형태 선택</option>
+            <option value="안함">안함</option>
             <option v-for="form in activeFormOptions" :key="form" :value="form">{{ form }}</option>
           </select>
           <span v-else class="selection-spacer" aria-hidden="true" />
-          <select v-model="appearanceColors[activeZone][item.key]" :aria-label="`${item.label} 색상 선택`">
-            <option value="">색상 선택</option>
+          <select
+            :value="appearanceColors[activeZone][item.key] || ''"
+            :class="{
+              'has-selection': appearanceColors[activeZone][item.key],
+            }"
+            :aria-label="`${item.label} 색상 선택`"
+            @change="
+              appearanceColors[activeZone][item.key] = $event.target.value
+            "
+          >
+            <option value="" disabled>색상 선택</option>
+            <option value="안함">안함</option>
             <option v-for="color in COLOR_OPTIONS" :key="color" :value="color">{{ color }}</option>
           </select>
           <button class="remove-appearance" type="button" :aria-label="`${item.key} 삭제`" @click="removeAppearance(item.key)">×</button>
