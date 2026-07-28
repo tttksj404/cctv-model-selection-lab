@@ -134,6 +134,15 @@ input::placeholder, textarea::placeholder { color: #98a2b3; }
 .custom-appearance input { min-height: 46px; font-size: 15px; }
 
 .map-block { overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: white; }
+.location-field { position: relative; }
+.place-suggestions { position: absolute; top: calc(100% + 5px); right: 0; left: 0; z-index: 4; overflow: hidden; border: 1px solid #cfd6e1; border-radius: 9px; background: white; box-shadow: 0 8px 20px rgb(16 24 40 / 12%); }
+.place-suggestion { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #eef1f5; color: var(--text-primary); background: white; text-align: left; cursor: pointer; }
+.place-suggestion:last-child { border-bottom: 0; }
+.place-suggestion:hover { background: var(--primary-light); }
+.place-suggestion-type { flex-shrink: 0; padding: 3px 6px; border-radius: 5px; color: var(--primary); background: #eef3ff; font-size: 11px; font-weight: 700; }
+.place-suggestion-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.place-suggestion-copy strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.place-suggestion-copy small { overflow: hidden; color: var(--text-secondary); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .kakao-map { position: relative; width: 100%; height: 220px; background: #eef1f4; }
 .kakao-map.fallback { background: linear-gradient(rgb(248 250 252 / 18%), rgb(248 250 252 / 18%)), url('/assets/kakao-map-preview.png') center / cover no-repeat; }
 .map-fallback-copy { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 20px; color: #344054; text-align: center; background: rgb(255 255 255 / 30%); }
