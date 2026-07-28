@@ -117,6 +117,7 @@ docker compose --env-file infra/.env.deploy \
 - `dev` push: 전체 빌드·테스트 후 dev profile 배포
 - `master` push 또는 merge 반영: 전체 빌드·테스트 후 master profile 배포
 - Merge Request: 빌드·테스트만 수행하고 배포하지 않음
+- 배포는 각 컨테이너의 healthcheck가 통과할 때까지 최대 180초 대기하며, 실패하면 Jenkins도 실패 처리
 - 배포 전 기존 Jenkinsfile이 사용하던 컨테이너 이름만 제거
 - Docker volume과 image는 자동 삭제하지 않음
 
