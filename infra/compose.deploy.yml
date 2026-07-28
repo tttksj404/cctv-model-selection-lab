@@ -1,0 +1,314 @@
+name: eyesonu-deploy
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: eyesonu-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    networks:
+      - dev
+      - prod
+
+  reporter-dev:
+    profiles: ["dev"]
+    build:
+      context: ../apps/frontend/reporter-webapp
+    image: eyesonu/reporter-dev:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks: [dev]
+
+  admin-dev:
+    profiles: ["dev"]
+    build:
+      context: ../apps/frontend/admin-dashboard
+    image: eyesonu/admin-dev:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks: [dev]
+
+  backend-dev:
+    profiles: ["dev"]
+    build:
+      context: ../apps/backend-api/eyesonu
+    image: eyesonu/backend-dev:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      TZ: Asia/Seoul
+      SPRING_PROFILES_ACTIVE: ${DEV_BACKEND_PROFILE:-prod}
+      DB_URL: jdbc:mysql://mysql-dev:3306/${DEV_MYSQL_DATABASE:-eyesonu}?serverTimezone=UTC&characterEncoding=UTF-8
+      DB_USERNAME: ${DEV_DB_USERNAME:?Set DEV_DB_USERNAME in infra/.env.deploy}
+      DB_PASSWORD: ${DEV_DB_PASSWORD:?Set DEV_DB_PASSWORD in infra/.env.deploy}
+      SPRING_RABBITMQ_HOST: rabbitmq-dev
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${DEV_RABBITMQ_USER:?Set DEV_RABBITMQ_USER in infra/.env.deploy}
+      SPRING_RABBITMQ_PASSWORD: ${DEV_RABBITMQ_PASSWORD:?Set DEV_RABBITMQ_PASSWORD in infra/.env.deploy}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${DEV_RABBITMQ_VHOST:-/eyesonu}
+      AUTH_RATE_LIMIT_KEY_SECRET: ${DEV_AUTH_RATE_LIMIT_KEY_SECRET:?Set DEV_AUTH_RATE_LIMIT_KEY_SECRET in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_LOGIN_ID: ${DEV_ADMIN_BOOTSTRAP_LOGIN_ID:?Set DEV_ADMIN_BOOTSTRAP_LOGIN_ID in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_PASSWORD: ${DEV_ADMIN_BOOTSTRAP_PASSWORD:?Set DEV_ADMIN_BOOTSTRAP_PASSWORD in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_NAME: ${DEV_ADMIN_BOOTSTRAP_NAME:-Dev Administrator}
+      S3_ENDPOINT: http://minio-dev:9000
+      S3_REGION: ${DEV_S3_REGION:-ap-northeast-2}
+      S3_BUCKET: ${DEV_S3_BUCKET:-eyesonu-media}
+      S3_ACCESS_KEY: ${DEV_S3_ACCESS_KEY:?Set DEV_S3_ACCESS_KEY in infra/.env.deploy}
+      S3_SECRET_KEY: ${DEV_S3_SECRET_KEY:?Set DEV_S3_SECRET_KEY in infra/.env.deploy}
+      S3_PATH_STYLE_ACCESS: "true"
+    depends_on:
+      mysql-dev:
+        condition: service_healthy
+      rabbitmq-dev:
+        condition: service_healthy
+      minio-init-dev:
+        condition: service_completed_successfully
+    networks: [dev]
+
+  mysql-dev:
+    profiles: ["dev"]
+    image: mysql:8.0.46
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DEV_MYSQL_DATABASE:-eyesonu}
+      MYSQL_USER: ${DEV_DB_USERNAME:?Set DEV_DB_USERNAME in infra/.env.deploy}
+      MYSQL_PASSWORD: ${DEV_DB_PASSWORD:?Set DEV_DB_PASSWORD in infra/.env.deploy}
+      MYSQL_ROOT_PASSWORD: ${DEV_MYSQL_ROOT_PASSWORD:?Set DEV_MYSQL_ROOT_PASSWORD in infra/.env.deploy}
+      TZ: UTC
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root --password=\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [dev]
+
+  rabbitmq-dev:
+    profiles: ["dev"]
+    image: rabbitmq:4.3.2-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${DEV_RABBITMQ_USER:?Set DEV_RABBITMQ_USER in infra/.env.deploy}
+      RABBITMQ_DEFAULT_PASS: ${DEV_RABBITMQ_PASSWORD:?Set DEV_RABBITMQ_PASSWORD in infra/.env.deploy}
+      RABBITMQ_DEFAULT_VHOST: ${DEV_RABBITMQ_VHOST:-/eyesonu}
+      TZ: UTC
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [dev]
+
+  minio-dev:
+    profiles: ["dev"]
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${DEV_MINIO_ROOT_USER:?Set DEV_MINIO_ROOT_USER in infra/.env.deploy}
+      MINIO_ROOT_PASSWORD: ${DEV_MINIO_ROOT_PASSWORD:?Set DEV_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      MINIO_REGION_NAME: ${DEV_S3_REGION:-ap-northeast-2}
+    volumes:
+      - minio_dev_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [dev]
+
+  minio-init-dev:
+    profiles: ["dev"]
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    restart: "no"
+    depends_on:
+      minio-dev:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${DEV_MINIO_ROOT_USER:?Set DEV_MINIO_ROOT_USER in infra/.env.deploy}
+      MINIO_ROOT_PASSWORD: ${DEV_MINIO_ROOT_PASSWORD:?Set DEV_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      S3_BUCKET: ${DEV_S3_BUCKET:-eyesonu-media}
+      S3_ACCESS_KEY: ${DEV_S3_ACCESS_KEY:?Set DEV_S3_ACCESS_KEY in infra/.env.deploy}
+      S3_SECRET_KEY: ${DEV_S3_SECRET_KEY:?Set DEV_S3_SECRET_KEY in infra/.env.deploy}
+    volumes:
+      - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        mc alias set local http://minio-dev:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${S3_BUCKET}" &&
+        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}" || true &&
+        mc admin policy create local eyesonu-app /policies/eyesonu-app.json || true &&
+        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}" || true
+    networks: [dev]
+
+  reporter-master:
+    profiles: ["master"]
+    build:
+      context: ../apps/frontend/reporter-webapp
+    image: eyesonu/reporter-master:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks: [prod]
+
+  admin-master:
+    profiles: ["master"]
+    build:
+      context: ../apps/frontend/admin-dashboard
+    image: eyesonu/admin-master:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks: [prod]
+
+  backend-master:
+    profiles: ["master"]
+    build:
+      context: ../apps/backend-api/eyesonu
+    image: eyesonu/backend-master:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Seoul
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://mysql-master:3306/${MASTER_MYSQL_DATABASE:-eyesonu}?serverTimezone=UTC&characterEncoding=UTF-8
+      DB_USERNAME: ${MASTER_DB_USERNAME:?Set MASTER_DB_USERNAME in infra/.env.deploy}
+      DB_PASSWORD: ${MASTER_DB_PASSWORD:?Set MASTER_DB_PASSWORD in infra/.env.deploy}
+      SPRING_RABBITMQ_HOST: rabbitmq-master
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${MASTER_RABBITMQ_USER:?Set MASTER_RABBITMQ_USER in infra/.env.deploy}
+      SPRING_RABBITMQ_PASSWORD: ${MASTER_RABBITMQ_PASSWORD:?Set MASTER_RABBITMQ_PASSWORD in infra/.env.deploy}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${MASTER_RABBITMQ_VHOST:-/eyesonu}
+      AUTH_RATE_LIMIT_KEY_SECRET: ${MASTER_AUTH_RATE_LIMIT_KEY_SECRET:?Set MASTER_AUTH_RATE_LIMIT_KEY_SECRET in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_LOGIN_ID: ${MASTER_ADMIN_BOOTSTRAP_LOGIN_ID:?Set MASTER_ADMIN_BOOTSTRAP_LOGIN_ID in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_PASSWORD: ${MASTER_ADMIN_BOOTSTRAP_PASSWORD:?Set MASTER_ADMIN_BOOTSTRAP_PASSWORD in infra/.env.deploy}
+      ADMIN_BOOTSTRAP_NAME: ${MASTER_ADMIN_BOOTSTRAP_NAME:-Production Administrator}
+      S3_ENDPOINT: http://minio-master:9000
+      S3_REGION: ${MASTER_S3_REGION:-ap-northeast-2}
+      S3_BUCKET: ${MASTER_S3_BUCKET:-eyesonu-media}
+      S3_ACCESS_KEY: ${MASTER_S3_ACCESS_KEY:?Set MASTER_S3_ACCESS_KEY in infra/.env.deploy}
+      S3_SECRET_KEY: ${MASTER_S3_SECRET_KEY:?Set MASTER_S3_SECRET_KEY in infra/.env.deploy}
+      S3_PATH_STYLE_ACCESS: "true"
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      rabbitmq-master:
+        condition: service_healthy
+      minio-init-master:
+        condition: service_completed_successfully
+    networks: [prod]
+
+  mysql-master:
+    profiles: ["master"]
+    image: mysql:8.0.46
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MASTER_MYSQL_DATABASE:-eyesonu}
+      MYSQL_USER: ${MASTER_DB_USERNAME:?Set MASTER_DB_USERNAME in infra/.env.deploy}
+      MYSQL_PASSWORD: ${MASTER_DB_PASSWORD:?Set MASTER_DB_PASSWORD in infra/.env.deploy}
+      MYSQL_ROOT_PASSWORD: ${MASTER_MYSQL_ROOT_PASSWORD:?Set MASTER_MYSQL_ROOT_PASSWORD in infra/.env.deploy}
+      TZ: UTC
+    volumes:
+      - mysql_master_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root --password=\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [prod]
+
+  rabbitmq-master:
+    profiles: ["master"]
+    image: rabbitmq:4.3.2-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${MASTER_RABBITMQ_USER:?Set MASTER_RABBITMQ_USER in infra/.env.deploy}
+      RABBITMQ_DEFAULT_PASS: ${MASTER_RABBITMQ_PASSWORD:?Set MASTER_RABBITMQ_PASSWORD in infra/.env.deploy}
+      RABBITMQ_DEFAULT_VHOST: ${MASTER_RABBITMQ_VHOST:-/eyesonu}
+      TZ: UTC
+    volumes:
+      - rabbitmq_master_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [prod]
+
+  minio-master:
+    profiles: ["master"]
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MASTER_MINIO_ROOT_USER:?Set MASTER_MINIO_ROOT_USER in infra/.env.deploy}
+      MINIO_ROOT_PASSWORD: ${MASTER_MINIO_ROOT_PASSWORD:?Set MASTER_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      MINIO_REGION_NAME: ${MASTER_S3_REGION:-ap-northeast-2}
+    volumes:
+      - minio_master_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [prod]
+
+  minio-init-master:
+    profiles: ["master"]
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    restart: "no"
+    depends_on:
+      minio-master:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MASTER_MINIO_ROOT_USER:?Set MASTER_MINIO_ROOT_USER in infra/.env.deploy}
+      MINIO_ROOT_PASSWORD: ${MASTER_MINIO_ROOT_PASSWORD:?Set MASTER_MINIO_ROOT_PASSWORD in infra/.env.deploy}
+      S3_BUCKET: ${MASTER_S3_BUCKET:-eyesonu-media}
+      S3_ACCESS_KEY: ${MASTER_S3_ACCESS_KEY:?Set MASTER_S3_ACCESS_KEY in infra/.env.deploy}
+      S3_SECRET_KEY: ${MASTER_S3_SECRET_KEY:?Set MASTER_S3_SECRET_KEY in infra/.env.deploy}
+    volumes:
+      - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        mc alias set local http://minio-master:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${S3_BUCKET}" &&
+        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}" || true &&
+        mc admin policy create local eyesonu-app /policies/eyesonu-app.json || true &&
+        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}" || true
+    networks: [prod]
+
+volumes:
+  mysql_dev_data:
+  rabbitmq_dev_data:
+  minio_dev_data:
+  mysql_master_data:
+  rabbitmq_master_data:
+  minio_master_data:
+
+networks:
+  dev:
+    name: eyesonu-dev
+  prod:
+    name: eyesonu-prod
