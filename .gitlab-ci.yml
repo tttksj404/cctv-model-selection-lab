@@ -36,11 +36,7 @@ backend_verify:
   variables:
     MAVEN_REPOSITORY: "${CI_PROJECT_DIR}/.m2/repository"
   cache:
-    key:
-      files:
-        - apps/backend-api/eyesonu/pom.xml
-        - apps/backend-api/eyesonu/.mvn/wrapper/maven-wrapper.properties
-      prefix: backend-maven
+    key: "backend-maven"
     paths:
       - .m2/repository/
   before_script:
@@ -61,12 +57,9 @@ admin_dashboard_verify:
   stage: verify
   image: node:18-alpine
   variables:
-    npm_config_cache: "${CI_PROJECT_DIR}/.npm"
+    NPM_CONFIG_CACHE: "${CI_PROJECT_DIR}/.npm"
   cache:
-    key:
-      files:
-        - apps/frontend/admin-dashboard/package-lock.json
-      prefix: admin-dashboard-npm
+    key: "admin-dashboard-npm"
     paths:
       - .npm/
   before_script:
