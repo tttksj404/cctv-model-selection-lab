@@ -17,11 +17,12 @@
 
 | 구분 | 인증 방식 | 주요 권한 |
 | --- | --- | --- |
-| 신고자·경찰서 접수자 | 인증 없음 | 실종 신고 접수, 사건조회번호와 전화번호를 이용한 진행 상황 조회 |
+| 일반 신고자·경찰서 접수자 | 인증 없음 | 공개 실종 신고 접수, 사건조회번호와 전화번호를 이용한 진행 상황 조회 |
 | 관리자 | `EYESONU_SESSION` 세션 쿠키 (`ADMIN`) | 사건, 탐색 조건, 미디어 서버, 카메라, 후보, 작업 및 감사 로그 관리 |
 | 미디어 서버 | `X-Device-Key: {deviceKey}` (`ROLE_MEDIA_SERVER`) | Heartbeat, 녹화 메타데이터와 Jetson 후보 이벤트 전송 |
 
 > v1에서는 실종 신고와 신고자 진행 상황 조회에 별도 로그인이나 전화번호 인증을 요구하지 않는다.
+> 신고자 정보는 회원 계정이 아니라 신고 당시 입력값을 보존하는 사건별 스냅샷으로 취급한다.
 
 ---
 
@@ -223,7 +224,7 @@
 ### 3.7 주요 검증 규칙
 
 - `caseNumber`는 앞뒤 공백을 제거하고 대문자로 변환한 뒤 검증한다. 형식은 `EFU-`와 Crockford Base32 26자로 구성된 총 30자 문자열이다.
-- `phone`은 하이픈과 공백 등 숫자가 아닌 문자를 제거한 뒤 10~11자리인지 검증한다.
+- `phone`은 ASCII 숫자(`0`~`9`), ASCII 하이픈(`-`), ASCII 공백(`U+0020`)만 허용한다. 하이픈과 공백을 제거한 정규화 결과가 숫자 10~11자리여야 하며, 그 밖의 문자·공백 문자는 제거하지 않고 검증 오류로 거부한다.
 - `cameraCode`는 앞뒤 공백을 제거한 후 검증한다. `loginId`는 앞뒤 공백을 제거하고 소문자로 변환한다.
 - 위도는 `-90`~`90`, 경도는 `-180`~`180` 범위여야 한다.
 - `lastSeenLat`와 `lastSeenLng`는 함께 제공하거나 모두 생략한다.
@@ -407,7 +408,7 @@
 
 `POST /api/v1/cases`
 
-- 신고 접수는 경찰서에서 진행하는 것으로 가정한다.
+- 일반 신고자와 경찰서 접수자 모두 공개 신고 양식을 통해 접수할 수 있다.
 - 인증: 없음
 - Content-Type: `multipart/form-data`
 - `request`: 아래 JSON 구조
@@ -437,6 +438,8 @@
 
 필수 필드: `reporter.name`, `reporter.phone`, `reportContent`, `missingName`, `appearance`, `lastSeenTime`
 
+`reporter.phone`은 3.7의 공통 전화번호 규칙을 적용하며, 서버는 하이픈과 공백을 제거한 10~11자리 숫자를 저장한다.
+
 응답 `201 Created`:
 
 ```json
@@ -453,11 +456,11 @@
 
 서버 처리:
 
-1. `REPORTERS`를 신고 접수 정보로 생성하고 `phoneVerified=false`, `verifiedAt=null`로 저장한다.
+1. 신고마다 별도의 `REPORTERS`를 신고 시점 정보 스냅샷으로 새로 생성하고, 정규화한 전화번호와 함께 `phoneVerified=false`, `verifiedAt=null`로 저장한다. v1에서는 동일 전화번호로 기존 `REPORTERS`를 조회하거나 재사용하지 않는다.
 2. 사진을 저장한 후 내부 S3 Key를 포함하여 `CASES`를 생성한다.
 3. 128비트 난수를 Crockford Base32 26자로 인코딩한 사건번호를 중복되지 않게 발급하고 생성 이력을 `AUDIT_LOGS`에 기록한다.
 
-> `REPORTERS.phoneVerified`와 `verifiedAt`은 향후 인증 기능 확장을 위해 유지하며 v1 신고 흐름에서는 사용하지 않는다.
+> `REPORTERS`는 회원 계정이 아니며 v1에서는 한 신고에 종속된 스냅샷이다. `phoneVerified`와 `verifiedAt`은 향후 인증 기능 확장을 위해 유지하되 v1 신고 흐름에서는 사용하지 않는다.
 
 ### 5.6 신고자 사건 진행 조회
 
@@ -466,6 +469,7 @@
 - 인증: 없음
 - Content-Type: `application/json`
 - 동일 IP 또는 전화번호의 반복 조회는 Rate Limit을 적용한다.
+- `phone`은 3.7의 공통 규칙으로 검증·정규화한 뒤 사건에 저장된 전화번호와 비교한다.
 
 요청:
 
@@ -1219,7 +1223,7 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | ERD 엔터티 | 관련 API·처리 | 주요 관계 |
 | --- | --- | --- |
 | `ADMINS` | 관리자 로그인, `/admins/me`, 후보 판정, 감사 로그 | `CANDIDATES.reviewed_by`, `AUDIT_LOGS.admin_id` |
-| `REPORTERS` | 신고 접수, 사건조회번호·전화번호 기반 진행 조회 | `REPORTERS 1:N CASES` |
+| `REPORTERS` | 신고별 연락처 스냅샷 생성, 사건조회번호·전화번호 기반 진행 조회 | v1에서는 신고마다 새로 생성하며 각 `REPORTERS`는 해당 `CASES` 한 건에만 사용 |
 | `CASES` | 신고 접수, 관리자 사건 관리, 신고자 진행 조회 | 탐색 조건·후보·작업·로그의 기준 사건 |
 | `SEARCH_CONDITIONS` | `/admin/cases/{caseId}/search-conditions` | `CASES 1:N SEARCH_CONDITIONS` |
 | `MEDIA_SERVERS` | 관리자 미디어 서버 관리, Device Key 인증·교체 | `MEDIA_SERVERS 1:N CAMERAS` |
@@ -1268,6 +1272,7 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | 존재하지 않는 사건·카메라·후보 요청 | `404 RESOURCE_NOT_FOUND` |
 | 실행 중인 작업 또는 미처리 후보가 있는 사건 종료 | `409 CASE_CLOSE_CONFLICT` |
 | 종료 사건에 후보·탐색 작업 추가 | `422 BUSINESS_RULE_VIOLATION` |
+| 전화번호에 ASCII 숫자·하이픈·공백 외 문자가 포함되거나 정규화 결과가 10~11자리가 아님 | `400 VALIDATION_ERROR` |
 | 사건조회번호와 전화번호 조합 불일치 | 상세 불일치 원인을 숨기고 `404 INQUIRY_NOT_FOUND` 반환 |
 | 동일 전화번호 또는 IP의 과도한 진행 조회 | `429 RATE_LIMIT_EXCEEDED` |
 
