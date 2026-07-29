@@ -10,6 +10,13 @@ import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.common.config.SwaggerConfig;
 import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
+import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.camera.mapper.CameraMapper;
+import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import com.ssafy.eyesonu.missingcase.service.CaseCommandService;
+import com.ssafy.eyesonu.missingcase.service.CasePhotoService;
+import com.ssafy.eyesonu.missingcase.service.CaseQueryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,6 +47,27 @@ class SwaggerDocumentationTests {
 	@MockitoBean
 	private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
+	@MockitoBean
+	private MissingCaseMapper missingCaseMapper;
+
+	@MockitoBean
+	private MediaServerMapper mediaServerMapper;
+
+	@MockitoBean
+	private CameraMapper cameraMapper;
+
+	@MockitoBean
+	private RecordingMapper recordingMapper;
+
+	@MockitoBean
+	private CaseCommandService caseCommandService;
+
+	@MockitoBean
+	private CaseQueryService caseQueryService;
+
+	@MockitoBean
+	private CasePhotoService casePhotoService;
+
 	@Test
 	void apiDocsExposeImplementedControllersAndFilterLogoutOnly() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
@@ -51,6 +79,15 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].patch").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/cases/status-inquiries'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/cases'].post").doesNotExist())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}'].patch").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}/photo'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}/photo'].delete").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}/status'].patch").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admin/cases/{caseId}/close'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/logout'].post").exists())
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post").exists())

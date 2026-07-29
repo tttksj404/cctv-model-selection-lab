@@ -31,6 +31,26 @@ public class AuditService {
 		auditLogMapper.insert(adminId, caseId, actionType, targetType, targetId, toJson(detail));
 	}
 
+	public void recordRequired(
+			String actionType,
+			Long adminId,
+			Long caseId,
+			String targetType,
+			Long targetId,
+			Map<String, ?> beforeValue,
+			Map<String, ?> afterValue,
+			Map<String, ?> detail) {
+		auditLogMapper.insert(
+				adminId,
+				caseId,
+				actionType,
+				targetType,
+				targetId,
+				toNullableJson(beforeValue),
+				toNullableJson(afterValue),
+				toJson(detail));
+	}
+
 	public void recordBestEffort(
 			String actionType,
 			Long adminId,
@@ -53,5 +73,9 @@ public class AuditService {
 		catch (JacksonException exception) {
 			throw new IllegalArgumentException("Audit detail cannot be serialized", exception);
 		}
+	}
+
+	private String toNullableJson(Map<String, ?> value) {
+		return value == null ? null : toJson(value);
 	}
 }
