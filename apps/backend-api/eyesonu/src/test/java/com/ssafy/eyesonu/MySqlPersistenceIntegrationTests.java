@@ -2,6 +2,7 @@ package com.ssafy.eyesonu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
@@ -10,13 +11,20 @@ import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
+import com.ssafy.eyesonu.missingcase.domain.CaseSortDirection;
+import com.ssafy.eyesonu.missingcase.domain.CaseSortField;
+import com.ssafy.eyesonu.missingcase.domain.Gender;
+import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
+import com.ssafy.eyesonu.missingcase.domain.ReporterRecord;
 import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
+import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -52,6 +60,9 @@ class MySqlPersistenceIntegrationTests {
 
 	@Autowired
 	private AuditLogMapper auditLogMapper;
+
+	@Autowired
+	private MissingCaseMapper missingCaseMapper;
 
 	@Autowired
 	private MediaServerMapper mediaServerMapper;
@@ -112,9 +123,10 @@ class MySqlPersistenceIntegrationTests {
 		LocalDateTime updatedAt = LocalDateTime.of(2026, 7, 20, 2, 20, 25, 654_321_000);
 		jdbcTemplate.update("""
 				INSERT INTO cases
-				(reporter_id, case_number, status, report_content, missing_name, appearance,
+				(reporter_id, case_number, status, report_content, missing_name, gender,
+				 distinctive_features,
 				 last_seen_time, last_seen_address, reported_at, updated_at)
-				VALUES (?, ?, 'SEARCHING', 'content', 'Missing', 'appearance', ?, 'address', ?, ?)
+				VALUES (?, ?, 'SEARCHING', 'content', 'Missing', 'UNKNOWN', 'appearance', ?, 'address', ?, ?)
 				""",
 				reporterId,
 				"EFU-0123456789ABCDEFGHJKMNPQRS",
@@ -132,5 +144,71 @@ class MySqlPersistenceIntegrationTests {
 		auditLogMapper.insert(command.getId(), null, "ADMIN_LOGIN_SUCCESS", "ADMIN", command.getId(), "{}");
 		Integer auditCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM audit_logs", Integer.class);
 		assertEquals(1, auditCount);
+	}
+
+	@Test
+	void adminManagedCaseSchemaAndMapperSupportCreateReadUpdateAndList() {
+		ReporterRecord reporter = new ReporterRecord(
+				null, "Reporter Two", "01099998888", "reporter2@example.com", "보호자");
+		assertEquals(1, missingCaseMapper.insertReporter(reporter));
+
+		MissingCaseRow row = new MissingCaseRow();
+		row.setReporterId(reporter.getId());
+		row.setCaseNumber("EFU-Z123456789ABCDEFGHJKMNPQRS");
+		row.setStatus(CaseStatus.RECEIVED);
+		row.setReportContent("content");
+		row.setMissingName("Missing Two");
+		row.setGender(Gender.UNKNOWN);
+		row.setBirthYear(2000);
+		row.setUpperClothing("black shirt");
+		row.setLastSeenTime(Instant.parse("2026-07-20T00:00:00Z"));
+		row.setLastSeenAddress("address");
+		assertEquals(1, missingCaseMapper.insertCase(row));
+
+		MissingCaseRow stored = missingCaseMapper.findById(row.getId());
+		assertEquals("01099998888", stored.getReporterPhone());
+		assertEquals("black shirt", stored.getUpperClothing());
+		assertEquals(2000, stored.getBirthYear());
+
+		stored.setReporterPhone("01011112222");
+		stored.setBirthYear(null);
+		stored.setUpperClothing("blue shirt");
+		assertEquals(1, missingCaseMapper.updateReporter(stored));
+		assertEquals(1, missingCaseMapper.updateCase(stored));
+		assertEquals("01011112222", missingCaseMapper.findById(row.getId()).getReporterPhone());
+		assertEquals(1L, missingCaseMapper.countCases(
+				CaseStatus.RECEIVED, row.getCaseNumber(), "Missing", null, null));
+		assertEquals(1, missingCaseMapper.findPage(
+				CaseStatus.RECEIVED, row.getCaseNumber(), null, null, null,
+				CaseSortField.REPORTED_AT, CaseSortDirection.DESC, 20, 0).size());
+
+		assertEquals(0, jdbcTemplate.queryForObject("""
+				SELECT COUNT(*) FROM information_schema.columns
+				WHERE table_schema = DATABASE() AND table_name = 'cases'
+				  AND column_name IN ('age_group', 'appearance')
+				""", Integer.class));
+	}
+
+	@Test
+	void adminManagedCaseDatabaseConstraintsRejectInvalidRequiredData() {
+		jdbcTemplate.update(
+				"INSERT INTO reporters (name, phone) VALUES (?, ?)", "Constraint Reporter", "01022223333");
+		Long reporterId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM reporters", Long.class);
+		String sql = """
+				INSERT INTO cases
+				(reporter_id, case_number, status, report_content, missing_name, gender,
+				 birth_year, distinctive_features, last_seen_time,
+				 last_seen_lat, last_seen_lng, last_seen_address)
+				VALUES (?, ?, 'RECEIVED', ?, 'Missing', 'UNKNOWN', ?, ?, UTC_TIMESTAMP(6), ?, ?, 'address')
+				""";
+
+		assertThrows(DataAccessException.class, () -> jdbcTemplate.update(
+				sql, reporterId, "EFU-Y123456789ABCDEFGHJKMNPQRS", "content", 1899, "coat", null, null));
+		assertThrows(DataAccessException.class, () -> jdbcTemplate.update(
+				sql, reporterId, "EFU-X123456789ABCDEFGHJKMNPQRS", "content", 2000, null, null, null));
+		assertThrows(DataAccessException.class, () -> jdbcTemplate.update(
+				sql, reporterId, "EFU-W123456789ABCDEFGHJKMNPQRS", "content", 2000, "coat", 37.5, null));
+		assertThrows(DataAccessException.class, () -> jdbcTemplate.update(
+				sql, reporterId, "EFU-V123456789ABCDEFGHJKMNPQRS", " ", 2000, "coat", null, null));
 	}
 }

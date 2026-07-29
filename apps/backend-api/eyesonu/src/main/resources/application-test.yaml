@@ -50,4 +50,5 @@ eyesonu:
       read-timeout: ${TEST_S3_READ_TIMEOUT:5s}
       call-timeout: ${TEST_S3_CALL_TIMEOUT:10s}
       max-file-size-bytes: ${TEST_RECORDING_MAX_FILE_SIZE_BYTES:5368709120}
+      case-photo-max-file-size-bytes: ${TEST_CASE_PHOTO_MAX_FILE_SIZE_BYTES:10485760}
       presigned-url-expiry: ${TEST_S3_PRESIGNED_URL_EXPIRY:15m}

@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -15,9 +17,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
+import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
 import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
+import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.camera.mapper.CameraMapper;
+import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import com.ssafy.eyesonu.missingcase.service.CaseCommandService;
+import com.ssafy.eyesonu.missingcase.service.CasePhotoService;
+import com.ssafy.eyesonu.missingcase.service.CaseQueryService;
+import com.ssafy.eyesonu.missingcase.dto.admin.CaseCreateResponse;
 import com.ssafy.eyesonu.recording.service.RecordingQueryService;
 import jakarta.servlet.http.Cookie;
 import java.time.Instant;
@@ -31,6 +42,8 @@ import org.springframework.http.MediaType;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,7 +70,28 @@ class AuthAndInquiryApiTests {
 	private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
 	@MockitoBean
+	private MissingCaseMapper missingCaseMapper;
+
+	@MockitoBean
+	private MediaServerMapper mediaServerMapper;
+
+	@MockitoBean
+	private CameraMapper cameraMapper;
+
+	@MockitoBean
+	private RecordingMapper recordingMapper;
+
+	@MockitoBean
 	private RecordingQueryService recordingQueryService;
+
+	@MockitoBean
+	private CaseCommandService caseCommandService;
+
+	@MockitoBean
+	private CaseQueryService caseQueryService;
+
+	@MockitoBean
+	private CasePhotoService casePhotoService;
 
 	private Admin admin;
 
@@ -242,6 +276,46 @@ class AuthAndInquiryApiTests {
 					.param("page", "not-an-integer"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	@Test
+	void adminCaseCreationRequiresAuthenticationAndCsrfAndPublicCreationIsBlocked() throws Exception {
+		String body = """
+				{
+				  "reporter":{"name":"홍길동","phone":"010-1234-5678"},
+				  "reportContent":"실종 경위",
+				  "missingName":"김민수",
+				  "gender":"MALE",
+				  "appearance":{"upperClothing":"검은 셔츠"},
+				  "lastSeenTime":"2026-07-20T00:10:00+09:00",
+				  "lastSeenAddress":"서울 강남구"
+				}
+				""";
+
+		mockMvc.perform(get("/api/v1/admin/cases"))
+				.andExpect(status().isUnauthorized());
+		mockMvc.perform(post("/api/v1/cases").contentType(MediaType.APPLICATION_JSON).content(body))
+				.andExpect(status().isForbidden());
+
+		AdminPrincipal principal = new AdminPrincipal(1L, "admin");
+		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+				principal, null, principal.getAuthorities());
+		mockMvc.perform(post("/api/v1/admin/cases")
+					.with(authentication(authentication))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(body))
+				.andExpect(status().isForbidden());
+
+		when(caseCommandService.create(any(), any())).thenReturn(new CaseCreateResponse(
+				101L, "EFU-0123456789ABCDEFGHJKMNPQRS", CaseStatus.RECEIVED,
+				Instant.parse("2026-07-20T01:30:00Z")));
+		mockMvc.perform(post("/api/v1/admin/cases")
+					.with(authentication(authentication))
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(body))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("Location", "/api/v1/admin/cases/101"));
 	}
 
 	private MvcResult login() throws Exception {
