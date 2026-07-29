@@ -9,6 +9,7 @@ pipeline {
     environment {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
         DEPLOY_ENV_FILE = 'infra/.env.deploy'
+	TESTCONTAINERS_RYUK_DISABLED = 'true'
     }
 
     stages {
