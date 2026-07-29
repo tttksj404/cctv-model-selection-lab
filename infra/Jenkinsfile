@@ -31,23 +31,7 @@ pipeline {
                     env.DEPLOY_PROFILE = targetBranch in ['dev', 'master'] ? targetBranch : ''
                     env.CAN_DEPLOY = env.DEPLOY_PROFILE && !mergeRequest ? 'true' : 'false'
 
-                    def parentCount = sh(
-                        script: "git rev-list --parents -n 1 HEAD | awk '{print NF}'",
-                        returnStdout: true
-                    ).trim()
-                    def diffCommand = parentCount == '3'
-                        ? 'git diff --name-only HEAD^1 HEAD'
-                        : 'git diff --name-only HEAD^ HEAD'
-                    def changedPaths = sh(
-                        script: "${diffCommand} 2>/dev/null || true",
-                        returnStdout: true
-                    ).trim().readLines()
-                    env.NGINX_CONFIG_CHANGED = changedPaths.any {
-                        it.startsWith('infra/nginx/') || it == 'infra/compose.deploy.yml'
-                    } ? 'true' : 'false'
-
                     echo "Target branch: ${targetBranch}, merge request: ${mergeRequest ? 'yes' : 'no'}, deploy: ${env.CAN_DEPLOY}"
-                    echo "Nginx configuration changed: ${env.NGINX_CONFIG_CHANGED}"
                 }
             }
         }
@@ -99,10 +83,8 @@ pipeline {
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
                       --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \\
                       "backend-$DEPLOY_PROFILE" "admin-$DEPLOY_PROFILE" "reporter-$DEPLOY_PROFILE"
-                    if [ "$NGINX_CONFIG_CHANGED" = 'true' ]; then
-                      docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                        up -d --no-deps nginx
-                    fi
+                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
+                      up -d --no-deps nginx
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
                       exec -T nginx nginx -t
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
