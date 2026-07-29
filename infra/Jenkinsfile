@@ -9,8 +9,8 @@ pipeline {
     environment {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
         DEPLOY_ENV_FILE = '/run/secrets/eyesonu-deploy.env'
-	TESTCONTAINERS_RYUK_DISABLED = 'true'
-	TESTCONTAINERS_HOST_OVERRIDE = '127.0.0.1'
+        TESTCONTAINERS_RYUK_DISABLED = 'true'
+        TESTCONTAINERS_HOST_OVERRIDE = '127.0.0.1'
     }
 
     stages {
@@ -80,7 +80,8 @@ pipeline {
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" config >/dev/null
                     sh infra/scripts/cleanup-legacy-containers.sh
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180
+                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \\
+                      "backend-$DEPLOY_PROFILE" "admin-$DEPLOY_PROFILE" "reporter-$DEPLOY_PROFILE"
                     docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" ps
                 '''
             }
@@ -90,18 +91,38 @@ pipeline {
     post {
         success {
             script {
-                mattermostSend(
-                    color: '#00d1b2',
-                    message: "[EyesForU CI] ${env.TARGET_BRANCH ?: 'unknown'} pipeline completed\nBuild #${env.BUILD_NUMBER}\n${env.BUILD_URL}"
-                )
+                def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
+                def targetBranch = env.TARGET_BRANCH ?: 'unknown'
+                def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+                def result = env.CAN_DEPLOY == 'true' ? '빌드·테스트·배포' : '빌드·테스트'
+
+                mattermostSend color: '#00d1b2', message: """### ✅ Eyes On U CI 성공
+> **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
+> **트리거:** `${triggerType}`
+> **대상 브랜치:** `${targetBranch}`
+> **실행자:** `${actor}`
+> **수행 결과:** ${result} 완료
+
+파이프라인이 정상적으로 완료되었습니다.
+
+🔎 [Jenkins에서 상세 로그 확인하기](${env.BUILD_URL})"""
             }
         }
         failure {
             script {
-                mattermostSend(
-                    color: '#ff3860',
-                    message: "[EyesForU CI] ${env.TARGET_BRANCH ?: 'unknown'} pipeline failed\nBuild #${env.BUILD_NUMBER}\n${env.BUILD_URL}"
-                )
+                def triggerType = env.gitlabActionType ?: (env.gitlabMergeRequestIid ? 'MERGE_REQUEST' : 'PUSH')
+                def targetBranch = env.TARGET_BRANCH ?: 'unknown'
+                def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
+
+                mattermostSend color: '#ff3860', message: """### ❌ Eyes On U CI 실패
+> **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
+> **트리거:** `${triggerType}`
+> **대상 브랜치:** `${targetBranch}`
+> **실행자:** `${actor}`
+
+파이프라인 실행 중 오류가 발생했습니다. Jenkins 로그를 확인해 주세요.
+
+🔎 [Jenkins에서 오류 로그 확인하기](${env.BUILD_URL})"""
             }
         }
     }
