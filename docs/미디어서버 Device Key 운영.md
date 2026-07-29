@@ -1,17 +1,20 @@
 # 미디어 서버 Device Key 운영
 
-미디어 서버는 중앙 서버의 다음 경로를 호출할 때 `X-Device-Key` 헤더로 인증한다.
+미디어 서버는 중앙 서버의 다음 운영 API 경로를 호출할 때 `X-Device-Key` 헤더로 인증한다.
 
 - `/api/v1/device/cameras/**`
-- `/api/v1/device/recordings/**`
+- `/api/v1/device/candidate-events`
 
-Device Key 형식은 `msk_<16자리 keyId>.<64자리 secret>`이다. 키 원문은 중앙 DB에 저장하지 않고,
+인증에 성공하면 중앙 서버는 요청을 `ROLE_MEDIA_SERVER` 권한과 해당 미디어 서버의 `mediaServerId`로 처리한다.
+
+Device Key 형식은 `msk_<16자리 소문자 16진수 keyId>.<64자리 소문자 16진수 secret>`이다. 키 원문은 중앙 DB에 저장하지 않고,
 `keyId`와 BCrypt cost 12로 인코딩한 secret만 저장한다.
 
 ## 1. 스키마 적용
 
-백엔드를 실행해 Flyway V2 마이그레이션을 먼저 적용한다. V2는 `media_servers` 테이블을 생성하고
-`cameras`를 `media_server_id`로 연결한다.
+백엔드를 실행해 Flyway V3까지 마이그레이션을 적용한다. V2는 `media_servers` 테이블을 생성하고
+`cameras`를 `media_server_id`로 연결한다. V3는 업로드 상태 컬럼을 제거하고 녹화 메타데이터 제약과
+성공한 등록 요청의 멱등성 테이블을 추가한다. V3 적용 시 기존 녹화와 이를 참조하는 녹화 분석 작업은 삭제된다.
 
 ## 2. Device Key 생성과 등록
 
@@ -55,6 +58,16 @@ X-Device-Key: msk_<keyId>.<secret>
 ```
 
 Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배포에서는 HTTPS로만 전송한다.
+
+### 녹화 메타데이터 등록 순서
+
+1. 미디어 서버가 `recordings/{cameraCode}/.../*.mp4` 키와 소문자 `.mp4` 확장자로 녹화 파일을 MinIO 또는 S3에 업로드한다.
+2. 업로드 성공 응답을 받은 뒤 `POST /api/v1/device/cameras/{cameraCode}/recordings`를 `X-Device-Key`와 `Idempotency-Key` 헤더로 호출한다.
+3. 촬영 시각은 UTC offset을 포함한 RFC 3339 형식과 최대 6자리 소수 초로 전송한다. local/test의 녹화 객체 제한은 5 GiB이며 prod에서는 `RECORDING_MAX_FILE_SIZE_BYTES`를 반드시 지정한다.
+4. 중앙 서버는 같은 버킷의 객체를 HEAD/stat으로 확인하고 실제 파일 크기로 메타데이터를 등록한다.
+
+등록 요청에는 `startTime`, `endTime`, `objectKey`만 포함하며 `fileSize`나 업로드 상태는 보내지 않는다. 객체가 없거나 사용할 수 없으면 녹화 리소스가 생성되지 않으므로 객체 저장소를 정상화한 뒤 같은 멱등 요청으로 재시도한다.
+Device 공통 rate limit은 별도 작업에서 확정하며 현재 녹화 등록 계약에는 `429` 응답을 포함하지 않는다.
 
 ### 임시 연결 테스트 API
 

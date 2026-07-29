@@ -287,6 +287,7 @@ services:
       S3_ACCESS_KEY: ${MASTER_S3_ACCESS_KEY:?Set MASTER_S3_ACCESS_KEY in infra/.env.deploy}
       S3_SECRET_KEY: ${MASTER_S3_SECRET_KEY:?Set MASTER_S3_SECRET_KEY in infra/.env.deploy}
       S3_PATH_STYLE_ACCESS: "true"
+      RECORDING_MAX_FILE_SIZE_BYTES: ${MASTER_RECORDING_MAX_FILE_SIZE_BYTES:?Set MASTER_RECORDING_MAX_FILE_SIZE_BYTES in infra/.env.deploy}
     depends_on:
       mysql-master:
         condition: service_healthy

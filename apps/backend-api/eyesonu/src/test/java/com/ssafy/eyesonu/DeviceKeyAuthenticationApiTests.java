@@ -1,5 +1,9 @@
 package com.ssafy.eyesonu;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,9 +11,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
+import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.mediaserver.domain.MediaServer;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.recording.domain.Recording;
+import com.ssafy.eyesonu.recording.dto.device.RecordingCreateRequest;
+import com.ssafy.eyesonu.recording.service.RecordingCommandService;
+import com.ssafy.eyesonu.recording.service.RecordingCreateResult;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -47,6 +58,9 @@ class DeviceKeyAuthenticationApiTests {
 
 	@MockitoBean
 	private MediaServerMapper mediaServerMapper;
+
+	@MockitoBean
+	private RecordingCommandService recordingCommandService;
 
 	private MediaServer activeServer;
 
@@ -121,7 +135,7 @@ class DeviceKeyAuthenticationApiTests {
 	}
 
 	@Test
-	void deviceKeyDoesNotAuthenticateAdminOrJetsonRoutes() throws Exception {
+	void deviceKeyDoesNotAuthenticateAdminButAuthenticatesEveryDeviceRoute() throws Exception {
 		mockMvc.perform(get("/api/v1/admins/me")
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY))
 				.andExpect(status().isUnauthorized())
@@ -129,8 +143,7 @@ class DeviceKeyAuthenticationApiTests {
 
 		mockMvc.perform(post("/api/v1/device/candidate-events")
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY))
-				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+				.andExpect(status().isNotFound());
 	}
 
 	@Test
@@ -144,11 +157,108 @@ class DeviceKeyAuthenticationApiTests {
 				.andExpect(jsonPath("$.code").value("AUTHENTICATION_UNAVAILABLE"));
 	}
 
+	@Test
+	void recordingPostPassesAuthenticatedPrincipalAndReturnsCreatedOrReplayStatus() throws Exception {
+		String path = "/api/v1/device/cameras/CAM-001/recordings";
+		String idempotencyKey = "550e8400-e29b-41d4-a716-446655440000";
+		Recording recording = new Recording(
+				99L,
+				11L,
+				Instant.parse("2026-07-20T01:00:00Z"),
+				Instant.parse("2026-07-20T01:01:00Z"),
+				"recordings/CAM-001/video.mp4",
+				80L,
+				Instant.parse("2026-07-20T01:01:01Z"));
+		when(recordingCommandService.create(
+				any(MediaServerPrincipal.class),
+				eq("CAM-001"),
+				eq(idempotencyKey),
+				any(RecordingCreateRequest.class)))
+				.thenReturn(new RecordingCreateResult(recording, false))
+				.thenReturn(new RecordingCreateResult(recording, true));
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.header("Idempotency-Key", idempotencyKey)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(validRecordingJson()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.data.id").value(99))
+				.andExpect(jsonPath("$.data.fileSize").value(80))
+				.andExpect(jsonPath("$.data.duplicate").value(false))
+				.andExpect(jsonPath("$.data.startTime").value("2026-07-20T01:00:00Z"))
+				.andExpect(jsonPath("$.data.createdAt").value("2026-07-20T01:01:01Z"));
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.header("Idempotency-Key", idempotencyKey)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(validRecordingJson()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.duplicate").value(true));
+
+		var principalCaptor = org.mockito.ArgumentCaptor.forClass(MediaServerPrincipal.class);
+		verify(recordingCommandService, org.mockito.Mockito.times(2)).create(
+				principalCaptor.capture(), eq("CAM-001"), eq(idempotencyKey), any());
+		org.junit.jupiter.api.Assertions.assertTrue(principalCaptor.getAllValues().stream()
+				.allMatch(principal -> principal.mediaServerId().equals(7L)
+						&& principal.serverCode().equals("rpi5-media-01")));
+	}
+
+	@Test
+	void recordingPostReturnsStructuredErrorsForHeaderMediaTypeAndTimeSyntax() throws Exception {
+		String path = "/api/v1/device/cameras/CAM-001/recordings";
+		String idempotencyKey = "550e8400-e29b-41d4-a716-446655440000";
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(validRecordingJson()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.header("Idempotency-Key", idempotencyKey)
+					.contentType(MediaType.TEXT_PLAIN)
+					.content(validRecordingJson()))
+				.andExpect(status().isUnsupportedMediaType())
+				.andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.header("Idempotency-Key", idempotencyKey)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(validRecordingJson().replace("01:00:00Z", "01:00:00")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.header("Idempotency-Key", idempotencyKey)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(validRecordingJson().replace("01:00:00Z", "01:00:00.1234567Z")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		verify(recordingCommandService, never()).create(any(), any(), any(), any());
+	}
+
 	private void assertInvalid(String value) throws Exception {
 		mockMvc.perform(get(ENDPOINT)
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, value))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("INVALID_DEVICE_KEY"));
+	}
+
+	private String validRecordingJson() {
+		return """
+				{
+				  "startTime": "2026-07-20T01:00:00Z",
+				  "endTime": "2026-07-20T01:01:00Z",
+				  "objectKey": "recordings/CAM-001/video.mp4"
+				}
+				""";
 	}
 
 }
