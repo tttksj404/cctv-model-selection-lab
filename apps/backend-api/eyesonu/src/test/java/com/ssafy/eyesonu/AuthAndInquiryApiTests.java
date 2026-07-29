@@ -16,6 +16,7 @@ import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
 import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper.CaseStatusRow;
+import com.ssafy.eyesonu.recording.service.RecordingQueryService;
 import jakarta.servlet.http.Cookie;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -54,6 +55,9 @@ class AuthAndInquiryApiTests {
 
 	@MockitoBean
 	private CaseInquiryMapper caseInquiryMapper;
+
+	@MockitoBean
+	private RecordingQueryService recordingQueryService;
 
 	private Admin admin;
 
@@ -201,6 +205,17 @@ class AuthAndInquiryApiTests {
 				.andExpect(header().string("Cache-Control", "no-store"))
 				.andExpect(jsonPath("$.code").value("DATABASE_UNAVAILABLE"))
 				.andExpect(jsonPath("$.data").doesNotExist());
+	}
+
+	@Test
+	void invalidAdminRecordingQueryTypeReturnsStructuredValidationError() throws Exception {
+		MockHttpSession session = (MockHttpSession) login().getRequest().getSession(false);
+
+		mockMvc.perform(get("/api/v1/admin/recordings")
+					.session(session)
+					.param("page", "not-an-integer"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
 	private MvcResult login() throws Exception {

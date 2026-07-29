@@ -7,9 +7,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -29,9 +33,25 @@ public class GlobalExceptionHandler {
 		return badRequest(message.isBlank() ? "요청 값이 올바르지 않습니다." : message);
 	}
 
-	@ExceptionHandler({ConstraintViolationException.class, HttpMessageNotReadableException.class})
+	@ExceptionHandler({
+			ConstraintViolationException.class,
+			HttpMessageNotReadableException.class,
+			MissingRequestHeaderException.class,
+			MissingServletRequestParameterException.class,
+			MethodArgumentTypeMismatchException.class
+	})
 	public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception exception) {
 		return badRequest("요청 값이 올바르지 않습니다.");
+	}
+
+	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+	public ResponseEntity<ApiErrorResponse> handleUnsupportedMediaType(
+			HttpMediaTypeNotSupportedException exception) {
+		return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+				.body(ApiErrorResponse.of(
+						415,
+						"UNSUPPORTED_MEDIA_TYPE",
+						"Content-Type은 application/json이어야 합니다."));
 	}
 
 	@ExceptionHandler(DataAccessException.class)

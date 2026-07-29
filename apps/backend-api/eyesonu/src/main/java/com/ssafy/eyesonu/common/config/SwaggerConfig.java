@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu.common.config;
 
+import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
 import com.ssafy.eyesonu.common.api.ApiErrorResponse;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
@@ -24,6 +25,7 @@ public class SwaggerConfig {
 
 	public static final String SESSION_SCHEME = "sessionCookie";
 	public static final String CSRF_SCHEME = "csrfToken";
+	public static final String DEVICE_KEY_SCHEME = "deviceKey";
 
 	private static final String ADMIN_ME_PATH = "/api/v1/admins/me";
 	private static final String LOGOUT_PATH = "/api/v1/auth/admin/logout";
@@ -41,7 +43,12 @@ public class SwaggerConfig {
 						.type(SecurityScheme.Type.APIKEY)
 						.in(SecurityScheme.In.HEADER)
 						.name("X-XSRF-TOKEN")
-						.description("GET /api/v1/auth/csrf가 발급한 XSRF-TOKEN 쿠키와 동일한 값"));
+						.description("GET /api/v1/auth/csrf가 발급한 XSRF-TOKEN 쿠키와 동일한 값"))
+				.addSecuritySchemes(DEVICE_KEY_SCHEME, new SecurityScheme()
+						.type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER)
+						.name(DeviceKeyAuthenticationFilter.HEADER_NAME)
+						.description("미디어 서버에 발급된 Device Key"));
 		ModelConverters.getInstance().read(ApiErrorResponse.class)
 				.forEach(components::addSchemas);
 
