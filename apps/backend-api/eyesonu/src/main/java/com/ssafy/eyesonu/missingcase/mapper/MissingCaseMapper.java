@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu.missingcase.mapper;
 
+import com.ssafy.eyesonu.missingcase.domain.CasePhotoState;
 import com.ssafy.eyesonu.missingcase.domain.CaseSortDirection;
 import com.ssafy.eyesonu.missingcase.domain.CaseSortField;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
@@ -20,6 +21,10 @@ public interface MissingCaseMapper {
 	MissingCaseRow findById(@Param("id") Long id);
 
 	MissingCaseRow findByIdForUpdate(@Param("id") Long id);
+
+	CasePhotoState findPhotoState(@Param("id") Long id);
+
+	CasePhotoState findPhotoStateForUpdate(@Param("id") Long id);
 
 	long countCases(
 			@Param("status") CaseStatus status,

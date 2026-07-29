@@ -1,23 +1,18 @@
 package com.ssafy.eyesonu.missingcase.service;
 
-import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
+import com.ssafy.eyesonu.missingcase.domain.CasePhotoState;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
-import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.dto.admin.CasePhotoResponse;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectUrlSigner;
 import com.ssafy.eyesonu.storage.StorageObjectWriter;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -28,74 +23,67 @@ public class CasePhotoService {
 	private final CasePhotoValidator validator;
 	private final StorageObjectWriter objectWriter;
 	private final StorageObjectUrlSigner urlSigner;
-	private final AuditService auditService;
+	private final CasePhotoMetadataWriter metadataWriter;
 
 	public CasePhotoService(
 			MissingCaseMapper mapper,
 			CasePhotoValidator validator,
 			StorageObjectWriter objectWriter,
 			StorageObjectUrlSigner urlSigner,
-			AuditService auditService) {
+			CasePhotoMetadataWriter metadataWriter) {
 		this.mapper = mapper;
 		this.validator = validator;
 		this.objectWriter = objectWriter;
 		this.urlSigner = urlSigner;
-		this.auditService = auditService;
+		this.metadataWriter = metadataWriter;
 	}
 
-	@Transactional
 	public CasePhotoResponse put(Long caseId, MultipartFile file, Long adminId) {
-		MissingCaseRow row = requireForUpdate(caseId);
-		if (row.getStatus() == CaseStatus.CLOSED) {
-			throw new ApiException(
-					HttpStatus.UNPROCESSABLE_ENTITY,
-					"BUSINESS_RULE_VIOLATION",
-					"종료된 사건에는 사진을 등록할 수 없습니다.");
-		}
 		CasePhotoValidator.ValidatedPhoto photo = validator.validate(file);
+		requireUploadAllowed(caseId);
 		String newKey = "cases/%d/photos/%s.%s".formatted(
 				caseId, UUID.randomUUID(), photo.extension());
-		String previousKey = row.getPhotoS3Key();
-		boolean uploaded = false;
+		String photoUrl;
 		try {
 			objectWriter.put(newKey, photo.bytes(), photo.contentType());
-			uploaded = true;
-			mapper.updatePhoto(caseId, newKey);
-			auditService.recordRequired(
-					previousKey == null ? "CASE_PHOTO_UPLOADED" : "CASE_PHOTO_REPLACED",
-					adminId, caseId, "CASE", caseId,
-					Map.of("hasPhoto", previousKey != null), Map.of("hasPhoto", true), Map.of());
-			String photoUrl = urlSigner.createGetUrl(newKey);
-			synchronizeUpload(newKey, previousKey);
-			return new CasePhotoResponse(photoUrl);
+			photoUrl = urlSigner.createGetUrl(newKey);
 		}
 		catch (RuntimeException exception) {
-			if (uploaded) deleteBestEffort(newKey);
+			deleteBestEffort(newKey);
 			if (exception instanceof StorageObjectUnavailableException) {
 				throw storageUnavailable();
 			}
 			throw exception;
 		}
+
+		String previousKey;
+		try {
+			previousKey = metadataWriter.replace(caseId, newKey, adminId);
+		}
+		catch (RuntimeException exception) {
+			deleteBestEffort(newKey);
+			throw exception;
+		}
+		if (previousKey != null) deleteBestEffort(previousKey);
+		return new CasePhotoResponse(photoUrl);
 	}
 
-	@Transactional
 	public void delete(Long caseId, Long adminId) {
-		MissingCaseRow row = requireForUpdate(caseId);
-		String previousKey = row.getPhotoS3Key();
-		if (previousKey == null) return;
-		mapper.updatePhoto(caseId, null);
-		auditService.recordRequired(
-				"CASE_PHOTO_DELETED", adminId, caseId, "CASE", caseId,
-				Map.of("hasPhoto", true), Map.of("hasPhoto", false), Map.of());
-		deleteAfterCommit(previousKey);
+		String previousKey = metadataWriter.remove(caseId, adminId);
+		if (previousKey != null) deleteBestEffort(previousKey);
 	}
 
-	private MissingCaseRow requireForUpdate(Long id) {
-		MissingCaseRow row = mapper.findByIdForUpdate(id);
-		if (row == null) {
+	private void requireUploadAllowed(Long id) {
+		CasePhotoState state = mapper.findPhotoState(id);
+		if (state == null) {
 			throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "사건을 찾을 수 없습니다.");
 		}
-		return row;
+		if (state.status() == CaseStatus.CLOSED) {
+			throw new ApiException(
+					HttpStatus.UNPROCESSABLE_ENTITY,
+					"BUSINESS_RULE_VIOLATION",
+					"종료된 사건에는 사진을 등록할 수 없습니다.");
+		}
 	}
 
 	private void deleteBestEffort(String key) {
@@ -105,37 +93,6 @@ public class CasePhotoService {
 		catch (RuntimeException exception) {
 			log.warn("Failed to remove case photo object: key={}", key, exception);
 		}
-	}
-
-	private void synchronizeUpload(String newKey, String previousKey) {
-		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-			if (previousKey != null) deleteBestEffort(previousKey);
-			return;
-		}
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				if (previousKey != null) deleteBestEffort(previousKey);
-			}
-
-			@Override
-			public void afterCompletion(int status) {
-				if (status != TransactionSynchronization.STATUS_COMMITTED) deleteBestEffort(newKey);
-			}
-		});
-	}
-
-	private void deleteAfterCommit(String key) {
-		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-			deleteBestEffort(key);
-			return;
-		}
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				deleteBestEffort(key);
-			}
-		});
 	}
 
 	private ApiException storageUnavailable() {

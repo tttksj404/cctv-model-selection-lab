@@ -41,6 +41,14 @@
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
+    <resultMap id="casePhotoStateResultMap" type="com.ssafy.eyesonu.missingcase.domain.CasePhotoState">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="status" javaType="com.ssafy.eyesonu.missingcase.domain.CaseStatus"/>
+            <arg column="photo_s3_key" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
     <sql id="columns">
         c.id, c.reporter_id,
         r.name AS reporter_name, r.phone AS reporter_phone,
@@ -99,6 +107,19 @@
         SELECT <include refid="columns"/>
         FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
         WHERE c.id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="findPhotoState" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
+    </select>
+
+    <select id="findPhotoStateForUpdate" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
         FOR UPDATE
     </select>
 
