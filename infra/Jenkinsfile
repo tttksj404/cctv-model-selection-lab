@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
-        DEPLOY_ENV_FILE = 'infra/.env.deploy'
+        DEPLOY_ENV_FILE = '/run/secrets/eyesonu-deploy.env'
 	TESTCONTAINERS_RYUK_DISABLED = 'true'
 	TESTCONTAINERS_HOST_OVERRIDE = '127.0.0.1'
     }
