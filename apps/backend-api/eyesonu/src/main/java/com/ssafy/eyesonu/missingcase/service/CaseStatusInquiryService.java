@@ -1,12 +1,11 @@
-package com.ssafy.eyesonu.caseinquiry.service;
+package com.ssafy.eyesonu.missingcase.service;
 
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.auth.ratelimit.AttemptRateLimiter;
-import com.ssafy.eyesonu.caseinquiry.dto.CaseStatusInquiryResponse;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper.CaseStatusRow;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import java.time.ZoneOffset;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
+import com.ssafy.eyesonu.missingcase.dto.CaseStatusInquiryResponse;
+import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -14,21 +13,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CaseInquiryService {
+public class CaseStatusInquiryService {
 
 	private static final String RATE_LIMIT_SCOPE = "case-inquiry";
 	private static final Pattern CASE_NUMBER = Pattern.compile("EFU-[0-9A-HJKMNP-TV-Z]{26}");
-	private static final Pattern PHONE = Pattern.compile("[0-9]{10,11}");
 
-	private final CaseInquiryMapper caseInquiryMapper;
+	private final CaseStatusInquiryMapper caseStatusInquiryMapper;
+	private final PhoneNumberNormalizer phoneNumberNormalizer;
 	private final AttemptRateLimiter rateLimiter;
 	private final AuditService auditService;
 
-	public CaseInquiryService(
-			CaseInquiryMapper caseInquiryMapper,
+	public CaseStatusInquiryService(
+			CaseStatusInquiryMapper caseStatusInquiryMapper,
+			PhoneNumberNormalizer phoneNumberNormalizer,
 			AttemptRateLimiter rateLimiter,
 			AuditService auditService) {
-		this.caseInquiryMapper = caseInquiryMapper;
+		this.caseStatusInquiryMapper = caseStatusInquiryMapper;
+		this.phoneNumberNormalizer = phoneNumberNormalizer;
 		this.rateLimiter = rateLimiter;
 		this.auditService = auditService;
 	}
@@ -36,7 +37,7 @@ public class CaseInquiryService {
 	public CaseStatusInquiryResponse inquire(String rawCaseNumber, String rawPhone, String ipAddress) {
 		String caseNumber = normalizeCaseNumber(rawCaseNumber);
 		String phone = normalizePhone(rawPhone);
-		validate(caseNumber, phone);
+		validateCaseNumber(caseNumber);
 
 		if (!rateLimiter.isAllowed(RATE_LIMIT_SCOPE, ipAddress, phone)) {
 			auditLimited(ipAddress, phone);
@@ -46,7 +47,7 @@ public class CaseInquiryService {
 					"잠시 후 다시 시도해 주세요.");
 		}
 
-		CaseStatusRow row = caseInquiryMapper.findStatus(caseNumber, phone).orElse(null);
+		CaseStatusInquiryRow row = caseStatusInquiryMapper.findStatus(caseNumber, phone).orElse(null);
 		if (row == null) {
 			rateLimiter.recordFailure(RATE_LIMIT_SCOPE, ipAddress, phone);
 			auditService.recordBestEffort(
@@ -66,9 +67,9 @@ public class CaseInquiryService {
 		return new CaseStatusInquiryResponse(
 				row.caseNumber(),
 				row.status(),
-				row.reportedAt().toInstant(ZoneOffset.UTC),
-				row.updatedAt().toInstant(ZoneOffset.UTC),
-				row.closedAt() == null ? null : row.closedAt().toInstant(ZoneOffset.UTC));
+				row.reportedAt(),
+				row.updatedAt(),
+				row.closedAt());
 	}
 
 	private void auditLimited(String ipAddress, String phone) {
@@ -86,13 +87,22 @@ public class CaseInquiryService {
 	}
 
 	private String normalizePhone(String value) {
-		return value == null ? "" : value.replaceAll("[^0-9]", "");
+		try {
+			return phoneNumberNormalizer.normalize(value);
+		}
+		catch (IllegalArgumentException exception) {
+			throw validationError();
+		}
 	}
 
-	private void validate(String caseNumber, String phone) {
-		if (!CASE_NUMBER.matcher(caseNumber).matches() || !PHONE.matcher(phone).matches()) {
-			throw new ApiException(
-					HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "조회 정보 형식이 올바르지 않습니다.");
+	private void validateCaseNumber(String caseNumber) {
+		if (!CASE_NUMBER.matcher(caseNumber).matches()) {
+			throw validationError();
 		}
+	}
+
+	private ApiException validationError() {
+		return new ApiException(
+				HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "조회 정보 형식이 올바르지 않습니다.");
 	}
 }

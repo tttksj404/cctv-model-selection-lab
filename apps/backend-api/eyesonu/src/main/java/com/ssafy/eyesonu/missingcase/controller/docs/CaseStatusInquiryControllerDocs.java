@@ -1,9 +1,9 @@
-package com.ssafy.eyesonu.caseinquiry.controller.docs;
+package com.ssafy.eyesonu.missingcase.controller.docs;
 
-import com.ssafy.eyesonu.caseinquiry.dto.CaseStatusInquiryRequest;
-import com.ssafy.eyesonu.caseinquiry.dto.CaseStatusInquiryResponse;
 import com.ssafy.eyesonu.common.api.ApiErrorResponse;
 import com.ssafy.eyesonu.common.api.ApiResponse;
+import com.ssafy.eyesonu.missingcase.dto.CaseStatusInquiryRequest;
+import com.ssafy.eyesonu.missingcase.dto.CaseStatusInquiryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "사건 조회", description = "신고자의 사건 진행 상황 조회 API")
-public interface CaseInquiryControllerDocs {
+public interface CaseStatusInquiryControllerDocs {
 
 	@Operation(
 			summary = "사건 진행 상황 조회",
