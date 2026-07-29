@@ -33,8 +33,19 @@ pipeline_context:
 backend_verify:
   stage: verify
   image: maven:3.9.16-eclipse-temurin-21
+  services:
+    - name: mysql:8.0.46
+      alias: mysql
   variables:
     MAVEN_REPOSITORY: "${CI_PROJECT_DIR}/.m2/repository"
+    MYSQL_DATABASE: "eyesonu_test"
+    MYSQL_USER: "eyesonu_test"
+    MYSQL_PASSWORD: "eyesonu_test_password"
+    MYSQL_ROOT_PASSWORD: "eyesonu_test_root_password"
+    TEST_DB_URL: "jdbc:mysql://mysql:3306/eyesonu_test?serverTimezone=UTC&characterEncoding=UTF-8"
+    TEST_DB_USERNAME: "eyesonu_test"
+    TEST_DB_PASSWORD: "eyesonu_test_password"
+    TEST_DB_CONNECT_RETRIES: "10"
   cache:
     key: "backend-maven"
     paths:
