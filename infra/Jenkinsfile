@@ -10,6 +10,7 @@ pipeline {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
         DEPLOY_ENV_FILE = 'infra/.env.deploy'
 	TESTCONTAINERS_RYUK_DISABLED = 'true'
+	TESTCONTAINERS_HOST_OVERRIDE = 'host.docker.internal'
     }
 
     stages {
