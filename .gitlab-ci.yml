@@ -46,6 +46,7 @@ backend_verify:
     TEST_DB_USERNAME: "eyesonu_test"
     TEST_DB_PASSWORD: "eyesonu_test_password"
     TEST_DB_CONNECT_RETRIES: "10"
+    TESTCONTAINERS_ENABLED: "false"
   cache:
     key: "backend-maven"
     paths:

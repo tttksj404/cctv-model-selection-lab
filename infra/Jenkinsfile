@@ -8,7 +8,9 @@ pipeline {
 
     environment {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
-        DEPLOY_ENV_FILE = 'infra/.env.deploy'
+        DEPLOY_ENV_FILE = '/run/secrets/eyesonu-deploy.env'
+	TESTCONTAINERS_RYUK_DISABLED = 'true'
+	TESTCONTAINERS_HOST_OVERRIDE = '127.0.0.1'
     }
 
     stages {
@@ -46,16 +48,22 @@ pipeline {
                 stage('Admin frontend') {
                     steps {
                         dir('apps/frontend/admin-dashboard') {
-                            sh 'npm ci'
-                            sh 'npm run build'
+                            sh '''
+                                IMAGE="eyesonu/admin-ci:${BUILD_NUMBER}"
+                                docker build --tag "$IMAGE" .
+                                docker image rm --force "$IMAGE" || true
+                            '''
                         }
                     }
                 }
                 stage('Reporter frontend') {
                     steps {
                         dir('apps/frontend/reporter-webapp') {
-                            sh 'npm ci'
-                            sh 'npm run build'
+                            sh '''
+                                IMAGE="eyesonu/reporter-ci:${BUILD_NUMBER}"
+                                docker build --tag "$IMAGE" .
+                                docker image rm --force "$IMAGE" || true
+                            '''
                         }
                     }
                 }
