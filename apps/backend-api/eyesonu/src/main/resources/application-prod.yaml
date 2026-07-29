@@ -42,3 +42,8 @@ eyesonu:
       path-style-access: ${S3_PATH_STYLE_ACCESS:false}
       access-key: ${S3_ACCESS_KEY:}
       secret-key: ${S3_SECRET_KEY:}
+      connect-timeout: ${S3_CONNECT_TIMEOUT:3s}
+      read-timeout: ${S3_READ_TIMEOUT:5s}
+      call-timeout: ${S3_CALL_TIMEOUT:10s}
+      max-file-size-bytes: ${RECORDING_MAX_FILE_SIZE_BYTES}
+      presigned-url-expiry: ${S3_PRESIGNED_URL_EXPIRY:15m}
