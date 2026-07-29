@@ -1,11 +1,11 @@
-package com.ssafy.eyesonu.caseinquiry.service;
+package com.ssafy.eyesonu.missingcase.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SecureCaseNumberGenerator {
+public class CaseNumberGenerator {
 
 	private static final char[] CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ".toCharArray();
 	private static final int RANDOM_BYTES = 16;
@@ -13,11 +13,11 @@ public class SecureCaseNumberGenerator {
 
 	private final SecureRandom secureRandom;
 
-	public SecureCaseNumberGenerator() {
+	public CaseNumberGenerator() {
 		this(new SecureRandom());
 	}
 
-	SecureCaseNumberGenerator(SecureRandom secureRandom) {
+	CaseNumberGenerator(SecureRandom secureRandom) {
 		this.secureRandom = secureRandom;
 	}
 

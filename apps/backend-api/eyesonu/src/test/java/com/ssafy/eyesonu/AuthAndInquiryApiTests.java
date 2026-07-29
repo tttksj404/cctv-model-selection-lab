@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,11 +15,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper.CaseStatusRow;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
+import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
 import com.ssafy.eyesonu.recording.service.RecordingQueryService;
 import jakarta.servlet.http.Cookie;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +54,7 @@ class AuthAndInquiryApiTests {
 	private AuditLogMapper auditLogMapper;
 
 	@MockitoBean
-	private CaseInquiryMapper caseInquiryMapper;
+	private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
 	@MockitoBean
 	private RecordingQueryService recordingQueryService;
@@ -147,12 +149,12 @@ class AuthAndInquiryApiTests {
 
 	@Test
 	void inquiryReturnsOnlyMinimalFieldsAndNoStore() throws Exception {
-		when(caseInquiryMapper.findStatus(any(), any())).thenReturn(Optional.of(new CaseStatusRow(
+		when(caseStatusInquiryMapper.findStatus(any(), any())).thenReturn(Optional.of(new CaseStatusInquiryRow(
 				2L,
 				"EFU-0123456789ABCDEFGHJKMNPQRS",
-				"SEARCHING",
-				LocalDateTime.of(2026, 7, 20, 1, 30),
-				LocalDateTime.of(2026, 7, 20, 2, 20),
+				CaseStatus.SEARCHING,
+				Instant.parse("2026-07-20T01:30:00Z"),
+				Instant.parse("2026-07-20T02:20:00Z"),
 				null)));
 
 		mockMvc.perform(post("/api/v1/cases/status-inquiries")
@@ -163,14 +165,19 @@ class AuthAndInquiryApiTests {
 				.andExpect(status().isOk())
 				.andExpect(header().string("Cache-Control", "no-store"))
 				.andExpect(jsonPath("$.data.status").value("SEARCHING"))
+				.andExpect(jsonPath("$.data.reportedAt").value("2026-07-20T01:30:00Z"))
+				.andExpect(jsonPath("$.data.updatedAt").value("2026-07-20T02:20:00Z"))
 				.andExpect(jsonPath("$.data.missingName").doesNotExist())
 				.andExpect(jsonPath("$.data.photoUrl").doesNotExist())
 				.andExpect(jsonPath("$.data.confirmedSightings").doesNotExist());
+
+		verify(caseStatusInquiryMapper).findStatus(
+				"EFU-0123456789ABCDEFGHJKMNPQRS", "01012345678");
 	}
 
 	@Test
 	void inquiryMismatchUsesGeneric404AndNoStore() throws Exception {
-		when(caseInquiryMapper.findStatus(any(), any())).thenReturn(Optional.empty());
+		when(caseStatusInquiryMapper.findStatus(any(), any())).thenReturn(Optional.empty());
 		mockMvc.perform(post("/api/v1/cases/status-inquiries")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
@@ -183,12 +190,12 @@ class AuthAndInquiryApiTests {
 
 	@Test
 	void inquiryDoesNotReturnDataWhenRequiredAuditWriteFails() throws Exception {
-		when(caseInquiryMapper.findStatus(any(), any())).thenReturn(Optional.of(new CaseStatusRow(
+		when(caseStatusInquiryMapper.findStatus(any(), any())).thenReturn(Optional.of(new CaseStatusInquiryRow(
 				2L,
 				"EFU-0123456789ABCDEFGHJKMNPQRS",
-				"SEARCHING",
-				LocalDateTime.of(2026, 7, 20, 1, 30),
-				LocalDateTime.of(2026, 7, 20, 2, 20),
+				CaseStatus.SEARCHING,
+				Instant.parse("2026-07-20T01:30:00Z"),
+				Instant.parse("2026-07-20T02:20:00Z"),
 				null)));
 		doThrow(new DataAccessResourceFailureException("audit unavailable"))
 				.when(auditLogMapper)
@@ -203,6 +210,27 @@ class AuthAndInquiryApiTests {
 				.andExpect(header().string("Cache-Control", "no-store"))
 				.andExpect(jsonPath("$.code").value("DATABASE_UNAVAILABLE"))
 				.andExpect(jsonPath("$.data").doesNotExist());
+	}
+
+	@Test
+	void inquiryRejectsLettersAndParenthesesInPhoneNumber() throws Exception {
+		mockMvc.perform(post("/api/v1/cases/status-inquiries")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{"caseNumber":"EFU-0123456789ABCDEFGHJKMNPQRS","phone":"abc010-1234-5678"}
+							"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(header().string("Cache-Control", "no-store"))
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		mockMvc.perform(post("/api/v1/cases/status-inquiries")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{"caseNumber":"EFU-0123456789ABCDEFGHJKMNPQRS","phone":"010 (1234) 5678"}
+							"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(header().string("Cache-Control", "no-store"))
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
 	@Test

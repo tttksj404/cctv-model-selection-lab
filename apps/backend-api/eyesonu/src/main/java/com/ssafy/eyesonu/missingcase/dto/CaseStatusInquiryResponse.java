@@ -1,10 +1,11 @@
-package com.ssafy.eyesonu.caseinquiry.dto;
+package com.ssafy.eyesonu.missingcase.dto;
 
+import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import java.time.Instant;
 
 public record CaseStatusInquiryResponse(
 		String caseNumber,
-		String status,
+		CaseStatus status,
 		Instant reportedAt,
 		Instant updatedAt,
 		Instant closedAt) {

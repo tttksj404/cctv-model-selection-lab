@@ -1,4 +1,4 @@
-package com.ssafy.eyesonu.caseinquiry.service;
+package com.ssafy.eyesonu.missingcase.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class SecureCaseNumberGeneratorTests {
+class CaseNumberGeneratorTests {
 
-	private final SecureCaseNumberGenerator generator = new SecureCaseNumberGenerator();
+	private final CaseNumberGenerator generator = new CaseNumberGenerator();
 
 	@Test
 	void generates128BitCrockfordBase32CaseNumbers() {

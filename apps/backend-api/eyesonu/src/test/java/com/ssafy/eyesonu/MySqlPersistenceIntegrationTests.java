@@ -1,13 +1,17 @@
 package com.ssafy.eyesonu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper.AdminInsertCommand;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
+import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +48,7 @@ class MySqlPersistenceIntegrationTests {
 	private AdminMapper adminMapper;
 
 	@Autowired
-	private CaseInquiryMapper caseInquiryMapper;
+	private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
 	@Autowired
 	private AuditLogMapper auditLogMapper;
@@ -104,17 +108,26 @@ class MySqlPersistenceIntegrationTests {
 		jdbcTemplate.update(
 				"INSERT INTO reporters (name, phone) VALUES (?, ?)", "Reporter", "01012345678");
 		Long reporterId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM reporters", Long.class);
+		LocalDateTime reportedAt = LocalDateTime.of(2026, 7, 20, 1, 30, 15, 123_456_000);
+		LocalDateTime updatedAt = LocalDateTime.of(2026, 7, 20, 2, 20, 25, 654_321_000);
 		jdbcTemplate.update("""
 				INSERT INTO cases
 				(reporter_id, case_number, status, report_content, missing_name, appearance,
-				 last_seen_time, last_seen_address)
-				VALUES (?, ?, 'SEARCHING', 'content', 'Missing', 'appearance', ?, 'address')
-				""", reporterId, "EFU-0123456789ABCDEFGHJKMNPQRS", LocalDateTime.now());
+				 last_seen_time, last_seen_address, reported_at, updated_at)
+				VALUES (?, ?, 'SEARCHING', 'content', 'Missing', 'appearance', ?, 'address', ?, ?)
+				""",
+				reporterId,
+				"EFU-0123456789ABCDEFGHJKMNPQRS",
+				reportedAt,
+				reportedAt,
+				updatedAt);
 
-		assertEquals(
-				"SEARCHING",
-				caseInquiryMapper.findStatus(
-						"EFU-0123456789ABCDEFGHJKMNPQRS", "01012345678").orElseThrow().status());
+		CaseStatusInquiryRow inquiry = caseStatusInquiryMapper.findStatus(
+				"EFU-0123456789ABCDEFGHJKMNPQRS", "01012345678").orElseThrow();
+		assertEquals(CaseStatus.SEARCHING, inquiry.status());
+		assertEquals(Instant.parse("2026-07-20T01:30:15.123456Z"), inquiry.reportedAt());
+		assertEquals(Instant.parse("2026-07-20T02:20:25.654321Z"), inquiry.updatedAt());
+		assertNull(inquiry.closedAt());
 
 		auditLogMapper.insert(command.getId(), null, "ADMIN_LOGIN_SUCCESS", "ADMIN", command.getId(), "{}");
 		Integer auditCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM audit_logs", Integer.class);

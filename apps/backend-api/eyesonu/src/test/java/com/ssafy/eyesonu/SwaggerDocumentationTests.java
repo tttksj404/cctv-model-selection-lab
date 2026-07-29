@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -7,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
 import com.ssafy.eyesonu.common.config.SwaggerConfig;
+import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +38,7 @@ class SwaggerDocumentationTests {
 	private AuditLogMapper auditLogMapper;
 
 	@MockitoBean
-	private CaseInquiryMapper caseInquiryMapper;
+	private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
 	@Test
 	void apiDocsExposeImplementedControllersAndFilterLogoutOnly() throws Exception {
@@ -186,6 +187,20 @@ class SwaggerDocumentationTests {
 						.doesNotExist())
 				.andExpect(jsonPath("$.components.schemas.PageMeta.properties.totalElements").exists())
 				.andExpect(jsonPath("$.components.schemas.PageMeta.properties.totalPages").exists());
+	}
+
+	@Test
+	void caseStatusInquirySchemaPublishesEveryCaseStatus() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(
+						"$.components.schemas.CaseStatusInquiryResponse.properties.status.enum",
+						containsInAnyOrder(
+								"RECEIVED",
+								"SEARCHING",
+								"CANDIDATE_FOUND",
+								"FIELD_SEARCH",
+								"CLOSED")));
 	}
 
 	@Test

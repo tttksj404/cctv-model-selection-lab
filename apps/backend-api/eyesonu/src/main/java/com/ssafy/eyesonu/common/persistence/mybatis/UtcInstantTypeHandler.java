@@ -1,4 +1,4 @@
-package com.ssafy.eyesonu.recording.mapper.typehandler;
+package com.ssafy.eyesonu.common.persistence.mybatis;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
