@@ -171,6 +171,21 @@ docker compose --env-file infra/.env.deploy \
 
 Jenkins가 EC2와 다른 서버에서 실행된다면 현재 Jenkinsfile의 Docker 명령을 EC2 SSH 배포 단계로 교체해야 한다. Docker 명령이 실행되는 대상은 반드시 EC2 Docker Engine이어야 한다.
 
+### Jenkins Docker socket access
+
+Jenkins 컨테이너가 호스트 Docker Engine을 사용하려면 `/var/run/docker.sock`을 마운트하고,
+호스트 소켓의 GID를 컨테이너 프로세스 그룹에 전달해야 한다.
+
+```bash
+docker run ... \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  --group-add "$(stat -c '%g' /var/run/docker.sock)" \
+  ...
+```
+
+`--group-add`는 호스트마다 달라질 수 있는 Docker 소켓 GID를 실행 시점에 맞춘다.
+Jenkins 이미지 내부의 고정된 `docker` 그룹만 사용하는 것보다 안전하다.
+
 ## 운영 주의사항
 
 - `infra/.env.deploy`와 인증서 개인키는 Git에 올리지 않는다.
