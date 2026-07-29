@@ -12,28 +12,16 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.context.annotation.Import;
 
 @ActiveProfiles("test")
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@Testcontainers(disabledWithoutDocker = true)
+@Import(TestDatabaseConfiguration.class)
 class MySqlPersistenceIntegrationTests {
-
-	@Container
-	@ServiceConnection
-	static final MySQLContainer<?> MYSQL = new MySQLContainer<>(
-			DockerImageName.parse("mysql:8.0.46"))
-			.withDatabaseName("eyesonu_test")
-			.withUsername("eyesonu")
-			.withPassword("eyesonu_test_password");
 
 	@DynamicPropertySource
 	static void properties(DynamicPropertyRegistry registry) {

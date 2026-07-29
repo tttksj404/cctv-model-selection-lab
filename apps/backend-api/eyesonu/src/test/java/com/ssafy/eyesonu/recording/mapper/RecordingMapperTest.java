@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.recording.domain.AdminRecordingRow;
@@ -21,6 +22,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "spring.flyway.enabled=true")
 @ActiveProfiles("test")
+@Import(TestDatabaseConfiguration.class)
 @Transactional
 @Sql(
         scripts = "/recording-fixture.sql",
