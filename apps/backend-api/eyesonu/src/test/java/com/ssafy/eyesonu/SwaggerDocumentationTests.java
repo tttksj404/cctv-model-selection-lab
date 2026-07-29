@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 				"springdoc.api-docs.enabled=true",
 				"springdoc.swagger-ui.enabled=true"
 		})
+@Import(TestDatabaseConfiguration.class)
 @AutoConfigureMockMvc
 class SwaggerDocumentationTests {
 

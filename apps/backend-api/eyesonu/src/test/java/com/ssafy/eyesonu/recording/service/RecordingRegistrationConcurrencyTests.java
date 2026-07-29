@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.dto.device.RecordingCreateRequest;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,6 +34,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @ActiveProfiles("test")
 @SpringBootTest(properties = "spring.flyway.enabled=true")
+@Import(TestDatabaseConfiguration.class)
 class RecordingRegistrationConcurrencyTests {
 
     private static final long MEDIA_SERVER_ID = 162001L;
