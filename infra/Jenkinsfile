@@ -48,16 +48,22 @@ pipeline {
                 stage('Admin frontend') {
                     steps {
                         dir('apps/frontend/admin-dashboard') {
-                            sh 'npm ci'
-                            sh 'npm run build'
+                            sh '''
+                                IMAGE="eyesonu/admin-ci:${BUILD_NUMBER}"
+                                docker build --tag "$IMAGE" .
+                                docker image rm --force "$IMAGE" || true
+                            '''
                         }
                     }
                 }
                 stage('Reporter frontend') {
                     steps {
                         dir('apps/frontend/reporter-webapp') {
-                            sh 'npm ci'
-                            sh 'npm run build'
+                            sh '''
+                                IMAGE="eyesonu/reporter-ci:${BUILD_NUMBER}"
+                                docker build --tag "$IMAGE" .
+                                docker image rm --force "$IMAGE" || true
+                            '''
                         }
                     }
                 }
