@@ -7,10 +7,12 @@ import com.ssafy.eyesonu.common.config.properties.S3Properties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
+@Import(TestDatabaseConfiguration.class)
 class EyesonuApplicationTests {
 
 	@Autowired
