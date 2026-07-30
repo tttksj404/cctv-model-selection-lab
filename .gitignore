@@ -13,3 +13,4 @@ outputs/
 *.pth
 *.safetensors
 *.egg-info/
+.omo/

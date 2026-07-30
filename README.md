@@ -1,55 +1,61 @@
-# CCTV Model Evaluation Harness
+# CCTV Model Selection Lab
 
-진행 중인 CCTV 사람 속성·식별 후보 모델 실험에서, 모델 점수 자체보다 **승격 가능한 증거가 갖춰졌는지**를 판단하기 위해 만든 공개 포트폴리오판입니다.
+진행 중인 CCTV 모델 선택 실험을 공개 가능한 형태로 정리한 포트폴리오 저장소입니다. 이 저장소의 핵심은 단일 모델의 점수를 보여 주는 것이 아니라, 각 모델을 맞는 역할에 배치하고 검증 조건을 통과한 결과만 다음 단계로 넘기는 의사결정 과정입니다.
 
-이 저장소는 모델·영상·원본 라벨을 배포하지 않습니다. 대신 다음 흐름을 독립적으로 재현합니다.
-
-```text
-run manifest + evaluation evidence
-        ↓
-provenance / identity-label / track-heldout 확인
-        ↓
-metric·운영 임계값 검증
-        ↓
-APPROVED 또는 NOT_APPROVED + 사유
+```mermaid
+flowchart LR
+    A["검토된 manifest"] --> B["역할별 후보 분리"]
+    B --> C["동일 조건 후보 비교"]
+    C --> D["strict ReID Top-K 검색"]
+    D --> E["속성·시간·공간 증거 결합"]
+    E --> F{"충돌 또는 증거 부족"}
+    F -->|"예"| G["review / reject"]
+    F -->|"아니오"| H["promotion gate"]
+    H --> I["APPROVED 또는 NOT_APPROVED"]
 ```
 
-## 왜 만들었나
+## 무엇을 선택했는가
 
-현재 실험에서는 CLIP, SOLIDER, ReID, Qwen3-VL 등 후보의 역할을 나누고 같은 조건에서 비교합니다. 다만 proxy 속성 점수가 좋아도 실제 CCTV identity·track-heldout 라벨과 독립 검수가 없으면 모델을 승격하지 않습니다. 이 저장소는 그 보류 기준을 코드·합성 예제·테스트로 보여 줍니다.
+| 역할 | 현재 후보·상태 | 선택 원칙 |
+| --- | --- | --- |
+| 임베디드 1차 후보 | `student_CLIP_hard`, proxy 우선 | 낮은 복잡도의 1차 후보만 만들고 최종 판정은 하지 않습니다. |
+| 서버 속성 인식 | `SOLIDER Swin-B + PAR`, 구현 후보 | 사람 속성의 구조화된 multi-label 출력을 담당합니다. |
+| 동일인 검색 | SOLIDER ReID, Top-K 후보 검색만 허용 | strict 교차 카메라·시퀀스 비교에서 자동 매칭 기준을 통과하지 못하면 차단합니다. |
+| 생성형 모델 | Qwen 계열, 충돌·저신뢰도 검토 보조 | 속성 분류기나 자동 동일인 판정기를 대체하지 않습니다. |
 
-공개판에 포함된 예제는 합성 데이터입니다. 원본 CCTV 영상, 사람 식별자, 모델 가중치, 팀 서비스 코드, API 키, 원격 서버 주소는 포함하지 않습니다.
+현재 strict ReID 재비교에서 가장 높은 후보는 SOLIDER-ReID Swin-B Top-3 mean입니다. Rank-1 `0.4737`, Recall@5 `0.7789`, identity-MRR `0.6074`였으며, 자동 동일인 매칭 기준인 Rank-1 `0.85`와 Recall@5 `0.95`를 통과하지 못했습니다. 따라서 후보 검색에는 쓰되 자동 매칭은 `BLOCKED`로 유지합니다.
 
-## 빠른 실행
+현재 runtime은 `provisional`이며 `productionApproved = false`입니다. retrieval-only 제한은 runtime에서 강제하고, 생성형 모델은 자동 fallback이나 primary identity classifier가 아닙니다. 교차 카메라 identity 정답도 아직 없으므로, 현재 사람 검토 track의 identity는 원래 source track 안에서만 유효하게 취급합니다.
 
-Python 3.11 이상에서 실행합니다.
+## 비교와 루프의 경계
+
+- 현재 속성 proxy는 PA-100K local 100-image subset의 6개 필드별 top-1 평균 `0.7267`입니다. 이 값은 CCTV identity·track-heldout 결과나 외부 benchmark의 mA·InsF1과 동등하지 않습니다.
+- 이전 45개 person crop·33개 그룹 비교의 CLIP ViT-L/14 `0.414`, Qwen3-VL-2B `0.393`은 historical proxy로 보존합니다. 현재 선택 기준으로 섞지 않으며, 역할이 다른 ReID 점수와 합산하거나 순위를 섞지 않습니다.
+- `invalid_runtime`과 `pending` 후보는 0점으로 환산하지 않고 비교 대상에서 제외합니다. 실패 원인을 실행 환경·출력 계약·미측정으로 남겨 다음 실험의 입력으로 사용합니다.
+- manifest에는 `identityGroupId`, `cameraId`, `trackId`, `conditionGroupId`, 시간 인접성을 분리하는 규칙과 사람 검토·teacher provenance를 요구합니다. 누락·누수·미승인 teacher가 있으면 결과를 보류합니다.
+- 최종 gate는 독립 identity label, track-heldout, 사람 검토, artifact hash와 품질 기준을 모두 요구합니다. 하나라도 부족하면 `NOT_APPROVED`가 정상 결과입니다.
+
+## 저장소 구성
+
+- [configs/model_selection_snapshot.json](configs/model_selection_snapshot.json): 역할, 후보 상태, 측정 범위, strict ReID 결정과 promotion 상태를 한 파일에 고정한 공개용 스냅샷
+- [docs/model-selection-architecture.md](docs/model-selection-architecture.md): 모델 역할과 fail-closed 오케스트레이션 구조
+- [docs/experiment-decision-log.md](docs/experiment-decision-log.md): 비교 결과를 어떤 범위에서 해석했는지와 다음 실험 루프
+- [src/cctv_eval_harness/gate.py](src/cctv_eval_harness/gate.py): 전체 흐름의 마지막 promotion gate 컴포넌트
+- [notebooks/model_selection_overview.ipynb](notebooks/model_selection_overview.ipynb): 스냅샷을 다시 읽어 의사결정 경계를 확인하는 실행 가능한 요약
+- [notebooks/evaluation_protocol.ipynb](notebooks/evaluation_protocol.ipynb): artifact·heldout·provenance gate 프로토콜
+
+## 실행
+
+Python 3.11 이상과 `uv`에서 테스트·gate를 실행합니다. Notebook 실행에는 Jupyter 환경이 필요합니다.
 
 ```powershell
-python -m pip install -e .
-python -m unittest discover -s tests -v
-python -m cctv_eval_harness.gate --input examples/proxy_result.json --config configs/promotion_gate.json --workspace .
+uv run python -m unittest discover -s tests -v
+uv run python -m cctv_eval_harness.gate --input examples/proxy_result.json --config configs/promotion_gate.json --workspace .
+python -m nbconvert --to notebook --execute --inplace notebooks/model_selection_overview.ipynb --ExecutePreprocessor.timeout=60
 ```
 
-두 번째 명령은 의도적으로 `NOT_APPROVED`를 반환합니다. 예제는 proxy 벤치마크이며 독립 identity 라벨·track-heldout 검증·검증 가능한 산출물 참조가 없기 때문입니다. 종료 코드 `2`는 실행 실패가 아니라 승격 보류를 뜻합니다.
+두 번째 명령은 의도적으로 `NOT_APPROVED`와 종료 코드 `2`를 반환합니다. proxy 속성 결과를 실제 CCTV identity·track-heldout 결과처럼 승격하지 않는지 확인하기 위한 fail-closed 예제입니다.
 
-## 공개한 핵심
+## 공개 범위
 
-- `src/cctv_eval_harness/gate.py`: workspace 밖의 산출물 경로를 거부하고 SHA-256을 다시 확인하는 fail-closed 승격 게이트
-- `configs/promotion_gate.json`: identity Rank-1, Recall@5, false-match rate, review rate의 명시적 기준
-- `examples/proxy_result.json`: proxy 결과를 production 성과로 오해하지 않도록 `NOT_APPROVED`로 닫는 예제
-- `notebooks/evaluation_protocol.ipynb`: 실험 질문·기준선·비교 지표·보류 조건을 기록할 Jupyter 템플릿
-- `docs/session_evidence.md`: 공개 가능한 실험 사실과 표현 경계
-
-## 이력서용 설명
-
-> CCTV 후보 모델의 manifest·결과 JSON·근거 파일을 함께 검증하는 Python 평가 하네스를 설계했습니다. proxy 점수가 높아도 identity·track-heldout·독립 라벨·provenance가 부족하면 `NOT_APPROVED`로 보류하고, 실패 사유를 다음 실험 조건으로 환류했습니다.
-
-이 문장은 성능 수치나 production 배포를 주장하지 않습니다. 현재 단계의 핵심은 모델 도입 전에 검증 가능한 승격 조건을 만드는 것입니다.
-
-## 범위와 한계
-
-- 이 프로젝트는 실제 CCTV 배포 서비스가 아닙니다.
-- 예제의 승인 경로는 단위 테스트용 합성 산출물로만 검증합니다.
-- 실제 승격에는 권한 있는 데이터, 사람 검수, identity·track 분리, 라이선스 검토가 추가로 필요합니다.
-
-자세한 근거와 공개 범위는 [docs/session_evidence.md](docs/session_evidence.md), 게이트 규칙은 [docs/promotion_policy.md](docs/promotion_policy.md)를 참고하세요.
+실제 CCTV 영상·프레임·개인 식별자·모델 가중치·내부 서버 경로·인증 정보는 포함하지 않습니다. 이 저장소는 원본 데이터를 재배포하지 않고, 어떤 증거가 있어야 모델 선택 또는 승격이 가능한지 재현 가능한 의사결정 구조만 공개합니다.

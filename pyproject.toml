@@ -3,9 +3,10 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cctv-model-evaluation-harness"
+name = "cctv-model-selection-lab"
 version = "0.1.0"
-description = "Fail-closed promotion gates for CCTV candidate-model experiments"
+description = "Public-safe evidence for CCTV candidate-model selection and promotion gates"
+readme = "README.md"
 requires-python = ">=3.11"
 
 [tool.setuptools.packages.find]

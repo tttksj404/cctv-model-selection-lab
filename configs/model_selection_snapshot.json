@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "cctv-model-selection-snapshot-v1",
+  "scope": "public-safe model-selection evidence snapshot",
+  "runtimePolicy": {
+    "status": "provisional",
+    "runtimeEnforced": true,
+    "productionApproved": false,
+    "retrievalOnlyEnforced": true,
+    "generativePrimaryClassifier": false,
+    "automaticGenerativeFallback": false,
+    "generativeRequiredForAutoMatch": false
+  },
+  "groundTruthLimits": {
+    "projectTrackScope": "10 manually reviewed stable tracks; identity is valid only within each source track",
+    "crossCameraIdentityAvailable": false,
+    "publicArtifactPolicy": "Raw videos, frames, identity labels and internal artifact locations are not published."
+  },
+  "roles": {
+    "embeddedCandidate": {
+      "candidate": "student_CLIP_hard",
+      "mode": "first_pass_attribute_candidate",
+      "status": "proxy_winner_not_production_approved"
+    },
+    "serverAttribute": {
+      "candidate": "SOLIDER Swin-B + PAR",
+      "mode": "structured_multi_label_attribute",
+      "status": "selected_for_implementation_not_production_approved"
+    },
+    "reid": {
+      "candidateFamily": "SOLIDER or TransReID family",
+      "observedStrictCandidate": "SOLIDER-ReID Swin-B Top-3 mean",
+      "mode": "top_k_retrieval_only",
+      "status": "candidate_retriever"
+    },
+    "generativeReview": {
+      "candidate": "Qwen family",
+      "mode": "conflict_and_low_confidence_review",
+      "status": "review_only"
+    }
+  },
+  "evaluationContracts": {
+    "manifestRequires": [
+      "identityGroupId",
+      "cameraId",
+      "trackId",
+      "conditionGroupId",
+      "human review",
+      "teacher provenance when used"
+    ],
+    "splitBlocks": [
+      "identity leakage",
+      "track leakage",
+      "temporal adjacency leakage",
+      "augmentation in heldout test"
+    ],
+    "candidateStatusHandling": {
+      "measured": "eligible only within the same evaluation scope",
+      "invalid_runtime": "excluded without assigning a score",
+      "invalid_output": "excluded without assigning a score",
+      "pending": "not ranked before measurement"
+    }
+  },
+  "currentAttributeProxy": {
+    "scope": "PA-100K local 100-image subset with six fields and deterministic image-level folds",
+    "metric": "per_field_top1_mean",
+    "bestObserved": 0.72666668,
+    "notEquivalentTo": [
+      "CCTV identity accuracy",
+      "track-heldout identity result",
+      "automatic match eligibility",
+      "external mA or InsF1"
+    ]
+  },
+  "historicalAttributeProxyComparison": {
+    "scope": "historical 45 person crops and 33 groups with a common attribute schema",
+    "status": "historical_proxy_not_current_selection_criterion",
+    "notEquivalentTo": [
+      "current local six-field proxy",
+      "CCTV identity accuracy",
+      "track-heldout identity result",
+      "automatic match eligibility"
+    ],
+    "candidates": [
+      {
+        "candidate": "CLIP ViT-L/14",
+        "status": "measured",
+        "attributeScore": 0.414,
+        "p95Seconds": 4.141
+      },
+      {
+        "candidate": "Qwen3-VL-2B",
+        "status": "measured",
+        "attributeScore": 0.393,
+        "p95Seconds": 8.298
+      },
+      {
+        "candidate": "Gemma candidate",
+        "status": "invalid_runtime"
+      },
+      {
+        "candidate": "Qwen2.5 candidate",
+        "status": "pending"
+      }
+    ]
+  },
+  "strictReidDecision": {
+    "protocol": "cross-camera and cross-sequence gallery exclusion",
+    "candidate": "SOLIDER-ReID Swin-B Top-3 mean",
+    "rank1": 0.4737,
+    "recallAt5": 0.7789,
+    "identityMrr": 0.6074,
+    "candidateRetrieverEnabled": true,
+    "automaticIdentityMatch": "BLOCKED",
+    "reason": "The strict result is below the automatic-match gate and must not be replaced with an overlapping-gallery result."
+  },
+  "promotion": {
+    "status": "NOT_APPROVED",
+    "requires": [
+      "independent cross-camera or cross-event identity labels",
+      "sealed identity and track-heldout evidence",
+      "human review",
+      "artifact provenance and hashes",
+      "rank1 at least 0.85",
+      "recallAt5 at least 0.95",
+      "false-match threshold pass"
+    ]
+  }
+}
