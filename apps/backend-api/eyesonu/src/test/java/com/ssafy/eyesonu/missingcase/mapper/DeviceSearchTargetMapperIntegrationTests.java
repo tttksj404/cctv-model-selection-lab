@@ -107,6 +107,31 @@ class DeviceSearchTargetMapperIntegrationTests {
 		assertNotNull(conditionRows.getFirst().getPrompt());
 	}
 
+	@Test
+	void lastModifiedIncludesLastSearchConditionDeletion() {
+		jdbcTemplate.update("""
+				UPDATE search_conditions
+				SET deleted_at = ?, updated_at = ?
+				WHERE id = ?
+				""", LocalDateTime.of(2026, 7, 30, 12, 0),
+				LocalDateTime.of(2026, 7, 30, 12, 0), 178007L);
+
+		assertEquals(Instant.parse("2026-07-30T12:00:00Z"),
+				mapper.findDeviceSearchTargetLastModified(MEDIA_SERVER_ID));
+	}
+
+	@Test
+	void lastModifiedIncludesLastCameraDeactivation() {
+		jdbcTemplate.update("""
+				UPDATE case_cameras
+				SET search_enabled = FALSE, updated_at = ?
+				WHERE case_id = ? AND camera_id = ?
+				""", LocalDateTime.of(2026, 7, 30, 13, 0), CASE_ID, CAMERA_ID);
+
+		assertEquals(Instant.parse("2026-07-30T13:00:00Z"),
+				mapper.findDeviceSearchTargetLastModified(MEDIA_SERVER_ID));
+	}
+
 	private void cleanup() {
 		jdbcTemplate.update("DELETE FROM case_cameras WHERE case_id = ?", CASE_ID);
 		jdbcTemplate.update("DELETE FROM search_conditions WHERE case_id = ?", CASE_ID);
