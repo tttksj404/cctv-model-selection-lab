@@ -94,5 +94,8 @@ public interface MissingCaseMapper {
 	int disableCaseCamera(
 			@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
 
-	List<DeviceSearchTargetRow> findDeviceSearchTargets(@Param("mediaServerId") Long mediaServerId);
+	List<DeviceSearchTargetRow> findDeviceSearchTargetCameras(@Param("mediaServerId") Long mediaServerId);
+
+	List<DeviceSearchTargetRow> findDeviceSearchTargetConditions(
+			@Param("caseIds") Collection<Long> caseIds);
 }

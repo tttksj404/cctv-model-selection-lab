@@ -340,7 +340,34 @@
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
-    <select id="findDeviceSearchTargets" resultMap="deviceSearchTargetResultMap">
+    <select id="findDeviceSearchTargetCameras" resultMap="deviceSearchTargetResultMap">
+        SELECT c.id AS case_id,
+               c.case_number,
+               cc.camera_id,
+               cam.camera_code,
+               GREATEST(
+                   c.updated_at,
+                   COALESCE((
+                       SELECT MAX(sc_all.updated_at)
+                       FROM search_conditions sc_all
+                       WHERE sc_all.case_id = c.id
+                   ), c.updated_at),
+                   COALESCE((
+                       SELECT MAX(cc_all.updated_at)
+                       FROM case_cameras cc_all
+                       WHERE cc_all.case_id = c.id
+                   ), c.updated_at)
+               ) AS target_updated_at
+        FROM cases c
+        INNER JOIN case_cameras cc
+            ON cc.case_id = c.id AND cc.search_enabled = TRUE
+        INNER JOIN cameras cam
+            ON cam.id = cc.camera_id AND cam.media_server_id = #{mediaServerId}
+        WHERE c.status = 'SEARCHING'
+        ORDER BY c.id, cc.camera_id
+    </select>
+
+    <select id="findDeviceSearchTargetConditions" resultMap="deviceSearchTargetResultMap">
         SELECT c.id AS case_id,
                c.case_number,
                sc.id AS condition_id,
@@ -350,17 +377,15 @@
                sc.search_end,
                sc.search_area,
                sc.similarity_threshold,
-               cc.camera_id,
-               cam.camera_code,
-               GREATEST(c.updated_at, sc.updated_at, cc.updated_at) AS target_updated_at
+               c.updated_at AS target_updated_at
         FROM cases c
         INNER JOIN search_conditions sc
             ON sc.case_id = c.id AND sc.deleted_at IS NULL
-        INNER JOIN case_cameras cc
-            ON cc.case_id = c.id AND cc.search_enabled = TRUE
-        INNER JOIN cameras cam
-            ON cam.id = cc.camera_id AND cam.media_server_id = #{mediaServerId}
         WHERE c.status = 'SEARCHING'
-        ORDER BY c.id, sc.id, cc.camera_id
+          AND c.id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+        ORDER BY c.id, sc.id
     </select>
 </mapper>
