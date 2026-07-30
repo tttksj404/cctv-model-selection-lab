@@ -109,6 +109,7 @@ class CaseCommandServiceTests {
 				1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "탐색 시작"), 7L));
 
 		assertEquals("BUSINESS_RULE_VIOLATION", exception.getCode());
+		assertEquals(422, exception.getStatus().value());
 		verify(mapper, never()).updateStatus(any(), any(), any());
 	}
 
@@ -126,21 +127,103 @@ class CaseCommandServiceTests {
 	}
 
 	@Test
-	void normalCloseRejectsPendingWorkAndForceCloseCancelsJobs() {
+	void searchingRequiresAtLeastOneSearchCondition() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
+		when(mapper.countSearchConditions(1L)).thenReturn(0L);
+		when(mapper.countActiveCameras(1L)).thenReturn(1L);
+
+		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
+				1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "search"), 7L));
+
+		assertEquals("BUSINESS_RULE_VIOLATION", exception.getCode());
+		assertEquals(422, exception.getStatus().value());
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void rejectsDirectClosedStatusUpdate() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
+
+		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
+				1L, new CaseStatusUpdateRequest(CaseStatus.CLOSED, "closed"), 7L));
+
+		assertEquals("VALIDATION_ERROR", exception.getCode());
+		assertEquals(400, exception.getStatus().value());
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void rejectsUnsupportedStatusTransition() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
+
+		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
+				1L, new CaseStatusUpdateRequest(CaseStatus.FIELD_SEARCH, "field search"), 7L));
+
+		assertEquals("BUSINESS_RULE_VIOLATION", exception.getCode());
+		assertEquals(422, exception.getStatus().value());
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void normalCloseRejectsWhenOnlyPendingCandidatesExist() {
 		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.SEARCHING));
-		when(mapper.countPendingCandidates(1L)).thenReturn(2L);
+		when(mapper.countPendingCandidates(1L)).thenReturn(1L);
+		when(mapper.countActiveJobs(1L)).thenReturn(0L);
+
+		ApiException conflict = assertThrows(ApiException.class, () -> service.close(
+				1L, new CaseCloseRequest("close", false), 7L));
+
+		assertApiError(conflict, "CASE_CLOSE_CONFLICT", 409);
+		verify(mapper, never()).cancelActiveJobs(1L);
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void normalCloseRejectsWhenOnlyActiveJobsExist() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.SEARCHING));
+		when(mapper.countPendingCandidates(1L)).thenReturn(0L);
 		when(mapper.countActiveJobs(1L)).thenReturn(1L);
 
 		ApiException conflict = assertThrows(ApiException.class, () -> service.close(
-				1L, new CaseCloseRequest("종료", false), 7L));
-		assertEquals("CASE_CLOSE_CONFLICT", conflict.getCode());
+				1L, new CaseCloseRequest("close", false), 7L));
 
+		assertApiError(conflict, "CASE_CLOSE_CONFLICT", 409);
+		verify(mapper, never()).cancelActiveJobs(1L);
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void normalCloseSucceedsWhenNoPendingWorkExists() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.SEARCHING));
+		when(mapper.countPendingCandidates(1L)).thenReturn(0L);
+		when(mapper.countActiveJobs(1L)).thenReturn(0L);
+		when(mapper.findById(1L)).thenReturn(row(CaseStatus.CLOSED));
+
+		assertEquals(CaseStatus.CLOSED, service.close(
+				1L, new CaseCloseRequest("close", false), 7L).status());
+
+		verify(mapper, never()).cancelActiveJobs(1L);
+		verify(mapper).updateStatus(eq(1L), eq(CaseStatus.CLOSED), any(Instant.class));
+	}
+
+	@Test
+	void forceCloseCancelsActiveJobsEvenWhenPendingWorkExists() {
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.SEARCHING));
+		when(mapper.countPendingCandidates(1L)).thenReturn(1L);
+		when(mapper.countActiveJobs(1L)).thenReturn(1L);
 		when(mapper.cancelActiveJobs(1L)).thenReturn(1);
 		when(mapper.findById(1L)).thenReturn(row(CaseStatus.CLOSED));
+
 		assertEquals(CaseStatus.CLOSED, service.close(
-				1L, new CaseCloseRequest("관리자 강제 종료", true), 7L).status());
+				1L, new CaseCloseRequest("force close", true), 7L).status());
+
 		verify(mapper).cancelActiveJobs(1L);
 		verify(mapper).updateStatus(eq(1L), eq(CaseStatus.CLOSED), any(Instant.class));
+	}
+
+	private void assertApiError(ApiException exception, String code, int status) {
+		assertEquals(code, exception.getCode());
+		assertEquals(status, exception.getStatus().value());
 	}
 
 	private MissingCaseRow row(CaseStatus status) {
