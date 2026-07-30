@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.missingcase.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,7 +55,7 @@ class CaseCommandServiceTests {
 		when(validator.normalizeCreate(request)).thenReturn(normalized);
 		when(caseNumberGenerator.generate()).thenReturn("EFU-FIRST", "EFU-SECOND");
 		when(registrationWriter.write(normalized, 7L))
-				.thenThrow(new DuplicateKeyException("Duplicate entry for key 'uk_cases_case_number'"))
+				.thenThrow(new CaseNumberCollisionException(new DuplicateKeyException("collision")))
 				.thenAnswer(invocation -> {
 					normalized.setId(2L);
 					normalized.setCaseNumber("EFU-SECOND");
@@ -64,6 +65,38 @@ class CaseCommandServiceTests {
 
 		assertEquals("EFU-SECOND", service.create(request, 7L).caseNumber());
 		verify(registrationWriter, times(2)).write(normalized, 7L);
+	}
+
+	@Test
+	void returnsServiceUnavailableAfterAllCaseNumberAttemptsCollide() {
+		CaseCreateRequest request = mock(CaseCreateRequest.class);
+		MissingCaseRow normalized = row(CaseStatus.RECEIVED);
+		when(validator.normalizeCreate(request)).thenReturn(normalized);
+		when(caseNumberGenerator.generate()).thenReturn("EFU-COLLISION");
+		when(registrationWriter.write(normalized, 7L))
+				.thenThrow(new CaseNumberCollisionException(new DuplicateKeyException("collision")));
+
+		ApiException exception = assertThrows(ApiException.class, () -> service.create(request, 7L));
+
+		assertEquals(503, exception.getStatus().value());
+		assertEquals("CASE_NUMBER_ALLOCATION_FAILED", exception.getCode());
+		verify(registrationWriter, times(5)).write(normalized, 7L);
+	}
+
+	@Test
+	void doesNotRetryUnclassifiedDuplicateKeyFailure() {
+		CaseCreateRequest request = mock(CaseCreateRequest.class);
+		MissingCaseRow normalized = row(CaseStatus.RECEIVED);
+		DuplicateKeyException duplicate = new DuplicateKeyException("unrelated duplicate");
+		when(validator.normalizeCreate(request)).thenReturn(normalized);
+		when(caseNumberGenerator.generate()).thenReturn("EFU-FIRST");
+		when(registrationWriter.write(normalized, 7L)).thenThrow(duplicate);
+
+		DuplicateKeyException thrown = assertThrows(
+				DuplicateKeyException.class, () -> service.create(request, 7L));
+
+		assertSame(duplicate, thrown);
+		verify(registrationWriter).write(normalized, 7L);
 	}
 
 	@Test

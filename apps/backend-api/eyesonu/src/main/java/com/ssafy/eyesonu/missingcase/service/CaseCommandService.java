@@ -14,7 +14,6 @@ import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,20 +53,14 @@ public class CaseCommandService {
 				return new CaseCreateResponse(
 						created.getId(), created.getCaseNumber(), created.getStatus(), created.getReportedAt());
 			}
-			catch (DuplicateKeyException exception) {
-				if (!isCaseNumberCollision(exception)) throw exception;
+			catch (CaseNumberCollisionException exception) {
+				// Retry with a newly generated number after the independent attempt rolls back.
 			}
 		}
 		throw new ApiException(
 				HttpStatus.SERVICE_UNAVAILABLE,
 				"CASE_NUMBER_ALLOCATION_FAILED",
 				"사건번호를 발급할 수 없습니다.");
-	}
-
-	private boolean isCaseNumberCollision(DuplicateKeyException exception) {
-		String message = exception.getMostSpecificCause().getMessage();
-		return message != null
-				&& (message.contains("uk_cases_case_number") || message.contains("case_number"));
 	}
 
 	@Transactional

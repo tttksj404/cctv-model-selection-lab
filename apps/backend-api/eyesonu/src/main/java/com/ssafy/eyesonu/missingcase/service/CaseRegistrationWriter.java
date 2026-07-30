@@ -5,7 +5,9 @@ import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.ReporterRecord;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import java.util.Map;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
@@ -19,14 +21,25 @@ public class CaseRegistrationWriter {
 		this.auditService = auditService;
 	}
 
-	@Transactional
+	/**
+	 * Runs one case-number allocation attempt in an independent transaction. A successful
+	 * registration remains committed even if a caller's surrounding transaction later rolls back.
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public MissingCaseRow write(MissingCaseRow missingCase, Long adminId) {
 		ReporterRecord reporter = new ReporterRecord(
 				null, missingCase.getReporterName(), missingCase.getReporterPhone(),
 				missingCase.getReporterEmail(), missingCase.getReporterRelation());
 		mapper.insertReporter(reporter);
 		missingCase.setReporterId(reporter.getId());
-		mapper.insertCase(missingCase);
+		try {
+			// reporterId was allocated above, so the only expected duplicate at this boundary
+			// under the current schema is the generated case number.
+			mapper.insertCase(missingCase);
+		}
+		catch (DuplicateKeyException exception) {
+			throw new CaseNumberCollisionException(exception);
+		}
 		auditService.recordRequired(
 				"CASE_CREATED", adminId, missingCase.getId(), "CASE", missingCase.getId(),
 				null,
