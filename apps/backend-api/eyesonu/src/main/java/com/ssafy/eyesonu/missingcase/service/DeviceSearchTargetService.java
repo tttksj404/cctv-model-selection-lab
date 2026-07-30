@@ -8,6 +8,7 @@ import com.ssafy.eyesonu.missingcase.dto.device.SearchTargetResponse;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +25,25 @@ public class DeviceSearchTargetService {
 
 	public List<SearchTargetResponse> findTargets(MediaServerPrincipal principal) {
 		Map<Long, TargetAccumulator> grouped = new LinkedHashMap<>();
-		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargets(principal.mediaServerId())) {
+		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargetCameras(principal.mediaServerId())) {
 			TargetAccumulator target = grouped.computeIfAbsent(row.getCaseId(),
 					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber()));
-			target.addCondition(row);
 			target.addCamera(row);
 			target.updateTimestamp(row.getUpdatedAt());
 		}
-		return grouped.values().stream().map(TargetAccumulator::toResponse).toList();
+		if (grouped.isEmpty()) return List.of();
+
+		Collection<Long> caseIds = grouped.keySet();
+		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargetConditions(caseIds)) {
+			TargetAccumulator target = grouped.get(row.getCaseId());
+			if (target == null) continue;
+			target.addCondition(row);
+			target.updateTimestamp(row.getUpdatedAt());
+		}
+		return grouped.values().stream()
+				.filter(TargetAccumulator::hasConditions)
+				.map(TargetAccumulator::toResponse)
+				.toList();
 	}
 
 	private static final class TargetAccumulator {
@@ -56,6 +68,10 @@ public class DeviceSearchTargetService {
 		private void addCamera(DeviceSearchTargetRow row) {
 			cameras.putIfAbsent(row.getCameraId(),
 					new SearchCameraTargetResponse(row.getCameraId(), row.getCameraCode()));
+		}
+
+		private boolean hasConditions() {
+			return !conditions.isEmpty();
 		}
 
 		private void updateTimestamp(Instant candidate) {
