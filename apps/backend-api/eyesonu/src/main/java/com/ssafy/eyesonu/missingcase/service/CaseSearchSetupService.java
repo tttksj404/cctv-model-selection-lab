@@ -3,6 +3,7 @@ package com.ssafy.eyesonu.missingcase.service;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseCameraRow;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCameraRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCameraResponse;
@@ -42,7 +43,7 @@ public class CaseSearchSetupService {
 	@Transactional
 	public SearchConditionResponse createCondition(
 			Long caseId, SearchConditionCreateRequest request, Long adminId) {
-			requireOpenCase(caseId);
+		requireOpenCase(caseId);
 		SearchConditionRow row = new SearchConditionRow();
 		row.setCaseId(caseId);
 		row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
@@ -66,7 +67,7 @@ public class CaseSearchSetupService {
 	@Transactional
 	public SearchConditionResponse updateCondition(
 			Long caseId, Long conditionId, SearchConditionUpdateRequest request, Long adminId) {
-			requireOpenCase(caseId);
+		requireOpenCase(caseId);
 		SearchConditionRow row = requireCondition(caseId, conditionId);
 		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
 			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
@@ -113,7 +114,7 @@ public class CaseSearchSetupService {
 
 	@Transactional
 	public void deleteCondition(Long caseId, Long conditionId, Long adminId) {
-			requireOpenCase(caseId);
+		requireOpenCase(caseId);
 		requireCondition(caseId, conditionId);
 		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
 			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
@@ -132,7 +133,7 @@ public class CaseSearchSetupService {
 	@Transactional
 	public List<CaseCameraResponse> addCameras(
 			Long caseId, CaseCameraRequest request, Long adminId) {
-			requireOpenCase(caseId);
+		requireOpenCase(caseId);
 		Set<Long> requested = new HashSet<>(request.cameraIds());
 		if (requested.size() != request.cameraIds().size()) {
 			throw validation("cameraIds must not contain duplicates.");
@@ -172,7 +173,7 @@ public class CaseSearchSetupService {
 	}
 
 	private void requireOpenCase(Long caseId) {
-		if (caseQueryService.require(caseId).getStatus().name().equals("CLOSED")) {
+		if (caseQueryService.require(caseId).getStatus() == CaseStatus.CLOSED) {
 			throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
 					"A closed case cannot change search settings.");
 		}
