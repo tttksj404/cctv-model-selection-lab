@@ -77,19 +77,25 @@ pipeline {
             }
             steps {
                 sh '''
+                    compose() {
+                        docker compose \
+                          --env-file "$DEPLOY_ENV_FILE" \
+                          -f "$DEPLOY_COMPOSE" \
+                          "$@"
+                    }
+
                     test -f "$DEPLOY_ENV_FILE"
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" config >/dev/null
+                    compose config >/dev/null
                     sh infra/scripts/cleanup-legacy-containers.sh
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \\
+                    compose \
+                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \
                       "backend-$DEPLOY_PROFILE" "admin-$DEPLOY_PROFILE" "reporter-$DEPLOY_PROFILE"
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                      up -d --no-deps nginx
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
+                    compose up -d --no-deps --wait --wait-timeout 180 nginx
+                    compose \
                       exec -T nginx nginx -t
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
+                    compose \
                       exec -T nginx nginx -s reload
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" ps
+                    compose ps
                 '''
             }
         }
