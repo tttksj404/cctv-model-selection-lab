@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper">
+    <resultMap id="eventMap" type="com.ssafy.eyesonu.missingcase.domain.CandidateEvent">
+        <id property="id" column="id"/>
+        <result property="eventId" column="event_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="detectedAt" column="detected_at"/>
+        <result property="frameObjectKey" column="frame_object_key"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+    <resultMap id="detectionMap" type="com.ssafy.eyesonu.missingcase.domain.CandidateEventDetection">
+        <id property="id" column="id"/>
+        <result property="candidateEventId" column="candidate_event_id"/>
+        <result property="candidateId" column="candidate_id"/>
+        <result property="detectionIndex" column="detection_index"/>
+        <result property="trackId" column="track_id"/>
+        <result property="cropObjectKey" column="crop_object_key"/>
+        <result property="similarity" column="similarity"/>
+        <result property="boundingBox" column="bounding_box"/>
+    </resultMap>
+    <resultMap id="candidateMap" type="com.ssafy.eyesonu.missingcase.domain.CandidateAggregate">
+        <id property="id" column="id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="trackId" column="track_id"/>
+        <result property="firstDetectedAt" column="first_detected_at"/>
+        <result property="lastDetectedAt" column="last_detected_at"/>
+        <result property="bestSimilarity" column="best_similarity"/>
+        <result property="averageSimilarity" column="average_similarity"/>
+        <result property="detectionCount" column="detection_count"/>
+        <result property="similarity" column="similarity"/>
+        <result property="cropObjectKey" column="crop_object_key"/>
+        <result property="frameObjectKey" column="frame_object_key"/>
+        <result property="boundingBox" column="bounding_box"/>
+        <result property="version" column="version"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findEventByEventId" resultMap="eventMap">
+        SELECT id, event_id, case_id, camera_id, detected_at, frame_object_key, created_at
+        FROM candidate_events WHERE event_id = #{eventId}
+    </select>
+    <select id="findDetectionsByEventId" resultMap="detectionMap">
+        SELECT d.id, d.candidate_event_id, d.candidate_id, d.detection_index, d.track_id,
+               d.crop_object_key, d.similarity, CAST(d.bounding_box AS CHAR) AS bounding_box
+        FROM candidate_event_detections d
+        INNER JOIN candidate_events e ON e.id = d.candidate_event_id
+        WHERE e.event_id = #{eventId} ORDER BY d.detection_index
+    </select>
+    <select id="existsActiveCaseCamera" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM case_cameras
+            WHERE case_id = #{caseId} AND camera_id = #{cameraId}
+              AND search_enabled = TRUE AND removed_at IS NULL
+        )
+    </select>
+    <insert id="insertEvent" useGeneratedKeys="true" keyProperty="event.id">
+        INSERT INTO candidate_events (event_id, case_id, camera_id, detected_at, frame_object_key)
+        VALUES (#{event.eventId}, #{event.caseId}, #{event.cameraId}, #{event.detectedAt}, #{event.frameObjectKey})
+    </insert>
+    <select id="findCandidateForUpdate" resultMap="candidateMap">
+        SELECT id, case_id, camera_id, track_id, first_detected_at, last_detected_at,
+               best_similarity, average_similarity, detection_count, similarity,
+               crop_object_key, frame_object_key, CAST(bounding_box AS CHAR) AS bounding_box,
+               version, created_at
+        FROM candidates
+        WHERE case_id = #{caseId} AND camera_id = #{cameraId} AND track_id = #{trackId}
+        FOR UPDATE
+    </select>
+    <insert id="insertCandidate" useGeneratedKeys="true" keyProperty="candidate.id">
+        INSERT INTO candidates
+            (case_id, camera_id, track_id, detected_time, first_detected_at, last_detected_at,
+             similarity, best_similarity, average_similarity, detection_count,
+             crop_object_key, frame_object_key, bounding_box, review_status, version)
+        VALUES
+            (#{candidate.caseId}, #{candidate.cameraId}, #{candidate.trackId},
+             #{candidate.firstDetectedAt}, #{candidate.firstDetectedAt}, #{candidate.lastDetectedAt},
+             #{candidate.similarity}, #{candidate.bestSimilarity}, #{candidate.averageSimilarity},
+             #{candidate.detectionCount}, #{candidate.cropObjectKey}, #{candidate.frameObjectKey},
+             #{candidate.boundingBox}, 'PENDING', 0)
+    </insert>
+    <update id="updateCandidate">
+        UPDATE candidates
+        SET detected_time = CASE WHEN #{similarity} &gt; similarity THEN #{detectedAt} ELSE detected_time END,
+            first_detected_at = LEAST(first_detected_at, #{detectedAt}),
+            last_detected_at = GREATEST(last_detected_at, #{detectedAt}),
+            similarity = GREATEST(similarity, #{similarity}),
+            best_similarity = GREATEST(best_similarity, #{similarity}),
+            average_similarity = ((average_similarity * detection_count) + #{similarity}) / (detection_count + 1),
+            detection_count = detection_count + 1,
+            crop_object_key = CASE WHEN #{similarity} &gt;= best_similarity THEN #{cropObjectKey} ELSE crop_object_key END,
+            frame_object_key = CASE WHEN #{similarity} &gt;= best_similarity THEN #{frameObjectKey} ELSE frame_object_key END,
+            bounding_box = CASE WHEN #{similarity} &gt;= best_similarity THEN #{boundingBox} ELSE bounding_box END,
+            version = version + 1,
+            updated_at = CURRENT_TIMESTAMP(6)
+        WHERE id = #{candidate.id} AND version = #{candidate.version}
+    </update>
+    <insert id="insertDetection" useGeneratedKeys="true" keyProperty="detection.id">
+        INSERT INTO candidate_event_detections
+            (candidate_event_id, candidate_id, detection_index, track_id, crop_object_key, similarity, bounding_box)
+        VALUES
+            (#{detection.candidateEventId}, #{detection.candidateId}, #{detection.detectionIndex},
+             #{detection.trackId}, #{detection.cropObjectKey}, #{detection.similarity}, #{detection.boundingBox})
+    </insert>
+    <update id="linkDetectionToCandidate">
+        UPDATE candidate_event_detections SET candidate_id = #{candidateId} WHERE id = #{id}
+    </update>
+</mapper>
