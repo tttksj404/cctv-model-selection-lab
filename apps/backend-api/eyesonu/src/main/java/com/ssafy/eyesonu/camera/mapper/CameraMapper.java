@@ -1,6 +1,10 @@
 package com.ssafy.eyesonu.camera.mapper;
 
 import com.ssafy.eyesonu.camera.domain.Camera;
+import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
+import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -29,4 +33,28 @@ public interface CameraMapper {
     FOR UPDATE
     """)
     Optional<Camera> findByCameraCodeForUpdate(@Param("cameraCode") String cameraCode);
+
+    long countAdminCameras(
+            @Param("status") String status,
+            @Param("search") String search);
+
+    List<CameraManagementRow> findAdminPage(
+            @Param("status") String status,
+            @Param("search") String search,
+            @Param("sortColumn") String sortColumn,
+            @Param("sortDirection") String sortDirection,
+            @Param("limit") int limit,
+            @Param("offset") long offset);
+
+    CameraManagementRow findAdminById(@Param("cameraId") Long cameraId);
+
+    CameraManagementRow findAdminByIdForUpdate(@Param("cameraId") Long cameraId);
+
+    int insert(CameraCreateCommand command);
+
+    int updateName(
+            @Param("cameraId") Long cameraId,
+            @Param("cameraName") String cameraName);
+
+    int updateDetails(CameraUpdateCommand command);
 }
