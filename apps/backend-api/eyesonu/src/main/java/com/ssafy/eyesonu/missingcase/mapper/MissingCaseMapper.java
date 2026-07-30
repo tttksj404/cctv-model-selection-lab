@@ -6,6 +6,9 @@ import com.ssafy.eyesonu.missingcase.domain.CaseSortField;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.ReporterRecord;
+import com.ssafy.eyesonu.missingcase.domain.CaseCameraRow;
+import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
+import java.util.Collection;
 import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -63,5 +66,30 @@ public interface MissingCaseMapper {
 
 	long countActiveJobs(@Param("caseId") Long caseId);
 
+	long countActiveJobsByCondition(
+			@Param("caseId") Long caseId, @Param("conditionId") Long conditionId);
+
 	int cancelActiveJobs(@Param("caseId") Long caseId);
+
+	List<SearchConditionRow> findSearchConditions(@Param("caseId") Long caseId);
+
+	SearchConditionRow findSearchCondition(
+			@Param("caseId") Long caseId, @Param("conditionId") Long conditionId);
+
+	int insertSearchCondition(SearchConditionRow condition);
+
+	int updateSearchCondition(SearchConditionRow condition);
+
+	int deleteSearchCondition(
+			@Param("caseId") Long caseId, @Param("conditionId") Long conditionId);
+
+	List<CaseCameraRow> findCaseCameras(@Param("caseId") Long caseId);
+
+	List<Long> findExistingCameraIds(@Param("cameraIds") Collection<Long> cameraIds);
+
+	int upsertCaseCamera(
+			@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
+
+	int disableCaseCamera(
+			@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
 }
