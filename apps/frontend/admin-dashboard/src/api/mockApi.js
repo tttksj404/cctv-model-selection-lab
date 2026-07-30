@@ -40,8 +40,3 @@ export async function getScanJobs() { await wait(); return scanJobs; }
 export async function getRoutePoints() { await wait(); return routePoints; }
 export async function getAuditLogs() { await wait(); return auditLogs; }
 export async function getUsers() { await wait(); return users; }
-export async function login({ email, password }) {
-  await wait();
-  if (email === "admin" && password === "admin1234") return { accessToken: "mock-access-token", user: users[0] };
-  throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
-}
