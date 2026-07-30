@@ -178,7 +178,7 @@
     </update>
 
     <select id="countSearchConditions" resultType="long">
-        SELECT COUNT(*) FROM search_conditions WHERE case_id = #{caseId}
+        SELECT COUNT(*) FROM search_conditions WHERE case_id = #{caseId} AND deleted_at IS NULL
     </select>
 
     <select id="countActiveCameras" resultType="long">
@@ -222,7 +222,7 @@
         SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
                search_area, similarity_threshold, created_at, updated_at
         FROM search_conditions
-        WHERE case_id = #{caseId}
+        WHERE case_id = #{caseId} AND deleted_at IS NULL
         ORDER BY created_at DESC, id DESC
     </select>
 
@@ -230,7 +230,7 @@
         SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
                search_area, similarity_threshold, created_at, updated_at
         FROM search_conditions
-        WHERE case_id = #{caseId} AND id = #{conditionId}
+        WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
     </select>
 
     <insert id="insertSearchCondition" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
@@ -257,10 +257,11 @@
         WHERE case_id = #{caseId} AND id = #{id}
     </update>
 
-    <delete id="deleteSearchCondition">
-        DELETE FROM search_conditions
-        WHERE case_id = #{caseId} AND id = #{conditionId}
-    </delete>
+    <update id="deleteSearchCondition">
+        UPDATE search_conditions
+        SET deleted_at = UTC_TIMESTAMP(6), updated_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
+    </update>
 
     <resultMap id="caseCameraResultMap" type="com.ssafy.eyesonu.missingcase.domain.CaseCameraRow">
         <id property="id" column="id"/>
@@ -293,9 +294,12 @@
         </foreach>
     </select>
 
-    <insert id="upsertCaseCamera">
+    <insert id="upsertCaseCameras">
         INSERT INTO case_cameras (case_id, camera_id, search_enabled, selected_at, removed_at, created_at, updated_at)
-        VALUES (#{caseId}, #{cameraId}, TRUE, UTC_TIMESTAMP(6), NULL, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+        VALUES
+        <foreach collection="cameraIds" item="cameraId" separator=",">
+            (#{caseId}, #{cameraId}, TRUE, UTC_TIMESTAMP(6), NULL, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+        </foreach>
         ON DUPLICATE KEY UPDATE
             search_enabled = TRUE,
             selected_at = UTC_TIMESTAMP(6),
