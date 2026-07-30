@@ -90,6 +90,28 @@ public class CaseSearchSetupService {
 	}
 
 	@Transactional
+	public SearchConditionResponse replaceCondition(
+			Long caseId, Long conditionId, SearchConditionCreateRequest request, Long adminId) {
+		requireOpenCase(caseId);
+		SearchConditionRow row = requireCondition(caseId, conditionId);
+		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
+			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+					"A search condition used by an active job cannot be updated.");
+		}
+		row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
+		row.setExclusionPrompt(normalizeOptional(request.exclusionPrompt()));
+		row.setSearchStart(toInstant(request.searchStart()));
+		row.setSearchEnd(toInstant(request.searchEnd()));
+		row.setSearchArea(normalizeOptional(request.searchArea()));
+		row.setSimilarityThreshold(requireThreshold(request.similarityThreshold()));
+		validateTimeRange(row.getSearchStart(), row.getSearchEnd());
+		mapper.updateSearchCondition(row);
+		auditService.recordRequired("SEARCH_CONDITION_UPDATED", adminId, caseId, "CASE", caseId,
+				Map.of("conditionId", conditionId));
+		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, conditionId));
+	}
+
+	@Transactional
 	public void deleteCondition(Long caseId, Long conditionId, Long adminId) {
 			requireOpenCase(caseId);
 		requireCondition(caseId, conditionId);
@@ -120,7 +142,7 @@ public class CaseSearchSetupService {
 			throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
 					"One or more cameras were not found.");
 		}
-		for (Long cameraId : requested) mapper.upsertCaseCamera(caseId, cameraId);
+		mapper.upsertCaseCameras(caseId, requested);
 		auditService.recordRequired("CASE_CAMERAS_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("cameraIds", requested));
 		return findCameras(caseId);

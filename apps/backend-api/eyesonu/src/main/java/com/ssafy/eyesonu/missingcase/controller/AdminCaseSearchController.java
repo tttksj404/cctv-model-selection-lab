@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,6 +65,15 @@ public class AdminCaseSearchController {
 			@AuthenticationPrincipal AdminPrincipal principal) {
 		return ResponseEntity.ok(ApiResponse.of(
 				service.updateCondition(caseId, conditionId, request, principal.getAdminId())));
+	}
+
+	@PutMapping("/search-conditions/{conditionId}")
+	public ResponseEntity<ApiResponse<SearchConditionResponse>> replaceCondition(
+			@PathVariable @Positive Long caseId, @PathVariable @Positive Long conditionId,
+			@Valid @RequestBody SearchConditionCreateRequest request,
+			@AuthenticationPrincipal AdminPrincipal principal) {
+		return ResponseEntity.ok(ApiResponse.of(
+				service.replaceCondition(caseId, conditionId, request, principal.getAdminId())));
 	}
 
 	@DeleteMapping("/search-conditions/{conditionId}")
