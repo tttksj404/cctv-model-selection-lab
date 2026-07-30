@@ -796,7 +796,8 @@ Device Key 교체 응답은 등록 응답과 같은 구조로 현재 미디어 �
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
 | `POST` | `/admin/cameras` | 카메라 등록 | 미디어 서버·카메라 식별 정보 | `201`, `400`, `404`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | Path: `cameraId` | `200`, `404` |
-| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
+| `PATCH` | `/admin/cameras/{cameraId}/name` | 카메라 이름 수정 | `cameraName` | `200`, `400`, `404` |
+| `PUT` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 전체 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404` |
 
 카메라 등록 요청:
 
