@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -14,7 +15,10 @@ import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
 import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
+import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
+import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
+import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
 import com.ssafy.eyesonu.camera.service.CameraPageResult;
 import com.ssafy.eyesonu.camera.service.CameraService;
 import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
@@ -93,6 +97,21 @@ class CameraApiTests {
     }
 
     @Test
+    void cameraDetailReturnsResponseWithoutRtspUrl() throws Exception {
+        when(cameraService.findAdminById(10L)).thenReturn(CameraDetailResponse.from(row()));
+        MockHttpSession session = login();
+
+        mockMvc.perform(get("/api/v1/admin/cameras/10").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(10))
+                .andExpect(jsonPath("$.data.cameraCode").value("CAM-001"))
+                .andExpect(jsonPath("$.data.mediaServer.serverCode").value("MS-001"))
+                .andExpect(jsonPath("$.data.rtspUrl").doesNotExist());
+
+        verify(cameraService).findAdminById(10L);
+    }
+
+    @Test
     void cameraCreateWithoutCsrfReturnsAccessDenied() throws Exception {
         MockHttpSession session = login();
 
@@ -106,7 +125,15 @@ class CameraApiTests {
 
     @Test
     void cameraCreateReturnsCreatedDetailWithOfflineStatus() throws Exception {
-        when(cameraService.create(any(), any())).thenReturn(CameraDetailResponse.from(row()));
+        CameraCreateRequest request = new CameraCreateRequest(
+                20L,
+                "CAM-001",
+                "Front Gate",
+                new BigDecimal("37.5"),
+                new BigDecimal("127.0"),
+                "Main address",
+                "rtsp://secret.example/stream");
+        when(cameraService.create(eq(1L), eq(request))).thenReturn(CameraDetailResponse.from(row()));
         LoginResult login = loginWithCsrf();
 
         mockMvc.perform(post("/api/v1/admin/cameras")
@@ -118,10 +145,69 @@ class CameraApiTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.status").value("OFFLINE"))
                 .andExpect(jsonPath("$.data.rtspUrl").doesNotExist());
+
+        verify(cameraService).create(eq(1L), eq(request));
     }
 
     @Test
-    void patchAndPutAreProtectedByCsrf() throws Exception {
+    void cameraNamePatchReturnsUpdatedDetail() throws Exception {
+        CameraDetailResponse response = CameraDetailResponse.from(row());
+        CameraNamePatchRequest request = new CameraNamePatchRequest("Renamed");
+        when(cameraService.patchName(eq(1L), eq(10L), eq(request))).thenReturn(response);
+        LoginResult login = loginWithCsrf();
+
+        mockMvc.perform(patch("/api/v1/admin/cameras/10/name")
+                        .session(login.session())
+                        .cookie(login.csrfCookie())
+                        .header("X-XSRF-TOKEN", login.csrfCookie().getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"cameraName\":\"Renamed\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cameraCode").value("CAM-001"))
+                .andExpect(jsonPath("$.data.status").value("OFFLINE"))
+                .andExpect(jsonPath("$.data.rtspUrl").doesNotExist());
+
+        verify(cameraService).patchName(eq(1L), eq(10L), eq(request));
+    }
+
+    @Test
+    void cameraReplaceReturnsUpdatedDetail() throws Exception {
+        CameraDetailResponse response = CameraDetailResponse.from(row());
+        CameraPutRequest request = new CameraPutRequest(
+                20L,
+                "Updated",
+                new BigDecimal("37.5"),
+                new BigDecimal("127.0"),
+                "Main address",
+                "rtsp://secret.example/stream");
+        when(cameraService.replace(eq(1L), eq(10L), eq(request))).thenReturn(response);
+        LoginResult login = loginWithCsrf();
+
+        mockMvc.perform(put("/api/v1/admin/cameras/10")
+                        .session(login.session())
+                        .cookie(login.csrfCookie())
+                        .header("X-XSRF-TOKEN", login.csrfCookie().getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(putBody()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cameraCode").value("CAM-001"))
+                .andExpect(jsonPath("$.data.status").value("OFFLINE"))
+                .andExpect(jsonPath("$.data.rtspUrl").doesNotExist());
+
+        verify(cameraService).replace(eq(1L), eq(10L), eq(request));
+    }
+
+    @Test
+    void cameraIdMustBePositive() throws Exception {
+        MockHttpSession session = login();
+
+        mockMvc.perform(get("/api/v1/admin/cameras/0").session(session))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void cameraNamePatchRequiresCsrf() throws Exception {
         MockHttpSession session = login();
         mockMvc.perform(patch("/api/v1/admin/cameras/10/name")
                         .session(session)
@@ -129,7 +215,11 @@ class CameraApiTests {
                         .content("{\"cameraName\":\"Renamed\"}"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+    }
 
+    @Test
+    void cameraReplaceRequiresCsrf() throws Exception {
+        MockHttpSession session = login();
         mockMvc.perform(put("/api/v1/admin/cameras/10")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)

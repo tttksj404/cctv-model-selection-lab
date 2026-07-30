@@ -35,6 +35,28 @@ class CasePhotoValidatorTests {
 		ApiException exception = assertThrows(ApiException.class, () -> validator.validate(
 				file("image/png", new byte[] {(byte) 0xff, (byte) 0xd8, (byte) 0xff})));
 		assertEquals("UNSUPPORTED_MEDIA_TYPE", exception.getCode());
+		assertEquals(415, exception.getStatus().value());
+	}
+
+	@Test
+	void acceptsFileAtMaximumConfiguredSize() {
+		S3Properties properties = new S3Properties();
+		properties.setCasePhotoMaxFileSizeBytes(3);
+		CasePhotoValidator exactLimit = new CasePhotoValidator(properties);
+
+		CasePhotoValidator.ValidatedPhoto result = exactLimit.validate(
+				file("image/jpg", new byte[] {(byte) 0xff, (byte) 0xd8, (byte) 0xff}));
+
+		assertEquals("image/jpeg", result.contentType());
+		assertEquals("jpg", result.extension());
+	}
+
+	@Test
+	void rejectsMissingPhotoWithValidationError() {
+		ApiException exception = assertThrows(ApiException.class, () -> validator.validate(null));
+
+		assertEquals("VALIDATION_ERROR", exception.getCode());
+		assertEquals(400, exception.getStatus().value());
 	}
 
 	@Test
@@ -45,6 +67,7 @@ class CasePhotoValidatorTests {
 		ApiException exception = assertThrows(ApiException.class, () -> small.validate(
 				file("image/jpeg", new byte[] {(byte) 0xff, (byte) 0xd8, (byte) 0xff})));
 		assertEquals("FILE_TOO_LARGE", exception.getCode());
+		assertEquals(413, exception.getStatus().value());
 	}
 
 	private MockMultipartFile file(String type, byte[] bytes) {
