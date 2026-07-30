@@ -31,23 +31,7 @@ pipeline {
                     env.DEPLOY_PROFILE = targetBranch in ['dev', 'master'] ? targetBranch : ''
                     env.CAN_DEPLOY = env.DEPLOY_PROFILE && !mergeRequest ? 'true' : 'false'
 
-                    def parentCount = sh(
-                        script: "git rev-list --parents -n 1 HEAD | awk '{print NF}'",
-                        returnStdout: true
-                    ).trim()
-                    def diffCommand = parentCount == '3'
-                        ? 'git diff --name-only HEAD^1 HEAD'
-                        : 'git diff --name-only HEAD^ HEAD'
-                    def changedPaths = sh(
-                        script: "${diffCommand} 2>/dev/null || true",
-                        returnStdout: true
-                    ).trim().readLines()
-                    env.NGINX_CONFIG_CHANGED = changedPaths.any {
-                        it.startsWith('infra/nginx/') || it == 'infra/compose.deploy.yml'
-                    } ? 'true' : 'false'
-
                     echo "Target branch: ${targetBranch}, merge request: ${mergeRequest ? 'yes' : 'no'}, deploy: ${env.CAN_DEPLOY}"
-                    echo "Nginx configuration changed: ${env.NGINX_CONFIG_CHANGED}"
                 }
             }
         }
@@ -93,21 +77,25 @@ pipeline {
             }
             steps {
                 sh '''
+                    compose() {
+                        docker compose \
+                          --env-file "$DEPLOY_ENV_FILE" \
+                          -f "$DEPLOY_COMPOSE" \
+                          "$@"
+                    }
+
                     test -f "$DEPLOY_ENV_FILE"
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" config >/dev/null
+                    compose config >/dev/null
                     sh infra/scripts/cleanup-legacy-containers.sh
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \\
+                    compose \
+                      --profile "$DEPLOY_PROFILE" up -d --build --wait --wait-timeout 180 \
                       "backend-$DEPLOY_PROFILE" "admin-$DEPLOY_PROFILE" "reporter-$DEPLOY_PROFILE"
-                    if [ "$NGINX_CONFIG_CHANGED" = 'true' ]; then
-                      docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
-                        up -d --no-deps nginx
-                    fi
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
+                    compose up -d --no-deps --wait --wait-timeout 180 nginx
+                    compose \
                       exec -T nginx nginx -t
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" \\
+                    compose \
                       exec -T nginx nginx -s reload
-                    docker compose --env-file "$DEPLOY_ENV_FILE" -f "$DEPLOY_COMPOSE" ps
+                    compose ps
                 '''
             }
         }
@@ -121,7 +109,7 @@ pipeline {
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
                 def result = env.CAN_DEPLOY == 'true' ? '빌드·테스트·배포' : '빌드·테스트'
 
-                mattermostSend color: '#00d1b2', message: """### ✅ Eyes On U CI 성공
+                mattermostSend color: '#00d1b2', message: """### ✅ Eyes On U CI/CD 성공
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
@@ -139,7 +127,7 @@ pipeline {
                 def targetBranch = env.TARGET_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
-                mattermostSend color: '#ff3860', message: """### ❌ Eyes On U CI 실패
+                mattermostSend color: '#ff3860', message: """### ❌ Eyes On U CI/CD 실패
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
