@@ -169,7 +169,27 @@ docker compose --env-file infra/.env.deploy \
 - 배포 전 기존 Jenkinsfile이 사용하던 컨테이너 이름만 제거
 - Docker volume과 image는 자동 삭제하지 않음
 
-Jenkins가 EC2와 다른 서버에서 실행된다면 현재 Jenkinsfile의 Docker 명령을 EC2 SSH 배포 단계로 교체해야 한다. Docker 명령이 실행되는 대상은 반드시 EC2 Docker Engine이어야 한다.
+Jenkins는 배포 시 EC2 호스트의 `infra/scripts/deploy-on-host.sh`를 SSH로 호출한다.
+Jenkins 컨테이너는 `/home/ubuntu/jenkins-data`를 `/var/jenkins_home`으로 bind mount하고,
+Jenkins checkout 결과는 호스트의 `/home/ubuntu/jenkins-data/workspace/ssafy-a204-infra`에
+실시간으로 공유된다. 별도의 파일 전송 단계는 없으며, 호스트 스크립트는 이 공유된 checkout을
+사용하되 Compose와 인증서 볼륨은 호스트 경로에서 직접 해석한다.
+
+Jenkins에는 `eyesonu-ec2-deploy-key`라는 SSH private key credential을 등록하고,
+EC2의 `ubuntu` 계정이 해당 키를 허용해야 한다. Jenkinsfile의 `DEPLOY_HOST_ROOT`와
+`DEPLOY_HOST_ENV_FILE`은 EC2 호스트의 실제 경로와 일치해야 한다.
+Jenkins 에이전트의 `$HOME/.ssh/known_hosts`에는 배포 대상 호스트의 공개 키를 사전에 등록해야 하며,
+파이프라인은 호스트 키 검증을 끄지 않고 등록된 키와 일치하는 경우에만 접속한다.
+
+호스트에서 수동 배포가 필요하면 다음을 실행한다.
+
+```bash
+bash /home/ubuntu/jenkins-data/workspace/ssafy-a204-infra/infra/scripts/deploy-on-host.sh dev
+bash /home/ubuntu/jenkins-data/workspace/ssafy-a204-infra/infra/scripts/deploy-on-host.sh master
+```
+
+Jenkins가 EC2와 다른 서버에서 실행된다면 `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`,
+`DEPLOY_HOST_ROOT`, `DEPLOY_HOST_ENV_FILE`을 실제 EC2 환경에 맞게 변경한다.
 
 ### Jenkins Docker socket access
 
