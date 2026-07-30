@@ -17,7 +17,7 @@ import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.service.CameraPageResult;
 import com.ssafy.eyesonu.camera.service.CameraService;
-import com.ssafy.eyesonu.caseinquiry.mapper.CaseInquiryMapper;
+import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
 import com.ssafy.eyesonu.recording.service.RecordingQueryService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -54,7 +54,7 @@ class CameraApiTests {
     private AuditLogMapper auditLogMapper;
 
     @MockitoBean
-    private CaseInquiryMapper caseInquiryMapper;
+    private CaseStatusInquiryMapper caseStatusInquiryMapper;
 
     @MockitoBean
     private RecordingQueryService recordingQueryService;
