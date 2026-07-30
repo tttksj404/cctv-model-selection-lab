@@ -1,0 +1,32 @@
+package com.ssafy.eyesonu.missingcase.controller;
+
+import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
+import com.ssafy.eyesonu.common.api.ApiResponse;
+import com.ssafy.eyesonu.missingcase.dto.device.SearchTargetResponse;
+import com.ssafy.eyesonu.missingcase.service.DeviceSearchTargetService;
+import java.util.List;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/device")
+public class DeviceSearchTargetController {
+
+	private final DeviceSearchTargetService service;
+
+	public DeviceSearchTargetController(DeviceSearchTargetService service) {
+		this.service = service;
+	}
+
+	@GetMapping("/search-targets")
+	public ResponseEntity<ApiResponse<List<SearchTargetResponse>>> findTargets(
+			@AuthenticationPrincipal MediaServerPrincipal principal) {
+		return ResponseEntity.ok()
+				.cacheControl(CacheControl.noStore())
+				.body(ApiResponse.of(service.findTargets(principal)));
+	}
+}
