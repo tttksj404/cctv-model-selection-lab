@@ -170,12 +170,16 @@ docker compose --env-file infra/.env.deploy \
 - Docker volume과 image는 자동 삭제하지 않음
 
 Jenkins는 배포 시 EC2 호스트의 `infra/scripts/deploy-on-host.sh`를 SSH로 호출한다.
-호스트 스크립트가 호스트의 고정된 배포 경로에서 Compose를 실행하므로 Jenkins 컨테이너 workspace와
-Docker Engine의 볼륨 경로가 달라도 Nginx 설정·인증서가 잘못 마운트되지 않는다.
+Jenkins 컨테이너는 `/home/ubuntu/jenkins-data`를 `/var/jenkins_home`으로 bind mount하고,
+Jenkins checkout 결과는 호스트의 `/home/ubuntu/jenkins-data/workspace/ssafy-a204-infra`에
+실시간으로 공유된다. 별도의 파일 전송 단계는 없으며, 호스트 스크립트는 이 공유된 checkout을
+사용하되 Compose와 인증서 볼륨은 호스트 경로에서 직접 해석한다.
 
 Jenkins에는 `eyesonu-ec2-deploy-key`라는 SSH private key credential을 등록하고,
 EC2의 `ubuntu` 계정이 해당 키를 허용해야 한다. Jenkinsfile의 `DEPLOY_HOST_ROOT`와
 `DEPLOY_HOST_ENV_FILE`은 EC2 호스트의 실제 경로와 일치해야 한다.
+Jenkins 에이전트의 `$HOME/.ssh/known_hosts`에는 배포 대상 호스트의 공개 키를 사전에 등록해야 하며,
+파이프라인은 호스트 키 검증을 끄지 않고 등록된 키와 일치하는 경우에만 접속한다.
 
 호스트에서 수동 배포가 필요하면 다음을 실행한다.
 

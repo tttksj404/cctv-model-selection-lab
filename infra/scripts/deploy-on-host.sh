@@ -21,9 +21,18 @@ compose() {
         "$@"
 }
 
-test -f "$deploy_env_file"
-test -f "$compose_file"
-test -f "$deploy_root/infra/nginx/conf.d/default.conf"
+require_file() {
+    local path="$1"
+
+    if [[ ! -f "$path" ]]; then
+        echo "ERROR: required file is missing: $path" >&2
+        exit 1
+    fi
+}
+
+require_file "$deploy_env_file"
+require_file "$compose_file"
+require_file "$deploy_root/infra/nginx/conf.d/default.conf"
 compose config >/dev/null
 
 cd "$deploy_root"
