@@ -6,23 +6,25 @@
 
     <resultMap id="cameraManagementRowResultMap"
                type="com.ssafy.eyesonu.camera.domain.CameraManagementRow">
-        <id property="id" column="id"/>
-        <result property="mediaServerId" column="media_server_id"/>
-        <result property="mediaServerCode" column="media_server_code"/>
-        <result property="mediaServerName" column="media_server_name"/>
-        <result property="cameraCode" column="camera_code"/>
-        <result property="cameraName" column="camera_name"/>
-        <result property="latitude" column="latitude"/>
-        <result property="longitude" column="longitude"/>
-        <result property="address" column="address"/>
-        <result property="rtspUrl" column="stream_url"/>
-        <result property="status" column="status"/>
-        <result property="lastHeartbeat" column="last_heartbeat"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
-        <result property="createdAt" column="created_at"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
-        <result property="updatedAt" column="updated_at"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="media_server_id" javaType="java.lang.Long"/>
+            <arg column="media_server_code" javaType="java.lang.String"/>
+            <arg column="media_server_name" javaType="java.lang.String"/>
+            <arg column="camera_code" javaType="java.lang.String"/>
+            <arg column="camera_name" javaType="java.lang.String"/>
+            <arg column="latitude" javaType="java.math.BigDecimal"/>
+            <arg column="longitude" javaType="java.math.BigDecimal"/>
+            <arg column="address" javaType="java.lang.String"/>
+            <arg column="stream_url" javaType="java.lang.String"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="last_heartbeat" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+            <arg column="created_at" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+            <arg column="updated_at" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+        </constructor>
     </resultMap>
 
     <sql id="adminCameraColumns">
@@ -94,7 +96,7 @@
         FROM cameras c
         INNER JOIN media_servers ms ON ms.id = c.media_server_id
         WHERE c.id = #{cameraId}
-        FOR UPDATE
+        FOR UPDATE OF c
     </select>
 
     <insert id="insert"
