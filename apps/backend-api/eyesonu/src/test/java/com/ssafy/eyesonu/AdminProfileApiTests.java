@@ -14,22 +14,16 @@ import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.dto.AdminUpdateRequest;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.admin.service.AdminService;
-import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
+import com.ssafy.eyesonu.audit.service.AuditService;
+import com.ssafy.eyesonu.auth.config.SecurityConfig;
+import com.ssafy.eyesonu.auth.device.MediaServerAuthenticationService;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
-import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
-import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
-import com.ssafy.eyesonu.missingcase.service.CaseCommandService;
-import com.ssafy.eyesonu.missingcase.service.CasePhotoService;
-import com.ssafy.eyesonu.missingcase.service.CaseQueryService;
-import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
-import com.ssafy.eyesonu.recording.service.RecordingQueryService;
+import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
+import com.ssafy.eyesonu.admin.controller.AdminController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,9 +34,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @ActiveProfiles("test")
-@SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@Import(TestDatabaseConfiguration.class)
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = AdminController.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AdminProfileApiTests {
 
 	private static final AdminPrincipal PRINCIPAL = new AdminPrincipal(1L, "admin");
@@ -57,34 +50,10 @@ class AdminProfileApiTests {
 	private AdminMapper adminMapper;
 
 	@MockitoBean
-	private AuditLogMapper auditLogMapper;
+	private AuditService auditService;
 
 	@MockitoBean
-	private CaseStatusInquiryMapper caseStatusInquiryMapper;
-
-	@MockitoBean
-	private MissingCaseMapper missingCaseMapper;
-
-	@MockitoBean
-	private MediaServerMapper mediaServerMapper;
-
-	@MockitoBean
-	private CameraMapper cameraMapper;
-
-	@MockitoBean
-	private RecordingMapper recordingMapper;
-
-	@MockitoBean
-	private RecordingQueryService recordingQueryService;
-
-	@MockitoBean
-	private CaseCommandService caseCommandService;
-
-	@MockitoBean
-	private CaseQueryService caseQueryService;
-
-	@MockitoBean
-	private CasePhotoService casePhotoService;
+	private MediaServerAuthenticationService mediaServerAuthenticationService;
 
 	@Test
 	void nameUpdateReturnsUpdatedProfileWithoutReauthentication() throws Exception {

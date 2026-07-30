@@ -14,13 +14,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
-import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
+import com.ssafy.eyesonu.audit.service.AuditService;
+import com.ssafy.eyesonu.auth.config.SecurityConfig;
+import com.ssafy.eyesonu.auth.device.MediaServerAuthenticationService;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.Gender;
+import com.ssafy.eyesonu.missingcase.controller.AdminCaseController;
 import com.ssafy.eyesonu.missingcase.dto.admin.AppearanceResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseListResponse;
@@ -30,21 +32,17 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseCloseRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseStatusUpdateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseUpdateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.ReporterResponse;
-import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
-import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import com.ssafy.eyesonu.missingcase.service.CaseCommandService;
 import com.ssafy.eyesonu.missingcase.service.CasePageResult;
 import com.ssafy.eyesonu.missingcase.service.CasePhotoService;
 import com.ssafy.eyesonu.missingcase.service.CaseQueryService;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseSearchCondition;
-import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,9 +54,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @ActiveProfiles("test")
-@SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@Import(TestDatabaseConfiguration.class)
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = AdminCaseController.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AdminCaseApiTests {
 
 	private static final long ADMIN_ID = 1L;
@@ -71,22 +68,10 @@ class AdminCaseApiTests {
 	private AdminMapper adminMapper;
 
 	@MockitoBean
-	private AuditLogMapper auditLogMapper;
+	private AuditService auditService;
 
 	@MockitoBean
-	private CaseStatusInquiryMapper caseStatusInquiryMapper;
-
-	@MockitoBean
-	private MissingCaseMapper missingCaseMapper;
-
-	@MockitoBean
-	private MediaServerMapper mediaServerMapper;
-
-	@MockitoBean
-	private CameraMapper cameraMapper;
-
-	@MockitoBean
-	private RecordingMapper recordingMapper;
+	private MediaServerAuthenticationService mediaServerAuthenticationService;
 
 	@MockitoBean
 	private CaseCommandService commandService;

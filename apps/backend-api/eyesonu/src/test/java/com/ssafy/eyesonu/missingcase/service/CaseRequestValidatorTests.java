@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu.missingcase.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -63,11 +64,11 @@ class CaseRequestValidatorTests {
 				BigDecimal.valueOf(90), BigDecimal.valueOf(180), request.lastSeenAddress()));
 
 		assertEquals(1900, oldestAndSouthern.getBirthYear());
-		assertEquals(BigDecimal.valueOf(-90), oldestAndSouthern.getLastSeenLat());
-		assertEquals(BigDecimal.valueOf(-180), oldestAndSouthern.getLastSeenLng());
+		assertThat(oldestAndSouthern.getLastSeenLat()).isEqualByComparingTo(BigDecimal.valueOf(-90));
+		assertThat(oldestAndSouthern.getLastSeenLng()).isEqualByComparingTo(BigDecimal.valueOf(-180));
 		assertEquals(Year.now().getValue(), currentAndNorthern.getBirthYear());
-		assertEquals(BigDecimal.valueOf(90), currentAndNorthern.getLastSeenLat());
-		assertEquals(BigDecimal.valueOf(180), currentAndNorthern.getLastSeenLng());
+		assertThat(currentAndNorthern.getLastSeenLat()).isEqualByComparingTo(BigDecimal.valueOf(90));
+		assertThat(currentAndNorthern.getLastSeenLng()).isEqualByComparingTo(BigDecimal.valueOf(180));
 	}
 
 	@Test
