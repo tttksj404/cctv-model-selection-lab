@@ -419,14 +419,7 @@
                   FROM case_cameras cc
                   INNER JOIN cameras cam ON cam.id = cc.camera_id
                   WHERE cc.case_id = c.id
-                    AND cc.search_enabled = TRUE
                     AND cam.media_server_id = #{mediaServerId}
-              )
-              AND EXISTS (
-                  SELECT 1
-                  FROM search_conditions sc_active
-                  WHERE sc_active.case_id = c.id
-                    AND sc_active.deleted_at IS NULL
               )
             UNION ALL
             SELECT cc.updated_at AS changed_at
@@ -435,17 +428,9 @@
             WHERE c.status = 'SEARCHING'
               AND EXISTS (
                   SELECT 1
-                  FROM case_cameras cc_active
-                  INNER JOIN cameras cam_active ON cam_active.id = cc_active.camera_id
-                  WHERE cc_active.case_id = c.id
-                    AND cc_active.search_enabled = TRUE
-                    AND cam_active.media_server_id = #{mediaServerId}
-              )
-              AND EXISTS (
-                  SELECT 1
-                  FROM search_conditions sc
-                  WHERE sc.case_id = c.id
-                    AND sc.deleted_at IS NULL
+                  FROM cameras cam
+                  WHERE cam.id = cc.camera_id
+                    AND cam.media_server_id = #{mediaServerId}
               )
         ) target_changes
     </select>

@@ -12,6 +12,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,7 @@ public class DeviceSearchTargetController {
 	}
 
 	@GetMapping("/search-targets")
+	@Transactional(readOnly = true)
 	public ResponseEntity<ApiResponse<List<SearchTargetResponse>>> findTargets(
 			@AuthenticationPrincipal MediaServerPrincipal principal,
 			@RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false) String ifNoneMatch) {
