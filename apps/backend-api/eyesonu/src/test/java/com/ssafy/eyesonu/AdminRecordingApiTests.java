@@ -7,18 +7,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
-import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
+import com.ssafy.eyesonu.audit.service.AuditService;
+import com.ssafy.eyesonu.auth.config.SecurityConfig;
+import com.ssafy.eyesonu.auth.device.MediaServerAuthenticationService;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
-import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
-import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
+import com.ssafy.eyesonu.recording.controller.admin.AdminRecordingController;
 import com.ssafy.eyesonu.recording.dto.admin.AdminRecordingCameraResponse;
 import com.ssafy.eyesonu.recording.dto.admin.AdminRecordingDetailResponse;
 import com.ssafy.eyesonu.recording.dto.admin.AdminRecordingListResponse;
 import com.ssafy.eyesonu.recording.dto.admin.AdminRecordingSearchCondition;
-import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import com.ssafy.eyesonu.recording.service.AdminRecordingPageResult;
 import com.ssafy.eyesonu.recording.service.RecordingQueryService;
 import java.time.Instant;
@@ -26,8 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,9 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @ActiveProfiles("test")
-@SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@Import(TestDatabaseConfiguration.class)
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = AdminRecordingController.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AdminRecordingApiTests {
 
 	private static final long ADMIN_ID = 1L;
@@ -51,22 +48,10 @@ class AdminRecordingApiTests {
 	private AdminMapper adminMapper;
 
 	@MockitoBean
-	private AuditLogMapper auditLogMapper;
+	private AuditService auditService;
 
 	@MockitoBean
-	private CaseStatusInquiryMapper caseStatusInquiryMapper;
-
-	@MockitoBean
-	private MissingCaseMapper missingCaseMapper;
-
-	@MockitoBean
-	private MediaServerMapper mediaServerMapper;
-
-	@MockitoBean
-	private CameraMapper cameraMapper;
-
-	@MockitoBean
-	private RecordingMapper recordingMapper;
+	private MediaServerAuthenticationService mediaServerAuthenticationService;
 
 	@MockitoBean
 	private RecordingQueryService queryService;
