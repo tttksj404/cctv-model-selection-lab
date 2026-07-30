@@ -8,6 +8,7 @@ import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.ReporterRecord;
 import com.ssafy.eyesonu.missingcase.domain.CaseCameraRow;
 import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
+import com.ssafy.eyesonu.missingcase.domain.DeviceSearchTargetRow;
 import java.util.Collection;
 import java.time.Instant;
 import java.util.List;
@@ -92,4 +93,9 @@ public interface MissingCaseMapper {
 
 	int disableCaseCamera(
 			@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
+
+	List<DeviceSearchTargetRow> findDeviceSearchTargetCameras(@Param("mediaServerId") Long mediaServerId);
+
+	List<DeviceSearchTargetRow> findDeviceSearchTargetConditions(
+			@Param("caseIds") Collection<Long> caseIds);
 }
