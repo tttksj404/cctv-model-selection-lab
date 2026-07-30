@@ -103,7 +103,7 @@ pipeline {
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
                 def result = env.CAN_DEPLOY == 'true' ? '빌드·테스트·배포' : '빌드·테스트'
 
-                mattermostSend color: '#00d1b2', message: """### ✅ Eyes On U CI 성공
+                mattermostSend color: '#00d1b2', message: """### ✅ Eyes On U CI/CD 성공
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
@@ -121,7 +121,7 @@ pipeline {
                 def targetBranch = env.TARGET_BRANCH ?: 'unknown'
                 def actor = env.gitlabUserEmail ?: env.gitlabUserName ?: 'Jenkins'
 
-                mattermostSend color: '#ff3860', message: """### ❌ Eyes On U CI 실패
+                mattermostSend color: '#ff3860', message: """### ❌ Eyes On U CI/CD 실패
 > **빌드 번호:** [#${env.BUILD_NUMBER}](${env.BUILD_URL})
 > **트리거:** `${triggerType}`
 > **대상 브랜치:** `${targetBranch}`
