@@ -12,4 +12,4 @@ outputs/
 *.pt
 *.pth
 *.safetensors
-
+*.egg-info/
