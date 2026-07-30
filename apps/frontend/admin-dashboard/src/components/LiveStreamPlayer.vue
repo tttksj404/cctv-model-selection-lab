@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { Info, Maximize2, Minimize2, Pause, PictureInPicture2, Play } from "lucide-vue-next";
 
-const emit = defineEmits(["info"]);
+const emit = defineEmits(["info", "state-change"]);
 
 const props = defineProps({
   protocol: { type: String, required: true },
@@ -15,7 +15,13 @@ const state = ref("loading");
 const isPlaying = ref(false);
 const pipSupported = ref(false);
 const isFullscreen = ref(false);
+const iframeKey = ref(0);
 let peerConnection = null;
+
+const setState = (nextState) => {
+  state.value = nextState;
+  emit("state-change", nextState);
+};
 
 const updateFullscreenState = () => {
   const card = playerRoot.value?.closest(".live-stream-card");
@@ -39,7 +45,7 @@ const waitForIceGathering = () => new Promise((resolve) => {
 });
 
 const markPlaying = () => {
-  state.value = "ready";
+  setState("ready");
   isPlaying.value = true;
 };
 
@@ -58,7 +64,7 @@ const startWebRtc = async () => {
 
   peerConnection.onconnectionstatechange = () => {
     if (["failed", "disconnected", "closed"].includes(peerConnection.connectionState)) {
-      state.value = "error";
+      setState("error");
     }
   };
 
@@ -84,13 +90,18 @@ const startWebRtc = async () => {
 };
 
 const start = async () => {
-  state.value = "loading";
+  setState("loading");
+
+  if (props.protocol === "HLS") {
+    iframeKey.value += 1;
+    return;
+  }
 
   try {
-    if (props.protocol !== "HLS") await startWebRtc();
+    await startWebRtc();
   } catch (error) {
     console.error(`[${props.protocol}] stream error`, error);
-    state.value = "error";
+    setState("error");
   }
 };
 
@@ -131,6 +142,7 @@ onMounted(() => {
   videoRef.value?.addEventListener("pause", markPaused);
   document.addEventListener("fullscreenchange", updateFullscreenState);
   if (props.protocol !== "HLS") start();
+  else emit("state-change", "loading");
 });
 
 onBeforeUnmount(() => {
@@ -145,12 +157,14 @@ onBeforeUnmount(() => {
   <div ref="playerRoot" class="stream-player">
     <iframe
       v-if="protocol === 'HLS'"
+      :key="iframeKey"
       class="stream-player-iframe"
       :src="url"
       title="HLS 실시간 영상"
       allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
       referrerpolicy="no-referrer"
       @load="markPlaying"
+      @error="setState('error')"
     />
     <video
       v-else
