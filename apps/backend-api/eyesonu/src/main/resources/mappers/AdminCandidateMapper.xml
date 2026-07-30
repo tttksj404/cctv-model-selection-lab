@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.missingcase.mapper.AdminCandidateMapper">
+    <resultMap id="candidateMap" type="com.ssafy.eyesonu.missingcase.domain.AdminCandidateRow">
+        <id property="id" column="id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="caseNumber" column="case_number"/>
+        <result property="missingName" column="missing_name"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="cameraName" column="camera_name"/>
+        <result property="trackId" column="track_id"/>
+        <result property="firstDetectedAt" column="first_detected_at"/>
+        <result property="lastDetectedAt" column="last_detected_at"/>
+        <result property="bestSimilarity" column="best_similarity"/>
+        <result property="averageSimilarity" column="average_similarity"/>
+        <result property="detectionCount" column="detection_count"/>
+        <result property="frameObjectKey" column="frame_object_key"/>
+        <result property="cropObjectKey" column="crop_object_key"/>
+        <result property="boundingBox" column="bounding_box"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <resultMap id="detectionMap" type="com.ssafy.eyesonu.missingcase.domain.AdminCandidateDetectionRow">
+        <id property="id" column="id"/>
+        <result property="eventId" column="event_id"/>
+        <result property="detectedAt" column="detected_at"/>
+        <result property="frameObjectKey" column="frame_object_key"/>
+        <result property="trackId" column="track_id"/>
+        <result property="cropObjectKey" column="crop_object_key"/>
+        <result property="similarity" column="similarity"/>
+        <result property="boundingBox" column="bounding_box"/>
+    </resultMap>
+
+    <sql id="filters">
+        <where>
+            <if test="caseId != null">AND c.case_id = #{caseId}</if>
+            <if test="cameraId != null">AND c.camera_id = #{cameraId}</if>
+            <if test="reviewStatus != null and reviewStatus != ''">AND c.review_status = #{reviewStatus}</if>
+            <if test="detectedFrom != null">AND c.last_detected_at &gt;= #{detectedFrom}</if>
+            <if test="detectedTo != null">AND c.first_detected_at &lt; #{detectedTo}</if>
+        </where>
+    </sql>
+    <sql id="candidateSelect">
+        SELECT c.id, c.case_id, cs.case_number, cs.missing_name,
+               c.camera_id, cam.camera_code, cam.camera_name, c.track_id,
+               c.first_detected_at, c.last_detected_at, c.best_similarity, c.average_similarity,
+               c.detection_count, c.frame_object_key, c.crop_object_key,
+               CAST(c.bounding_box AS CHAR) AS bounding_box, c.review_status,
+               c.created_at, c.updated_at
+        FROM candidates c
+        INNER JOIN cases cs ON cs.id = c.case_id
+        INNER JOIN cameras cam ON cam.id = c.camera_id
+    </sql>
+    <select id="countCandidates" resultType="long">
+        SELECT COUNT(*) FROM candidates c
+        <include refid="filters"/>
+    </select>
+    <select id="findPage" resultMap="candidateMap">
+        <include refid="candidateSelect"/>
+        <include refid="filters"/>
+        ORDER BY
+        <choose>
+            <when test="sortField == 'bestSimilarity'">c.best_similarity</when>
+            <when test="sortField == 'firstDetectedAt'">c.first_detected_at</when>
+            <when test="sortField == 'createdAt'">c.created_at</when>
+            <otherwise>c.last_detected_at</otherwise>
+        </choose>
+        <choose><when test="sortDirection == 'asc'">ASC</when><otherwise>DESC</otherwise></choose>, c.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="findById" resultMap="candidateMap">
+        <include refid="candidateSelect"/> WHERE c.id = #{id}
+    </select>
+    <select id="findDetections" resultMap="detectionMap">
+        SELECT d.id, e.event_id, e.detected_at, e.frame_object_key, d.track_id,
+               d.crop_object_key, d.similarity, CAST(d.bounding_box AS CHAR) AS bounding_box
+        FROM candidate_event_detections d
+        INNER JOIN candidate_events e ON e.id = d.candidate_event_id
+        WHERE d.candidate_id = #{candidateId}
+        ORDER BY e.detected_at DESC, d.detection_index ASC
+    </select>
+</mapper>
