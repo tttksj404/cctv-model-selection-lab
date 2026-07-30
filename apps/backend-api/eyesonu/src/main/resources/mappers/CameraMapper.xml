@@ -19,11 +19,11 @@
             <arg column="stream_url" javaType="java.lang.String"/>
             <arg column="status" javaType="java.lang.String"/>
             <arg column="last_heartbeat" javaType="java.time.Instant"
-                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
             <arg column="created_at" javaType="java.time.Instant"
-                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
             <arg column="updated_at" javaType="java.time.Instant"
-                 typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         </constructor>
     </resultMap>
 
