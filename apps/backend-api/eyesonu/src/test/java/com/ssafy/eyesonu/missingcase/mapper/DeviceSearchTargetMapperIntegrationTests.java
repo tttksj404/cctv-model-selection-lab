@@ -112,9 +112,9 @@ class DeviceSearchTargetMapperIntegrationTests {
 		jdbcTemplate.update("""
 				UPDATE search_conditions
 				SET deleted_at = ?, updated_at = ?
-				WHERE id = ?
+				WHERE case_id = ?
 				""", LocalDateTime.of(2026, 7, 30, 12, 0),
-				LocalDateTime.of(2026, 7, 30, 12, 0), 178007L);
+				LocalDateTime.of(2026, 7, 30, 12, 0), CASE_ID);
 
 		assertEquals(Instant.parse("2026-07-30T12:00:00Z"),
 				mapper.findDeviceSearchTargetLastModified(MEDIA_SERVER_ID));
