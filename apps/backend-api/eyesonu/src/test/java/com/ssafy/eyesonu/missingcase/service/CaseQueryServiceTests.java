@@ -1,9 +1,11 @@
 package com.ssafy.eyesonu.missingcase.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.common.exception.ApiException;
@@ -12,6 +14,7 @@ import com.ssafy.eyesonu.missingcase.domain.CaseSortField;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.Gender;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
+import com.ssafy.eyesonu.missingcase.dto.admin.CaseDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseSearchCondition;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import com.ssafy.eyesonu.storage.StorageObjectUrlSigner;
@@ -67,13 +70,49 @@ class CaseQueryServiceTests {
 
 	@Test
 	void rejectsInvalidSortAndNonIncreasingPeriod() {
-		assertThrows(ApiException.class, () -> service.findAll(new CaseSearchCondition(
+		ApiException invalidSort = assertThrows(ApiException.class, () -> service.findAll(new CaseSearchCondition(
 				null, null, null, null, null, 0, 20, "status,desc")));
-		assertThrows(ApiException.class, () -> service.findAll(new CaseSearchCondition(
+		assertApiError(invalidSort);
+
+		ApiException invalidPeriod = assertThrows(ApiException.class, () -> service.findAll(new CaseSearchCondition(
 				null, null, null,
 				OffsetDateTime.parse("2026-08-01T00:00:00Z"),
 				OffsetDateTime.parse("2026-08-01T00:00:00Z"),
 				0, 20, "reportedAt,desc")));
+		assertApiError(invalidPeriod);
+	}
+
+	@Test
+	void acceptsInclusivePageSizeBoundaries() {
+		when(mapper.countCases(null, null, null, null, null)).thenReturn(0L);
+
+		CasePageResult firstPage = service.findAll(new CaseSearchCondition(
+				null, null, null, null, null, 0, 1, "reportedAt,desc"));
+		CasePageResult largestPage = service.findAll(new CaseSearchCondition(
+				null, null, null, null, null, 3, 100, "reportedAt,desc"));
+
+		assertEquals(0, firstPage.page());
+		assertEquals(1, firstPage.size());
+		assertEquals(3, largestPage.page());
+		assertEquals(100, largestPage.size());
+		verifyNoInteractions(urlSigner);
+	}
+
+	@Test
+	void caseWithoutPhotoDoesNotRequestSignedUrl() {
+		MissingCaseRow row = row();
+		row.setPhotoS3Key(null);
+		when(mapper.findById(1L)).thenReturn(row);
+
+		CaseDetailResponse result = service.findById(1L);
+
+		assertNull(result.photoUrl());
+		verifyNoInteractions(urlSigner);
+	}
+
+	private void assertApiError(ApiException exception) {
+		assertEquals("VALIDATION_ERROR", exception.getCode());
+		assertEquals(400, exception.getStatus().value());
 	}
 
 	private MissingCaseRow row() {

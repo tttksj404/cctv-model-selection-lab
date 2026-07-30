@@ -15,6 +15,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.ReporterRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.ReporterUpdateRequest;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.Year;
 import org.junit.jupiter.api.Test;
 
 class CaseRequestValidatorTests {
@@ -35,15 +36,38 @@ class CaseRequestValidatorTests {
 	@Test
 	void rejectsMissingAppearanceAndUnpairedCoordinates() {
 		CaseCreateRequest request = validCreate();
-		assertThrows(ApiException.class, () -> validator.normalizeCreate(new CaseCreateRequest(
+		ApiException missingAppearance = assertThrows(ApiException.class, () -> validator.normalizeCreate(new CaseCreateRequest(
 				request.reporter(), request.reportContent(), request.missingName(), request.gender(),
 				request.birthYear(), new AppearanceRequest(null, null, null, null, null, null, null, null),
 				request.lastSeenTime(), request.lastSeenLat(), request.lastSeenLng(), request.lastSeenAddress())));
+		assertApiError(missingAppearance);
 
-		assertThrows(ApiException.class, () -> validator.normalizeCreate(new CaseCreateRequest(
+		ApiException unpairedCoordinates = assertThrows(ApiException.class, () -> validator.normalizeCreate(new CaseCreateRequest(
 				request.reporter(), request.reportContent(), request.missingName(), request.gender(),
 				request.birthYear(), request.appearance(), request.lastSeenTime(),
 				BigDecimal.ONE, null, request.lastSeenAddress())));
+		assertApiError(unpairedCoordinates);
+	}
+
+	@Test
+	void acceptsInclusiveBirthYearAndCoordinateBoundaries() {
+		CaseCreateRequest request = validCreate();
+
+		MissingCaseRow oldestAndSouthern = validator.normalizeCreate(new CaseCreateRequest(
+				request.reporter(), request.reportContent(), request.missingName(), request.gender(),
+				1900, request.appearance(), request.lastSeenTime(),
+				BigDecimal.valueOf(-90), BigDecimal.valueOf(-180), request.lastSeenAddress()));
+		MissingCaseRow currentAndNorthern = validator.normalizeCreate(new CaseCreateRequest(
+				request.reporter(), request.reportContent(), request.missingName(), request.gender(),
+				Year.now().getValue(), request.appearance(), request.lastSeenTime(),
+				BigDecimal.valueOf(90), BigDecimal.valueOf(180), request.lastSeenAddress()));
+
+		assertEquals(1900, oldestAndSouthern.getBirthYear());
+		assertEquals(BigDecimal.valueOf(-90), oldestAndSouthern.getLastSeenLat());
+		assertEquals(BigDecimal.valueOf(-180), oldestAndSouthern.getLastSeenLng());
+		assertEquals(Year.now().getValue(), currentAndNorthern.getBirthYear());
+		assertEquals(BigDecimal.valueOf(90), currentAndNorthern.getLastSeenLat());
+		assertEquals(BigDecimal.valueOf(180), currentAndNorthern.getLastSeenLng());
 	}
 
 	@Test
@@ -79,5 +103,10 @@ class CaseRequestValidatorTests {
 				null,
 				null,
 				"서울 강남구");
+	}
+
+	private void assertApiError(ApiException exception) {
+		assertEquals("VALIDATION_ERROR", exception.getCode());
+		assertEquals(400, exception.getStatus().value());
 	}
 }
