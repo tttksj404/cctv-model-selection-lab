@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../stores/auth";
+import { authGuard } from "./authGuard";
 import LoginView from "../views/LoginView.vue";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import DashboardView from "../views/DashboardView.vue";
@@ -67,15 +67,11 @@ const routes = [
       { path: "profile", component: ProfileView, meta: { title: "프로필 관리" } }
     ]
   },
-  { path: "/report/lookup", component: ReportLookupView, meta: { public: true, title: "신고자 사건 조회" } },
-  { path: "/report/cases/:accessToken", component: ReportCaseView, meta: { public: true, title: "사건 진행 현황" } },
-  { path: "/:pathMatch(.*)*", component: NotFoundView, meta: { public: true, title: "404" } }
+  { path: "/report/lookup", component: ReportLookupView, meta: { public: true, skipAuthBootstrap: true, title: "신고자 사건 조회" } },
+  { path: "/report/cases/:accessToken", component: ReportCaseView, meta: { public: true, skipAuthBootstrap: true, title: "사건 진행 현황" } },
+  { path: "/:pathMatch(.*)*", component: NotFoundView, meta: { public: true, skipAuthBootstrap: true, title: "404" } }
 ];
 
 export const router = createRouter({ history: createWebHistory(), routes });
 
-router.beforeEach((to) => {
-  const auth = useAuthStore();
-  if (!to.meta.public && !auth.isAuthenticated) return "/login";
-  document.title = `${to.meta.title || "관리자"} | Eyes On U`;
-});
+router.beforeEach(authGuard);
