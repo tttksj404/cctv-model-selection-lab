@@ -320,4 +320,47 @@
         SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
         WHERE case_id = #{caseId} AND status IN ('QUEUED', 'RUNNING')
     </update>
+
+    <resultMap id="deviceSearchTargetResultMap"
+               type="com.ssafy.eyesonu.missingcase.domain.DeviceSearchTargetRow">
+        <result property="caseId" column="case_id"/>
+        <result property="caseNumber" column="case_number"/>
+        <result property="conditionId" column="condition_id"/>
+        <result property="prompt" column="prompt"/>
+        <result property="exclusionPrompt" column="exclusion_prompt"/>
+        <result property="searchStart" column="search_start"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchEnd" column="search_end"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchArea" column="search_area"/>
+        <result property="similarityThreshold" column="similarity_threshold"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="updatedAt" column="target_updated_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <select id="findDeviceSearchTargets" resultMap="deviceSearchTargetResultMap">
+        SELECT c.id AS case_id,
+               c.case_number,
+               sc.id AS condition_id,
+               sc.prompt,
+               sc.exclusion_prompt,
+               sc.search_start,
+               sc.search_end,
+               sc.search_area,
+               sc.similarity_threshold,
+               cc.camera_id,
+               cam.camera_code,
+               GREATEST(c.updated_at, sc.updated_at, cc.updated_at) AS target_updated_at
+        FROM cases c
+        INNER JOIN search_conditions sc
+            ON sc.case_id = c.id AND sc.deleted_at IS NULL
+        INNER JOIN case_cameras cc
+            ON cc.case_id = c.id AND cc.search_enabled = TRUE
+        INNER JOIN cameras cam
+            ON cam.id = cc.camera_id AND cam.media_server_id = #{mediaServerId}
+        WHERE c.status = 'SEARCHING'
+        ORDER BY c.id, sc.id, cc.camera_id
+    </select>
 </mapper>
