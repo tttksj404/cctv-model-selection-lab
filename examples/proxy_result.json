@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "cctv-candidate-evaluation-v1",
+  "candidate": "clip-vit-l14-proxy",
+  "measurementScope": "proxy_attribute_benchmark",
+  "identityLabelsAvailable": false,
+  "trackHeldoutEligible": false,
+  "humanReviewComplete": false,
+  "artifactRefs": [],
+  "metrics": {
+    "attributeMacroF1": 0.414,
+    "identityRank1": null,
+    "identityRecallAt5": null,
+    "falseMatchRate": null
+  }
+}
+

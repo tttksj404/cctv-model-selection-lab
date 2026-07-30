@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/cctv_eval_harness/__init__.py
+src/cctv_eval_harness/gate.py
+src/cctv_model_evaluation_harness.egg-info/PKG-INFO
+src/cctv_model_evaluation_harness.egg-info/SOURCES.txt
+src/cctv_model_evaluation_harness.egg-info/dependency_links.txt
+src/cctv_model_evaluation_harness.egg-info/top_level.txt
+tests/test_gate.py

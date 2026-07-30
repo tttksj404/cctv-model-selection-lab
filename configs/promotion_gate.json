@@ -1,0 +1,9 @@
+{
+  "thresholds": {
+    "attributeMacroF1": 0.85,
+    "identityRank1": 0.85,
+    "identityRecallAt5": 0.95,
+    "falseMatchRateMaximum": 0.05
+  }
+}
+

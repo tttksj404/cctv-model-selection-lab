@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cctv-model-evaluation-harness"
+version = "0.1.0"
+description = "Fail-closed promotion gates for CCTV candidate-model experiments"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
