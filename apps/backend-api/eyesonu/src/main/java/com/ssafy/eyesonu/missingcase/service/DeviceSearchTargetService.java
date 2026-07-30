@@ -46,6 +46,10 @@ public class DeviceSearchTargetService {
 				.toList();
 	}
 
+	public Instant findLastModified(MediaServerPrincipal principal) {
+		return mapper.findDeviceSearchTargetLastModified(principal.mediaServerId());
+	}
+
 	private static final class TargetAccumulator {
 		private final Long caseId;
 		private final String caseNumber;

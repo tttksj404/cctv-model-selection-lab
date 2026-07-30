@@ -81,7 +81,7 @@
 | `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
 | `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `X-Device-Key`, `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404`, `429` |
 | `POST` | `/device/cameras/{cameraCode}/recordings` | 업로드 완료 녹화 메타데이터 등록 | `X-Device-Key`, `Idempotency-Key`, 촬영 시간, Object Key | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `503` |
-| `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key` | `200`, `401`, `403` |
+| `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key`, `If-None-Match` | `200`, `304`, `401`, `403` |
 | `GET` | `/admin/recordings` | 녹화 목록 | `cameraId`, 촬영 구간, 페이지·정렬 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세와 재생 URL | `recordingId` | `200`, `404`, `503` |
 | `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, `Idempotency-Key`, 사건, 카메라, 탐지 시각, 유사도, 이미지 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `429` |
@@ -1050,7 +1050,7 @@ GET /api/v1/admin/recordings?cameraId=1&startFrom=2026-07-20T01:00:00Z&startTo=2
 - 요청 본문과 쿼리 파라미터는 없다.
 - 응답은 인증된 미디어 서버가 소유한 카메라가 등록된 `SEARCHING` 사건 중 활성 검색 조건이 하나 이상 있는 사건만 반환한다.
 - 비활성화·삭제된 검색 조건과 카메라는 반환하지 않는다.
-- 응답은 `Cache-Control: no-store`를 적용한다. 임베디드는 이 API 응답을 최신 기준 데이터로 사용한다.
+- 응답은 `Cache-Control: private, no-cache, must-revalidate`를 적용한다. 임베디드는 이 API 응답을 최신 기준 데이터로 사용한다.
 
 ```http
 GET /api/v1/device/search-targets
@@ -1088,6 +1088,18 @@ X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abc
   ]
 }
 ```
+
+변경 없음 응답 `304 Not Modified`:
+
+```http
+HTTP/1.1 304 Not Modified
+ETag: "media-server-7-search-targets-2026-07-30T04:00:00Z"
+Cache-Control: private, no-cache, must-revalidate
+```
+
+- 디바이스는 직전 응답의 `ETag`를 `If-None-Match` 헤더로 전송한다.
+- ETag는 미디어 서버별 검색 대상 변경 버전을 나타낸다.
+- 변경이 없으면 서버는 전체 검색 대상 데이터를 다시 조회·직렬화하지 않고 `304`를 반환한다.
 
 - `updatedAt`은 해당 사건의 검색 조건·검색 카메라 변경 여부를 확인하기 위한 최신 수정 시각이다. 활성 데이터뿐 아니라 비활성화·삭제된 검색 대상의 마지막 수정 시각도 반영될 수 있다.
 - 모든 시간 필드는 JSON에서 UTC `Z`로 반환한다.

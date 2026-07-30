@@ -98,4 +98,6 @@ public interface MissingCaseMapper {
 
 	List<DeviceSearchTargetRow> findDeviceSearchTargetConditions(
 			@Param("caseIds") Collection<Long> caseIds);
+
+	Instant findDeviceSearchTargetLastModified(@Param("mediaServerId") Long mediaServerId);
 }
