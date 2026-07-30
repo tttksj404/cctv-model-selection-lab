@@ -5,6 +5,10 @@ spring:
     default: none
   jackson:
     time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   servlet:

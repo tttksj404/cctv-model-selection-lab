@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper">
+
+    <resultMap id="missingCaseResultMap" type="com.ssafy.eyesonu.missingcase.domain.MissingCaseRow">
+        <id property="id" column="id"/>
+        <result property="reporterId" column="reporter_id"/>
+        <result property="reporterName" column="reporter_name"/>
+        <result property="reporterPhone" column="reporter_phone"/>
+        <result property="reporterEmail" column="reporter_email"/>
+        <result property="reporterRelation" column="reporter_relation"/>
+        <result property="caseNumber" column="case_number"/>
+        <result property="status" column="status"/>
+        <result property="reportContent" column="report_content"/>
+        <result property="missingName" column="missing_name"/>
+        <result property="gender" column="gender"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="hair" column="hair"/>
+        <result property="face" column="face"/>
+        <result property="upperClothing" column="upper_clothing"/>
+        <result property="lowerClothing" column="lower_clothing"/>
+        <result property="shoes" column="shoes"/>
+        <result property="belongings" column="belongings"/>
+        <result property="bodyType" column="body_type"/>
+        <result property="distinctiveFeatures" column="distinctive_features"/>
+        <result property="photoS3Key" column="photo_s3_key"/>
+        <result property="lastSeenTime" column="last_seen_time"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="lastSeenLat" column="last_seen_lat"/>
+        <result property="lastSeenLng" column="last_seen_lng"/>
+        <result property="lastSeenAddress" column="last_seen_address"/>
+        <result property="reportedAt" column="reported_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="closedAt" column="closed_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="updatedAt" column="updated_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="casePhotoStateResultMap" type="com.ssafy.eyesonu.missingcase.domain.CasePhotoState">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="status" javaType="com.ssafy.eyesonu.missingcase.domain.CaseStatus"/>
+            <arg column="photo_s3_key" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="columns">
+        c.id, c.reporter_id,
+        r.name AS reporter_name, r.phone AS reporter_phone,
+        r.email AS reporter_email, r.relation AS reporter_relation,
+        c.case_number, c.status, c.report_content, c.missing_name, c.gender,
+        c.birth_year, c.hair, c.face, c.upper_clothing, c.lower_clothing,
+        c.shoes, c.belongings, c.body_type, c.distinctive_features,
+        c.photo_s3_key, c.last_seen_time, c.last_seen_lat, c.last_seen_lng,
+        c.last_seen_address, c.reported_at, c.closed_at, c.created_at, c.updated_at
+    </sql>
+
+    <sql id="filters">
+        <where>
+            <if test="status != null">AND c.status = #{status}</if>
+            <if test="caseNumber != null and caseNumber != ''">AND c.case_number = #{caseNumber}</if>
+            <if test="missingName != null and missingName != ''">
+                AND c.missing_name LIKE CONCAT('%', #{missingName}, '%')
+            </if>
+            <if test="reportedFrom != null">
+                AND c.reported_at &gt;= #{reportedFrom,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+            <if test="reportedTo != null">
+                AND c.reported_at &lt; #{reportedTo,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="insertReporter" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO reporters (name, phone, email, relation, created_at)
+        VALUES (#{name}, #{phone}, #{email}, #{relation}, UTC_TIMESTAMP(6))
+    </insert>
+
+    <insert id="insertCase" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO cases (
+            reporter_id, case_number, status, report_content, missing_name, gender,
+            birth_year, hair, face, upper_clothing, lower_clothing, shoes, belongings,
+            body_type, distinctive_features, last_seen_time, last_seen_lat, last_seen_lng,
+            last_seen_address, reported_at, created_at, updated_at
+        ) VALUES (
+            #{reporterId}, #{caseNumber}, #{status}, #{reportContent}, #{missingName}, #{gender},
+            #{birthYear}, #{hair}, #{face}, #{upperClothing}, #{lowerClothing}, #{shoes},
+            #{belongings}, #{bodyType}, #{distinctiveFeatures},
+            #{lastSeenTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{lastSeenLat}, #{lastSeenLng}, #{lastSeenAddress},
+            UTC_TIMESTAMP(6), UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <select id="findById" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="findByIdForUpdate" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        WHERE c.id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="findPhotoState" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
+    </select>
+
+    <select id="findPhotoStateForUpdate" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="countCases" resultType="long">
+        SELECT COUNT(*) FROM cases c
+        <include refid="filters"/>
+    </select>
+
+    <select id="findPage" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        <include refid="filters"/>
+        ORDER BY
+        <choose>
+            <when test="sortField.name() == 'UPDATED_AT'">c.updated_at</when>
+            <when test="sortField.name() == 'MISSING_NAME'">c.missing_name</when>
+            <otherwise>c.reported_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection.name() == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>, c.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="updateReporter">
+        UPDATE reporters
+        SET name = #{reporterName}, phone = #{reporterPhone}, email = #{reporterEmail},
+            relation = #{reporterRelation}
+        WHERE id = #{reporterId}
+    </update>
+
+    <update id="updateCase">
+        UPDATE cases
+        SET report_content = #{reportContent}, missing_name = #{missingName}, gender = #{gender},
+            birth_year = #{birthYear}, hair = #{hair}, face = #{face},
+            upper_clothing = #{upperClothing}, lower_clothing = #{lowerClothing},
+            shoes = #{shoes}, belongings = #{belongings}, body_type = #{bodyType},
+            distinctive_features = #{distinctiveFeatures},
+            last_seen_time = #{lastSeenTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            last_seen_lat = #{lastSeenLat}, last_seen_lng = #{lastSeenLng},
+            last_seen_address = #{lastSeenAddress}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE cases
+        SET status = #{status}, closed_at = #{closedAt}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePhoto">
+        UPDATE cases
+        SET photo_s3_key = #{photoS3Key}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <select id="countSearchConditions" resultType="long">
+        SELECT COUNT(*) FROM search_conditions WHERE case_id = #{caseId}
+    </select>
+
+    <select id="countActiveCameras" resultType="long">
+        SELECT COUNT(*) FROM case_cameras WHERE case_id = #{caseId} AND search_enabled = TRUE
+    </select>
+
+    <select id="countPendingCandidates" resultType="long">
+        SELECT COUNT(*) FROM candidates WHERE case_id = #{caseId} AND review_status = 'PENDING'
+    </select>
+
+    <select id="countActiveJobs" resultType="long">
+        SELECT COUNT(*) FROM analysis_jobs
+        WHERE case_id = #{caseId} AND status IN ('QUEUED', 'RUNNING')
+    </select>
+
+    <update id="cancelActiveJobs">
+        UPDATE analysis_jobs
+        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND status IN ('QUEUED', 'RUNNING')
+    </update>
+</mapper>
