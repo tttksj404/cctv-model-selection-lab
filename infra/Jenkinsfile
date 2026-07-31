@@ -13,7 +13,9 @@ pipeline {
         DEPLOY_SSH_USER = 'ubuntu'
         DEPLOY_HOST_ROOT = '/home/ubuntu/jenkins-data/workspace/ssafy-a204-infra'
         DEPLOY_HOST_ENV_FILE = '/home/ubuntu/S15P11A204/infra/.env.deploy'
-        TESTCONTAINERS_RYUK_DISABLED = 'true'
+        // Let Testcontainers' cleanup sidecar remove orphaned test containers
+        // when a build is interrupted or the test JVM exits unexpectedly.
+        TESTCONTAINERS_RYUK_DISABLED = 'false'
         TESTCONTAINERS_HOST_OVERRIDE = '127.0.0.1'
     }
 
