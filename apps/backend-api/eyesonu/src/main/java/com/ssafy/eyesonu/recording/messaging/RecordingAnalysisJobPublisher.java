@@ -4,11 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
-import org.springframework.amqp.core.MessageDeliveryMode;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class RecordingAnalysisJobPublisher {
@@ -18,14 +15,14 @@ public class RecordingAnalysisJobPublisher {
     public static final String ROUTING_KEY = "search.target.recording.created";
     public static final String EXCHANGE = "search.target.exchange";
 
-    private final RabbitTemplate rabbitTemplate;
     private final RecordingAnalysisOutboxMapper outboxMapper;
+    private final RecordingAnalysisOutboxProcessor processor;
 
     public RecordingAnalysisJobPublisher(
-            RabbitTemplate rabbitTemplate,
-            RecordingAnalysisOutboxMapper outboxMapper) {
-        this.rabbitTemplate = rabbitTemplate;
+            RecordingAnalysisOutboxMapper outboxMapper,
+            RecordingAnalysisOutboxProcessor processor) {
         this.outboxMapper = outboxMapper;
+        this.processor = processor;
     }
 
     public void enqueue(Long jobId, Long caseId) {
@@ -34,21 +31,9 @@ public class RecordingAnalysisJobPublisher {
     }
 
     @Scheduled(fixedDelayString = "${recording.analysis.outbox.poll-delay-ms:1000}")
-    @Transactional
     public void publishPending() {
-        for (RecordingAnalysisOutbox outbox : outboxMapper.findReady(50)) {
-            try {
-                RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                        outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
-                        outbox.getCaseId(), outbox.getOccurredAt());
-                rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {
-                    message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                    return message;
-                });
-                outboxMapper.markPublished(outbox.getId(), Instant.now());
-            } catch (RuntimeException exception) {
-                outboxMapper.markFailed(outbox.getId(), exception.getMessage());
-            }
+        for (int i = 0; i < 50 && processor.publishOne(); i++) {
+            // Process one row per transaction so a slow broker cannot hold a batch lock.
         }
     }
 }

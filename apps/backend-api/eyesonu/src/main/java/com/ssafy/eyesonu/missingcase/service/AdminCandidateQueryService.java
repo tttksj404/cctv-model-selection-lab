@@ -54,8 +54,9 @@ public class AdminCandidateQueryService {
     private String normalizeStatus(String value) {
         if (value == null || value.isBlank()) return null;
         String status = value.trim().toUpperCase(Locale.ROOT);
-        if (!status.equals("PENDING") && !status.equals("APPROVED") && !status.equals("REJECTED")) {
-            throw validation("reviewStatus must be PENDING, APPROVED, or REJECTED");
+        if (!status.equals("PENDING") && !status.equals("KEPT")
+                && !status.equals("CONFIRMED") && !status.equals("REJECTED")) {
+            throw validation("reviewStatus must be PENDING, KEPT, CONFIRMED, or REJECTED");
         }
         return status;
     }

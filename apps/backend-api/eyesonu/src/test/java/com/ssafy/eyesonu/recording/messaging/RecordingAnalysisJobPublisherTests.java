@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
@@ -29,7 +28,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper);
+                outboxMapper, org.mockito.Mockito.mock(RecordingAnalysisOutboxProcessor.class));
 
         publisher.enqueue(5001L, 101L);
 
@@ -44,17 +43,16 @@ class RecordingAnalysisJobPublisherTests {
         RecordingAnalysisOutbox outbox = new RecordingAnalysisOutbox(
                 1L, "cmd-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
                 5001L, 101L, occurredAt, 0);
-        when(outboxMapper.findReady(50)).thenReturn(List.of(outbox));
+        when(outboxMapper.findReady(1)).thenReturn(List.of(outbox), List.of());
+        RecordingAnalysisOutboxProcessor processor = new RecordingAnalysisOutboxProcessor(rabbitTemplate, outboxMapper);
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper);
+                outboxMapper, processor);
 
         publisher.publishPending();
 
         verify(rabbitTemplate).convertAndSend(
-                eq(RecordingAnalysisJobPublisher.EXCHANGE),
-                eq(RecordingAnalysisJobPublisher.ROUTING_KEY),
-                any(RecordingAnalysisJobEvent.class),
-                any(MessagePostProcessor.class));
+                eq(RecordingAnalysisJobPublisher.EXCHANGE), eq(RecordingAnalysisJobPublisher.ROUTING_KEY),
+                any(RecordingAnalysisJobEvent.class), any(MessagePostProcessor.class));
         verify(outboxMapper).markPublished(eq(1L), any(Instant.class));
     }
 
@@ -64,13 +62,14 @@ class RecordingAnalysisJobPublisherTests {
         RecordingAnalysisOutbox outbox = new RecordingAnalysisOutbox(
                 1L, "cmd-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
                 5001L, 101L, occurredAt, 0);
-        when(outboxMapper.findReady(50)).thenReturn(List.of(outbox));
-        doThrow(new IllegalStateException("RabbitMQ unavailable"))
+        when(outboxMapper.findReady(1)).thenReturn(List.of(outbox), List.of());
+        org.mockito.Mockito.doThrow(new IllegalStateException("RabbitMQ unavailable"))
                 .when(rabbitTemplate).convertAndSend(
-                any(String.class), any(String.class), any(RecordingAnalysisJobEvent.class),
-                any(MessagePostProcessor.class));
+                        any(String.class), any(String.class), any(RecordingAnalysisJobEvent.class),
+                        any(MessagePostProcessor.class));
+        RecordingAnalysisOutboxProcessor processor = new RecordingAnalysisOutboxProcessor(rabbitTemplate, outboxMapper);
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper);
+                outboxMapper, processor);
 
         publisher.publishPending();
 
