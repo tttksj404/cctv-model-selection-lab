@@ -55,3 +55,8 @@ eyesonu:
 
 testcontainers:
   enabled: ${TESTCONTAINERS_ENABLED:true}
+
+recording:
+  analysis:
+    consumer:
+      auto-start: ${TEST_RECORDING_ANALYSIS_CONSUMER_AUTO_START:false}
