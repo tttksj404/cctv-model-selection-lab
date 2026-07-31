@@ -25,6 +25,9 @@ public class RecordingAnalysisJobPublisher {
     public static final String QUEUE = "search.target.recording.queue";
     public static final String ROUTING_KEY = "search.target.recording.created";
     public static final String EXCHANGE = "search.target.exchange";
+    public static final String DEAD_LETTER_EXCHANGE = "search.target.dlx";
+    public static final String DEAD_LETTER_QUEUE = QUEUE + ".dlq";
+    public static final String DEAD_LETTER_ROUTING_KEY = ROUTING_KEY + ".dlq";
     private static final long CONFIRM_TIMEOUT_SECONDS = 5L;
 
     private final RabbitTemplate rabbitTemplate;
