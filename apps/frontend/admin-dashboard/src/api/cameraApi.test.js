@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getCamera, listCameras, updateCameraName } from "./cameraApi";
+import {
+  createCamera,
+  getCamera,
+  listCameras,
+  listMediaServerOptions,
+  updateCameraName
+} from "./cameraApi";
 import { apiClient, setUnauthorizedHandler } from "./httpClient";
 
 const originalAdapter = apiClient.defaults.adapter;
@@ -60,5 +66,50 @@ describe("cameraApi", () => {
       "patch /admin/cameras/7/name"
     ]);
     expect(JSON.parse(adapter.mock.calls[1][0].data)).toEqual({ cameraName: "변경 이름" });
+  });
+
+  it("unwraps the safe Media Server option list", async () => {
+    const adapter = vi.fn(async (config) => response(config, {
+      data: [
+        { id: 3, serverCode: "media-a", name: "Media A" },
+        { id: 8, serverCode: "media-b", name: "Media B" }
+      ]
+    }));
+    apiClient.defaults.adapter = adapter;
+
+    await expect(listMediaServerOptions()).resolves.toEqual([
+      { id: 3, serverCode: "media-a", name: "Media A" },
+      { id: 8, serverCode: "media-b", name: "Media B" }
+    ]);
+    expect(adapter).toHaveBeenCalledOnce();
+    expect(adapter.mock.calls[0][0]).toMatchObject({
+      method: "get",
+      url: "/admin/media-servers/options"
+    });
+  });
+
+  it("posts exactly the seven camera registration fields and unwraps the created camera", async () => {
+    const payload = {
+      mediaServerId: 3,
+      cameraCode: "camera-03",
+      cameraName: "3번 카메라",
+      latitude: 37.5,
+      longitude: 127,
+      address: "설치 주소",
+      rtspUrl: "rtsp://camera-source/stream"
+    };
+    const adapter = vi.fn(async (config) => response(config, {
+      data: { id: 13, cameraCode: "camera-03", status: "OFFLINE" }
+    }, 201));
+    apiClient.defaults.adapter = adapter;
+
+    await expect(createCamera(payload)).resolves.toMatchObject({
+      id: 13,
+      cameraCode: "camera-03",
+      status: "OFFLINE"
+    });
+    expect(adapter).toHaveBeenCalledOnce();
+    expect(adapter.mock.calls[0][0]).toMatchObject({ method: "post", url: "/admin/cameras" });
+    expect(JSON.parse(adapter.mock.calls[0][0].data)).toEqual(payload);
   });
 });
