@@ -1,15 +1,122 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { getCameras } from "../api/mockApi";
-import StatusBadge from "../components/common/StatusBadge.vue";
+import { listCameras } from "../api/cameraApi";
 import BasePagination from "../components/common/BasePagination.vue";
-const router = useRouter(); const filters = reactive({ keyword: "", status: "all" }); const rows = ref([]);
-const page = ref(1); const pageSize = 10;
-const totalPages = computed(() => Math.max(1, Math.ceil(rows.value.length / pageSize)));
-const visibleCameras = computed(() => rows.value.slice((page.value - 1) * pageSize, page.value * pageSize));
-const load = async () => rows.value = await getCameras(filters); watch(filters, () => { page.value = 1; load(); }); onMounted(load);
+import StateBlock from "../components/common/StateBlock.vue";
+import StatusBadge from "../components/common/StatusBadge.vue";
+import { mapCamera } from "../domain/cameraMapper";
+
+const router = useRouter();
+const filters = reactive({ keyword: "", status: "all" });
+const rows = ref([]);
+const page = ref(1);
+const pageSize = 10;
+const totalPages = ref(1);
+const totalCount = ref(0);
+const loading = ref(true);
+const error = ref("");
+let latestRequestId = 0;
+
+const listParams = () => ({
+  status: filters.status === "all" ? undefined : filters.status.toUpperCase(),
+  search: filters.keyword.trim() || undefined,
+  page: page.value - 1,
+  size: pageSize,
+  sort: "cameraCode,asc"
+});
+
+const load = async () => {
+  const requestId = ++latestRequestId;
+  loading.value = true;
+  error.value = "";
+
+  try {
+    const result = await listCameras(listParams());
+    if (requestId !== latestRequestId) return;
+    rows.value = (result.data || []).map(mapCamera);
+    totalPages.value = Math.max(1, result.meta?.totalPages || 0);
+    totalCount.value = result.meta?.totalElements || 0;
+  } catch (cause) {
+    if (requestId !== latestRequestId) return;
+    rows.value = [];
+    totalPages.value = 1;
+    totalCount.value = 0;
+    error.value = cause?.message || "CCTV 목록을 불러오지 못했습니다.";
+  } finally {
+    if (requestId === latestRequestId) loading.value = false;
+  }
+};
+
+const reset = () => {
+  filters.keyword = "";
+  filters.status = "all";
+};
+
+watch(() => [filters.keyword, filters.status], () => {
+  if (page.value !== 1) {
+    page.value = 1;
+    return;
+  }
+  load();
+});
+watch(page, load);
+onMounted(load);
+onBeforeUnmount(() => { latestRequestId += 1; });
 </script>
+
 <template>
-  <section class="content-panel"><div class="section-heading"><div><h2>CCTV 관리</h2><p>목록, 등록, 관리, 상태 테스트를 제공합니다.</p></div><button class="primary-button" @click="router.push('/admin/cameras/new')">CCTV 등록</button></div><div class="filter-bar"><label>검색<input v-model="filters.keyword" /></label><label>상태<select v-model="filters.status"><option value="all">전체</option><option value="online">정상</option><option value="unstable">연결 불안정</option><option value="offline">연결 없음</option></select></label></div><div class="table-scroll"><table class="case-table"><thead><tr><th>ID</th><th>이름</th><th>위치</th><th>위도</th><th>경도</th><th>구역</th><th>상태</th><th>마지막 연결</th><th>사용</th><th></th></tr></thead><tbody><tr v-for="c in visibleCameras" :key="c.id"><td>{{ c.id }}</td><td>{{ c.name }}</td><td>{{ c.address }}</td><td>{{ c.lat }}</td><td>{{ c.lng }}</td><td>{{ c.zone }}</td><td><StatusBadge :status="c.status" /></td><td>{{ c.lastHeartbeat }}</td><td>{{ c.active ? '사용' : '비활성' }}</td><td><button class="ghost-button" @click="router.push(`/admin/cameras/${c.id}/edit`)">관리</button></td></tr></tbody></table></div><BasePagination v-model:page="page" :total-pages="totalPages" :total-count="rows.length" /></section>
+  <section class="content-panel">
+    <div class="section-heading">
+      <div>
+        <h2>CCTV 관리</h2>
+        <p>실제 등록된 CCTV의 소속, 위치와 연결 상태를 조회합니다.</p>
+      </div>
+      <button class="primary-button" type="button" disabled title="Media Server 목록 API 연결 후 제공됩니다.">
+        CCTV 등록
+      </button>
+    </div>
+    <p class="camera-integration-note">신규 등록은 현재 비활성화되어 있습니다. 임시 카메라는 운영 DB 등록 절차를 사용해 주세요.</p>
+
+    <div class="filter-bar">
+      <label>검색<input v-model="filters.keyword" placeholder="카메라 코드 또는 이름" /></label>
+      <label>
+        상태
+        <select v-model="filters.status">
+          <option value="all">전체</option>
+          <option value="online">정상</option>
+          <option value="offline">연결 없음</option>
+          <option value="error">오류</option>
+        </select>
+      </label>
+      <button class="reset-button" type="button" @click="reset">초기화</button>
+    </div>
+
+    <StateBlock :loading="loading" :error="error" :empty="rows.length === 0" @retry="load">
+      <div class="table-scroll">
+        <table class="case-table">
+          <thead>
+            <tr>
+              <th>코드</th><th>이름</th><th>위치</th><th>위도</th><th>경도</th>
+              <th>Media Server</th><th>상태</th><th>마지막 연결</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="camera in rows" :key="camera.id">
+              <td class="mono">{{ camera.cameraCode }}</td>
+              <td>{{ camera.cameraName }}</td>
+              <td>{{ camera.address }}</td>
+              <td>{{ camera.latitude }}</td>
+              <td>{{ camera.longitude }}</td>
+              <td :title="camera.mediaServerCode">{{ camera.mediaServerName }}</td>
+              <td><StatusBadge :status="camera.status" /></td>
+              <td>{{ camera.lastHeartbeat }}</td>
+              <td><button class="ghost-button" @click="router.push(`/admin/cameras/${camera.id}/edit`)">관리</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <BasePagination v-model:page="page" :total-pages="totalPages" :total-count="totalCount" />
+    </StateBlock>
+  </section>
 </template>

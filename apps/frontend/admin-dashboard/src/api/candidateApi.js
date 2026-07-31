@@ -1,12 +1,12 @@
 import client from "./httpClient";
 
 export async function fetchAdminCandidates(params = {}) {
-  const { data } = await client.get("/api/v1/admin/candidates", { params });
+  const { data } = await client.get("/admin/candidates", { params });
   return { rows: data.data || [], meta: data.meta || {} };
 }
 
 export async function fetchAdminCandidate(candidateId) {
-  const { data } = await client.get(`/api/v1/admin/candidates/${candidateId}`);
+  const { data } = await client.get(`/admin/candidates/${candidateId}`);
   return data.data;
 }
 

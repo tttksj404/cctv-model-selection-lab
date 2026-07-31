@@ -34,10 +34,12 @@ const dropdownOpen = ref(false);
 const settingsOpen = ref(true);
 const notifications = ref([]);
 const clockString = ref("");
+const logoutPending = ref(false);
 let clockTimer = null;
 const title = computed(() => route.meta.title || "관리자");
 const isLiveMonitoring = computed(() => route.path === "/admin/live-monitoring");
 const unread = computed(() => notifications.value.filter((item) => item.unread).length);
+const operatorName = computed(() => auth.user?.name || "관리자");
 
 const toggleLiveQuadView = () => {
   window.dispatchEvent(new CustomEvent("toggle-live-quad"));
@@ -66,9 +68,18 @@ const go = (path) => {
   router.push(path);
   mobileOpen.value = false;
 };
-const logout = () => {
-  auth.logout();
-  router.push("/login");
+const logout = async () => {
+  if (logoutPending.value) return;
+  logoutPending.value = true;
+
+  try {
+    await auth.logout();
+    await router.replace("/login");
+  } catch (error) {
+    window.alert(error?.message || "로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+  } finally {
+    logoutPending.value = false;
+  }
 };
 const closeDropdown = (event) => {
   if (!event.target.closest(".notification-wrap")) dropdownOpen.value = false;
@@ -192,7 +203,7 @@ onUnmounted(() => {
           <div class="system-online"><span />SYSTEM ONLINE</div>
           <div class="clock-text">{{ clockString }}</div>
           <div class="header-divider" />
-          <div class="operator-name">관제자 김민준</div>
+          <div class="operator-name">관제자 {{ operatorName }}</div>
           <div class="notification-wrap">
             <button class="icon-button" @click.stop="dropdownOpen = !dropdownOpen" aria-label="알림">
               <Bell :size="18" />
@@ -211,7 +222,7 @@ onUnmounted(() => {
               </button>
             </section>
           </div>
-          <button class="logout-button" @click="logout">로그아웃</button>
+          <button class="logout-button" :disabled="logoutPending" @click="logout">{{ logoutPending ? "로그아웃 중" : "로그아웃" }}</button>
         </div>
       </header>
 
