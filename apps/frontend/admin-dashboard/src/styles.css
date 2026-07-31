@@ -256,6 +256,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .candidate-detail { grid-template-columns: minmax(0, 1fr) 420px; }
 .candidate-review-panel { align-self: start; }
 .candidate-detail-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 16px; min-width: 0; }
+.candidate-detail-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .candidate-detail-header h2 { margin: 4px 0 0; font-size: 20px; line-height: 1.35; overflow-wrap: anywhere; }
 .eyebrow { color: #6b7280; font-size: 12px; font-weight: 700; line-height: 1.35; }
 .similarity-pill { flex: 0 0 auto; border: 1px solid #b8d9e8; border-radius: 999px; background: #eef8fb; color: #256783; padding: 7px 11px; font-size: 12px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
