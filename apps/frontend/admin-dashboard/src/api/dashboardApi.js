@@ -1,10 +1,13 @@
 import { fetchAdminCandidates } from "./candidateApi";
 import { listCameras } from "./cameraApi";
 import { listCases } from "./caseApi";
+import { ApiClientError } from "./httpClient";
 import { mapCaseListItem } from "../domain/caseMapper";
 
 const KST_TIME_ZONE = "Asia/Seoul";
 const PAGE_SIZE = 100;
+const MAX_CHART_PAGES = 100;
+const PAGE_CONCURRENCY = 4;
 const SUMMARY_CASE_SORT = "reportedAt,desc";
 const CHART_CASE_SORT = "reportedAt,asc";
 const CHART_CANDIDATE_SORT = "lastDetectedAt,asc";
@@ -49,21 +52,51 @@ function periodFor(range) {
 }
 
 function countFromPage(result) {
-  return Number(result.meta?.totalElements || 0);
+  return validatePagedResult(result).meta.totalElements;
+}
+
+function validatePagedResult(result) {
+  const meta = result?.meta;
+  if (
+    !result
+      || !Array.isArray(result.data)
+      || !meta
+      || !Number.isInteger(meta.totalElements)
+      || meta.totalElements < 0
+      || !Number.isInteger(meta.totalPages)
+      || meta.totalPages < 0
+  ) {
+    throw new ApiClientError({
+      code: "INVALID_API_RESPONSE",
+      message: "서버 응답 형식이 올바르지 않습니다."
+    });
+  }
+  return result;
 }
 
 async function fetchAllPages(fetchPage, params) {
-  const firstPage = await fetchPage({ ...params, page: 0, size: PAGE_SIZE });
-  const totalPages = Number(firstPage.meta?.totalPages || 0);
-  if (totalPages <= 1) return firstPage.data || [];
+  const firstPage = validatePagedResult(await fetchPage({ ...params, page: 0, size: PAGE_SIZE }));
+  const totalPages = firstPage.meta.totalPages;
+  if (totalPages > MAX_CHART_PAGES) {
+    throw new ApiClientError({
+      code: "RESPONSE_TOO_LARGE",
+      message: "차트 데이터가 너무 많아 조회를 중단했습니다."
+    });
+  }
+  if (totalPages <= 1) return firstPage.data;
 
-  const remainingPages = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) =>
-      fetchPage({ ...params, page: index + 1, size: PAGE_SIZE })
-    )
-  );
+  const pages = [firstPage];
+  for (let start = 1; start < totalPages; start += PAGE_CONCURRENCY) {
+    const batch = await Promise.all(
+      Array.from(
+        { length: Math.min(PAGE_CONCURRENCY, totalPages - start) },
+        (_, index) => fetchPage({ ...params, page: start + index, size: PAGE_SIZE })
+      )
+    );
+    pages.push(...batch.map(validatePagedResult));
+  }
 
-  return [firstPage, ...remainingPages].flatMap((page) => page.data || []);
+  return pages.flatMap((page) => page.data);
 }
 
 function countByDate(rows, field) {
@@ -101,9 +134,9 @@ export async function getDashboardSummary() {
 }
 
 export async function getCases({ page = 0, size = 10 } = {}) {
-  const result = await listCases({ page, size, sort: SUMMARY_CASE_SORT });
+  const result = validatePagedResult(await listCases({ page, size, sort: SUMMARY_CASE_SORT }));
   return {
-    data: (result.data || []).map(mapCaseListItem),
+    data: result.data.map(mapCaseListItem),
     meta: result.meta
   };
 }

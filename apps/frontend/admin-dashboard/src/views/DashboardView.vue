@@ -20,6 +20,9 @@ const error = ref("");
 const page = ref(1);
 const totalPages = ref(1);
 const totalCount = ref(0);
+let loadRequestId = 0;
+let caseRequestId = 0;
+let chartRequestId = 0;
 const visibleCases = computed(() => cases.value);
 const chartData = computed(() => ({
   labels: chart.value.map((item) => item.date),
@@ -36,6 +39,9 @@ const applyCasePage = (result) => {
 };
 
 const load = async () => {
+  const requestId = ++loadRequestId;
+  const currentCaseRequestId = ++caseRequestId;
+  const currentChartRequestId = ++chartRequestId;
   loading.value = true;
   error.value = "";
 
@@ -45,10 +51,12 @@ const load = async () => {
       getCases({ page: page.value - 1, size: 10 }),
       getChartData(chartRange.value)
     ]);
+    if (requestId !== loadRequestId) return;
     summary.value = summaryResult;
-    applyCasePage(caseResult);
-    chart.value = chartResult;
+    if (currentCaseRequestId === caseRequestId) applyCasePage(caseResult);
+    if (currentChartRequestId === chartRequestId) chart.value = chartResult;
   } catch (cause) {
+    if (requestId !== loadRequestId) return;
     summary.value = [];
     cases.value = [];
     chart.value = [];
@@ -60,10 +68,14 @@ const load = async () => {
 
 const changePage = async () => {
   if (loading.value) return;
+  const requestId = ++caseRequestId;
   try {
-    applyCasePage(await getCases({ page: page.value - 1, size: 10 }));
+    const result = await getCases({ page: page.value - 1, size: 10 });
+    if (requestId === caseRequestId) applyCasePage(result);
   } catch (cause) {
-    error.value = cause?.message || "최근 사건 목록을 불러오지 못했습니다.";
+    if (requestId === caseRequestId) {
+      error.value = cause?.message || "최근 사건 목록을 불러오지 못했습니다.";
+    }
   }
 };
 
@@ -71,11 +83,18 @@ onMounted(load);
 
 const changeChartRange = async (range) => {
   if (chartRange.value === range) return;
+  const requestId = ++chartRequestId;
   chartRange.value = range;
   try {
-    chart.value = await getChartData(range);
+    const result = await getChartData(range);
+    if (requestId === chartRequestId && chartRange.value === range) {
+      chart.value = result;
+      error.value = "";
+    }
   } catch (cause) {
-    error.value = cause?.message || "차트 데이터를 불러오지 못했습니다.";
+    if (requestId === chartRequestId && chartRange.value === range) {
+      error.value = cause?.message || "차트 데이터를 불러오지 못했습니다.";
+    }
   }
 };
 </script>
