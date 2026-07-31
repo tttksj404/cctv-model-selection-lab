@@ -72,11 +72,10 @@ onBeforeUnmount(() => { latestRequestId += 1; });
         <h2>CCTV 관리</h2>
         <p>실제 등록된 CCTV의 소속, 위치와 연결 상태를 조회합니다.</p>
       </div>
-      <button class="primary-button" type="button" disabled title="Media Server 목록 API 연결 후 제공됩니다.">
+      <button class="primary-button" type="button" @click="router.push('/admin/cameras/new')">
         CCTV 등록
       </button>
     </div>
-    <p class="camera-integration-note">신규 등록은 현재 비활성화되어 있습니다. 임시 카메라는 운영 DB 등록 절차를 사용해 주세요.</p>
 
     <div class="filter-bar">
       <label>검색<input v-model="filters.keyword" placeholder="카메라 코드 또는 이름" /></label>

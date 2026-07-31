@@ -87,7 +87,10 @@ describe("CamerasView", () => {
     expect(root.textContent).toContain("camera-01");
     expect(root.textContent).toContain("RPI5 Media");
     expect(root.textContent).toContain("전체 14건");
-    expect(root.querySelector(".section-heading button").disabled).toBe(true);
+    const registerButton = root.querySelector(".section-heading button");
+    expect(registerButton.disabled).toBe(false);
+    registerButton.click();
+    expect(routerPushMock).toHaveBeenCalledWith("/admin/cameras/new");
   });
 
   it("converts status and search filters to backend parameters", async () => {

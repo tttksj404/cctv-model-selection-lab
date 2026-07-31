@@ -1,6 +1,8 @@
 package com.ssafy.eyesonu.mediaserver.mapper;
 
 import com.ssafy.eyesonu.mediaserver.domain.MediaServer;
+import com.ssafy.eyesonu.mediaserver.domain.MediaServerOption;
+import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -32,4 +34,14 @@ public interface MediaServerMapper {
 			WHERE id = #{mediaServerId}
 			""")
 	Optional<MediaServer> findById(@Param("mediaServerId") Long mediaServerId);
+
+	@Select("""
+			SELECT id,
+			       server_code AS serverCode,
+			       name
+			FROM media_servers
+			WHERE status = 'ACTIVE'
+			ORDER BY server_code ASC
+			""")
+	List<MediaServerOption> findActiveOptions();
 }
