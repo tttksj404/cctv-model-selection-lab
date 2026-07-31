@@ -68,6 +68,7 @@ public class SwaggerConfig {
 				.tags(List.of(
 						new Tag().name("인증").description("관리자 세션 인증과 CSRF 토큰 API"),
 						new Tag().name("관리자").description("로그인한 관리자 정보 API"),
+						new Tag().name("관리자 사건").description("관리자 전용 사건 등록·조회·수정·상태 관리 API"),
 						new Tag().name("사건 조회").description("신고자의 사건 진행 상황 조회 API")));
 	}
 

@@ -44,6 +44,9 @@ public class S3Properties {
 	@Positive
 	private long maxFileSizeBytes;
 
+	@Positive
+	private long casePhotoMaxFileSizeBytes = 10L * 1024 * 1024;
+
 	@NotNull
 	private Duration presignedUrlExpiry = Duration.ofMinutes(15);
 
@@ -125,6 +128,14 @@ public class S3Properties {
 
 	public void setMaxFileSizeBytes(long maxFileSizeBytes) {
 		this.maxFileSizeBytes = maxFileSizeBytes;
+	}
+
+	public long getCasePhotoMaxFileSizeBytes() {
+		return casePhotoMaxFileSizeBytes;
+	}
+
+	public void setCasePhotoMaxFileSizeBytes(long casePhotoMaxFileSizeBytes) {
+		this.casePhotoMaxFileSizeBytes = casePhotoMaxFileSizeBytes;
 	}
 
 	public Duration getPresignedUrlExpiry() {

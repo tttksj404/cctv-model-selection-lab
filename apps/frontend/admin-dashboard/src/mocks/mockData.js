@@ -8,7 +8,8 @@ export const statusMap = {
   cancelled: { label: "취소됨", tone: "gray" },
   online: { label: "정상", tone: "green" },
   unstable: { label: "연결 불안정", tone: "amber" },
-  offline: { label: "연결 없음", tone: "red" }
+  offline: { label: "연결 없음", tone: "red" },
+  error: { label: "오류", tone: "amber" }
 };
 
 export const dashboardSummary = [
@@ -40,21 +41,6 @@ export const candidates = [
   { id: "k2", caseId: "c2", caseNumber: "CASE-2026-0416", image: "후보 캡처", camera: "CCTV-11", zone: "Zone B", detectedAt: "2026-07-21 14:18:52", similarity: 83, source: "실시간", review: "confirmed", location: "올림픽공원 북문" },
   { id: "k3", caseId: "c6", caseNumber: "CASE-2026-0412", image: "후보 캡처", camera: "CCTV-02", zone: "Zone A", detectedAt: "2026-07-21 13:57:20", similarity: 76, source: "녹화", review: "hold", location: "여의도 환승센터" },
   { id: "k4", caseId: "c11", caseNumber: "CASE-2026-0407", image: "후보 캡처", camera: "CCTV-09", zone: "Zone B", detectedAt: "2026-07-21 13:40:05", similarity: 68, source: "녹화", review: "rejected", location: "건대입구역" }
-];
-
-export const cameras = [
-  { id: "cam1", name: "CCTV-01", address: "강남구 테헤란로 152", zone: "Zone A", lat: 37.501, lng: 127.039, status: "online", lastHeartbeat: "09:52:11", active: true, streamUrl: "mock://cctv-01" },
-  { id: "cam2", name: "CCTV-02", address: "강남구 역삼로 21", zone: "Zone A", lat: 37.503, lng: 127.042, status: "online", lastHeartbeat: "09:52:09", active: true, streamUrl: "mock://cctv-02" },
-  { id: "cam3", name: "CCTV-04", address: "강남구 봉은사로 78", zone: "Zone A", lat: 37.508, lng: 127.035, status: "offline", lastHeartbeat: "09:41:33", active: true, streamUrl: "mock://cctv-04" },
-  { id: "cam4", name: "CCTV-09", address: "송파구 올림픽로 300", zone: "Zone B", lat: 37.516, lng: 127.113, status: "online", lastHeartbeat: "09:52:10", active: true, streamUrl: "mock://cctv-09" },
-  { id: "cam5", name: "CCTV-11", address: "송파구 백제고분로 40", zone: "Zone B", lat: 37.507, lng: 127.101, status: "unstable", lastHeartbeat: "09:52:08", active: true, streamUrl: "mock://cctv-11" }
-];
-
-export const liveFeeds = [
-  { id: "cam1", name: "CCTV-01", zone: "Zone A", fps: "10 FPS", online: true, status: "online" },
-  { id: "cam2", name: "CCTV-02", zone: "Zone A", fps: "10 FPS", online: true, status: "online" },
-  { id: "cam4", name: "CCTV-09", zone: "Zone B", fps: "10 FPS", online: true, status: "online" },
-  { id: "cam5", name: "CCTV-11", zone: "Zone B", fps: "9 FPS", online: true, status: "online" }
 ];
 
 export const chartSeries = [

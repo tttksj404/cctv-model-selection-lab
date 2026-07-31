@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.camera.mapper.CameraMapper">
+
+    <resultMap id="cameraManagementRowResultMap"
+               type="com.ssafy.eyesonu.camera.domain.CameraManagementRow">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="media_server_id" javaType="java.lang.Long"/>
+            <arg column="media_server_code" javaType="java.lang.String"/>
+            <arg column="media_server_name" javaType="java.lang.String"/>
+            <arg column="camera_code" javaType="java.lang.String"/>
+            <arg column="camera_name" javaType="java.lang.String"/>
+            <arg column="latitude" javaType="java.math.BigDecimal"/>
+            <arg column="longitude" javaType="java.math.BigDecimal"/>
+            <arg column="address" javaType="java.lang.String"/>
+            <arg column="stream_url" javaType="java.lang.String"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="last_heartbeat" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+            <arg column="created_at" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+            <arg column="updated_at" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="adminCameraColumns">
+        c.id,
+        c.media_server_id,
+        ms.server_code AS media_server_code,
+        ms.name AS media_server_name,
+        c.camera_code,
+        c.camera_name,
+        c.latitude,
+        c.longitude,
+        c.address,
+        c.stream_url,
+        c.status,
+        c.last_heartbeat,
+        c.created_at,
+        c.updated_at
+    </sql>
+
+    <sql id="adminCameraWhere">
+        <where>
+            <if test="status != null">
+                AND c.status = #{status}
+            </if>
+            <if test="search != null">
+                AND (
+                    c.camera_name LIKE CONCAT('%', #{search}, '%')
+                    OR c.camera_code LIKE CONCAT('%', #{search}, '%')
+                )
+            </if>
+        </where>
+    </sql>
+
+    <select id="countAdminCameras" resultType="long">
+        SELECT COUNT(*)
+        FROM cameras c
+        INNER JOIN media_servers ms ON ms.id = c.media_server_id
+        <include refid="adminCameraWhere"/>
+    </select>
+
+    <select id="findAdminPage" resultMap="cameraManagementRowResultMap">
+        SELECT <include refid="adminCameraColumns"/>
+        FROM cameras c
+        INNER JOIN media_servers ms ON ms.id = c.media_server_id
+        <include refid="adminCameraWhere"/>
+        ORDER BY
+        <choose>
+            <when test="sortColumn == 'created_at'">c.created_at</when>
+            <when test="sortColumn == 'camera_name'">c.camera_name</when>
+            <otherwise>c.camera_code</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>, c.id DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="findAdminById" resultMap="cameraManagementRowResultMap">
+        SELECT <include refid="adminCameraColumns"/>
+        FROM cameras c
+        INNER JOIN media_servers ms ON ms.id = c.media_server_id
+        WHERE c.id = #{cameraId}
+    </select>
+
+    <select id="findAdminByIdForUpdate" resultMap="cameraManagementRowResultMap">
+        SELECT <include refid="adminCameraColumns"/>
+        FROM cameras c
+        INNER JOIN media_servers ms ON ms.id = c.media_server_id
+        WHERE c.id = #{cameraId}
+        FOR UPDATE OF c
+    </select>
+
+    <insert id="insert"
+            parameterType="com.ssafy.eyesonu.camera.domain.CameraCreateCommand"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="id">
+        INSERT INTO cameras (
+            media_server_id,
+            camera_name,
+            camera_code,
+            latitude,
+            longitude,
+            address,
+            stream_url,
+            status,
+            last_heartbeat,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{mediaServerId},
+            #{cameraName},
+            #{cameraCode},
+            #{latitude},
+            #{longitude},
+            #{address},
+            #{rtspUrl},
+            'OFFLINE',
+            NULL,
+            UTC_TIMESTAMP(6),
+            UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <update id="updateName">
+        UPDATE cameras
+        SET camera_name = #{cameraName},
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{cameraId}
+    </update>
+
+    <update id="updateDetails"
+            parameterType="com.ssafy.eyesonu.camera.domain.CameraUpdateCommand">
+        UPDATE cameras
+        SET media_server_id = #{mediaServerId},
+            camera_name = #{cameraName},
+            latitude = #{latitude},
+            longitude = #{longitude},
+            address = #{address},
+            stream_url = #{rtspUrl},
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{cameraId}
+    </update>
+
+</mapper>
