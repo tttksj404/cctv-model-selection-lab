@@ -9,6 +9,10 @@ public interface AnalysisJobMapper {
 
     int insert(AnalysisJob job);
 
+    int claimQueued(Long jobId);
+
+    AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
+
     AnalysisJob findActiveByTarget(
             @Param("caseId") Long caseId,
             @Param("searchConditionId") Long searchConditionId,
