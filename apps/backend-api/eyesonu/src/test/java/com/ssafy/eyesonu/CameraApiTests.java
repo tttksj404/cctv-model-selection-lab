@@ -129,6 +129,18 @@ class CameraApiTests {
     }
 
     @Test
+    void cameraCreateRejectsUnsafePathCharactersInCameraCode() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/cameras")
+                        .with(adminAuthentication())
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody().replace("CAM-001", "front/gate")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cameraCode")));
+    }
+
+    @Test
     void cameraNamePatchReturnsUpdatedDetail() throws Exception {
         CameraDetailResponse response = CameraDetailResponse.from(row());
         CameraNamePatchRequest request = new CameraNamePatchRequest("Renamed");
