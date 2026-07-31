@@ -153,7 +153,7 @@ services:
     image: mysql:8.0.46
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3309:3306"
+      - "127.0.0.1:${DEV_DB_HOST_PORT:-3309}:3306"
     environment:
       MYSQL_DATABASE: ${DEV_MYSQL_DATABASE:-eyesonu}
       MYSQL_USER: ${DEV_DB_USERNAME:?Set DEV_DB_USERNAME in infra/.env.deploy}
