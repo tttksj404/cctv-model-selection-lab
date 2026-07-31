@@ -1,0 +1,55 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper">
+
+    <resultMap id="outboxResultMap" type="com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox">
+        <id property="id" column="id"/>
+        <result property="commandId" column="command_id"/>
+        <result property="eventType" column="event_type"/>
+        <result property="jobId" column="job_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="occurredAt" column="occurred_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="retryCount" column="retry_count"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox">
+        INSERT INTO recording_analysis_outbox (
+            command_id, event_type, job_id, case_id, occurred_at,
+            status, retry_count, next_attempt_at
+        ) VALUES (
+            #{commandId}, #{eventType}, #{jobId}, #{caseId},
+            #{occurredAt,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            'PENDING', 0, UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <select id="findReady" resultMap="outboxResultMap">
+        SELECT id, command_id, event_type, job_id, case_id, occurred_at, retry_count
+        FROM recording_analysis_outbox
+        WHERE status = 'PENDING'
+          AND next_attempt_at &lt;= UTC_TIMESTAMP(6)
+        ORDER BY id
+        LIMIT #{limit}
+        FOR UPDATE SKIP LOCKED
+    </select>
+
+    <update id="markPublished">
+        UPDATE recording_analysis_outbox
+        SET status = 'PUBLISHED',
+            published_at = #{publishedAt,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+        WHERE id = #{id} AND status = 'PENDING'
+    </update>
+
+    <update id="markFailed">
+        UPDATE recording_analysis_outbox
+        SET retry_count = retry_count + 1,
+            last_error = LEFT(#{errorMessage}, 1000),
+            next_attempt_at = DATE_ADD(
+                UTC_TIMESTAMP(6),
+                INTERVAL LEAST(POW(2, retry_count), 300) SECOND
+            )
+        WHERE id = #{id} AND status = 'PENDING'
+    </update>
+</mapper>
