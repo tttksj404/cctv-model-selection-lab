@@ -1,0 +1,35 @@
+package com.ssafy.eyesonu.recording.messaging;
+
+import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
+import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+public class RecordingAnalysisOutboxClaimer {
+
+    private final RecordingAnalysisOutboxMapper outboxMapper;
+
+    public RecordingAnalysisOutboxClaimer(RecordingAnalysisOutboxMapper outboxMapper) {
+        this.outboxMapper = outboxMapper;
+    }
+
+    @Transactional
+    public Optional<ClaimedRecordingAnalysisOutbox> claimNext() {
+        List<RecordingAnalysisOutbox> ready = outboxMapper.findReady(1);
+        if (ready.isEmpty()) {
+            return Optional.empty();
+        }
+
+        RecordingAnalysisOutbox outbox = ready.getFirst();
+        String claimToken = UUID.randomUUID().toString();
+        int claimed = outboxMapper.markProcessing(outbox.getId(), claimToken);
+        if (claimed != 1) {
+            throw new IllegalStateException("Failed to claim recording analysis outbox: " + outbox.getId());
+        }
+        return Optional.of(new ClaimedRecordingAnalysisOutbox(outbox, claimToken));
+    }
+}
