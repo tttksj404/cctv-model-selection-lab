@@ -61,8 +61,11 @@ const menuIcons = {
 
 const iconFor = (path) => menuIcons[path] || Folder;
 const settingsPaths = ["/admin/settings", "/admin/cameras", "/admin/users", "/admin/logs", "/admin/notifications"];
-const primaryMenu = computed(() => adminMenu.filter((item) => !settingsPaths.includes(item.path)));
-const settingsMenu = computed(() => adminMenu.filter((item) => settingsPaths.includes(item.path) && item.path !== "/admin/settings"));
+const visibleMenu = computed(() => adminMenu.filter((item) => !item.requiresSuperAdmin || auth.isSuperAdmin));
+const primaryMenu = computed(() => visibleMenu.value.filter((item) => !settingsPaths.includes(item.path)));
+const settingsMenu = computed(() => visibleMenu.value.filter((item) =>
+  settingsPaths.includes(item.path)
+    && item.path !== "/admin/settings"));
 const settingsActive = computed(() => route.path === "/admin/settings");
 const go = (path) => {
   router.push(path);
@@ -121,12 +124,12 @@ onUnmounted(() => {
       <div class="brand html-brand">
         <div class="brand-main">
           <button v-if="collapsed" class="brand-collapsed-trigger" @click="collapsed = false" aria-label="사이드바 펼치기">
-            <span class="brand-mark"><img src="/logo.png" alt="Eyes On U" /></span>
+            <span class="brand-mark"><img :src="'/logo.png'" alt="Eyes On U" /></span>
             <span class="brand-hover-icon"><PanelLeftOpen :size="18" /></span>
             <span class="sidebar-tooltip">사이드바 열기</span>
           </button>
           <div v-else>
-            <span class="brand-logo-row"><img src="/logo.png" alt="Eyes On U" /></span>
+            <span class="brand-logo-row"><img :src="'/logo.png'" alt="Eyes On U" /></span>
             <span class="brand-name">Eyes On U</span>
           </div>
         </div>

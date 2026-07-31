@@ -80,6 +80,9 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/login'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].patch").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admins/{adminId}/status'].patch").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/cases/status-inquiries'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/cases'].post").doesNotExist())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/cases'].post").exists())
@@ -127,6 +130,13 @@ class SwaggerDocumentationTests {
 						"$.paths['/api/v1/admins/me'].patch.responses['200']"
 								+ ".content['application/json'].schema['$ref']").exists())
 				.andExpect(jsonPath(
+						"$.paths['/api/v1/admins'].post.responses['201']"
+								+ ".content['application/json'].schema['$ref']").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].post.responses['503']").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/admins/{adminId}/status'].patch.responses['503']").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].patch.responses['503']").exists())
+				.andExpect(jsonPath(
 						"$.paths['/api/v1/cases/status-inquiries'].post.responses['200']"
 								+ ".content['application/json'].schema['$ref']").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/csrf'].get.responses['204'].content")
@@ -155,6 +165,15 @@ class SwaggerDocumentationTests {
 						.formatted(SwaggerConfig.CSRF_SCHEME)).isArray())
 				.andExpect(jsonPath("$.paths['/api/v1/admins/me'].patch.security.length()")
 						.value(1))
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].post.security[0].%s"
+						.formatted(SwaggerConfig.SESSION_SCHEME)).isArray())
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].post.security[0].%s"
+						.formatted(SwaggerConfig.CSRF_SCHEME)).isArray())
+				.andExpect(jsonPath("$.paths['/api/v1/admins'].post.security.length()").value(1))
+				.andExpect(jsonPath("$.paths['/api/v1/admins/{adminId}/status'].patch.security[0].%s"
+						.formatted(SwaggerConfig.SESSION_SCHEME)).isArray())
+				.andExpect(jsonPath("$.paths['/api/v1/admins/{adminId}/status'].patch.security[0].%s"
+						.formatted(SwaggerConfig.CSRF_SCHEME)).isArray())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/logout'].post.security[0].%s"
 						.formatted(SwaggerConfig.CSRF_SCHEME)).isArray())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/logout'].post.responses['204']").exists())
