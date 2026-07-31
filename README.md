@@ -153,7 +153,8 @@ Docker 인프라가 실행 중인지 확인한 후 `F5`를 누르거나 Spring B
 
 ### 관리자 세션 인증
 
-- 최초 실행 시 `infra/.env`의 `ADMIN_BOOTSTRAP_*` 값으로 관리자 계정 하나를 생성합니다. 이미 관리자가 있으면 이 값으로 계정을 덮어쓰지 않습니다.
+- 최초 실행 시 `infra/.env`의 `ADMIN_BOOTSTRAP_*` 값으로 `SUPER_ADMIN` 계정 하나를 생성합니다. 이미 관리자가 있으면 이 값으로 계정을 덮어쓰지 않습니다.
+- `SUPER_ADMIN`은 관리자 계정 목록 조회, 일반 `ADMIN` 계정 생성 및 활성화·비활성화를 수행할 수 있습니다. 새 계정은 항상 `ADMIN` 권한으로 생성됩니다.
 - 브라우저 클라이언트는 로그인 전에 `GET /api/v1/auth/csrf`를 호출하고 `XSRF-TOKEN` 쿠키 값을 `X-XSRF-TOKEN` 헤더로 보냅니다.
 - 로그인 후 JWT를 저장하지 않습니다. `EYESONU_SESSION`은 `HttpOnly` 쿠키이며 브라우저가 자동으로 전송합니다.
 - 로그인 성공과 로그아웃 후에는 CSRF 발급 API를 다시 호출합니다.

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper.AdminInsertCommand;
+import com.ssafy.eyesonu.admin.domain.AdminRole;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
@@ -65,7 +66,11 @@ class MySqlPersistenceIntegrationTests {
 				"admin", "{bcrypt}$2a$12$01234567890123456789012345678901234567890123456789012", "Admin");
 		adminMapper.insert(command);
 		assertTrue(command.getId() > 0);
-		assertEquals("admin", adminMapper.findById(command.getId()).orElseThrow().loginId());
+		var storedAdmin = adminMapper.findById(command.getId()).orElseThrow();
+		assertEquals("admin", storedAdmin.loginId());
+		assertEquals(AdminRole.ADMIN, storedAdmin.role());
+		assertTrue(storedAdmin.enabled());
+		assertTrue(storedAdmin.createdAt() != null);
 
 		jdbcTemplate.update("""
 				INSERT INTO media_servers

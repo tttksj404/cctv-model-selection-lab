@@ -21,6 +21,8 @@ import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import com.ssafy.eyesonu.admin.controller.AdminController;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -54,6 +56,12 @@ class AdminProfileApiTests {
 
 	@MockitoBean
 	private MediaServerAuthenticationService mediaServerAuthenticationService;
+
+	@BeforeEach
+	void activeAdmin() {
+		when(adminMapper.findById(1L))
+				.thenReturn(Optional.of(new Admin(1L, "admin", "hash", "Admin")));
+	}
 
 	@Test
 	void nameUpdateReturnsUpdatedProfileWithoutReauthentication() throws Exception {

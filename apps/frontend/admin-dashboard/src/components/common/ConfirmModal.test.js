@@ -10,6 +10,7 @@ function mountModal(overrides = {}) {
     reason: "",
     showReason: false,
     reasonError: "",
+    error: "",
     loading: false,
     confirmDisabled: false,
     ...overrides
@@ -29,6 +30,7 @@ function mountModal(overrides = {}) {
         showReason: state.showReason,
         reason: state.reason,
         reasonError: state.reasonError,
+        error: state.error,
         loading: state.loading,
         confirmDisabled: state.confirmDisabled,
         "onUpdate:reason": (value) => { state.reason = value; },
@@ -88,5 +90,11 @@ describe("ConfirmModal", () => {
     expect(root.textContent).toContain("처리 중...");
     root.querySelector(".ghost-button").click();
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("작업 실패 메시지를 모달 안에 표시한다", () => {
+    const { root } = mountModal({ error: "상태 변경에 실패했습니다." });
+
+    expect(root.querySelector('[role="alert"]').textContent).toBe("상태 변경에 실패했습니다.");
   });
 });

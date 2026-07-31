@@ -3,6 +3,7 @@ package com.ssafy.eyesonu;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.auth.config.SecurityConfig;
@@ -40,6 +42,8 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseSearchCondition;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -81,6 +85,12 @@ class AdminCaseApiTests {
 
 	@MockitoBean
 	private CasePhotoService photoService;
+
+	@BeforeEach
+	void activeAdmin() {
+		when(adminMapper.findById(ADMIN_ID))
+				.thenReturn(Optional.of(new Admin(ADMIN_ID, "admin", "hash", "Admin")));
+	}
 
 	@Test
 	void caseListRequiresAdminAuthentication() throws Exception {

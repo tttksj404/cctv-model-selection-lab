@@ -2,7 +2,7 @@ package com.ssafy.eyesonu.auth.security;
 
 import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
-import java.util.Locale;
+import com.ssafy.eyesonu.auth.service.AdminLoginIdPolicy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,11 +32,11 @@ public class AdminAuthenticationProvider implements AuthenticationProvider {
 			passwordEncoder.matches(password, dummyPasswordHash);
 			throw new BadCredentialsException("Invalid credentials");
 		}
-		if (!passwordEncoder.matches(password, admin.passwordHash())) {
+		if (!passwordEncoder.matches(password, admin.passwordHash()) || !admin.enabled()) {
 			throw new BadCredentialsException("Invalid credentials");
 		}
 
-		AdminPrincipal principal = new AdminPrincipal(admin.id(), admin.loginId());
+		AdminPrincipal principal = new AdminPrincipal(admin.id(), admin.loginId(), admin.role());
 		return UsernamePasswordAuthenticationToken.authenticated(
 				principal, null, principal.getAuthorities());
 	}
@@ -47,6 +47,6 @@ public class AdminAuthenticationProvider implements AuthenticationProvider {
 	}
 
 	public static String normalizeLoginId(String loginId) {
-		return loginId == null ? "" : loginId.trim().toLowerCase(Locale.ROOT);
+		return AdminLoginIdPolicy.normalize(loginId);
 	}
 }

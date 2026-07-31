@@ -18,7 +18,7 @@ public class NoStoreResponseFilter extends OncePerRequestFilter {
 			FilterChain filterChain) throws ServletException, IOException {
 		String uri = request.getRequestURI();
 		if (uri.startsWith("/api/v1/auth/")
-				|| uri.equals("/api/v1/admins/me")
+				|| uri.startsWith("/api/v1/admins")
 				|| uri.equals("/api/v1/cases/status-inquiries")) {
 			response.setHeader("Cache-Control", "no-store");
 		}

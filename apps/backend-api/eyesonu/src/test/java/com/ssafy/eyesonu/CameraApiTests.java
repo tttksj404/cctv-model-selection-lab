@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ssafy.eyesonu.admin.domain.Admin;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.auth.config.SecurityConfig;
@@ -30,6 +31,8 @@ import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -60,6 +63,12 @@ class CameraApiTests {
 
     @MockitoBean
     private CameraService cameraService;
+
+    @BeforeEach
+    void activeAdmin() {
+        when(adminMapper.findById(1L))
+                .thenReturn(Optional.of(new Admin(1L, "admin", "hash", "Admin")));
+    }
 
     @Test
     void cameraListRequiresAdminSession() throws Exception {

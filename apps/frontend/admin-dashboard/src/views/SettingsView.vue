@@ -1,14 +1,18 @@
 <script setup>
-import { reactive } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();
-const settingLinks = [
+const auth = useAuthStore();
+const allSettingLinks = [
   { path: "/admin/cameras", title: "CCTV 관리", description: "CCTV 위치와 연결 상태를 관리합니다." },
-  { path: "/admin/users", title: "사용자 관리", description: "관리자 계정과 권한을 관리합니다." },
+  { path: "/admin/users", title: "관리자 계정 관리", description: "관리자 계정의 생성과 활성 상태를 관리합니다.", requiresSuperAdmin: true },
   { path: "/admin/logs", title: "시스템 로그", description: "운영 기록과 감사 로그를 확인합니다." },
   { path: "/admin/notifications", title: "알림", description: "알림 내역과 수신 설정을 관리합니다." }
 ];
+const settingLinks = computed(() => allSettingLinks.filter((link) =>
+  !link.requiresSuperAdmin || auth.isSuperAdmin));
 </script>
 
 <template>
