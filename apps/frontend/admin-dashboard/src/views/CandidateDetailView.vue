@@ -2,13 +2,14 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { fetchAdminCandidate, objectUrl } from "../api/candidateApi";
+import { similarityPercent as toSimilarityPercent } from "../domain/candidateMapper";
 
 const route = useRoute();
 const router = useRouter();
 const item = ref(null);
 const loading = ref(true);
 const error = ref("");
-const similarityPercent = computed(() => Math.round(Number(item.value?.bestSimilarity || 0) * 100));
+const similarityPercent = computed(() => toSimilarityPercent(item.value?.bestSimilarity));
 const frameUrl = computed(() => objectUrl(item.value?.frameObjectKey));
 const cropUrl = computed(() => objectUrl(item.value?.cropObjectKey));
 
