@@ -1,167 +1,213 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { getCases, getScanJobs } from "../api/mockApi";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import StatusBadge from "../components/common/StatusBadge.vue";
+import { listCases, listSearchConditions } from "../api/caseApi";
+import {
+  createRecordingAnalysisJob,
+  fetchRecordingAnalysisJob,
+  listAdminRecordings
+} from "../api/recordingApi";
 
 const router = useRouter();
 const cases = ref([]);
+const conditions = ref([]);
+const recordings = ref([]);
 const jobs = ref([]);
+const loading = ref(true);
+const submitting = ref(false);
+const error = ref("");
+const caseDropdownOpen = ref(false);
 const getMidnight = () => {
   const now = new Date();
   const date = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   return `${date.toISOString().slice(0, 10)}T00:00`;
 };
-const form = ref({ caseNumber: "", searchArea: "", fromAt: getMidnight(), toAt: getMidnight() });
-const caseDropdownOpen = ref(false);
-const cancelTarget = ref(null);
-const cancelModalOpen = ref(false);
-
-const selectedCase = computed(() => cases.value.find((item) => item.caseNumber === form.value.caseNumber));
-const visibleJobs = computed(() => form.value.caseNumber
-  ? jobs.value.filter((job) => job.caseNumber === form.value.caseNumber)
-  : jobs.value);
-
-onMounted(async () => {
-  cases.value = await getCases();
-  jobs.value = await getScanJobs();
+const form = ref({
+  caseId: "",
+  conditionId: "",
+  recordingId: "",
+  searchArea: "",
+  fromAt: getMidnight(),
+  toAt: getMidnight()
 });
 
-const selectCase = (caseItem) => {
-  form.value.caseNumber = caseItem.caseNumber;
+const selectedCase = computed(() => cases.value.find((item) => String(item.id) === String(form.value.caseId)));
+const selectedCondition = computed(() => conditions.value.find((item) => String(item.id) === String(form.value.conditionId)));
+const selectedRecording = computed(() => recordings.value.find((item) => String(item.id) === String(form.value.recordingId)));
+const visibleJobs = computed(() => form.value.caseId
+  ? jobs.value.filter((job) => String(job.caseId) === String(form.value.caseId))
+  : jobs.value);
+
+const toIso = (value) => value ? new Date(value).toISOString() : undefined;
+const formatDate = (value) => value ? new Date(value).toLocaleString("ko-KR") : "-";
+const recordingLabel = (recording) => {
+  const camera = recording.camera?.cameraCode || recording.camera?.cameraName || "카메라";
+  return `${camera} · ${formatDate(recording.startTime)} ~ ${formatDate(recording.endTime)}`;
+};
+const jobProgress = (status) => ({ QUEUED: 3, RUNNING: 50, SUCCEEDED: 100, FAILED: 100, CANCELLED: 100 }[status] ?? 0);
+const jobStatus = (status) => ({ QUEUED: "searching", RUNNING: "searching", SUCCEEDED: "closed", FAILED: "failed", CANCELLED: "cancelled" }[status] || "searching");
+
+const loadRecordings = async () => {
+  const result = await listAdminRecordings({
+    startFrom: toIso(form.value.fromAt),
+    startTo: toIso(form.value.toAt),
+    page: 0,
+    size: 100,
+    sort: "startTime,desc"
+  });
+  recordings.value = result.data || [];
+  if (!recordings.value.some((item) => String(item.id) === String(form.value.recordingId))) {
+    form.value.recordingId = recordings.value[0]?.id ? String(recordings.value[0].id) : "";
+  }
+};
+
+const loadCaseData = async () => {
+  if (!form.value.caseId) {
+    conditions.value = [];
+    form.value.conditionId = "";
+    return;
+  }
+  conditions.value = await listSearchConditions(form.value.caseId);
+  if (!conditions.value.some((item) => String(item.id) === String(form.value.conditionId))) {
+    form.value.conditionId = conditions.value[0]?.id ? String(conditions.value[0].id) : "";
+  }
+};
+
+const load = async () => {
+  loading.value = true;
+  error.value = "";
+  try {
+    const result = await listCases({ page: 0, size: 100, sort: "reportedAt,desc" });
+    cases.value = (result.data || []).map((item) => ({
+      ...item,
+      name: item.missingName || item.name || "이름 미등록"
+    }));
+    await loadCaseData();
+    await loadRecordings();
+  } catch (exception) {
+    error.value = exception.message || "녹화 탐색 정보를 불러오지 못했습니다.";
+  } finally {
+    loading.value = false;
+  }
+};
+
+const selectCase = async (caseItem) => {
+  form.value.caseId = String(caseItem.id);
   caseDropdownOpen.value = false;
+  await loadCaseData();
 };
 
 const selectAllCases = () => {
-  form.value.caseNumber = "";
+  form.value.caseId = "";
+  form.value.conditionId = "";
+  conditions.value = [];
   caseDropdownOpen.value = false;
 };
 
-const requestSearch = () => {
-  const from = form.value.fromAt;
-  const to = form.value.toAt;
+const requestSearch = async () => {
+  if (!form.value.caseId || !form.value.conditionId || !form.value.recordingId) {
+    error.value = "사건, 탐색 조건, 녹화를 모두 선택해주세요.";
+    return;
+  }
+  submitting.value = true;
+  error.value = "";
+  try {
+    const job = await createRecordingAnalysisJob(form.value.caseId, {
+      conditionId: Number(form.value.conditionId),
+      recordingId: Number(form.value.recordingId)
+    });
+    jobs.value.unshift(job);
+  } catch (exception) {
+    error.value = exception.message || "녹화 분석 작업을 등록하지 못했습니다.";
+  } finally {
+    submitting.value = false;
+  }
+};
 
-  jobs.value.unshift({
-    id: `scan-${Date.now()}`,
-    caseNumber: form.value.caseNumber || cases.value[0]?.caseNumber,
-    camera: form.value.searchArea ? `${form.value.searchArea} 인근 CCTV` : "탐색 지역 인근 CCTV",
-    range: `${from || "시작 미지정"}~${to || "종료 미지정"}`,
-    status: "searching",
-    progress: 3,
-    createdAt: "now",
-    finishedAt: ""
-  });
-  const [createdJob] = jobs.value;
-  const cameras = ["CCTV-01", "CCTV-02", "CCTV-03", "CCTV-04"];
-  createdJob.camera = cameras[0];
-  jobs.value.unshift(...cameras.slice(1).map((camera, index) => ({
-    ...createdJob,
-    id: `${createdJob.id}-${String(index + 2).padStart(2, "0")}`,
-    camera
-  })));
+const refreshJobs = async () => {
+  const activeJobs = jobs.value.filter((job) => ["QUEUED", "RUNNING"].includes(job.status));
+  await Promise.all(activeJobs.map(async (job) => {
+    try {
+      const updated = await fetchRecordingAnalysisJob(job.caseId, job.jobId);
+      Object.assign(job, updated);
+    } catch {
+      // Keep the last known state while the next refresh retries the job.
+    }
+  }));
 };
 
 const openCandidateReview = (job) => {
-  router.push({ path: "/admin/candidates", query: { caseNumber: job.caseNumber } });
+  router.push({ path: "/admin/candidates", query: { caseId: job.caseId } });
 };
-const requestCancel = (job) => { cancelTarget.value = job; cancelModalOpen.value = true; };
-const cancelJob = () => {
-  if (cancelTarget.value) cancelTarget.value.status = "cancelled";
-  cancelTarget.value = null;
-  cancelModalOpen.value = false;
-};
+
+let refreshTimer;
+onMounted(async () => {
+  await load();
+  refreshTimer = window.setInterval(refreshJobs, 3000);
+});
+onUnmounted(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer);
+});
 </script>
 
 <template>
   <section class="content-panel">
     <div class="section-heading">
-      <div>
-        <h2>녹화 영상 탐색</h2>
-        <p>탐색 조건 입력, 작업 생성, 진행률 표시를 제공합니다.</p>
-      </div>
+      <div><h2>녹화 영상 탐색</h2><p>사건의 탐색 조건과 저장된 녹화를 선택해 분석 작업을 등록합니다.</p></div>
     </div>
 
-    <div class="recording-search-form">
+    <p v-if="loading" class="empty-state">녹화 탐색 정보를 불러오는 중입니다.</p>
+    <p v-else-if="error" class="error-message">{{ error }}</p>
+
+    <div v-else class="recording-search-form">
       <div class="filter-bar recording-filter-main">
-        <label class="case-select-field">
-          사건
+        <label class="case-select-field">사건
           <div class="case-picker">
-            <button type="button" class="case-picker-trigger" @click="caseDropdownOpen = !caseDropdownOpen">
-              {{ selectedCase?.caseNumber || "전체 사건" }}
-            </button>
+            <button type="button" class="case-picker-trigger" @click="caseDropdownOpen = !caseDropdownOpen">{{ selectedCase?.caseNumber || "사건 선택" }}</button>
             <div v-if="caseDropdownOpen" class="case-picker-menu">
-              <button type="button" class="case-picker-option" @click="selectAllCases">
-                <span>전체 사건</span>
-              </button>
-              <button v-for="c in cases" :key="c.id" type="button" class="case-picker-option" @click="selectCase(c)">
-                <span>{{ c.caseNumber }}</span>
-                <div class="case-hover-card">
-                  <strong>{{ c.name }}</strong>
-                  <span>{{ c.gender }} · {{ c.age }}세</span>
-                  <span>{{ c.lastSeenLocation }}</span>
-                  <span>{{ c.reportedAt }} 접수</span>
-                </div>
-              </button>
+              <button type="button" class="case-picker-option" @click="selectAllCases">사건 선택</button>
+              <button v-for="item in cases" :key="item.id" type="button" class="case-picker-option" @click="selectCase(item)">{{ item.caseNumber }} · {{ item.name }}</button>
             </div>
           </div>
         </label>
-        <label>
-          탐색 지역
-          <input v-model="form.searchArea" placeholder="예: 강남구 테헤란로 152, 강남역 2번 출구" />
+        <label>탐색 조건
+          <select v-model="form.conditionId">
+            <option value="">조건 선택</option>
+            <option v-for="condition in conditions" :key="condition.id" :value="String(condition.id)">{{ condition.prompt || `조건 ${condition.id}` }}</option>
+          </select>
+        </label>
+        <label>탐색 지역
+          <input :value="selectedCondition?.searchArea || ''" placeholder="탐색 조건에 저장된 지역" readonly />
         </label>
       </div>
-
       <div class="filter-bar recording-filter-time">
-        <label>
-          시작
-          <div class="custom-datetime">
-            <input v-model="form.fromAt" type="datetime-local" />
-          </div>
+        <label>시작<input v-model="form.fromAt" type="datetime-local" @change="loadRecordings" /></label>
+        <label>종료<input v-model="form.toAt" type="datetime-local" @change="loadRecordings" /></label>
+        <label>녹화
+          <select v-model="form.recordingId">
+            <option value="">녹화 선택</option>
+            <option v-for="recording in recordings" :key="recording.id" :value="String(recording.id)">{{ recordingLabel(recording) }}</option>
+          </select>
         </label>
-        <label>
-          종료
-          <div class="custom-datetime">
-            <input v-model="form.toAt" type="datetime-local" />
-          </div>
-        </label>
-        <button class="search-button" @click="requestSearch">탐색 요청</button>
+        <button class="search-button" :disabled="submitting" @click="requestSearch">{{ submitting ? "등록 중..." : "탐색 요청" }}</button>
       </div>
+      <p v-if="selectedRecording" class="muted-text">선택된 녹화: {{ recordingLabel(selectedRecording) }}</p>
     </div>
 
-    <div class="job-list">
-      <article v-for="job in visibleJobs" :key="job.id" class="job-card">
-        <div class="job-card-head">
-          <strong>{{ job.id }}</strong>
-          <StatusBadge :status="job.status" />
-        </div>
+    <div v-if="!loading" class="job-list">
+      <p v-if="visibleJobs.length === 0" class="empty-state">등록된 녹화 분석 작업이 없습니다.</p>
+      <article v-for="job in visibleJobs" :key="job.jobId" class="job-card">
+        <div class="job-card-head"><strong>JOB-{{ job.jobId }}</strong><StatusBadge :status="jobStatus(job.status)" /></div>
         <div class="job-meta-grid">
-          <span><small>사건 번호</small><strong>{{ job.caseNumber }}</strong></span>
-          <span><small>탐색 대상</small><strong>{{ job.camera }}</strong></span>
-          <span><small>탐색 시간</small><strong>{{ job.range }}</strong></span>
+          <span><small>사건 번호</small><strong>{{ cases.find((item) => String(item.id) === String(job.caseId))?.caseNumber || job.caseId }}</strong></span>
+          <span><small>녹화 ID</small><strong>{{ job.recordingId }}</strong></span>
+          <span><small>요청 시각</small><strong>{{ formatDate(job.requestedAt) }}</strong></span>
         </div>
-        <div class="progress" :class="`progress-${job.status}`"><span :style="{ width: `${job.progress}%` }" /></div>
-        <div class="job-progress-meta">
-          <span><strong>{{ job.progress }}%</strong> 완료</span>
-          <span>생성 <strong>{{ job.createdAt }}</strong></span>
-          <span>완료 <strong>{{ job.finishedAt || "-" }}</strong></span>
-        </div>
-        <div class="job-card-actions">
-          <button v-if="job.status === 'closed'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button>
-          <button v-if="job.status === 'failed'" class="reset-button">재시도</button>
-          <button v-if="job.status === 'searching'" class="ghost-button" @click="requestCancel(job)">취소</button>
-        </div>
+        <div class="progress" :class="`progress-${jobStatus(job.status)}`"><span :style="{ width: `${jobProgress(job.status)}%` }" /></div>
+        <div class="job-progress-meta"><span><strong>{{ jobProgress(job.status) }}%</strong> 완료</span><span>상태 <strong>{{ job.status }}</strong></span></div>
+        <div class="job-card-actions"><button v-if="job.status === 'SUCCEEDED'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button></div>
       </article>
-    </div>
-    <div v-if="cancelModalOpen" class="modal-backdrop" @click.self="cancelModalOpen = false">
-      <section class="modal">
-        <h3>탐색 작업을 취소할까요?</h3>
-        <p>진행 중인 녹화영상 탐색 작업이 취소됩니다.</p>
-        <textarea placeholder="취소 사유를 적어주세요."></textarea>
-        <div class="modal-actions">
-          <button class="ghost-button" @click="cancelModalOpen = false">취소</button>
-          <button class="primary-button" @click="cancelJob">취소하기</button>
-        </div>
-      </section>
     </div>
   </section>
 </template>
