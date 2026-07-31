@@ -11,7 +11,7 @@ vi.mock("../api/authApi", () => api);
 
 import { useAuthStore } from "./auth";
 
-const admin = { id: 1, loginId: "admin", name: "Administrator" };
+const admin = { id: 1, loginId: "admin", name: "Administrator", role: "SUPER_ADMIN" };
 
 describe("auth store", () => {
   beforeEach(() => {
@@ -35,6 +35,17 @@ describe("auth store", () => {
     expect(store.user).toEqual(admin);
     expect(store.initialized).toBe(true);
     expect(store.isAuthenticated).toBe(true);
+    expect(store.isSuperAdmin).toBe(true);
+  });
+
+  it("SUPER_ADMIN 역할만 최고 관리자 권한으로 판정한다", () => {
+    const store = useAuthStore();
+
+    store.user = { ...admin, role: "ADMIN" };
+    expect(store.isSuperAdmin).toBe(false);
+
+    store.user = admin;
+    expect(store.isSuperAdmin).toBe(true);
   });
 
   it("bootstrap의 401만 정상적인 비로그인 상태로 처리한다", async () => {
