@@ -42,6 +42,18 @@ class DeviceSearchTargetServiceTests {
 		verify(mapper).findDeviceSearchTargetConditions(Set.of(101L));
 	}
 
+	@Test
+	void readsLastModifiedForTheAuthenticatedMediaServer() {
+		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
+		when(mapper.findDeviceSearchTargetLastModified(7L)).thenReturn(updatedAt);
+
+		var result = new DeviceSearchTargetService(mapper)
+				.findLastModified(new MediaServerPrincipal(7L, "MS-001"));
+
+		assertEquals(updatedAt, result);
+		verify(mapper).findDeviceSearchTargetLastModified(7L);
+	}
+
 	private DeviceSearchTargetRow row(Long caseId, Long conditionId, Long cameraId, Instant updatedAt) {
 		DeviceSearchTargetRow row = new DeviceSearchTargetRow();
 		row.setCaseId(caseId);

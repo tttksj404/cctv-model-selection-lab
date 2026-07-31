@@ -388,4 +388,65 @@
         </foreach>
         ORDER BY c.id, sc.id
     </select>
+
+    <select id="findDeviceSearchTargetLastModified" resultType="java.time.Instant">
+        SELECT MAX(changed_at)
+        FROM (
+            SELECT c.updated_at AS changed_at
+            FROM cases c
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM case_cameras cc
+                  INNER JOIN cameras cam ON cam.id = cc.camera_id
+                  WHERE cc.case_id = c.id
+                    AND cc.search_enabled = TRUE
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM search_conditions sc
+                  WHERE sc.case_id = c.id
+                    AND sc.deleted_at IS NULL
+              )
+            UNION ALL
+            SELECT sc.updated_at AS changed_at
+            FROM search_conditions sc
+            INNER JOIN cases c ON c.id = sc.case_id
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM case_cameras cc
+                  INNER JOIN cameras cam ON cam.id = cc.camera_id
+                  WHERE cc.case_id = c.id
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+            UNION ALL
+            SELECT cc.updated_at AS changed_at
+            FROM case_cameras cc
+            INNER JOIN cases c ON c.id = cc.case_id
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM cameras cam
+                  WHERE cam.id = cc.camera_id
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+            UNION ALL
+            SELECT c.updated_at AS changed_at
+            FROM cases c
+            WHERE EXISTS (
+                      SELECT 1
+                      FROM case_cameras cc
+                      INNER JOIN cameras cam ON cam.id = cc.camera_id
+                      WHERE cc.case_id = c.id
+                        AND cam.media_server_id = #{mediaServerId}
+                  )
+              AND EXISTS (
+                      SELECT 1
+                      FROM search_conditions sc
+                      WHERE sc.case_id = c.id
+                  )
+        ) target_changes
+    </select>
 </mapper>
