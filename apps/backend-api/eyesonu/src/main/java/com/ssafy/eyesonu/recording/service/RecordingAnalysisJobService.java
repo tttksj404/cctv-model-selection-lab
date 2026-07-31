@@ -15,6 +15,7 @@ import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +68,12 @@ public class RecordingAnalysisJobService {
                     "The recording camera is not enabled for this case.");
         }
 
+        AnalysisJob existing = analysisJobMapper.findActiveByTarget(
+                caseId, condition.getId(), recording.getId());
+        if (existing != null) {
+            throw duplicateJob();
+        }
+
         AnalysisJob job = new AnalysisJob();
         job.setCaseId(caseId);
         job.setSearchConditionId(condition.getId());
@@ -79,7 +86,11 @@ public class RecordingAnalysisJobService {
         job.setSearchEndSnapshot(condition.getSearchEnd());
         job.setSearchAreaSnapshot(condition.getSearchArea());
         job.setSimilarityThresholdSnapshot(condition.getSimilarityThreshold());
-        analysisJobMapper.insert(job);
+        try {
+            analysisJobMapper.insert(job);
+        } catch (DuplicateKeyException exception) {
+            throw duplicateJob();
+        }
 
         auditService.recordRequired("RECORDING_ANALYSIS_JOB_CREATED", adminId, caseId,
                 "ANALYSIS_JOB", job.getId(),
@@ -87,7 +98,20 @@ public class RecordingAnalysisJobService {
         return RecordingAnalysisJobResponse.from(job);
     }
 
+    public RecordingAnalysisJobResponse findById(Long caseId, Long jobId) {
+        AnalysisJob job = analysisJobMapper.findById(caseId, jobId);
+        if (job == null) {
+            throw notFound("Recording analysis job was not found.");
+        }
+        return RecordingAnalysisJobResponse.from(job);
+    }
+
     private ApiException notFound(String message) {
         return new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", message);
+    }
+
+    private ApiException duplicateJob() {
+        return new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                "An active recording analysis job already exists for this target.");
     }
 }

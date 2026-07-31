@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +38,12 @@ public class AdminRecordingAnalysisJobController {
         return ResponseEntity.created(URI.create(
                         "/api/v1/admin/cases/" + caseId + "/recording-analysis-jobs/" + response.jobId()))
                 .body(ApiResponse.of(response));
+    }
+
+    @GetMapping("/{jobId}")
+    public ResponseEntity<ApiResponse<RecordingAnalysisJobResponse>> findById(
+            @PathVariable @Positive Long caseId,
+            @PathVariable @Positive Long jobId) {
+        return ResponseEntity.ok(ApiResponse.of(service.findById(caseId, jobId)));
     }
 }
