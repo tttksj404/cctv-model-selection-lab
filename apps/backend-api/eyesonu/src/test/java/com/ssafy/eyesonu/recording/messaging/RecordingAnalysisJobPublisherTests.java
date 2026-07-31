@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +39,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer);
+                rabbitTemplate, outboxMapper, outboxClaimer, 300);
 
         publisher.enqueue(5001L, 101L);
 
@@ -54,7 +55,7 @@ class RecordingAnalysisJobPublisherTests {
         completeConfirm(true, null, null);
 
         new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
+                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
 
         verify(rabbitTemplate).convertAndSend(
                 eq(RecordingAnalysisJobPublisher.EXCHANGE),
@@ -72,7 +73,7 @@ class RecordingAnalysisJobPublisherTests {
         completeConfirm(false, "exchange unavailable", null);
 
         new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
+                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
 
         verify(outboxMapper).markFailed(
                 1L, "claim-1", "RabbitMQ publisher NACK: exchange unavailable");
@@ -89,7 +90,7 @@ class RecordingAnalysisJobPublisherTests {
         completeConfirm(true, null, returned);
 
         new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
+                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
 
         verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ message was returned: NO_ROUTE");
         verify(outboxMapper, never()).markPublished(any(), anyString(), any());
@@ -104,10 +105,29 @@ class RecordingAnalysisJobPublisherTests {
                         any(MessagePostProcessor.class), any(CorrelationData.class));
 
         new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
+                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
 
         verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ unavailable");
         verify(outboxMapper, never()).markPublished(any(), anyString(), any());
+    }
+
+    @Test
+    void renewsLeaseWhileBrokerConfirmationIsSlow() {
+        claim(readyOutbox());
+        doAnswer(invocation -> {
+            Thread.sleep(1200L);
+            CorrelationData correlationData = invocation.getArgument(4);
+            correlationData.getFuture().complete(new CorrelationData.Confirm(true, null));
+            return null;
+        }).when(rabbitTemplate).convertAndSend(
+                anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
+                any(MessagePostProcessor.class), any(CorrelationData.class));
+
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer, 3).publishPending();
+
+        verify(outboxMapper, atLeastOnce()).renewLease(
+                eq(1L), eq("claim-1"), any(Instant.class));
     }
 
     private void completeConfirm(boolean ack, String reason, ReturnedMessage returned) {

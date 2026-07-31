@@ -45,6 +45,14 @@
           AND next_attempt_at &lt;= UTC_TIMESTAMP(6)
     </update>
 
+    <update id="renewLease">
+        UPDATE recording_analysis_outbox
+        SET next_attempt_at = #{leaseUntil,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+        WHERE id = #{id}
+          AND status = 'PROCESSING'
+          AND claim_token = #{claimToken}
+    </update>
+
     <update id="markPublished">
         UPDATE recording_analysis_outbox
         SET status = 'PUBLISHED',
