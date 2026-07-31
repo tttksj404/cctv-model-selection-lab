@@ -137,7 +137,7 @@ If-None-Match: "previous-etag"
 
 임베디드가 사용하는 필드는 `caseId`, `conditionId`, `prompt`, `exclusionPrompt`, `similarityThreshold`, `searchStart`, `searchEnd`, `searchArea`, `cameraId`, `cameraCode`입니다. 모든 시간은 UTC `Z` 형식입니다.
 
-`prompt`와 `exclusionPrompt`는 서버가 임베디드 응답 직전에 한글 입력을 영어로 변환해 전달합니다. 임시로 API Key가 필요 없는 무료 MyMemory Translate를 사용하므로, 색상과 옷 종류를 고정 목록으로 제한하지 않습니다. `카키색`, `연청`, `맨투맨`, `바람막이` 등 새로운 표현도 번역할 수 있습니다.
+실시간 임베디드 응답의 `prompt`와 `exclusionPrompt`는 무료 번역 API를 호출하지 않고 서버의 고정 정규화 규칙으로 처리합니다. 인식하는 색상은 `black`, `blue`, `brown`, `green`, `gray`, `orange`, `pink`, `purple`, `red`, `white`, `yellow`이며, 상의 형태는 `short sleeve` 또는 `long sleeve`만 사용합니다.
 
 임베디드에 전달되는 프롬프트의 정보 순서는 반드시 다음과 같습니다.
 
@@ -145,7 +145,7 @@ If-None-Match: "previous-etag"
 
 상의 형태는 `short sleeve` 또는 `long sleeve` 중 하나만 사용합니다. 예를 들어 `남성, 검은색 반팔 상의와 검은색 청바지`는 `a man wearing a black short sleeve top and black pants`로 전달됩니다. 하의의 옷 종류는 순서 계약에 포함하지 않고 하의 색만 전달합니다.
 
-번역 API가 일시적으로 실패하면 서버는 원문을 사용해 검색 대상 응답을 계속 반환합니다. 따라서 운영 환경에서 한글이 다시 내려올 수 있으며, 임베디드에는 영어 프롬프트를 안정적으로 보장해야 할 때 유료·자체 호스팅 번역기로 교체해야 합니다.
+녹화영상 분석 경로는 실시간 정규화기를 사용하지 않고 기존 번역기(`EmbeddedPromptTranslator`)를 계속 사용합니다.
 
 ## 5. 로컬 분석 처리
 
