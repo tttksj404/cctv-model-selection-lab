@@ -33,9 +33,13 @@ export function buildCameraPlaybackUrl(cameraCode, baseUrl) {
   const normalizedCode = String(cameraCode ?? "").trim();
   if (!normalizedCode) throw new TypeError("카메라 코드가 필요합니다.");
 
-  const configuredBaseUrl = String(
-    baseUrl ?? import.meta.env.VITE_MEDIA_STREAM_BASE_URL ?? DEFAULT_MEDIA_STREAM_BASE_URL
-  ).trim().replace(/\/+$/, "");
+  const configuredBaseUrl = [
+    baseUrl,
+    import.meta.env.VITE_MEDIA_STREAM_BASE_URL,
+    DEFAULT_MEDIA_STREAM_BASE_URL
+  ].map((candidate) => String(candidate ?? "").trim())
+    .find(Boolean)
+    ?.replace(/\/+$/, "");
   if (!configuredBaseUrl) throw new TypeError("미디어 스트림 기본 URL이 필요합니다.");
 
   const query = new URLSearchParams({

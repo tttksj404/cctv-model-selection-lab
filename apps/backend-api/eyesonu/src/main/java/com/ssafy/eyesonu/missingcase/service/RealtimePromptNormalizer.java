@@ -21,8 +21,9 @@ public class RealtimePromptNormalizer {
 		String gender = value.contains("woman") || value.contains("female") || value.contains("여성") || value.contains("여자")
 				? "a woman" : value.contains("man") || value.contains("male") || value.contains("남성") || value.contains("남자")
 						? "a man" : "a person";
-		String upperColor = findColor(value, true);
-		String lowerColor = findColor(value, false);
+		List<ColorMatch> colors = findColors(value);
+		String upperColor = colors.size() >= 1 ? colors.getFirst().color() : "";
+		String lowerColor = colors.size() >= 2 ? colors.get(1).color() : "";
 		String sleeve = value.contains("short sleeve") || value.contains("short-sleeve") || value.contains("반팔")
 				? "short sleeve" : value.contains("long sleeve") || value.contains("long-sleeve") || value.contains("긴팔")
 						? "long sleeve" : "";
@@ -30,7 +31,7 @@ public class RealtimePromptNormalizer {
 		return gender + " wearing a " + upperColor + " " + sleeve + " top and " + lowerColor + " pants";
 	}
 
-	private String findColor(String value, boolean first) {
+	private List<ColorMatch> findColors(String value) {
 		List<ColorMatch> matches = new ArrayList<>();
 		addKoreanColor(matches, value, "검은색", "black");
 		addKoreanColor(matches, value, "검정색", "black");
@@ -52,9 +53,7 @@ public class RealtimePromptNormalizer {
 		var english = COLOR_PATTERN.matcher(value);
 		while (english.find()) matches.add(new ColorMatch(english.start(), english.group().toLowerCase(Locale.ROOT)));
 		matches.sort(Comparator.comparingInt(ColorMatch::position));
-		if (matches.isEmpty()) return "";
-		if (first) return matches.getFirst().color();
-		return matches.size() > 1 ? matches.get(1).color() : matches.getFirst().color();
+		return matches;
 	}
 
 	private void addKoreanColor(List<ColorMatch> matches, String value, String source, String color) {

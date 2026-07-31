@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG VITE_MEDIA_STREAM_BASE_URL
 RUN npm run build
 
 FROM nginx:stable-alpine AS production-stage

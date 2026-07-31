@@ -15,8 +15,6 @@ public class SearchConditionRow {
 	private Long caseId;
 	private String prompt;
 	private String exclusionPrompt;
-	private String embeddedPrompt;
-	private String embeddedExclusionPrompt;
 	private Instant searchStart;
 	private Instant searchEnd;
 	private String searchArea;

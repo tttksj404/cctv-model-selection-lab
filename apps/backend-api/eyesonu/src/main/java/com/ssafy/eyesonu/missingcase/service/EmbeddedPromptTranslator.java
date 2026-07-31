@@ -50,8 +50,8 @@ public class EmbeddedPromptTranslator {
 			cache.put(normalized, translatedResult);
 			return translatedResult;
 		} catch (Exception ignored) {
-			// 번역 실패 시 한국어 원문을 임베디드 장치로 전달하지 않는다.
-			return null;
+			// 무료 번역 API 장애가 실시간 검색 API 장애로 전파되지 않도록 원문을 사용한다.
+			return normalized;
 		}
 	}
 

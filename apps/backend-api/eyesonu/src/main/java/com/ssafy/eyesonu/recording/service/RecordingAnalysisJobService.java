@@ -13,6 +13,10 @@ import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobCreateRequest;
 import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobResponse;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import com.ssafy.eyesonu.storage.StorageObject;
+import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
+import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
+import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.dao.DuplicateKeyException;
@@ -29,6 +33,7 @@ public class RecordingAnalysisJobService {
     private final MissingCaseMapper missingCaseMapper;
     private final CaseQueryService caseQueryService;
     private final RecordingMapper recordingMapper;
+    private final StorageObjectVerifier storageObjectVerifier;
     private final AuditService auditService;
 
     public RecordingAnalysisJobService(
@@ -36,11 +41,13 @@ public class RecordingAnalysisJobService {
             MissingCaseMapper missingCaseMapper,
             CaseQueryService caseQueryService,
             RecordingMapper recordingMapper,
+            StorageObjectVerifier storageObjectVerifier,
             AuditService auditService) {
         this.analysisJobMapper = analysisJobMapper;
         this.missingCaseMapper = missingCaseMapper;
         this.caseQueryService = caseQueryService;
         this.recordingMapper = recordingMapper;
+        this.storageObjectVerifier = storageObjectVerifier;
         this.auditService = auditService;
     }
 
@@ -63,15 +70,16 @@ public class RecordingAnalysisJobService {
             throw notFound("Recording was not found.");
         }
 
-        if (!missingCaseMapper.existsActiveCaseCamera(caseId, recording.getCameraId())) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
-                    "The recording camera is not enabled for this case.");
-        }
-
         AnalysisJob existing = analysisJobMapper.findActiveByTarget(
                 caseId, condition.getId(), recording.getId());
         if (existing != null) {
             throw duplicateJob();
+        }
+
+        verifyRecordingObject(recording.getS3Key());
+        if (!missingCaseMapper.existsActiveCaseCamera(caseId, recording.getCameraId())) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
+                    "The recording camera is not enabled for this case.");
         }
 
         AnalysisJob job = new AnalysisJob();
@@ -113,5 +121,21 @@ public class RecordingAnalysisJobService {
     private ApiException duplicateJob() {
         return new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                 "An active recording analysis job already exists for this target.");
+    }
+
+    private void verifyRecordingObject(String objectKey) {
+        try {
+            StorageObject object = storageObjectVerifier.stat(objectKey);
+            if (object.size() <= 0) {
+                throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "STORAGE_OBJECT_INVALID",
+                        "Recording object is empty or invalid.");
+            }
+        } catch (StorageObjectNotFoundException exception) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "STORAGE_OBJECT_NOT_FOUND",
+                    "Recording object was not found.");
+        } catch (StorageObjectUnavailableException exception) {
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_UNAVAILABLE",
+                    "Recording object could not be verified.");
+        }
     }
 }

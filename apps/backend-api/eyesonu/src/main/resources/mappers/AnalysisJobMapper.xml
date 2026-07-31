@@ -59,6 +59,8 @@
     <select id="findById" resultMap="analysisJobResultMap">
         SELECT *
         FROM analysis_jobs
-        WHERE case_id = #{caseId} AND id = #{jobId}
+        WHERE case_id = #{caseId}
+          AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
     </select>
 </mapper>

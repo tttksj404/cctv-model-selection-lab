@@ -2,6 +2,7 @@ package com.ssafy.eyesonu.recording.mapper;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface AnalysisJobMapper {
@@ -9,7 +10,10 @@ public interface AnalysisJobMapper {
     int insert(AnalysisJob job);
 
     AnalysisJob findActiveByTarget(
-            Long caseId, Long searchConditionId, Long recordingId);
+            @Param("caseId") Long caseId,
+            @Param("searchConditionId") Long searchConditionId,
+            @Param("recordingId") Long recordingId);
 
-    AnalysisJob findById(Long caseId, Long jobId);
+    AnalysisJob findById(
+            @Param("caseId") Long caseId, @Param("jobId") Long jobId);
 }

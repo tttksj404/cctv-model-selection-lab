@@ -16,8 +16,6 @@ public class DeviceSearchTargetRow {
 	private Long conditionId;
 	private String prompt;
 	private String exclusionPrompt;
-	private String embeddedPrompt;
-	private String embeddedExclusionPrompt;
 	private Instant searchStart;
 	private Instant searchEnd;
 	private String searchArea;
