@@ -17,11 +17,12 @@
 
 | 구분 | 인증 방식 | 주요 권한 |
 | --- | --- | --- |
-| 신고자·경찰서 접수자 | 인증 없음 | 실종 신고 접수, 사건조회번호와 전화번호를 이용한 진행 상황 조회 |
+| 신고자 | 인증 없음 | 관리자가 전달한 사건조회번호와 신고 전화번호를 이용한 진행 상황 조회 |
 | 관리자 | `EYESONU_SESSION` 세션 쿠키 (`ADMIN`) | 사건, 탐색 조건, 미디어 서버, 카메라, 후보, 작업 및 감사 로그 관리 |
 | 미디어 서버 | `X-Device-Key: {deviceKey}` (`ROLE_MEDIA_SERVER`) | Heartbeat, 녹화 메타데이터와 Jetson 후보 이벤트 전송 |
 
-> v1에서는 실종 신고와 신고자 진행 상황 조회에 별도 로그인이나 전화번호 인증을 요구하지 않는다.
+> v1 사건 등록은 ADMIN 세션을 가진 관리자만 수행한다. 신고자 진행 상황 조회에는 별도 로그인이나 전화번호 인증을 요구하지 않는다.
+> 신고자 정보는 회원 계정이 아니라 신고 당시 입력값을 보존하는 사건별 스냅샷으로 취급한다.
 
 ---
 
@@ -29,7 +30,7 @@
 
 세부 요청·응답 예시와 업무 규칙은 뒤쪽의 상세 명세에서 확인한다. 아래 경로는 모두 Base URL `/api/v1`을 기준으로 한다.
 
-### 2.1 인증·신고·진행 조회
+### 2.1 인증·진행 조회
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
@@ -38,17 +39,19 @@
 | `POST` | `/auth/admin/logout` | 관리자 로그아웃 | CSRF | `204`, `403` |
 | `GET` | `/admins/me` | 로그인 관리자 정보 조회 | 세션 | `200`, `401` |
 | `PATCH` | `/admins/me` | 관리자 정보 수정 | 세션, CSRF, `name`, 비밀번호 변경 정보 | `200`, `400`, `401`, `403`, `503` |
-| `POST` | `/cases` | 인증 없는 실종 신고 접수 | 신고자·실종자·마지막 목격 정보, `photo` | `201`, `400`, `409`, `413`, `415` |
 | `POST` | `/cases/status-inquiries` | 신고자 사건 진행 상황 조회 | `caseNumber`, `phone` | `200`, `400`, `404`, `429`, `503` |
 
 ### 2.2 관리자 사건·탐색·후보
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
+| `POST` | `/admin/cases` | 관리자 사건 등록 | 신고자·실종자·구조화 인상착의·마지막 목격 정보 | `201`, `400`, `401`, `403`, `503` |
 | `GET` | `/admin/cases` | 사건 목록 | `status`, `caseNumber`, `missingName`, 신고 기간, 페이지 조건 | `200`, `400` |
 | `GET` | `/admin/cases/{caseId}` | 사건 상세 | `caseId` | `200`, `404` |
-| `PATCH` | `/admin/cases/{caseId}` | 사건 정보 수정 | 신고 내용, 실종자·마지막 목격 정보 | `200`, `400`, `404`, `409` |
-| `PATCH` | `/admin/cases/{caseId}/status` | 종료 외 사건 상태 변경 | `status`, `reason` | `200`, `400`, `404` |
+| `PATCH` | `/admin/cases/{caseId}` | 사건 정보 수정 | 신고자, 실종자·구조화 인상착의·마지막 목격 정보 | `200`, `400`, `404`, `422` |
+| `PUT` | `/admin/cases/{caseId}/photo` | 실종자 사진 등록·교체 | multipart `photo` | `200`, `400`, `404`, `413`, `415`, `422`, `503` |
+| `DELETE` | `/admin/cases/{caseId}/photo` | 실종자 사진 제거 | `caseId` | `204`, `404`, `503` |
+| `PATCH` | `/admin/cases/{caseId}/status` | 종료 외 사건 상태 변경 | `status`, `reason` | `200`, `400`, `404`, `422` |
 | `POST` | `/admin/cases/{caseId}/close` | 사건 종료 | `reason`, `force` | `200`, `404`, `409` |
 | `GET` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 목록 | `caseId` | `200`, `404` |
 | `POST` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 생성 | 프롬프트, 시간, 구역, 임계값 | `201`, `400`, `404` |
@@ -78,6 +81,7 @@
 | `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
 | `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `X-Device-Key`, `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404`, `429` |
 | `POST` | `/device/cameras/{cameraCode}/recordings` | 업로드 완료 녹화 메타데이터 등록 | `X-Device-Key`, `Idempotency-Key`, 촬영 시간, Object Key | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `503` |
+| `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key`, `If-None-Match` | `200`, `304`, `401`, `403` |
 | `GET` | `/admin/recordings` | 녹화 목록 | `cameraId`, 촬영 구간, 페이지·정렬 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세와 재생 URL | `recordingId` | `200`, `404`, `503` |
 | `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, `Idempotency-Key`, 사건, 카메라, 탐지 시각, 유사도, 이미지 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `429` |
@@ -218,12 +222,13 @@
 - 사진·후보 이미지·클립은 만료 시간이 있는 `photoUrl`, `imageUrl`, `clipUrl`로 반환한다. 녹화 `videoUrl`은 관리자 상세 응답에만 포함한다.
 - URL 만료 시 리소스를 다시 조회해 새로운 URL을 발급받는다.
 - 지원 이미지 형식은 JPEG·PNG·WebP, 녹화 생성 주체가 업로드하는 영상 형식은 MP4(H.264)를 기본으로 한다. 녹화 등록 API는 `.mp4` 객체 키와 저장소 메타데이터만 검증하며 파일 본문을 내려받거나 H.264 코덱을 검사하지 않는다.
+- 사건 사진은 최대 10 MiB이며 선언된 Content-Type과 실제 JPEG·PNG·WebP 파일 시그니처가 일치해야 한다.
 - 파일 크기 제한은 배포 환경 설정값을 따른다. 녹화는 local/test에서 5 GiB를 사용하고 prod에서는 `RECORDING_MAX_FILE_SIZE_BYTES`를 필수로 지정하며, HEAD/stat에서 확인한 실제 크기가 제한을 초과하면 `413 FILE_TOO_LARGE`를 반환한다.
 
 ### 3.7 주요 검증 규칙
 
 - `caseNumber`는 앞뒤 공백을 제거하고 대문자로 변환한 뒤 검증한다. 형식은 `EFU-`와 Crockford Base32 26자로 구성된 총 30자 문자열이다.
-- `phone`은 하이픈과 공백 등 숫자가 아닌 문자를 제거한 뒤 10~11자리인지 검증한다.
+- `phone`은 ASCII 숫자(`0`~`9`), ASCII 하이픈(`-`), ASCII 공백(`U+0020`)만 허용한다. 하이픈과 공백을 제거한 정규화 결과가 숫자 10~11자리여야 하며, 그 밖의 문자·공백 문자는 제거하지 않고 검증 오류로 거부한다.
 - `cameraCode`는 앞뒤 공백을 제거한 후 검증한다. `loginId`는 앞뒤 공백을 제거하고 소문자로 변환한다.
 - 위도는 `-90`~`90`, 경도는 `-180`~`180` 범위여야 한다.
 - `lastSeenLat`와 `lastSeenLng`는 함께 제공하거나 모두 생략한다.
@@ -403,61 +408,9 @@
 - 이름만 변경하면 `reauthenticationRequired=false`이며 현재 세션을 유지한다.
 - 비밀번호를 변경하면 `reauthenticationRequired=true`를 반환한 뒤 해당 관리자의 모든 세션을 종료한다.
 
-### 5.5 실종 신고 접수
+### 5.5 사건 등록 주체
 
-`POST /api/v1/cases`
-
-- 신고 접수는 경찰서에서 진행하는 것으로 가정한다.
-- 인증: 없음
-- Content-Type: `multipart/form-data`
-- `request`: 아래 JSON 구조
-- `photo`: 선택 이미지 파일
-
-`request` 파트:
-
-```json
-{
-  "reporter": {
-    "name": "홍길동",
-    "phone": "01012345678",
-    "email": "reporter@example.com"
-  },
-  "reportContent": "마지막 연락 이후 귀가하지 않았습니다.",
-  "missingName": "김민수",
-  "gender": "MALE",
-  "ageGroup": "TWENTIES",
-  "appearance": "검은색 셔츠와 청바지, 흰색 운동화",
-  "belongings": "검은색 백팩",
-  "lastSeenTime": "2026-07-20T00:10:00Z",
-  "lastSeenLat": 37.5012345,
-  "lastSeenLng": 127.0398765,
-  "lastSeenAddress": "서울특별시 강남구"
-}
-```
-
-필수 필드: `reporter.name`, `reporter.phone`, `reportContent`, `missingName`, `appearance`, `lastSeenTime`
-
-응답 `201 Created`:
-
-```json
-{
-  "timestamp": "2026-07-20T01:30:00Z",
-  "data": {
-    "id": 101,
-    "caseNumber": "EFU-0123456789ABCDEFGHJKMNPQRS",
-    "status": "RECEIVED",
-    "reportedAt": "2026-07-20T01:30:00Z"
-  }
-}
-```
-
-서버 처리:
-
-1. `REPORTERS`를 신고 접수 정보로 생성하고 `phoneVerified=false`, `verifiedAt=null`로 저장한다.
-2. 사진을 저장한 후 내부 S3 Key를 포함하여 `CASES`를 생성한다.
-3. 128비트 난수를 Crockford Base32 26자로 인코딩한 사건번호를 중복되지 않게 발급하고 생성 이력을 `AUDIT_LOGS`에 기록한다.
-
-> `REPORTERS.phoneVerified`와 `verifiedAt`은 향후 인증 기능 확장을 위해 유지하며 v1 신고 흐름에서는 사용하지 않는다.
+공개 사건 등록 API는 제공하지 않는다. 사건 등록은 6.1의 `POST /api/v1/admin/cases`를 사용하며 ADMIN 세션과 CSRF 토큰이 필요하다. reporter-webapp은 진행 조회만 제공하고 사건 등록 화면 제거는 별도 프런트 작업으로 관리한다.
 
 ### 5.6 신고자 사건 진행 조회
 
@@ -466,6 +419,7 @@
 - 인증: 없음
 - Content-Type: `application/json`
 - 동일 IP 또는 전화번호의 반복 조회는 Rate Limit을 적용한다.
+- `phone`은 3.7의 공통 규칙으로 검증·정규화한 뒤 사건에 저장된 전화번호와 비교한다.
 
 요청:
 
@@ -516,13 +470,53 @@
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
+| `POST` | `/admin/cases` | 사건 등록 | 신고자, 실종자, 구조화 인상착의, 마지막 목격 정보 | `201`, `400`, `401`, `403`, `503` |
 | `GET` | `/admin/cases` | 사건 목록 | `status`, `caseNumber`, `missingName`, `reportedFrom`, `reportedTo`, 페이지 조건 | `200`, `400` |
 | `GET` | `/admin/cases/{caseId}` | 사건 상세 | Path: `caseId` | `200`, `404` |
-| `PATCH` | `/admin/cases/{caseId}` | 사건 정보 수정 | 신고 내용, 실종자 정보, 마지막 목격 정보 | `200`, `400`, `404`, `409` |
-| `PATCH` | `/admin/cases/{caseId}/status` | 종료를 제외한 상태 변경 | `status`, `reason` | `200`, `400`, `404` |
+| `PATCH` | `/admin/cases/{caseId}` | 사건 정보 수정 | 신고자, 실종자, 인상착의, 마지막 목격 정보 | `200`, `400`, `404`, `422` |
+| `PUT` | `/admin/cases/{caseId}/photo` | 선택 사진 등록·교체 | multipart `photo` | `200`, `400`, `404`, `413`, `415`, `422`, `503` |
+| `DELETE` | `/admin/cases/{caseId}/photo` | 사진 제거 | Path: `caseId` | `204`, `404` |
+| `PATCH` | `/admin/cases/{caseId}/status` | 종료를 제외한 상태 변경 | `status`, `reason` | `200`, `400`, `404`, `422` |
 | `POST` | `/admin/cases/{caseId}/close` | 사건 종료 | `reason`, `force` | `200`, `404`, `409` |
 
-목록 기본 정렬은 `reportedAt,desc`이다.
+등록 요청 예시:
+
+```json
+{
+  "reporter": {
+    "name": "홍길동",
+    "phone": "010-1234-5678",
+    "email": "reporter@example.com",
+    "relation": "보호자"
+  },
+  "reportContent": "마지막 연락 이후 귀가하지 않았습니다.",
+  "missingName": "김민수",
+  "gender": "MALE",
+  "birthYear": 2001,
+  "appearance": {
+    "hair": "짧은 검은 머리",
+    "face": null,
+    "upperClothing": "검은색 셔츠",
+    "lowerClothing": "청바지",
+    "shoes": "흰색 운동화",
+    "belongings": "검은색 백팩",
+    "bodyType": null,
+    "distinctiveFeatures": null
+  },
+  "lastSeenTime": "2026-07-20T00:10:00+09:00",
+  "lastSeenLat": 37.5012345,
+  "lastSeenLng": 127.0398765,
+  "lastSeenAddress": "서울특별시 강남구"
+}
+```
+
+- `reporter.name`, `reporter.phone`, `reportContent`, `missingName`, `gender`, `appearance`, `lastSeenTime`, `lastSeenAddress`는 필수다.
+- 인상착의 8개 항목 중 하나 이상은 공백이 아닌 값이어야 한다.
+- `birthYear`는 생략할 수 있으며 제공 시 1900년부터 현재 연도까지 허용한다.
+- 사건 생성은 JSON으로 수행하고 사진과 초기 탐색 조건·카메라는 생성된 `caseId`로 별도 호출한다.
+- 성공 시 `Location: /api/v1/admin/cases/{caseId}`와 사건 ID·사건번호·`RECEIVED` 상태·접수 시각을 반환한다.
+
+목록 기본 정렬은 `reportedAt,desc`이며 `reportedAt`, `updatedAt`, `missingName`만 정렬할 수 있다. 수정은 last-write-wins 방식이며 요청에 없는 필드는 유지하고 nullable 필드의 명시적 `null`은 삭제한다. 인상착의 부분 수정은 등록과 동일하게 `appearance` 객체 안에 변경할 항목만 담는다.
 
 사건 상세 응답 예시:
 
@@ -538,15 +532,22 @@
       "name": "홍길동",
       "phone": "01012345678",
       "email": "reporter@example.com",
-      "phoneVerified": false,
-      "verifiedAt": null
+      "relation": "보호자"
     },
     "reportContent": "마지막 연락 이후 귀가하지 않았습니다.",
     "missingName": "김민수",
     "gender": "MALE",
-    "ageGroup": "TWENTIES",
-    "appearance": "검은색 셔츠와 청바지, 흰색 운동화",
-    "belongings": "검은색 백팩",
+    "birthYear": 2001,
+    "appearance": {
+      "hair": "짧은 검은 머리",
+      "face": null,
+      "upperClothing": "검은색 셔츠",
+      "lowerClothing": "청바지",
+      "shoes": "흰색 운동화",
+      "belongings": "검은색 백팩",
+      "bodyType": null,
+      "distinctiveFeatures": null
+    },
     "photoUrl": "https://media.example.com/signed/...",
     "lastSeenTime": "2026-07-20T00:10:00Z",
     "lastSeenLat": 37.5012345,
@@ -554,7 +555,6 @@
     "lastSeenAddress": "서울특별시 강남구",
     "reportedAt": "2026-07-20T01:30:00Z",
     "closedAt": null,
-    "createdAt": "2026-07-20T01:30:00Z",
     "updatedAt": "2026-07-20T01:35:00Z"
   }
 }
@@ -565,6 +565,10 @@
 - `force` 기본값은 `false`이다.
 - 미처리 후보 또는 실행 중인 작업이 있으면 `force=false` 요청은 `409 CASE_CLOSE_CONFLICT`를 반환한다.
 - `force=true`는 관리자 확인 후 미완료 작업을 취소하고 종료하며, 사유와 강제 종료 여부를 감사 로그에 남긴다.
+- `RECEIVED`에서 `SEARCHING`으로 전환하려면 탐색 조건과 활성 사건 카메라가 각각 하나 이상 필요하다.
+- 사건 자체의 `DELETE` API는 제공하지 않는다. 종료 후 보관기한 자동 파기는 후속 구현 범위다.
+- 종료 사건은 정보 수정과 사진 등록·교체를 거부하지만 개인정보 제거를 위해 사진 삭제는 허용한다.
+- 사진은 JPEG·PNG·WebP 한 장, 최대 10 MiB이며 Content-Type과 파일 시그니처가 일치해야 한다.
 
 ### 6.2 탐색 조건
 
@@ -796,7 +800,8 @@ Device Key 교체 응답은 등록 응답과 같은 구조로 현재 미디어 �
 | `GET` | `/admin/cameras` | 카메라 목록 | `status`, `search`, 페이지 조건 | `200`, `400` |
 | `POST` | `/admin/cameras` | 카메라 등록 | 미디어 서버·카메라 식별 정보 | `201`, `400`, `404`, `409` |
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | Path: `cameraId` | `200`, `404` |
-| `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
+| `PATCH` | `/admin/cameras/{cameraId}/name` | 카메라 이름 수정 | `cameraName` | `200`, `400`, `404` |
+| `PUT` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 전체 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404` |
 
 카메라 등록 요청:
 
@@ -1037,7 +1042,73 @@ GET /api/v1/admin/recordings?cameraId=1&startFrom=2026-07-20T01:00:00Z&startTo=2
 
 ## 8. AI 후보 이벤트 API
 
-### 8.1 후보 이벤트 등록
+### 8.1 임베디드 검색 대상 조회
+
+`GET /api/v1/device/search-targets`
+
+- 인증: `X-Device-Key: {deviceKey}`
+- 요청 본문과 쿼리 파라미터는 없다.
+- 응답은 인증된 미디어 서버가 소유한 카메라가 등록된 `SEARCHING` 사건 중 활성 검색 조건이 하나 이상 있는 사건만 반환한다.
+- 비활성화·삭제된 검색 조건과 카메라는 반환하지 않는다.
+- 응답은 `Cache-Control: private, no-cache, must-revalidate`를 적용한다. 임베디드는 이 API 응답을 최신 기준 데이터로 사용한다.
+
+```http
+GET /api/v1/device/search-targets
+X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+```
+
+정상 응답 `200 OK`:
+
+```json
+{
+  "timestamp": "2026-07-30T04:00:00Z",
+  "data": [
+    {
+      "caseId": 101,
+      "caseNumber": "EFU-20260730-0001",
+      "searchConditions": [
+        {
+          "conditionId": 10,
+          "prompt": "검은색 상의와 청바지를 입은 사람",
+          "exclusionPrompt": "모자를 쓴 사람",
+          "searchStart": "2026-07-30T03:00:00Z",
+          "searchEnd": "2026-07-30T12:00:00Z",
+          "searchArea": "강남역 일대",
+          "similarityThreshold": 0.72
+        }
+      ],
+      "cameras": [
+        {
+          "cameraId": 2,
+          "cameraCode": "CAM-001"
+        }
+      ],
+      "updatedAt": "2026-07-30T04:00:00Z"
+    }
+  ]
+}
+```
+
+변경 없음 응답 `304 Not Modified`:
+
+```http
+HTTP/1.1 304 Not Modified
+ETag: "media-server-7-search-targets-2026-07-30T04:00:00Z"
+Cache-Control: private, no-cache, must-revalidate
+```
+
+- 디바이스는 직전 응답의 `ETag`를 `If-None-Match` 헤더로 전송한다.
+- ETag는 미디어 서버별 검색 대상 변경 버전을 나타낸다.
+- 변경이 없으면 서버는 전체 검색 대상 데이터를 다시 조회·직렬화하지 않고 `304`를 반환한다.
+
+- `updatedAt`은 해당 사건의 검색 조건·검색 카메라 변경 여부를 확인하기 위한 최신 수정 시각이다. 활성 데이터뿐 아니라 비활성화·삭제된 검색 대상의 마지막 수정 시각도 반영될 수 있다.
+- 모든 시간 필드는 JSON에서 UTC `Z`로 반환한다.
+- `caseId`, `caseNumber`, 검색 조건과 카메라 외 신고자 개인정보·관리자 메모·Device Key·내부 저장소 정보는 반환하지 않는다.
+- 사건에 활성 검색 조건이 없으면 해당 사건은 응답에서 제외한다.
+- 인증된 미디어 서버가 소유하지 않은 카메라는 응답에 포함하지 않는다.
+- 데이터가 없으면 `200 OK`와 빈 배열을 반환한다.
+
+### 8.2 후보 이벤트 등록
 
 `POST /api/v1/device/candidate-events`
 
@@ -1219,8 +1290,8 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | ERD 엔터티 | 관련 API·처리 | 주요 관계 |
 | --- | --- | --- |
 | `ADMINS` | 관리자 로그인, `/admins/me`, 후보 판정, 감사 로그 | `CANDIDATES.reviewed_by`, `AUDIT_LOGS.admin_id` |
-| `REPORTERS` | 신고 접수, 사건조회번호·전화번호 기반 진행 조회 | `REPORTERS 1:N CASES` |
-| `CASES` | 신고 접수, 관리자 사건 관리, 신고자 진행 조회 | 탐색 조건·후보·작업·로그의 기준 사건 |
+| `REPORTERS` | 관리자가 입력한 사건별 연락처 스냅샷, 사건조회번호·전화번호 기반 진행 조회 | v1에서는 사건마다 새로 생성하며 각 `REPORTERS`는 해당 `CASES` 한 건에만 사용 |
+| `CASES` | 관리자 사건 등록·관리, 신고자 진행 조회 | 탐색 조건·후보·작업·로그의 기준 사건 |
 | `SEARCH_CONDITIONS` | `/admin/cases/{caseId}/search-conditions` | `CASES 1:N SEARCH_CONDITIONS` |
 | `MEDIA_SERVERS` | 관리자 미디어 서버 관리, Device Key 인증·교체 | `MEDIA_SERVERS 1:N CAMERAS` |
 | `CAMERAS` | 관리자 카메라 관리, Heartbeat, 후보 이벤트 | 미디어 서버 소속이며 녹화·후보의 촬영 카메라 |
@@ -1268,6 +1339,7 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | 존재하지 않는 사건·카메라·후보 요청 | `404 RESOURCE_NOT_FOUND` |
 | 실행 중인 작업 또는 미처리 후보가 있는 사건 종료 | `409 CASE_CLOSE_CONFLICT` |
 | 종료 사건에 후보·탐색 작업 추가 | `422 BUSINESS_RULE_VIOLATION` |
+| 전화번호에 ASCII 숫자·하이픈·공백 외 문자가 포함되거나 정규화 결과가 10~11자리가 아님 | `400 VALIDATION_ERROR` |
 | 사건조회번호와 전화번호 조합 불일치 | 상세 불일치 원인을 숨기고 `404 INQUIRY_NOT_FOUND` 반환 |
 | 동일 전화번호 또는 IP의 과도한 진행 조회 | `429 RATE_LIMIT_EXCEEDED` |
 

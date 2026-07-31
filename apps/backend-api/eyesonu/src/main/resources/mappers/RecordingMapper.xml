@@ -8,13 +8,13 @@
         <id property="id" column="id"/>
         <result property="cameraId" column="camera_id"/>
         <result property="startTime" column="start_time"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="endTime" column="end_time"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="s3Key" column="s3_key"/>
         <result property="fileSize" column="file_size"/>
         <result property="createdAt" column="created_at"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
     <resultMap id="registrationResultMap"
@@ -32,13 +32,13 @@
         <result property="cameraCode" column="camera_code"/>
         <result property="cameraName" column="camera_name"/>
         <result property="startTime" column="start_time"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="endTime" column="end_time"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="s3Key" column="s3_key"/>
         <result property="fileSize" column="file_size"/>
         <result property="createdAt" column="created_at"
-                typeHandler="com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler"/>
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
     <sql id="recordingColumns">
@@ -69,10 +69,10 @@
                 AND r.camera_id = #{cameraId}
             </if>
             <if test="startFrom != null">
-                AND r.end_time &gt; #{startFrom,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler}
+                AND r.end_time &gt; #{startFrom,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
             </if>
             <if test="startTo != null">
-                AND r.start_time &lt; #{startTo,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler}
+                AND r.start_time &lt; #{startTo,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
             </if>
         </where>
     </sql>
@@ -91,8 +91,8 @@
             created_at
         ) VALUES (
             #{cameraId},
-            #{startTime,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler},
-            #{endTime,typeHandler=com.ssafy.eyesonu.recording.mapper.typehandler.UtcInstantTypeHandler},
+            #{startTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{endTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{s3Key},
             #{fileSize},
             UTC_TIMESTAMP(6)

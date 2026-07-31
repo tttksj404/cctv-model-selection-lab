@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -32,13 +35,13 @@ public interface AdminRecordingControllerDocs {
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     ResponseEntity<PagedApiResponse<List<AdminRecordingListResponse>>> findAll(
-            @Parameter(description = "Camera id") Long cameraId,
+            @Parameter(description = "Camera id") @Positive Long cameraId,
             @Parameter(description = "Open interval start, with RFC 3339 offset and at most 6 fractional digits")
                     OffsetDateTime startFrom,
             @Parameter(description = "Open interval end, with RFC 3339 offset and at most 6 fractional digits")
                     OffsetDateTime startTo,
-            @Parameter(description = "Zero-based page", example = "0") int page,
-            @Parameter(description = "Page size from 1 through 100", example = "20") int size,
+            @Parameter(description = "Zero-based page", example = "0") @Min(0) int page,
+            @Parameter(description = "Page size from 1 through 100", example = "20") @Min(1) @Max(100) int size,
             @Parameter(
                     description = "Allowed field and direction pair",
                     example = "startTime,desc",
@@ -62,5 +65,5 @@ public interface AdminRecordingControllerDocs {
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<AdminRecordingDetailResponse>> findById(
-            @Parameter(description = "Recording id", required = true) Long recordingId);
+            @Parameter(description = "Recording id", required = true) @Positive Long recordingId);
 }

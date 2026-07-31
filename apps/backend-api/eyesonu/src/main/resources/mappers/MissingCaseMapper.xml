@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper">
+
+    <resultMap id="missingCaseResultMap" type="com.ssafy.eyesonu.missingcase.domain.MissingCaseRow">
+        <id property="id" column="id"/>
+        <result property="reporterId" column="reporter_id"/>
+        <result property="reporterName" column="reporter_name"/>
+        <result property="reporterPhone" column="reporter_phone"/>
+        <result property="reporterEmail" column="reporter_email"/>
+        <result property="reporterRelation" column="reporter_relation"/>
+        <result property="caseNumber" column="case_number"/>
+        <result property="status" column="status"/>
+        <result property="reportContent" column="report_content"/>
+        <result property="missingName" column="missing_name"/>
+        <result property="gender" column="gender"/>
+        <result property="birthYear" column="birth_year"/>
+        <result property="hair" column="hair"/>
+        <result property="face" column="face"/>
+        <result property="upperClothing" column="upper_clothing"/>
+        <result property="lowerClothing" column="lower_clothing"/>
+        <result property="shoes" column="shoes"/>
+        <result property="belongings" column="belongings"/>
+        <result property="bodyType" column="body_type"/>
+        <result property="distinctiveFeatures" column="distinctive_features"/>
+        <result property="photoS3Key" column="photo_s3_key"/>
+        <result property="lastSeenTime" column="last_seen_time"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="lastSeenLat" column="last_seen_lat"/>
+        <result property="lastSeenLng" column="last_seen_lng"/>
+        <result property="lastSeenAddress" column="last_seen_address"/>
+        <result property="reportedAt" column="reported_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="closedAt" column="closed_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="updatedAt" column="updated_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="casePhotoStateResultMap" type="com.ssafy.eyesonu.missingcase.domain.CasePhotoState">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="status" javaType="com.ssafy.eyesonu.missingcase.domain.CaseStatus"/>
+            <arg column="photo_s3_key" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="columns">
+        c.id, c.reporter_id,
+        r.name AS reporter_name, r.phone AS reporter_phone,
+        r.email AS reporter_email, r.relation AS reporter_relation,
+        c.case_number, c.status, c.report_content, c.missing_name, c.gender,
+        c.birth_year, c.hair, c.face, c.upper_clothing, c.lower_clothing,
+        c.shoes, c.belongings, c.body_type, c.distinctive_features,
+        c.photo_s3_key, c.last_seen_time, c.last_seen_lat, c.last_seen_lng,
+        c.last_seen_address, c.reported_at, c.closed_at, c.created_at, c.updated_at
+    </sql>
+
+    <sql id="filters">
+        <where>
+            <if test="status != null">AND c.status = #{status}</if>
+            <if test="caseNumber != null and caseNumber != ''">AND c.case_number = #{caseNumber}</if>
+            <if test="missingName != null and missingName != ''">
+                AND c.missing_name LIKE CONCAT('%', #{missingName}, '%')
+            </if>
+            <if test="reportedFrom != null">
+                AND c.reported_at &gt;= #{reportedFrom,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+            <if test="reportedTo != null">
+                AND c.reported_at &lt; #{reportedTo,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="insertReporter" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO reporters (name, phone, email, relation, created_at)
+        VALUES (#{name}, #{phone}, #{email}, #{relation}, UTC_TIMESTAMP(6))
+    </insert>
+
+    <insert id="insertCase" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO cases (
+            reporter_id, case_number, status, report_content, missing_name, gender,
+            birth_year, hair, face, upper_clothing, lower_clothing, shoes, belongings,
+            body_type, distinctive_features, last_seen_time, last_seen_lat, last_seen_lng,
+            last_seen_address, reported_at, created_at, updated_at
+        ) VALUES (
+            #{reporterId}, #{caseNumber}, #{status}, #{reportContent}, #{missingName}, #{gender},
+            #{birthYear}, #{hair}, #{face}, #{upperClothing}, #{lowerClothing}, #{shoes},
+            #{belongings}, #{bodyType}, #{distinctiveFeatures},
+            #{lastSeenTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{lastSeenLat}, #{lastSeenLng}, #{lastSeenAddress},
+            UTC_TIMESTAMP(6), UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <select id="findById" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="findByIdForUpdate" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        WHERE c.id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="findPhotoState" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
+    </select>
+
+    <select id="findPhotoStateForUpdate" resultMap="casePhotoStateResultMap">
+        SELECT id, status, photo_s3_key
+        FROM cases
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="countCases" resultType="long">
+        SELECT COUNT(*) FROM cases c
+        <include refid="filters"/>
+    </select>
+
+    <select id="findPage" resultMap="missingCaseResultMap">
+        SELECT <include refid="columns"/>
+        FROM cases c INNER JOIN reporters r ON r.id = c.reporter_id
+        <include refid="filters"/>
+        ORDER BY
+        <choose>
+            <when test="sortField.name() == 'UPDATED_AT'">c.updated_at</when>
+            <when test="sortField.name() == 'MISSING_NAME'">c.missing_name</when>
+            <otherwise>c.reported_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection.name() == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>, c.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="updateReporter">
+        UPDATE reporters
+        SET name = #{reporterName}, phone = #{reporterPhone}, email = #{reporterEmail},
+            relation = #{reporterRelation}
+        WHERE id = #{reporterId}
+    </update>
+
+    <update id="updateCase">
+        UPDATE cases
+        SET report_content = #{reportContent}, missing_name = #{missingName}, gender = #{gender},
+            birth_year = #{birthYear}, hair = #{hair}, face = #{face},
+            upper_clothing = #{upperClothing}, lower_clothing = #{lowerClothing},
+            shoes = #{shoes}, belongings = #{belongings}, body_type = #{bodyType},
+            distinctive_features = #{distinctiveFeatures},
+            last_seen_time = #{lastSeenTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            last_seen_lat = #{lastSeenLat}, last_seen_lng = #{lastSeenLng},
+            last_seen_address = #{lastSeenAddress}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE cases
+        SET status = #{status}, closed_at = #{closedAt}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePhoto">
+        UPDATE cases
+        SET photo_s3_key = #{photoS3Key}, updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{id}
+    </update>
+
+    <select id="countSearchConditions" resultType="long">
+        SELECT COUNT(*) FROM search_conditions WHERE case_id = #{caseId} AND deleted_at IS NULL
+    </select>
+
+    <select id="countActiveCameras" resultType="long">
+        SELECT COUNT(*) FROM case_cameras WHERE case_id = #{caseId} AND search_enabled = TRUE
+    </select>
+
+    <select id="countPendingCandidates" resultType="long">
+        SELECT COUNT(*) FROM candidates WHERE case_id = #{caseId} AND review_status = 'PENDING'
+    </select>
+
+    <select id="countActiveJobs" resultType="long">
+        SELECT COUNT(*) FROM analysis_jobs
+        WHERE case_id = #{caseId} AND status IN ('QUEUED', 'RUNNING')
+    </select>
+
+    <select id="countActiveJobsByCondition" resultType="long">
+        SELECT COUNT(*) FROM analysis_jobs
+        WHERE case_id = #{caseId}
+          AND search_condition_id = #{conditionId}
+          AND status IN ('QUEUED', 'RUNNING')
+    </select>
+
+    <resultMap id="searchConditionResultMap" type="com.ssafy.eyesonu.missingcase.domain.SearchConditionRow">
+        <id property="id" column="id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="prompt" column="prompt"/>
+        <result property="exclusionPrompt" column="exclusion_prompt"/>
+        <result property="searchStart" column="search_start"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchEnd" column="search_end"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchArea" column="search_area"/>
+        <result property="similarityThreshold" column="similarity_threshold"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="updatedAt" column="updated_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <select id="findSearchConditions" resultMap="searchConditionResultMap">
+        SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
+               search_area, similarity_threshold, created_at, updated_at
+        FROM search_conditions
+        WHERE case_id = #{caseId} AND deleted_at IS NULL
+        ORDER BY created_at DESC, id DESC
+    </select>
+
+    <select id="findSearchCondition" resultMap="searchConditionResultMap">
+        SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
+               search_area, similarity_threshold, created_at, updated_at
+        FROM search_conditions
+        WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
+    </select>
+
+    <insert id="insertSearchCondition" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO search_conditions (
+            case_id, prompt, exclusion_prompt, search_start, search_end, search_area,
+            similarity_threshold, created_at, updated_at
+        ) VALUES (
+            #{caseId}, #{prompt}, #{exclusionPrompt},
+            #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{searchArea}, #{similarityThreshold}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+        )
+    </insert>
+
+    <update id="updateSearchCondition">
+        UPDATE search_conditions
+        SET prompt = #{prompt},
+            exclusion_prompt = #{exclusionPrompt},
+            search_start = #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            search_end = #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            search_area = #{searchArea},
+            similarity_threshold = #{similarityThreshold},
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{id}
+    </update>
+
+    <update id="deleteSearchCondition">
+        UPDATE search_conditions
+        SET deleted_at = UTC_TIMESTAMP(6), updated_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
+    </update>
+
+    <resultMap id="caseCameraResultMap" type="com.ssafy.eyesonu.missingcase.domain.CaseCameraRow">
+        <id property="id" column="id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="cameraName" column="camera_name"/>
+        <result property="searchEnabled" column="search_enabled"/>
+        <result property="selectedAt" column="selected_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="removedAt" column="removed_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <select id="findCaseCameras" resultMap="caseCameraResultMap">
+        SELECT cc.id, cc.case_id, cc.camera_id, c.camera_code, c.camera_name,
+               cc.search_enabled, cc.selected_at, cc.removed_at
+        FROM case_cameras cc
+        INNER JOIN cameras c ON c.id = cc.camera_id
+        WHERE cc.case_id = #{caseId}
+        ORDER BY cc.search_enabled DESC, cc.selected_at DESC, cc.id DESC
+    </select>
+
+    <select id="findExistingCameraIds" resultType="long">
+        SELECT id
+        FROM cameras
+        WHERE id IN
+        <foreach collection="cameraIds" item="cameraId" open="(" separator="," close=")">
+            #{cameraId}
+        </foreach>
+    </select>
+
+    <insert id="upsertCaseCameras">
+        INSERT INTO case_cameras (case_id, camera_id, search_enabled, selected_at, removed_at, created_at, updated_at)
+        VALUES
+        <foreach collection="cameraIds" item="cameraId" separator=",">
+            (#{caseId}, #{cameraId}, TRUE, UTC_TIMESTAMP(6), NULL, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            search_enabled = TRUE,
+            selected_at = UTC_TIMESTAMP(6),
+            removed_at = NULL,
+            updated_at = UTC_TIMESTAMP(6)
+    </insert>
+
+    <update id="disableCaseCamera">
+        UPDATE case_cameras
+        SET search_enabled = FALSE,
+            removed_at = UTC_TIMESTAMP(6),
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND camera_id = #{cameraId} AND search_enabled = TRUE
+    </update>
+
+    <update id="cancelActiveJobs">
+        UPDATE analysis_jobs
+        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND status IN ('QUEUED', 'RUNNING')
+    </update>
+
+    <resultMap id="deviceSearchTargetResultMap"
+               type="com.ssafy.eyesonu.missingcase.domain.DeviceSearchTargetRow">
+        <result property="caseId" column="case_id"/>
+        <result property="caseNumber" column="case_number"/>
+        <result property="conditionId" column="condition_id"/>
+        <result property="prompt" column="prompt"/>
+        <result property="exclusionPrompt" column="exclusion_prompt"/>
+        <result property="searchStart" column="search_start"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchEnd" column="search_end"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchArea" column="search_area"/>
+        <result property="similarityThreshold" column="similarity_threshold"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="updatedAt" column="target_updated_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <select id="findDeviceSearchTargetCameras" resultMap="deviceSearchTargetResultMap">
+        SELECT c.id AS case_id,
+               c.case_number,
+               cc.camera_id,
+               cam.camera_code,
+               GREATEST(
+                   c.updated_at,
+                   COALESCE((
+                       SELECT MAX(sc_all.updated_at)
+                       FROM search_conditions sc_all
+                       WHERE sc_all.case_id = c.id
+                   ), c.updated_at),
+                   COALESCE((
+                       SELECT MAX(cc_all.updated_at)
+                       FROM case_cameras cc_all
+                       WHERE cc_all.case_id = c.id
+                   ), c.updated_at)
+               ) AS target_updated_at
+        FROM cases c
+        INNER JOIN case_cameras cc
+            ON cc.case_id = c.id AND cc.search_enabled = TRUE
+        INNER JOIN cameras cam
+            ON cam.id = cc.camera_id AND cam.media_server_id = #{mediaServerId}
+        WHERE c.status = 'SEARCHING'
+        ORDER BY c.id, cc.camera_id
+    </select>
+
+    <select id="findDeviceSearchTargetConditions" resultMap="deviceSearchTargetResultMap">
+        SELECT c.id AS case_id,
+               c.case_number,
+               sc.id AS condition_id,
+               sc.prompt,
+               sc.exclusion_prompt,
+               sc.search_start,
+               sc.search_end,
+               sc.search_area,
+               sc.similarity_threshold,
+               c.updated_at AS target_updated_at
+        FROM cases c
+        INNER JOIN search_conditions sc
+            ON sc.case_id = c.id AND sc.deleted_at IS NULL
+        WHERE c.status = 'SEARCHING'
+          AND c.id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+        ORDER BY c.id, sc.id
+    </select>
+
+    <select id="findDeviceSearchTargetLastModified" resultType="java.time.Instant">
+        SELECT MAX(changed_at)
+        FROM (
+            SELECT c.updated_at AS changed_at
+            FROM cases c
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM case_cameras cc
+                  INNER JOIN cameras cam ON cam.id = cc.camera_id
+                  WHERE cc.case_id = c.id
+                    AND cc.search_enabled = TRUE
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM search_conditions sc
+                  WHERE sc.case_id = c.id
+                    AND sc.deleted_at IS NULL
+              )
+            UNION ALL
+            SELECT sc.updated_at AS changed_at
+            FROM search_conditions sc
+            INNER JOIN cases c ON c.id = sc.case_id
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM case_cameras cc
+                  INNER JOIN cameras cam ON cam.id = cc.camera_id
+                  WHERE cc.case_id = c.id
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+            UNION ALL
+            SELECT cc.updated_at AS changed_at
+            FROM case_cameras cc
+            INNER JOIN cases c ON c.id = cc.case_id
+            WHERE c.status = 'SEARCHING'
+              AND EXISTS (
+                  SELECT 1
+                  FROM cameras cam
+                  WHERE cam.id = cc.camera_id
+                    AND cam.media_server_id = #{mediaServerId}
+              )
+            UNION ALL
+            SELECT c.updated_at AS changed_at
+            FROM cases c
+            WHERE EXISTS (
+                      SELECT 1
+                      FROM case_cameras cc
+                      INNER JOIN cameras cam ON cam.id = cc.camera_id
+                      WHERE cc.case_id = c.id
+                        AND cam.media_server_id = #{mediaServerId}
+                  )
+              AND EXISTS (
+                      SELECT 1
+                      FROM search_conditions sc
+                      WHERE sc.case_id = c.id
+                  )
+        ) target_changes
+    </select>
+</mapper>
