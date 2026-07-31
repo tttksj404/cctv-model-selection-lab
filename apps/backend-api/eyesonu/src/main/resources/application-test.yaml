@@ -59,4 +59,5 @@ testcontainers:
 recording:
   analysis:
     consumer:
+      enabled: ${TEST_RECORDING_ANALYSIS_CONSUMER_ENABLED:false}
       auto-start: ${TEST_RECORDING_ANALYSIS_CONSUMER_AUTO_START:false}

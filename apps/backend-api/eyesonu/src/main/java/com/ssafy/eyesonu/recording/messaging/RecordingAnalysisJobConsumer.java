@@ -2,6 +2,7 @@ package com.ssafy.eyesonu.recording.messaging;
 
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobClaimService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,11 @@ import org.springframework.stereotype.Component;
  * job before the worker starts its analysis.
  */
 @Component
+@ConditionalOnProperty(
+        prefix = "recording.analysis.consumer",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class RecordingAnalysisJobConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(RecordingAnalysisJobConsumer.class);
