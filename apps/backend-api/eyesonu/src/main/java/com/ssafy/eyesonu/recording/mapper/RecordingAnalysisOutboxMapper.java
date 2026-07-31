@@ -18,6 +18,11 @@ public interface RecordingAnalysisOutboxMapper {
             @Param("claimToken") String claimToken,
             @Param("leaseUntil") Instant leaseUntil);
 
+    int renewLease(
+            @Param("id") Long id,
+            @Param("claimToken") String claimToken,
+            @Param("leaseUntil") Instant leaseUntil);
+
     int markPublished(
             @Param("id") Long id,
             @Param("claimToken") String claimToken,
