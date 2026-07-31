@@ -145,6 +145,8 @@ If-None-Match: "previous-etag"
 
 상의 형태는 `short sleeve` 또는 `long sleeve` 중 하나만 사용합니다. 예를 들어 `남성, 검은색 반팔 상의와 검은색 청바지`는 `a man wearing a black short sleeve top and black pants`로 전달됩니다. 하의의 옷 종류는 순서 계약에 포함하지 않고 하의 색만 전달합니다.
 
+메인 `prompt`를 정규화한 결과가 비어 있으면 해당 검색 조건 전체를 임베디드 응답에서 제외합니다. `exclusionPrompt`만 비어 있는 경우에는 메인 조건을 유지하고 빈 제외 조건으로 전달합니다.
+
 녹화영상 분석 경로는 실시간 정규화기를 사용하지 않고 기존 번역기(`EmbeddedPromptTranslator`)를 계속 사용합니다.
 
 ## 5. 로컬 분석 처리

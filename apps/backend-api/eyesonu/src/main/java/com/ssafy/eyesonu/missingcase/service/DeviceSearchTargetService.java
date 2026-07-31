@@ -67,10 +67,13 @@ public class DeviceSearchTargetService {
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
+			String prompt = promptNormalizer.normalize(row.getPrompt());
+			if (prompt == null || prompt.isBlank()) return;
+			String exclusionPrompt = promptNormalizer.normalize(row.getExclusionPrompt());
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
 					row.getConditionId(),
-					promptNormalizer.normalize(row.getPrompt()),
-					promptNormalizer.normalize(row.getExclusionPrompt()),
+					prompt,
+					exclusionPrompt,
 					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
 					row.getSimilarityThreshold()));
 		}

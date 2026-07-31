@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.missingcase.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +55,25 @@ class DeviceSearchTargetServiceTests {
 		assertEquals("a man wearing a black short sleeve top and black pants",
 				normalizer.normalize("a man wearing a black short sleeve top and black jeans"));
 		assertEquals("", normalizer.normalize("a person wearing a khaki windbreaker"));
+		assertEquals("", normalizer.normalize("a man wearing a black short sleeve top"));
+		assertEquals("a man wearing a black short sleeve top and blue pants",
+				normalizer.normalize("남성, black 반팔 상의와 blue 하의"));
+	}
+
+	@Test
+	void excludesConditionWhenMainPromptNormalizationFails() {
+		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
+		DeviceSearchTargetRow condition = row(101L, 10L, null, updatedAt);
+		condition.setPrompt("a person wearing a khaki windbreaker");
+		when(mapper.findDeviceSearchTargetCameras(7L)).thenReturn(List.of(row(101L, 10L, 2L, updatedAt)));
+		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(condition));
+		when(promptNormalizer.normalize(condition.getPrompt())).thenReturn("");
+
+		var result = new DeviceSearchTargetService(mapper, promptNormalizer)
+				.findTargets(new MediaServerPrincipal(7L, "MS-001"));
+
+		assertTrue(result.isEmpty());
+		verify(promptNormalizer).normalize(condition.getPrompt());
 	}
 
 	@Test
