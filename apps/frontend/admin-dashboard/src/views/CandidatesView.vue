@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { fetchAdminCandidates, objectUrl } from "../api/candidateApi";
 import { listCases } from "../api/caseApi";
 import BasePagination from "../components/common/BasePagination.vue";
+import { formatCandidateDate, reviewStatusLabel, reviewStatusTone, similarityPercent, similarityTone } from "../domain/candidateMapper";
 
 const router = useRouter();
 const route = useRoute();
@@ -19,12 +20,6 @@ const pageSize = ref(20);
 const totalPages = ref(1);
 const totalCount = ref(0);
 const selectedCase = computed(() => cases.value.find((item) => String(item.id) === String(filters.caseId)));
-const similarityPercent = (similarity) => Math.round(Number(similarity || 0) * 100);
-const similarityTone = (similarity) => {
-  const score = similarityPercent(similarity);
-  return score >= 70 ? "high" : score >= 40 ? "medium" : "low";
-};
-
 const listParams = () => ({
   caseId: filters.caseId || undefined,
   reviewStatus: filters.review === "all" ? undefined : filters.review.toUpperCase(),
@@ -112,7 +107,8 @@ onMounted(async () => {
         <select v-model="filters.review">
           <option value="all">전체</option>
           <option value="pending">미판정</option>
-          <option value="approved">확정</option>
+          <option value="kept">보류</option>
+          <option value="confirmed">확정</option>
           <option value="rejected">제외</option>
         </select>
       </label>
@@ -130,14 +126,14 @@ onMounted(async () => {
           <img v-if="objectUrl(item.cropObjectKey)" :src="objectUrl(item.cropObjectKey)" alt="후보 캡처" />
           <span v-else class="image-placeholder large">이미지 없음<br />{{ item.cropObjectKey || "없음" }}</span>
           <strong>{{ item.caseNumber }}</strong>
-          <p>{{ item.cameraCode }} · {{ item.lastDetectedAt }}</p>
+          <p>{{ item.cameraCode }} · {{ formatCandidateDate(item.lastDetectedAt) }}</p>
           <p class="candidate-location">{{ item.cameraName || "카메라 위치 미등록" }} · track {{ item.trackId }}</p>
-          <b :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</b>
+          <b :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</b><span :class="['status-badge', reviewStatusTone(item.reviewStatus)]">{{ reviewStatusLabel(item.reviewStatus) }}</span>
         </button>
       </div>
       <div v-else class="table-scroll">
         <table class="case-table"><thead><tr><th>사건</th><th>CCTV</th><th>카메라</th><th>최근 탐지</th><th>유사도</th><th>상태</th><th></th></tr></thead>
-          <tbody><tr v-for="item in rows" :key="item.id"><td>{{ item.caseNumber }}</td><td>{{ item.cameraCode }}</td><td>{{ item.cameraName || "-" }}</td><td>{{ item.lastDetectedAt }}</td><td :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</td><td>{{ item.reviewStatus }}</td><td><button class="ghost-button" @click="router.push(`/admin/candidates/${item.id}`)">상세 보기</button></td></tr></tbody>
+          <tbody><tr v-for="item in rows" :key="item.id"><td>{{ item.caseNumber }}</td><td>{{ item.cameraCode }}</td><td>{{ item.cameraName || "-" }}</td><td>{{ formatCandidateDate(item.lastDetectedAt) }}</td><td :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</td><td><span :class="['status-badge', reviewStatusTone(item.reviewStatus)]">{{ reviewStatusLabel(item.reviewStatus) }}</span></td><td><button class="ghost-button" @click="router.push(`/admin/candidates/${item.id}`)">상세 보기</button></td></tr></tbody>
         </table>
       </div>
       <BasePagination v-model:page="page" :total-pages="totalPages" :total-count="totalCount" />

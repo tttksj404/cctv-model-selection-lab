@@ -20,6 +20,7 @@ import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobCreateRequest;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.math.BigDecimal;
@@ -45,6 +46,7 @@ class RecordingAnalysisJobServiceTests {
     @Mock private RecordingMapper recordingMapper;
     @Mock private StorageObjectVerifier storageObjectVerifier;
     @Mock private AuditService auditService;
+    @Mock private RecordingAnalysisJobPublisher recordingAnalysisJobPublisher;
 
     private RecordingAnalysisJobService service;
 
@@ -52,7 +54,8 @@ class RecordingAnalysisJobServiceTests {
     void setUp() {
         service = new RecordingAnalysisJobService(
                 analysisJobMapper, missingCaseMapper, caseQueryService,
-                recordingMapper, storageObjectVerifier, auditService);
+                recordingMapper, storageObjectVerifier, auditService,
+                recordingAnalysisJobPublisher);
     }
 
     @Test
