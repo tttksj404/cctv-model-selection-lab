@@ -12,28 +12,24 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeviceSearchTargetService {
 
 	private final MissingCaseMapper mapper;
+	private final RealtimePromptNormalizer promptNormalizer;
 
-	@Autowired
-	public DeviceSearchTargetService(MissingCaseMapper mapper) {
+	public DeviceSearchTargetService(MissingCaseMapper mapper, RealtimePromptNormalizer promptNormalizer) {
 		this.mapper = mapper;
-	}
-
-	public DeviceSearchTargetService(MissingCaseMapper mapper, Object ignoredPromptNormalizer) {
-		this(mapper);
+		this.promptNormalizer = promptNormalizer;
 	}
 
 	public List<SearchTargetResponse> findTargets(MediaServerPrincipal principal) {
 		Map<Long, TargetAccumulator> grouped = new LinkedHashMap<>();
 		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargetCameras(principal.mediaServerId())) {
 			TargetAccumulator target = grouped.computeIfAbsent(row.getCaseId(),
-					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber()));
+					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber(), promptNormalizer));
 			target.addCamera(row);
 			target.updateTimestamp(row.getUpdatedAt());
 		}
@@ -59,21 +55,25 @@ public class DeviceSearchTargetService {
 	private static final class TargetAccumulator {
 		private final Long caseId;
 		private final String caseNumber;
+		private final RealtimePromptNormalizer promptNormalizer;
 		private final Map<Long, SearchConditionTargetResponse> conditions = new LinkedHashMap<>();
 		private final Map<Long, SearchCameraTargetResponse> cameras = new LinkedHashMap<>();
 		private Instant updatedAt;
 
-		private TargetAccumulator(Long caseId, String caseNumber) {
+		private TargetAccumulator(Long caseId, String caseNumber, RealtimePromptNormalizer promptNormalizer) {
 			this.caseId = caseId;
 			this.caseNumber = caseNumber;
+			this.promptNormalizer = promptNormalizer;
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
-			if (row.getEmbeddedPrompt() == null) return;
+			String prompt = promptNormalizer.normalize(row.getPrompt());
+			if (prompt == null || prompt.isBlank()) return;
+			String exclusionPrompt = promptNormalizer.normalize(row.getExclusionPrompt());
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
 					row.getConditionId(),
-					row.getEmbeddedPrompt(),
-					row.getEmbeddedExclusionPrompt(),
+					prompt,
+					exclusionPrompt,
 					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
 					row.getSimilarityThreshold()));
 		}

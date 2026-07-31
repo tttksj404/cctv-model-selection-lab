@@ -206,8 +206,6 @@
         <result property="caseId" column="case_id"/>
         <result property="prompt" column="prompt"/>
         <result property="exclusionPrompt" column="exclusion_prompt"/>
-        <result property="embeddedPrompt" column="embedded_prompt"/>
-        <result property="embeddedExclusionPrompt" column="embedded_exclusion_prompt"/>
         <result property="searchStart" column="search_start"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchEnd" column="search_end"
@@ -221,8 +219,7 @@
     </resultMap>
 
     <select id="findSearchConditions" resultMap="searchConditionResultMap">
-        SELECT id, case_id, prompt, exclusion_prompt, embedded_prompt, embedded_exclusion_prompt,
-               search_start, search_end,
+        SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
                search_area, similarity_threshold, created_at, updated_at
         FROM search_conditions
         WHERE case_id = #{caseId} AND deleted_at IS NULL
@@ -230,8 +227,7 @@
     </select>
 
     <select id="findSearchCondition" resultMap="searchConditionResultMap">
-        SELECT id, case_id, prompt, exclusion_prompt, embedded_prompt, embedded_exclusion_prompt,
-               search_start, search_end,
+        SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
                search_area, similarity_threshold, created_at, updated_at
         FROM search_conditions
         WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
@@ -239,11 +235,10 @@
 
     <insert id="insertSearchCondition" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO search_conditions (
-            case_id, prompt, exclusion_prompt, embedded_prompt, embedded_exclusion_prompt,
-            search_start, search_end, search_area,
+            case_id, prompt, exclusion_prompt, search_start, search_end, search_area,
             similarity_threshold, created_at, updated_at
         ) VALUES (
-            #{caseId}, #{prompt}, #{exclusionPrompt}, #{embeddedPrompt}, #{embeddedExclusionPrompt},
+            #{caseId}, #{prompt}, #{exclusionPrompt},
             #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchArea}, #{similarityThreshold}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
@@ -254,8 +249,6 @@
         UPDATE search_conditions
         SET prompt = #{prompt},
             exclusion_prompt = #{exclusionPrompt},
-            embedded_prompt = #{embeddedPrompt},
-            embedded_exclusion_prompt = #{embeddedExclusionPrompt},
             search_start = #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             search_end = #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             search_area = #{searchArea},
@@ -345,8 +338,6 @@
         <result property="conditionId" column="condition_id"/>
         <result property="prompt" column="prompt"/>
         <result property="exclusionPrompt" column="exclusion_prompt"/>
-        <result property="embeddedPrompt" column="embedded_prompt"/>
-        <result property="embeddedExclusionPrompt" column="embedded_exclusion_prompt"/>
         <result property="searchStart" column="search_start"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchEnd" column="search_end"
@@ -392,8 +383,6 @@
                sc.id AS condition_id,
                sc.prompt,
                sc.exclusion_prompt,
-               sc.embedded_prompt,
-               sc.embedded_exclusion_prompt,
                sc.search_start,
                sc.search_end,
                sc.search_area,
