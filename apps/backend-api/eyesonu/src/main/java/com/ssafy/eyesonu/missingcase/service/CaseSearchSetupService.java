@@ -4,6 +4,7 @@ import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseCameraRow;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
+import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCameraRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCameraResponse;
@@ -11,6 +12,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
@@ -27,12 +29,15 @@ public class CaseSearchSetupService {
 	private final MissingCaseMapper mapper;
 	private final CaseQueryService caseQueryService;
 	private final AuditService auditService;
+	private final SearchTargetEventPublisher searchTargetEventPublisher;
 
 	public CaseSearchSetupService(
-			MissingCaseMapper mapper, CaseQueryService caseQueryService, AuditService auditService) {
+			MissingCaseMapper mapper, CaseQueryService caseQueryService, AuditService auditService,
+			SearchTargetEventPublisher searchTargetEventPublisher) {
 		this.mapper = mapper;
 		this.caseQueryService = caseQueryService;
 		this.auditService = auditService;
+		this.searchTargetEventPublisher = searchTargetEventPublisher;
 	}
 
 	public List<SearchConditionResponse> findConditions(Long caseId) {
@@ -56,6 +61,7 @@ public class CaseSearchSetupService {
 		mapper.insertSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_CREATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", row.getId()));
+		publishIfSearching(caseId);
 		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, row.getId()));
 	}
 
@@ -87,6 +93,7 @@ public class CaseSearchSetupService {
 		mapper.updateSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
+		publishIfSearching(caseId);
 		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, conditionId));
 	}
 
@@ -109,6 +116,7 @@ public class CaseSearchSetupService {
 		mapper.updateSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
+		publishIfSearching(caseId);
 		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, conditionId));
 	}
 
@@ -123,6 +131,7 @@ public class CaseSearchSetupService {
 		mapper.deleteSearchCondition(caseId, conditionId);
 		auditService.recordRequired("SEARCH_CONDITION_DELETED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
+		publishIfSearching(caseId);
 	}
 
 	public List<CaseCameraResponse> findCameras(Long caseId) {
@@ -146,6 +155,7 @@ public class CaseSearchSetupService {
 		mapper.upsertCaseCameras(caseId, requested);
 		auditService.recordRequired("CASE_CAMERAS_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("cameraIds", requested));
+		publishIfSearching(caseId);
 		return findCameras(caseId);
 	}
 
@@ -158,6 +168,7 @@ public class CaseSearchSetupService {
 		}
 		auditService.recordRequired("CASE_CAMERA_REMOVED", adminId, caseId, "CASE", caseId,
 				Map.of("cameraId", cameraId));
+		publishIfSearching(caseId);
 	}
 
 	private SearchConditionRow requireCondition(Long caseId, Long conditionId) {
@@ -176,6 +187,14 @@ public class CaseSearchSetupService {
 		if (caseQueryService.require(caseId).getStatus() == CaseStatus.CLOSED) {
 			throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
 					"A closed case cannot change search settings.");
+		}
+	}
+
+	private void publishIfSearching(Long caseId) {
+		MissingCaseRow row = caseQueryService.require(caseId);
+		if (row.getStatus() == CaseStatus.SEARCHING) {
+			searchTargetEventPublisher.publishAfterCommit(
+					SearchTargetEventPublisher.TARGET_UPDATED, caseId, Instant.now());
 		}
 	}
 

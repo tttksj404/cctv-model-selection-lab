@@ -11,6 +11,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseStateResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseStatusUpdateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,18 +29,21 @@ public class CaseCommandService {
 	private final CaseNumberGenerator caseNumberGenerator;
 	private final CaseRegistrationWriter registrationWriter;
 	private final AuditService auditService;
+	private final SearchTargetEventPublisher searchTargetEventPublisher;
 
 	public CaseCommandService(
 			MissingCaseMapper mapper,
 			CaseRequestValidator validator,
 			CaseNumberGenerator caseNumberGenerator,
 			CaseRegistrationWriter registrationWriter,
-			AuditService auditService) {
+			AuditService auditService,
+			SearchTargetEventPublisher searchTargetEventPublisher) {
 		this.mapper = mapper;
 		this.validator = validator;
 		this.caseNumberGenerator = caseNumberGenerator;
 		this.registrationWriter = registrationWriter;
 		this.auditService = auditService;
+		this.searchTargetEventPublisher = searchTargetEventPublisher;
 	}
 
 	public CaseCreateResponse create(CaseCreateRequest request, Long adminId) {
@@ -97,7 +101,9 @@ public class CaseCommandService {
 				"CASE_STATUS_CHANGED", adminId, caseId, "CASE", caseId,
 				Map.of("status", previous), Map.of("status", request.status()),
 				Map.of("reason", request.reason().trim()));
-		return state(mapper.findById(caseId));
+		MissingCaseRow updated = mapper.findById(caseId);
+		publishSearchTargetEvent(previous, request.status(), updated);
+		return state(updated);
 	}
 
 	@Transactional
@@ -126,7 +132,9 @@ public class CaseCommandService {
 		auditService.recordRequired(
 				"CASE_CLOSED", adminId, caseId, "CASE", caseId,
 				Map.of("status", row.getStatus()), Map.of("status", CaseStatus.CLOSED), detail);
-		return state(mapper.findById(caseId));
+		MissingCaseRow updated = mapper.findById(caseId);
+		publishSearchTargetEvent(row.getStatus(), CaseStatus.CLOSED, updated);
+		return state(updated);
 	}
 
 	private MissingCaseRow requireForUpdate(Long id) {
@@ -145,6 +153,17 @@ public class CaseCommandService {
 
 	private CaseStateResponse state(MissingCaseRow row) {
 		return new CaseStateResponse(row.getId(), row.getStatus(), row.getClosedAt(), row.getUpdatedAt());
+	}
+
+	private void publishSearchTargetEvent(CaseStatus previous, CaseStatus current, MissingCaseRow updated) {
+		if (previous != CaseStatus.SEARCHING && current == CaseStatus.SEARCHING) {
+			searchTargetEventPublisher.publishAfterCommit(
+					SearchTargetEventPublisher.TARGET_UPDATED, updated.getId(), updated.getUpdatedAt());
+		}
+		if (previous == CaseStatus.SEARCHING && current != CaseStatus.SEARCHING) {
+			searchTargetEventPublisher.publishAfterCommit(
+					SearchTargetEventPublisher.TARGET_DISABLED, updated.getId(), updated.getUpdatedAt());
+		}
 	}
 
 	private ApiException validation(String message) {
