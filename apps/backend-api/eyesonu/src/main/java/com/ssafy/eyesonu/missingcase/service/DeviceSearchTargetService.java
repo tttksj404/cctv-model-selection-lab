@@ -69,11 +69,11 @@ public class DeviceSearchTargetService {
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
+			if (row.getEmbeddedPrompt() == null) return;
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
 					row.getConditionId(),
-					row.getEmbeddedPrompt() == null ? row.getPrompt() : row.getEmbeddedPrompt(),
-					row.getEmbeddedExclusionPrompt() == null
-							? row.getExclusionPrompt() : row.getEmbeddedExclusionPrompt(),
+					row.getEmbeddedPrompt(),
+					row.getEmbeddedExclusionPrompt(),
 					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
 					row.getSimilarityThreshold()));
 		}
