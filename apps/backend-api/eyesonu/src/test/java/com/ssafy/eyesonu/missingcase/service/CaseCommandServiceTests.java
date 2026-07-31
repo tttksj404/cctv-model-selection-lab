@@ -128,7 +128,7 @@ class CaseCommandServiceTests {
 				1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "탐색 시작"), 7L).status());
 
 		verify(mapper).updateStatus(1L, CaseStatus.SEARCHING, null);
-		verify(searchTargetEventPublisher).publish(
+		verify(searchTargetEventPublisher).publishAfterCommit(
 				SearchTargetEventPublisher.TARGET_UPDATED, 1L, Instant.parse("2026-07-20T00:00:00Z"));
 	}
 

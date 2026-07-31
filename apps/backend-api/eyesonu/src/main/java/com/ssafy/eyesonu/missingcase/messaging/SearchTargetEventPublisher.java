@@ -1,12 +1,10 @@
 package com.ssafy.eyesonu.missingcase.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,23 +17,30 @@ public class SearchTargetEventPublisher {
 	public static final String TARGET_DISABLED = "SEARCH_TARGET_DISABLED";
 
 	private final RabbitTemplate rabbitTemplate;
-	private final ObjectMapper objectMapper = JsonMapper.builder().findAndAddModules().build();
 
 	public SearchTargetEventPublisher(RabbitTemplate rabbitTemplate) {
 		this.rabbitTemplate = rabbitTemplate;
 	}
 
-	public void publish(String eventType, Long caseId, Instant updatedAt) {
+	public void publishAfterCommit(String eventType, Long caseId, Instant updatedAt) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			throw new IllegalStateException("Search target events must be published inside a transaction");
+		}
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				publish(eventType, caseId, updatedAt);
+			}
+		});
+	}
+
+	private void publish(String eventType, Long caseId, Instant updatedAt) {
 		SearchTargetEvent event = new SearchTargetEvent(
 				UUID.randomUUID().toString(), eventType, caseId, updatedAt, Instant.now());
-		try {
-			rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, objectMapper.writeValueAsString(event), message -> {
-				message.getMessageProperties().setContentType("application/json");
-				message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-				return message;
-			});
-		} catch (JsonProcessingException exception) {
-			throw new IllegalStateException("Search target event could not be serialized", exception);
-		}
+		rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {
+			message.getMessageProperties().setDeliveryMode(
+					org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT);
+			return message;
+		});
 	}
 }

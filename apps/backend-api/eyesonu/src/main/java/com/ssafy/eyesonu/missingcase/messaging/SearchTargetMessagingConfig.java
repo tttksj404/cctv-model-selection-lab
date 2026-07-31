@@ -5,11 +5,23 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SearchTargetMessagingConfig {
+
+	@Bean
+	JsonMapper rabbitJsonMapper() {
+		return JsonMapper.builder().findAndAddModules().build();
+	}
+
+	@Bean
+	JacksonJsonMessageConverter rabbitMessageConverter(JsonMapper rabbitJsonMapper) {
+		return new JacksonJsonMessageConverter(rabbitJsonMapper);
+	}
 
 	@Bean
 	TopicExchange searchTargetExchange() {

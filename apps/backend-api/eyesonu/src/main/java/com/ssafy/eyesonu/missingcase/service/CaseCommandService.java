@@ -155,11 +155,11 @@ public class CaseCommandService {
 
 	private void publishSearchTargetEvent(CaseStatus previous, CaseStatus current, MissingCaseRow updated) {
 		if (previous != CaseStatus.SEARCHING && current == CaseStatus.SEARCHING) {
-			searchTargetEventPublisher.publish(
+			searchTargetEventPublisher.publishAfterCommit(
 					SearchTargetEventPublisher.TARGET_UPDATED, updated.getId(), updated.getUpdatedAt());
 		}
 		if (previous == CaseStatus.SEARCHING && current != CaseStatus.SEARCHING) {
-			searchTargetEventPublisher.publish(
+			searchTargetEventPublisher.publishAfterCommit(
 					SearchTargetEventPublisher.TARGET_DISABLED, updated.getId(), updated.getUpdatedAt());
 		}
 	}
