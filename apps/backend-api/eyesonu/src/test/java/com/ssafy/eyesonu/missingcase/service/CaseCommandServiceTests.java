@@ -210,6 +210,8 @@ class CaseCommandServiceTests {
 
 		verify(mapper, never()).cancelActiveJobs(1L);
 		verify(mapper).updateStatus(eq(1L), eq(CaseStatus.CLOSED), any(Instant.class));
+		verify(searchTargetEventPublisher).publishAfterCommit(
+				SearchTargetEventPublisher.TARGET_DISABLED, 1L, Instant.parse("2026-07-20T00:00:00Z"));
 	}
 
 	@Test

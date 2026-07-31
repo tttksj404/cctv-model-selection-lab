@@ -132,7 +132,9 @@ public class CaseCommandService {
 		auditService.recordRequired(
 				"CASE_CLOSED", adminId, caseId, "CASE", caseId,
 				Map.of("status", row.getStatus()), Map.of("status", CaseStatus.CLOSED), detail);
-		return state(mapper.findById(caseId));
+		MissingCaseRow updated = mapper.findById(caseId);
+		publishSearchTargetEvent(row.getStatus(), CaseStatus.CLOSED, updated);
+		return state(updated);
 	}
 
 	private MissingCaseRow requireForUpdate(Long id) {
