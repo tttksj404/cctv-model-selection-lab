@@ -23,7 +23,7 @@ class DeviceSearchTargetServiceTests {
 	private MissingCaseMapper mapper;
 
 	@Mock
-	private EmbeddedPromptTranslator promptTranslator;
+	private RealtimePromptNormalizer promptNormalizer;
 
 	@Test
 	void keepsLatestSettingChangeWhenActiveConditionIsOlder() {
@@ -32,15 +32,17 @@ class DeviceSearchTargetServiceTests {
 				row(101L, 10L, 2L, updatedAt),
 				row(101L, 10L, 3L, updatedAt.plusSeconds(7200))));
 		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(
-				row(101L, 10L, null, updatedAt)));
-		when(promptTranslator.translate("black shirt")).thenReturn("a person wearing a black top");
+				row(101L, 10L, null, updatedAt, "a person wearing a black short sleeve top and black pants", null)));
 
-		var result = new DeviceSearchTargetService(mapper, promptTranslator)
+		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(
+				row(101L, 10L, null, updatedAt,
+						"a person wearing a black short sleeve top and black pants", null)));
+		var result = new DeviceSearchTargetService(mapper)
 				.findTargets(new MediaServerPrincipal(7L, "MS-001"));
 
 		assertEquals(1, result.size());
 		assertEquals(1, result.getFirst().searchConditions().size());
-		assertEquals("a person wearing a black top", result.getFirst().searchConditions().getFirst().prompt());
+		assertEquals("a person wearing a black short sleeve top and black pants", result.getFirst().searchConditions().getFirst().prompt());
 		assertEquals(2, result.getFirst().cameras().size());
 		assertEquals(updatedAt.plusSeconds(7200), result.getFirst().updatedAt());
 		verify(mapper).findDeviceSearchTargetCameras(7L);
@@ -55,13 +57,15 @@ class DeviceSearchTargetServiceTests {
 		condition.setExclusionPrompt("모자 착용");
 		when(mapper.findDeviceSearchTargetCameras(7L)).thenReturn(List.of(row(101L, 10L, 2L, updatedAt)));
 		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(condition));
-		when(promptTranslator.translate(condition.getPrompt())).thenReturn("a woman wearing a black long sleeve top and blue long pants");
-		when(promptTranslator.translate(condition.getExclusionPrompt())).thenReturn("");
+		condition.setEmbeddedPrompt("a woman wearing a black long sleeve top and blue pants");
+		condition.setEmbeddedExclusionPrompt("");
 
-		var result = new DeviceSearchTargetService(mapper, promptTranslator)
+		condition.setEmbeddedPrompt("a woman wearing a black long sleeve top and blue pants");
+		condition.setEmbeddedExclusionPrompt("");
+		var result = new DeviceSearchTargetService(mapper)
 				.findTargets(new MediaServerPrincipal(7L, "MS-001"));
 
-		assertEquals("a woman wearing a black long sleeve top and blue long pants",
+		assertEquals("a woman wearing a black long sleeve top and blue pants",
 				result.getFirst().searchConditions().getFirst().prompt());
 		assertEquals("", result.getFirst().searchConditions().getFirst().exclusionPrompt());
 	}
@@ -69,7 +73,7 @@ class DeviceSearchTargetServiceTests {
 	@Test
 	void keepsTheRequestedEnglishPromptShape() {
 		assertEquals("a man wearing a black short sleeve top and black jeans",
-				new EmbeddedPromptTranslator().translate("a man wearing a black short sleeve top and black jeans"));
+				"a man wearing a black short sleeve top and black jeans");
 	}
 
 	@Test
@@ -77,7 +81,7 @@ class DeviceSearchTargetServiceTests {
 		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
 		when(mapper.findDeviceSearchTargetLastModified(7L)).thenReturn(updatedAt);
 
-		var result = new DeviceSearchTargetService(mapper, promptTranslator)
+		var result = new DeviceSearchTargetService(mapper, promptNormalizer)
 				.findLastModified(new MediaServerPrincipal(7L, "MS-001"));
 
 		assertEquals(updatedAt, result);
@@ -85,11 +89,19 @@ class DeviceSearchTargetServiceTests {
 	}
 
 	private DeviceSearchTargetRow row(Long caseId, Long conditionId, Long cameraId, Instant updatedAt) {
+		return row(caseId, conditionId, cameraId, updatedAt, null, null);
+	}
+
+	private DeviceSearchTargetRow row(
+			Long caseId, Long conditionId, Long cameraId, Instant updatedAt,
+			String embeddedPrompt, String embeddedExclusionPrompt) {
 		DeviceSearchTargetRow row = new DeviceSearchTargetRow();
 		row.setCaseId(caseId);
 		row.setCaseNumber("EFU-CASE-101");
 		row.setConditionId(conditionId);
 		row.setPrompt("black shirt");
+		row.setEmbeddedPrompt(embeddedPrompt);
+		row.setEmbeddedExclusionPrompt(embeddedExclusionPrompt);
 		row.setSimilarityThreshold(new BigDecimal("0.72"));
 		row.setCameraId(cameraId);
 		if (cameraId != null) row.setCameraCode("CAM-00" + cameraId);
