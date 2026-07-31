@@ -143,7 +143,7 @@ class DeviceKeyAuthenticationApiTests {
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
 
-		mockMvc.perform(post("/api/v1/device/candidate-events")
+		mockMvc.perform(post("/api/v1/device/__security-probe-for-not-found__")
 						.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY))
 				.andExpect(status().isNotFound());
 	}
