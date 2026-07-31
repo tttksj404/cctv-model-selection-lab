@@ -52,6 +52,7 @@ class RecordingAnalysisJobPublisherTests {
     void marksPublishedOnlyAfterBrokerAckWithoutReturn() {
         RecordingAnalysisOutbox outbox = readyOutbox();
         claim(outbox);
+        stubLeaseRenewal(1);
         completeConfirm(true, null, null);
 
         new RecordingAnalysisJobPublisher(
@@ -70,6 +71,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void schedulesRetryWhenBrokerNacksMessage() {
         claim(readyOutbox());
+        stubLeaseRenewal(1);
         completeConfirm(false, "exchange unavailable", null);
 
         new RecordingAnalysisJobPublisher(
@@ -83,6 +85,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void schedulesRetryWhenMessageIsReturnedAsUnroutable() {
         claim(readyOutbox());
+        stubLeaseRenewal(1);
         ReturnedMessage returned = new ReturnedMessage(
                 new Message(new byte[0]), 312, "NO_ROUTE",
                 RecordingAnalysisJobPublisher.EXCHANGE,
@@ -99,6 +102,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void schedulesRetryWhenPublishingThrows() {
         claim(readyOutbox());
+        stubLeaseRenewal(1);
         doThrow(new IllegalStateException("RabbitMQ unavailable"))
                 .when(rabbitTemplate).convertAndSend(
                         anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
@@ -114,7 +118,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void renewsLeaseWhileBrokerConfirmationIsSlow() {
         claim(readyOutbox());
-        when(outboxMapper.renewLease(any(), anyString(), any(Instant.class))).thenReturn(1);
+        stubLeaseRenewal(1);
         doAnswer(invocation -> {
             Thread.sleep(1200L);
             CorrelationData correlationData = invocation.getArgument(4);
@@ -134,19 +138,14 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void stopsPublishingWhenHeartbeatLosesLeaseOwnership() {
         claim(readyOutbox());
-        when(outboxMapper.renewLease(any(), anyString(), any(Instant.class))).thenReturn(0);
-        doAnswer(invocation -> {
-            Thread.sleep(1200L);
-            CorrelationData correlationData = invocation.getArgument(4);
-            correlationData.getFuture().complete(new CorrelationData.Confirm(true, null));
-            return null;
-        }).when(rabbitTemplate).convertAndSend(
-                anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
-                any(MessagePostProcessor.class), any(CorrelationData.class));
+        stubLeaseRenewal(0);
 
         new RecordingAnalysisJobPublisher(
                 rabbitTemplate, outboxMapper, outboxClaimer, 3).publishPending();
 
+        verify(rabbitTemplate, never()).convertAndSend(
+                anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
+                any(MessagePostProcessor.class), any(CorrelationData.class));
         verify(outboxMapper, never()).markPublished(any(), anyString(), any());
         verify(outboxMapper, never()).markFailed(any(), anyString(), anyString());
     }
@@ -166,6 +165,10 @@ class RecordingAnalysisJobPublisherTests {
         when(outboxClaimer.claimNext()).thenReturn(
                 Optional.of(new ClaimedRecordingAnalysisOutbox(outbox, "claim-1")),
                 Optional.empty());
+    }
+
+    private void stubLeaseRenewal(int result) {
+        when(outboxMapper.renewLease(any(), anyString(), any(Instant.class))).thenReturn(result);
     }
 
     private RecordingAnalysisOutbox readyOutbox() {

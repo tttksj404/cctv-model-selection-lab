@@ -75,6 +75,7 @@ public class RecordingAnalysisJobPublisher {
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
                         outbox.getCaseId(), outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());
+                ensureLeaseOwned(leaseOwned);
                 rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {
                     message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return message;
@@ -103,6 +104,10 @@ public class RecordingAnalysisJobPublisher {
             RecordingAnalysisOutbox outbox,
             String claimToken,
             AtomicBoolean leaseOwned) {
+        renewLease(outbox.getId(), claimToken, leaseOwned);
+        if (!leaseOwned.get()) {
+            return heartbeatExecutor.schedule(() -> { }, 0, TimeUnit.MILLISECONDS);
+        }
         long intervalSeconds = Math.max(1L, claimLeaseSeconds / 3L);
         return heartbeatExecutor.scheduleAtFixedRate(
                 () -> renewLease(outbox.getId(), claimToken, leaseOwned),
