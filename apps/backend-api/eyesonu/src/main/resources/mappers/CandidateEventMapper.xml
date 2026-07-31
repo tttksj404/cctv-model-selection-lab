@@ -61,6 +61,7 @@
     <insert id="insertEvent" useGeneratedKeys="true" keyProperty="event.id">
         INSERT INTO candidate_events (event_id, case_id, camera_id, detected_at, frame_object_key)
         VALUES (#{event.eventId}, #{event.caseId}, #{event.cameraId}, #{event.detectedAt}, #{event.frameObjectKey})
+        ON DUPLICATE KEY UPDATE id = id
     </insert>
     <select id="findCandidateForUpdate" resultMap="candidateMap">
         SELECT id, case_id, camera_id, track_id, first_detected_at, last_detected_at,
