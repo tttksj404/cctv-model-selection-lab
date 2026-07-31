@@ -7,4 +7,9 @@ import org.apache.ibatis.annotations.Mapper;
 public interface AnalysisJobMapper {
 
     int insert(AnalysisJob job);
+
+    AnalysisJob findActiveByTarget(
+            Long caseId, Long searchConditionId, Long recordingId);
+
+    AnalysisJob findById(Long caseId, Long jobId);
 }

@@ -43,4 +43,22 @@
             #{searchAreaSnapshot}, #{similarityThresholdSnapshot}, 0, UTC_TIMESTAMP(6)
         )
     </insert>
+
+    <select id="findActiveByTarget" resultMap="analysisJobResultMap">
+        SELECT *
+        FROM analysis_jobs
+        WHERE case_id = #{caseId}
+          AND search_condition_id = #{searchConditionId}
+          AND recording_id = #{recordingId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status IN ('QUEUED', 'RUNNING')
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <select id="findById" resultMap="analysisJobResultMap">
+        SELECT *
+        FROM analysis_jobs
+        WHERE case_id = #{caseId} AND id = #{jobId}
+    </select>
 </mapper>
