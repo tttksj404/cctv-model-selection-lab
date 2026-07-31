@@ -15,12 +15,15 @@ import org.testcontainers.utility.DockerImageName;
 		matchIfMissing = true)
 public class TestDatabaseConfiguration {
 
-	@Bean
+	private static final MySQLContainer<?> MYSQL_CONTAINER = new MySQLContainer<>(
+			DockerImageName.parse("mysql:8.0.46"))
+			.withDatabaseName("eyesonu_test")
+			.withUsername("eyesonu")
+			.withPassword("eyesonu_test_password");
+
+	@Bean(destroyMethod = "stop")
 	@ServiceConnection
 	MySQLContainer<?> mysqlContainer() {
-		return new MySQLContainer<>(DockerImageName.parse("mysql:8.0.46"))
-				.withDatabaseName("eyesonu_test")
-				.withUsername("eyesonu")
-				.withPassword("eyesonu_test_password");
+		return MYSQL_CONTAINER;
 	}
 }
