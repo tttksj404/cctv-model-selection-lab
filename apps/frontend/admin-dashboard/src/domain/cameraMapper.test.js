@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildCameraPlaybackUrl, mapCamera, toUiCameraStatus } from "./cameraMapper";
 
 describe("cameraMapper", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("maps backend camera metadata without inventing unavailable values", () => {
     expect(mapCamera({
       id: 1,
@@ -40,6 +44,30 @@ describe("cameraMapper", () => {
     expect(url.searchParams.get("autoplay")).toBe("true");
     expect(url.searchParams.get("controls")).toBe("false");
     expect(url.searchParams.get("playsinline")).toBe("true");
+  });
+
+  it("builds a same-origin proxy URL without a duplicate slash", () => {
+    const url = new URL(
+      buildCameraPlaybackUrl("camera/01", "/media-stream/"),
+      "https://admin-dev.example.com"
+    );
+
+    expect(url.origin).toBe("https://admin-dev.example.com");
+    expect(url.pathname).toBe("/media-stream/camera%2F01");
+    expect(url.searchParams.get("autoplay")).toBe("true");
+    expect(url.searchParams.get("controls")).toBe("false");
+    expect(url.searchParams.get("muted")).toBe("true");
+    expect(url.searchParams.get("playsinline")).toBe("true");
+    expect(url.searchParams.get("disablepictureinpicture")).toBe("true");
+  });
+
+  it("falls back to the default media URL when the environment value is blank", () => {
+    vi.stubEnv("VITE_MEDIA_STREAM_BASE_URL", "   ");
+
+    const url = new URL(buildCameraPlaybackUrl("camera-01"));
+
+    expect(url.origin).toBe("http://70.12.108.93:8888");
+    expect(url.pathname).toBe("/camera-01");
   });
 
   it("rejects missing camera codes", () => {

@@ -91,6 +91,8 @@ services:
     profiles: ["dev"]
     build:
       context: ../apps/frontend/admin-dashboard
+      args:
+        VITE_MEDIA_STREAM_BASE_URL: /media-stream
     image: eyesonu/admin-dev:${IMAGE_TAG:-latest}
     restart: unless-stopped
     expose:
