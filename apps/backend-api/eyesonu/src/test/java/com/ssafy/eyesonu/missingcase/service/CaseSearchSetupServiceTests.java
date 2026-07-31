@@ -17,6 +17,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseCameraRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -44,11 +45,15 @@ class CaseSearchSetupServiceTests {
 	@Mock
 	private AuditService auditService;
 
+	@Mock
+	private SearchTargetEventPublisher searchTargetEventPublisher;
+
 	private CaseSearchSetupService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new CaseSearchSetupService(mapper, caseQueryService, auditService);
+		service = new CaseSearchSetupService(
+				mapper, caseQueryService, auditService, searchTargetEventPublisher);
 		when(caseQueryService.require(CASE_ID)).thenReturn(openCase());
 	}
 
