@@ -1190,6 +1190,7 @@ Cache-Control: private, no-cache, must-revalidate
 
 - `updatedAt`은 해당 사건의 검색 조건·검색 카메라 변경 여부를 확인하기 위한 최신 수정 시각이다. 활성 데이터뿐 아니라 비활성화·삭제된 검색 대상의 마지막 수정 시각도 반영될 수 있다.
 - 모든 시간 필드는 JSON에서 UTC `Z`로 반환한다.
+- 실시간 임베디드 응답의 `prompt`, `exclusionPrompt`는 무료 번역 API를 사용하지 않고 고정 정규화한다. 허용 색상은 `black`, `blue`, `brown`, `green`, `gray`, `orange`, `pink`, `purple`, `red`, `white`, `yellow`이며 상의 형태는 `short sleeve` 또는 `long sleeve`만 사용한다. `prompt`는 반드시 `성별 → 상의 색 → 상의 형태 → 하의 색` 순서로 전달한다. 예: `남성, 검은색 반팔 상의와 검은색 청바지` → `a man wearing a black short sleeve top and black pants`. 녹화영상 분석은 기존 번역기를 사용한다.
 - `caseId`, `caseNumber`, 검색 조건과 카메라 외 신고자 개인정보·관리자 메모·Device Key·내부 저장소 정보는 반환하지 않는다.
 - 사건에 활성 검색 조건이 없으면 해당 사건은 응답에서 제외한다.
 - 인증된 미디어 서버가 소유하지 않은 카메라는 응답에 포함하지 않는다.
