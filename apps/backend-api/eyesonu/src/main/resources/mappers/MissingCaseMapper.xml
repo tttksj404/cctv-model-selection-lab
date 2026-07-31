@@ -285,6 +285,16 @@
         ORDER BY cc.search_enabled DESC, cc.selected_at DESC, cc.id DESC
     </select>
 
+    <select id="existsActiveCaseCamera" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM case_cameras
+            WHERE case_id = #{caseId}
+              AND camera_id = #{cameraId}
+              AND search_enabled = TRUE
+        )
+    </select>
+
     <select id="findExistingCameraIds" resultType="long">
         SELECT id
         FROM cameras

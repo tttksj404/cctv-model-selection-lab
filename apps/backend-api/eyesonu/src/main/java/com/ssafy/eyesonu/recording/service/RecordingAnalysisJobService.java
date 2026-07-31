@@ -2,9 +2,11 @@ package com.ssafy.eyesonu.recording.service;
 
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.missingcase.domain.CaseCameraRow;
+import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
+import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.service.CaseQueryService;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobCreateRequest;
@@ -24,16 +26,19 @@ public class RecordingAnalysisJobService {
 
     private final AnalysisJobMapper analysisJobMapper;
     private final MissingCaseMapper missingCaseMapper;
+    private final CaseQueryService caseQueryService;
     private final RecordingMapper recordingMapper;
     private final AuditService auditService;
 
     public RecordingAnalysisJobService(
             AnalysisJobMapper analysisJobMapper,
             MissingCaseMapper missingCaseMapper,
+            CaseQueryService caseQueryService,
             RecordingMapper recordingMapper,
             AuditService auditService) {
         this.analysisJobMapper = analysisJobMapper;
         this.missingCaseMapper = missingCaseMapper;
+        this.caseQueryService = caseQueryService;
         this.recordingMapper = recordingMapper;
         this.auditService = auditService;
     }
@@ -41,6 +46,12 @@ public class RecordingAnalysisJobService {
     @Transactional
     public RecordingAnalysisJobResponse create(
             Long caseId, RecordingAnalysisJobCreateRequest request, Long adminId) {
+        MissingCaseRow missingCase = caseQueryService.require(caseId);
+        if (missingCase.getStatus() == CaseStatus.CLOSED) {
+            throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                    "A closed case cannot register a recording analysis job.");
+        }
+
         SearchConditionRow condition = missingCaseMapper.findSearchCondition(caseId, request.conditionId());
         if (condition == null) {
             throw notFound("Search condition was not found.");
@@ -51,9 +62,7 @@ public class RecordingAnalysisJobService {
             throw notFound("Recording was not found.");
         }
 
-        boolean assigned = missingCaseMapper.findCaseCameras(caseId).stream()
-                .anyMatch(camera -> camera.isSearchEnabled() && camera.getCameraId().equals(recording.getCameraId()));
-        if (!assigned) {
+        if (!missingCaseMapper.existsActiveCaseCamera(caseId, recording.getCameraId())) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
                     "The recording camera is not enabled for this case.");
         }
