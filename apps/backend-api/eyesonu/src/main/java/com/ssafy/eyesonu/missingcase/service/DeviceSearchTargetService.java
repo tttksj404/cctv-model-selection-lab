@@ -18,16 +18,18 @@ import org.springframework.stereotype.Service;
 public class DeviceSearchTargetService {
 
 	private final MissingCaseMapper mapper;
+	private final EmbeddedPromptTranslator promptTranslator;
 
-	public DeviceSearchTargetService(MissingCaseMapper mapper) {
+	public DeviceSearchTargetService(MissingCaseMapper mapper, EmbeddedPromptTranslator promptTranslator) {
 		this.mapper = mapper;
+		this.promptTranslator = promptTranslator;
 	}
 
 	public List<SearchTargetResponse> findTargets(MediaServerPrincipal principal) {
 		Map<Long, TargetAccumulator> grouped = new LinkedHashMap<>();
 		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargetCameras(principal.mediaServerId())) {
 			TargetAccumulator target = grouped.computeIfAbsent(row.getCaseId(),
-					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber()));
+					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber(), promptTranslator));
 			target.addCamera(row);
 			target.updateTimestamp(row.getUpdatedAt());
 		}
@@ -53,18 +55,21 @@ public class DeviceSearchTargetService {
 	private static final class TargetAccumulator {
 		private final Long caseId;
 		private final String caseNumber;
+		private final EmbeddedPromptTranslator promptTranslator;
 		private final Map<Long, SearchConditionTargetResponse> conditions = new LinkedHashMap<>();
 		private final Map<Long, SearchCameraTargetResponse> cameras = new LinkedHashMap<>();
 		private Instant updatedAt;
 
-		private TargetAccumulator(Long caseId, String caseNumber) {
+		private TargetAccumulator(Long caseId, String caseNumber, EmbeddedPromptTranslator promptTranslator) {
 			this.caseId = caseId;
 			this.caseNumber = caseNumber;
+			this.promptTranslator = promptTranslator;
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
-					row.getConditionId(), row.getPrompt(), row.getExclusionPrompt(),
+					row.getConditionId(), promptTranslator.translate(row.getPrompt()),
+					promptTranslator.translate(row.getExclusionPrompt()),
 					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
 					row.getSimilarityThreshold()));
 		}
