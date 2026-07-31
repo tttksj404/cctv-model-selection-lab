@@ -44,8 +44,26 @@
         )
     </insert>
 
+    <sql id="analysisJobColumns">
+        id, case_id, search_condition_id, recording_id, job_type, status,
+        prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
+        search_end_snapshot, search_area_snapshot, similarity_threshold_snapshot,
+        retry_count, error_message, requested_at, started_at, completed_at
+    </sql>
+
+    <update id="claimQueued">
+        UPDATE analysis_jobs
+        SET status = 'RUNNING',
+            started_at = UTC_TIMESTAMP(6),
+            completed_at = NULL,
+            error_message = NULL
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status = 'QUEUED'
+    </update>
+
     <select id="findActiveByTarget" resultMap="analysisJobResultMap">
-        SELECT *
+        SELECT <include refid="analysisJobColumns"/>
         FROM analysis_jobs
         WHERE case_id = #{caseId}
           AND search_condition_id = #{searchConditionId}
@@ -57,10 +75,17 @@
     </select>
 
     <select id="findById" resultMap="analysisJobResultMap">
-        SELECT *
+        SELECT <include refid="analysisJobColumns"/>
         FROM analysis_jobs
         WHERE case_id = #{caseId}
           AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+    </select>
+
+    <select id="findRecordingAnalysisById" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 </mapper>
