@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.missingcase.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,24 +23,57 @@ class DeviceSearchTargetServiceTests {
 	@Mock
 	private MissingCaseMapper mapper;
 
-	@Test
-	void keepsLatestSettingChangeWhenActiveConditionIsOlder() {
-		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
-		when(mapper.findDeviceSearchTargetCameras(7L)).thenReturn(List.of(
-				row(101L, 10L, 2L, updatedAt),
-				row(101L, 10L, 3L, updatedAt.plusSeconds(7200))));
-		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(
-				row(101L, 10L, null, updatedAt)));
+	@Mock
+	private RealtimePromptNormalizer promptNormalizer;
 
-		var result = new DeviceSearchTargetService(mapper)
+	@Test
+	void appliesRealtimeNormalizerWhenBuildingDeviceResponse() {
+		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
+		DeviceSearchTargetRow condition = row(101L, 10L, null, updatedAt);
+		condition.setPrompt("남성, 검은색 반팔 상의와 파란색 하의");
+		condition.setExclusionPrompt("제외 조건");
+		when(mapper.findDeviceSearchTargetCameras(7L)).thenReturn(List.of(row(101L, 10L, 2L, updatedAt)));
+		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(condition));
+		when(promptNormalizer.normalize(condition.getPrompt()))
+				.thenReturn("a man wearing a black short sleeve top and blue pants");
+		when(promptNormalizer.normalize(condition.getExclusionPrompt())).thenReturn("");
+
+		var result = new DeviceSearchTargetService(mapper, promptNormalizer)
 				.findTargets(new MediaServerPrincipal(7L, "MS-001"));
 
-		assertEquals(1, result.size());
-		assertEquals(1, result.getFirst().searchConditions().size());
-		assertEquals(2, result.getFirst().cameras().size());
-		assertEquals(updatedAt.plusSeconds(7200), result.getFirst().updatedAt());
-		verify(mapper).findDeviceSearchTargetCameras(7L);
-		verify(mapper).findDeviceSearchTargetConditions(Set.of(101L));
+		assertEquals("a man wearing a black short sleeve top and blue pants",
+				result.getFirst().searchConditions().getFirst().prompt());
+		assertEquals("", result.getFirst().searchConditions().getFirst().exclusionPrompt());
+		verify(promptNormalizer).normalize(condition.getPrompt());
+		verify(promptNormalizer).normalize(condition.getExclusionPrompt());
+	}
+
+	@Test
+	void normalizesOnlyTheRealtimeContract() {
+		RealtimePromptNormalizer normalizer = new RealtimePromptNormalizer();
+
+		assertEquals("a man wearing a black short sleeve top and black pants",
+				normalizer.normalize("a man wearing a black short sleeve top and black jeans"));
+		assertEquals("", normalizer.normalize("a person wearing a khaki windbreaker"));
+		assertEquals("", normalizer.normalize("a man wearing a black short sleeve top"));
+		assertEquals("a man wearing a black short sleeve top and blue pants",
+				normalizer.normalize("남성, black 반팔 상의와 blue 하의"));
+	}
+
+	@Test
+	void excludesConditionWhenMainPromptNormalizationFails() {
+		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
+		DeviceSearchTargetRow condition = row(101L, 10L, null, updatedAt);
+		condition.setPrompt("a person wearing a khaki windbreaker");
+		when(mapper.findDeviceSearchTargetCameras(7L)).thenReturn(List.of(row(101L, 10L, 2L, updatedAt)));
+		when(mapper.findDeviceSearchTargetConditions(Set.of(101L))).thenReturn(List.of(condition));
+		when(promptNormalizer.normalize(condition.getPrompt())).thenReturn("");
+
+		var result = new DeviceSearchTargetService(mapper, promptNormalizer)
+				.findTargets(new MediaServerPrincipal(7L, "MS-001"));
+
+		assertTrue(result.isEmpty());
+		verify(promptNormalizer).normalize(condition.getPrompt());
 	}
 
 	@Test
@@ -47,7 +81,7 @@ class DeviceSearchTargetServiceTests {
 		Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
 		when(mapper.findDeviceSearchTargetLastModified(7L)).thenReturn(updatedAt);
 
-		var result = new DeviceSearchTargetService(mapper)
+		var result = new DeviceSearchTargetService(mapper, promptNormalizer)
 				.findLastModified(new MediaServerPrincipal(7L, "MS-001"));
 
 		assertEquals(updatedAt, result);
