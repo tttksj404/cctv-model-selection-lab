@@ -2,12 +2,13 @@ package com.ssafy.eyesonu.auth.bootstrap;
 
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper.AdminInsertCommand;
+import com.ssafy.eyesonu.admin.domain.AdminRole;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.auth.config.AuthProperties;
 import com.ssafy.eyesonu.auth.security.AdminAuthenticationProvider;
 import com.ssafy.eyesonu.auth.service.PasswordPolicy;
+import com.ssafy.eyesonu.auth.service.AdminLoginIdPolicy;
 import java.util.Map;
-import java.util.regex.Pattern;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,8 +20,6 @@ import org.springframework.util.StringUtils;
 @Component
 @ConditionalOnProperty(prefix = "eyesonu.auth.bootstrap", name = "enabled", havingValue = "true")
 public class AdminBootstrapInitializer implements ApplicationRunner {
-
-	private static final Pattern LOGIN_ID_PATTERN = Pattern.compile("[a-z0-9._-]{4,50}");
 
 	private final AdminMapper adminMapper;
 	private final PasswordEncoder passwordEncoder;
@@ -48,7 +47,7 @@ public class AdminBootstrapInitializer implements ApplicationRunner {
 		AuthProperties.Bootstrap bootstrap = properties.getBootstrap();
 		String loginId = AdminAuthenticationProvider.normalizeLoginId(bootstrap.getLoginId());
 		String name = bootstrap.getName() == null ? "" : bootstrap.getName().trim();
-		if (!LOGIN_ID_PATTERN.matcher(loginId).matches()
+		if (!AdminLoginIdPolicy.isValid(loginId)
 				|| !StringUtils.hasText(name)
 				|| name.length() > 50) {
 			throw new IllegalStateException("Valid administrator bootstrap values are required");
@@ -56,7 +55,11 @@ public class AdminBootstrapInitializer implements ApplicationRunner {
 		PasswordPolicy.validate(bootstrap.getPassword());
 
 		AdminInsertCommand command = new AdminInsertCommand(
-				loginId, passwordEncoder.encode(bootstrap.getPassword()), name);
+				loginId,
+				passwordEncoder.encode(bootstrap.getPassword()),
+				name,
+				AdminRole.SUPER_ADMIN,
+				true);
 		adminMapper.insert(command);
 		auditService.recordRequired(
 				"ADMIN_BOOTSTRAP",

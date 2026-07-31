@@ -24,10 +24,18 @@ export const authGuard = async (to) => {
   }
 
   if (to.path === "/login" && auth.isAuthenticated) {
-    return safeAdminRedirect(to.query.redirect);
+    const redirect = safeAdminRedirect(to.query.redirect);
+    if (!auth.isSuperAdmin && redirect.split("?")[0] === "/admin/users") {
+      return "/admin/dashboard";
+    }
+    return redirect;
   }
 
   if (!to.meta.public && !auth.isAuthenticated) {
     return { path: "/login", query: { redirect: to.fullPath } };
+  }
+
+  if (to.meta.requiresSuperAdmin && !auth.isSuperAdmin) {
+    return "/admin/dashboard";
   }
 };
