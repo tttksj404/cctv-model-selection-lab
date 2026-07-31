@@ -3,7 +3,7 @@ import { Bar } from "vue-chartjs";
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from "chart.js";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getCases, getChartData, getDashboardSummary } from "../api/mockApi";
+import { getCases, getChartData, getDashboardSummary } from "../api/dashboardApi";
 import BasePagination from "../components/common/BasePagination.vue";
 import StateBlock from "../components/common/StateBlock.vue";
 import StatusBadge from "../components/common/StatusBadge.vue";
@@ -16,9 +16,11 @@ const cases = ref([]);
 const chart = ref([]);
 const chartRange = ref("7d");
 const loading = ref(true);
+const error = ref("");
 const page = ref(1);
-const totalPages = computed(() => Math.max(1, Math.ceil(cases.value.length / 10)));
-const visibleCases = computed(() => cases.value.slice((page.value - 1) * 10, page.value * 10));
+const totalPages = ref(1);
+const totalCount = ref(0);
+const visibleCases = computed(() => cases.value);
 const chartData = computed(() => ({
   labels: chart.value.map((item) => item.date),
   datasets: [
@@ -27,19 +29,59 @@ const chartData = computed(() => ({
   ]
 }));
 
-onMounted(async () => {
-  [summary.value, cases.value, chart.value] = await Promise.all([getDashboardSummary(), getCases(), getChartData(chartRange.value)]);
-  loading.value = false;
-});
+const applyCasePage = (result) => {
+  cases.value = result.data || [];
+  totalPages.value = Math.max(1, result.meta?.totalPages || 0);
+  totalCount.value = result.meta?.totalElements || 0;
+};
+
+const load = async () => {
+  loading.value = true;
+  error.value = "";
+
+  try {
+    const [summaryResult, caseResult, chartResult] = await Promise.all([
+      getDashboardSummary(),
+      getCases({ page: page.value - 1, size: 10 }),
+      getChartData(chartRange.value)
+    ]);
+    summary.value = summaryResult;
+    applyCasePage(caseResult);
+    chart.value = chartResult;
+  } catch (cause) {
+    summary.value = [];
+    cases.value = [];
+    chart.value = [];
+    error.value = cause?.message || "대시보드 데이터를 불러오지 못했습니다.";
+  } finally {
+    loading.value = false;
+  }
+};
+
+const changePage = async () => {
+  if (loading.value) return;
+  try {
+    applyCasePage(await getCases({ page: page.value - 1, size: 10 }));
+  } catch (cause) {
+    error.value = cause?.message || "최근 사건 목록을 불러오지 못했습니다.";
+  }
+};
+
+onMounted(load);
 
 const changeChartRange = async (range) => {
+  if (chartRange.value === range) return;
   chartRange.value = range;
-  chart.value = await getChartData(range);
+  try {
+    chart.value = await getChartData(range);
+  } catch (cause) {
+    error.value = cause?.message || "차트 데이터를 불러오지 못했습니다.";
+  }
 };
 </script>
 
 <template>
-  <StateBlock :loading="loading">
+  <StateBlock :loading="loading" :error="error" @retry="load">
     <section class="summary-grid">
       <SummaryCard v-for="item in summary" :key="item.id" :item="item" />
     </section>
@@ -66,7 +108,7 @@ const changeChartRange = async (range) => {
             </tbody>
           </table>
         </div>
-        <BasePagination v-model:page="page" :total-pages="totalPages" :total-count="cases.length" />
+        <BasePagination v-model:page="page" :total-pages="totalPages" :total-count="totalCount" @update:page="changePage" />
       </div>
     </section>
   </StateBlock>
