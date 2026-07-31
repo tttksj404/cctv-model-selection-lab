@@ -55,6 +55,9 @@
         INNER JOIN cases cs ON cs.id = c.case_id
         INNER JOIN cameras cam ON cam.id = c.camera_id
     </sql>
+    <select id="findLastModified" resultType="java.time.Instant">
+        SELECT MAX(updated_at) FROM candidates
+    </select>
     <select id="countCandidates" resultType="long">
         SELECT COUNT(*) FROM candidates c
         <include refid="filters"/>
