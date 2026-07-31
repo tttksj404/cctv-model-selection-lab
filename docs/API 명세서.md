@@ -818,7 +818,7 @@ Device Key 교체 응답은 등록 응답과 같은 구조로 현재 미디어 �
 
 - `mediaServerId`는 카메라의 Heartbeat, 녹화와 후보 이벤트 전송을 담당하는 미디어 서버 ID이며 필수다.
 - 카메라 응답에는 소속 미디어 서버의 `id`, `serverCode`, `name`을 포함한다.
-- `cameraCode`는 외부 식별자이며 전체 카메라에서 고유하다. Device API는 `cameraCode`를, 관리자 API와 DB 관계는 숫자 `cameraId`를 사용한다.
+- `cameraCode`는 영문, 숫자, 마침표(`.`), 밑줄(`_`), 하이픈(`-`)만 사용하는 외부 식별자이며 전체 카메라에서 고유하다. Device API와 MediaMTX 경로는 `cameraCode`를, 관리자 API와 DB 관계는 숫자 `cameraId`를 사용한다.
 - 수정 API에서 `mediaServerId`를 변경하면 기존 서버의 접근 권한은 즉시 사라지고 새 서버에 권한이 부여된다. 소속 변경은 감사 로그에 기록한다.
 - `rtspUrl`은 생성·수정 요청에서만 받고 조회 응답에는 포함하지 않는다.
 - 최초 카메라 상태는 `OFFLINE`이다.
