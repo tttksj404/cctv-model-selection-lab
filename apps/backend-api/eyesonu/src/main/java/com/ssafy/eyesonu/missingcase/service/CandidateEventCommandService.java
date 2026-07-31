@@ -70,7 +70,15 @@ public class CandidateEventCommandService {
         event.setCameraId(camera.id());
         event.setDetectedAt(request.detectedAt().toInstant());
         event.setFrameObjectKey(request.frameObjectKey());
-        mapper.insertEvent(event);
+        int inserted = mapper.insertEvent(event);
+        if (inserted == 0) {
+            CandidateEvent concurrent = mapper.findEventByEventId(request.eventId());
+            if (concurrent == null) {
+                throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "EVENT_ID_UPSERT_FAILED", "Event could not be loaded after upsert");
+            }
+            return duplicateResult(concurrent, request, camera.id());
+        }
 
         List<Integer> processingOrder = new ArrayList<>();
         for (int index = 0; index < request.detections().size(); index++) {

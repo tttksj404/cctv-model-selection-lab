@@ -14,7 +14,7 @@ public interface CandidateEventMapper {
     CandidateEvent findEventByEventId(@Param("eventId") String eventId);
     List<CandidateEventDetection> findDetectionsByEventId(@Param("eventId") String eventId);
     boolean existsActiveCaseCamera(@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
-    void insertEvent(@Param("event") CandidateEvent event);
+    int insertEvent(@Param("event") CandidateEvent event);
     CandidateAggregate findCandidateForUpdate(@Param("caseId") Long caseId,
                                                @Param("cameraId") Long cameraId,
                                                @Param("trackId") String trackId);
