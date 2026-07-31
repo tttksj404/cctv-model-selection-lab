@@ -84,7 +84,7 @@
 | `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key`, `If-None-Match` | `200`, `304`, `401`, `403` |
 | `GET` | `/admin/recordings` | 녹화 목록 | `cameraId`, 촬영 구간, 페이지·정렬 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세와 재생 URL | `recordingId` | `200`, `404`, `503` |
-| `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, `Idempotency-Key`, 사건, 카메라, 탐지 시각, 유사도, 이미지 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `429` |
+| `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, 사건, 카메라, eventId, 탐지 시각, detections 배열 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `422`, `429` |
 
 ### 2.4 분석 작업·감사 로그
 
@@ -108,7 +108,7 @@
 | `X-XSRF-TOKEN: {csrfToken}` | 조건부 | 로그인과 관리자 상태 변경 API 호출 시 `XSRF-TOKEN` 쿠키와 같은 값을 전송 |
 | `X-Device-Key: msk_{deviceKeyId}.{randomSecret}` | 조건부 | 모든 `/device/**` API 호출 시 필수. `deviceKeyId`는 16자리, `randomSecret`은 64자리 소문자 16진수 |
 | `Content-Type` | 필수 | `application/json` 또는 `multipart/form-data` |
-| `Idempotency-Key` | 조건부 | 녹화 메타데이터와 후보 이벤트 등록 시 필수인 UUID. 각 등록 API에서 인증된 미디어 서버 단위로 해석 |
+| `Idempotency-Key` | 조건부 | 녹화 메타데이터 등록에서 사용하는 중복 요청 키. 후보 이벤트 등록은 payload의 `eventId`로 중복을 제어한다. |
 | `X-Request-Id` | 선택 | 호출 추적용 ID. 없으면 서버에서 생성 |
 
 관리자 세션·CSRF 규칙:
@@ -1108,7 +1108,9 @@ Cache-Control: private, no-cache, must-revalidate
 - 인증된 미디어 서버가 소유하지 않은 카메라는 응답에 포함하지 않는다.
 - 데이터가 없으면 `200 OK`와 빈 배열을 반환한다.
 
-### 8.2 후보 이벤트 등록
+#### 참고: 후보 이벤트 등록 이전 계약 (폐기)
+
+> 이 절은 과거의 multipart 단일 후보 계약을 보존한 참고 내용이다. 현재 구현 기준은 `8.2 후보 이벤트 등록`이며, 신규 클라이언트는 `eventId`와 `detections` 배열 계약을 사용한다.
 
 `POST /api/v1/device/candidate-events`
 
@@ -1201,6 +1203,120 @@ Content-Type: multipart/form-data
 Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디어 서버에 결과를 전달한다. 중앙 서버 Device API 호출과 Device Key 보관은 미디어 서버가 담당한다.
 
 ---
+
+### 8.2 후보 이벤트 등록
+
+`POST /api/v1/device/candidate-events`
+
+- 인증: `X-Device-Key: {deviceKey}`
+- Content-Type: `application/json`
+- `eventId`가 이벤트 중복 요청 방지 키 역할을 하므로 별도 `Idempotency-Key` 헤더는 사용하지 않는다.
+- 한 프레임에서 여러 사람이 탐지될 수 있으므로 `detections` 배열을 사용한다.
+- 원본 프레임과 crop 이미지는 미디어 서버가 S3 호환 저장소·개발 환경 MinIO에 저장한 뒤 object key만 전달한다.
+- 주요 응답: `201`, `200`(동일 eventId 재전송), `400`, `401`, `403`, `404`, `409`, `422`, `429`
+
+```http
+POST /api/v1/device/candidate-events
+X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+Content-Type: application/json
+```
+
+```json
+{
+  "caseId": 101,
+  "cameraCode": "CAM-001",
+  "eventId": "CAM-001-20260731-000001",
+  "detectedAt": "2026-07-31T01:20:10.123Z",
+  "frameObjectKey": "realtime/CAM-001/frame-000001.jpg",
+  "detections": [
+    {
+      "trackId": "track-42",
+      "similarity": 0.8421,
+      "cropObjectKey": "realtime/CAM-001/crop-000001.jpg",
+      "boundingBox": {
+        "x": 120,
+        "y": 80,
+        "width": 210,
+        "height": 430
+      }
+    }
+  ]
+}
+```
+
+필수 필드:
+
+- 이벤트: `caseId`, `cameraCode`, `eventId`, `detectedAt`, `frameObjectKey`, `detections`
+- 탐지: `trackId`, `similarity`, `cropObjectKey`, `boundingBox`
+- `boundingBox` 좌표는 `x`, `y`, `width`, `height`를 사용하며 모두 0 이상이어야 한다.
+- `detectedAt`과 모든 시간 필드는 RFC 3339 형식으로 받고 UTC로 저장한다.
+- `similarity`는 `0.0~1.0` 범위다.
+
+정상 등록 응답 `201 Created`:
+
+```json
+{
+  "timestamp": "2026-07-31T01:20:10.500Z",
+  "data": {
+    "eventId": "CAM-001-20260731-000001",
+    "caseId": 101,
+    "cameraId": 2,
+    "detectionCount": 1,
+    "candidateIds": [9001],
+    "duplicate": false,
+    "createdAt": "2026-07-31T01:20:10.500Z"
+  }
+}
+```
+
+동일 `eventId` 재전송 응답 `200 OK`:
+
+```json
+{
+  "timestamp": "2026-07-31T01:20:11.000Z",
+  "data": {
+    "eventId": "CAM-001-20260731-000001",
+    "caseId": 101,
+    "cameraId": 2,
+    "detectionCount": 1,
+    "candidateIds": [9001],
+    "duplicate": true,
+    "createdAt": "2026-07-31T01:20:10.500Z"
+  }
+}
+```
+
+저장 구조:
+
+- `candidate_events`에는 이벤트 단위의 `eventId`, 사건, 카메라, 탐지 시각, 원본 프레임 키를 저장한다.
+- `candidate_event_detections`에는 이벤트 안의 각 탐지 결과와 bounding box를 저장한다.
+- 동일 `caseId + cameraId + trackId`가 짧은 시간 동안 반복되면 `candidates`의 `firstDetectedAt`, `lastDetectedAt`, `bestSimilarity`, `averageSimilarity`, `detectionCount`를 갱신하여 하나의 후보로 병합한다.
+- 후보 병합은 `version` 기반 낙관적 락으로 동시 수정을 제어한다.
+
+검증 순서:
+
+1. `X-Device-Key`를 인증하고 `MediaServerPrincipal`을 생성한다.
+2. `cameraCode`가 인증된 미디어 서버 소속인지 확인한다.
+3. 사건이 존재하고 `SEARCHING` 상태인지 확인한다.
+4. 카메라가 해당 사건의 활성 검색 대상으로 지정됐는지 확인한다.
+5. `eventId` 중복 여부를 확인하고, 동일 eventId의 다른 내용은 거부한다.
+6. 탐지 배열, trackId, similarity, bounding box, object key를 검증한다.
+7. 이벤트와 탐지 결과를 저장하고 후보를 생성하거나 기존 후보에 병합한다.
+
+오류:
+
+| 조건 | 응답 |
+| --- | --- |
+| `X-Device-Key` 누락 | `401 AUTHENTICATION_REQUIRED` |
+| `X-Device-Key` 오류 또는 비활성·폐기 미디어 서버 | `401 INVALID_DEVICE_KEY` |
+| 다른 미디어 서버 소속 `cameraCode` 사용 | `403 ACCESS_DENIED` |
+| 존재하지 않는 사건·카메라 | `404 RESOURCE_NOT_FOUND` |
+| 종료·비탐색 상태 사건 또는 비활성 검색 카메라 | `422 BUSINESS_RULE_VIOLATION` |
+| 동일 eventId에 다른 payload 사용 | `409 EVENT_ID_CONFLICT` |
+| 필수 필드, RFC 3339, object key, 좌표 또는 유사도 오류 | `400 VALIDATION_ERROR` |
+| 요청 속도 제한 초과 | `429 RATE_LIMIT_EXCEEDED` |
+
+Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디어 서버에 결과를 전달한다. 중앙 서버 Device API 호출과 Device Key 보관은 미디어 서버가 담당한다.
 
 ## 9. 분석 작업 API
 
