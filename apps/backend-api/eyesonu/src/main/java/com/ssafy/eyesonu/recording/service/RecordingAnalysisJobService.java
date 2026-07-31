@@ -107,7 +107,7 @@ public class RecordingAnalysisJobService {
         auditService.recordRequired("RECORDING_ANALYSIS_JOB_CREATED", adminId, caseId,
                 "ANALYSIS_JOB", job.getId(),
                 Map.of("conditionId", condition.getId(), "recordingId", recording.getId()));
-        recordingAnalysisJobPublisher.publish(job.getId(), caseId);
+        recordingAnalysisJobPublisher.enqueue(job.getId(), caseId);
         return RecordingAnalysisJobResponse.from(job);
     }
 
