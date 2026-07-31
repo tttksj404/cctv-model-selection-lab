@@ -1,0 +1,46 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper">
+
+    <resultMap id="analysisJobResultMap" type="com.ssafy.eyesonu.recording.domain.AnalysisJob">
+        <id property="id" column="id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="searchConditionId" column="search_condition_id"/>
+        <result property="recordingId" column="recording_id"/>
+        <result property="jobType" column="job_type"/>
+        <result property="status" column="status"/>
+        <result property="promptSnapshot" column="prompt_snapshot"/>
+        <result property="exclusionPromptSnapshot" column="exclusion_prompt_snapshot"/>
+        <result property="searchStartSnapshot" column="search_start_snapshot"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchEndSnapshot" column="search_end_snapshot"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchAreaSnapshot" column="search_area_snapshot"/>
+        <result property="similarityThresholdSnapshot" column="similarity_threshold_snapshot"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="requestedAt" column="requested_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="startedAt" column="started_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="completedAt" column="completed_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ssafy.eyesonu.recording.domain.AnalysisJob"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO analysis_jobs (
+            case_id, search_condition_id, recording_id, job_type, status,
+            prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
+            search_end_snapshot, search_area_snapshot, similarity_threshold_snapshot,
+            retry_count, requested_at
+        ) VALUES (
+            #{caseId}, #{searchConditionId}, #{recordingId}, #{jobType}, #{status},
+            #{promptSnapshot}, #{exclusionPromptSnapshot},
+            #{searchStartSnapshot,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{searchEndSnapshot,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            #{searchAreaSnapshot}, #{similarityThresholdSnapshot}, 0, UTC_TIMESTAMP(6)
+        )
+    </insert>
+</mapper>
