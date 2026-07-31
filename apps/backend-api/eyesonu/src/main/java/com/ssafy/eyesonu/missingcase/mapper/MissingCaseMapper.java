@@ -86,6 +86,9 @@ public interface MissingCaseMapper {
 
 	List<CaseCameraRow> findCaseCameras(@Param("caseId") Long caseId);
 
+	boolean existsActiveCaseCamera(
+			@Param("caseId") Long caseId, @Param("cameraId") Long cameraId);
+
 	List<Long> findExistingCameraIds(@Param("cameraIds") Collection<Long> cameraIds);
 
 	int upsertCaseCameras(
