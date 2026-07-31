@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import StatusBadge from "../components/common/StatusBadge.vue";
-import { listCases, listSearchConditions } from "../api/caseApi";
+import { listCases, listCaseCameras, listSearchConditions } from "../api/caseApi";
 import {
   createRecordingAnalysisJob,
   fetchRecordingAnalysisJob,
@@ -12,6 +12,7 @@ import {
 const router = useRouter();
 const cases = ref([]);
 const conditions = ref([]);
+const caseCameraIds = ref([]);
 const recordings = ref([]);
 const jobs = ref([]);
 const loading = ref(true);
@@ -49,14 +50,24 @@ const jobProgress = (status) => ({ QUEUED: 3, RUNNING: 50, SUCCEEDED: 100, FAILE
 const jobStatus = (status) => ({ QUEUED: "searching", RUNNING: "searching", SUCCEEDED: "closed", FAILED: "failed", CANCELLED: "cancelled" }[status] || "searching");
 
 const loadRecordings = async () => {
-  const result = await listAdminRecordings({
+  if (!form.value.caseId || caseCameraIds.value.length === 0) {
+    recordings.value = [];
+    form.value.recordingId = "";
+    return;
+  }
+
+  const results = await Promise.all(caseCameraIds.value.map((cameraId) => listAdminRecordings({
+    cameraId,
     startFrom: toIso(form.value.fromAt),
     startTo: toIso(form.value.toAt),
     page: 0,
     size: 100,
     sort: "startTime,desc"
-  });
-  recordings.value = result.data || [];
+  })));
+  const byId = new Map(results.flatMap((result) => result.data || []).map((recording) => [recording.id, recording]));
+  recordings.value = [...byId.values()].sort((left, right) => (
+    new Date(right.startTime).getTime() - new Date(left.startTime).getTime()
+  ));
   if (!recordings.value.some((item) => String(item.id) === String(form.value.recordingId))) {
     form.value.recordingId = recordings.value[0]?.id ? String(recordings.value[0].id) : "";
   }
@@ -65,10 +76,18 @@ const loadRecordings = async () => {
 const loadCaseData = async () => {
   if (!form.value.caseId) {
     conditions.value = [];
+    caseCameraIds.value = [];
     form.value.conditionId = "";
     return;
   }
-  conditions.value = await listSearchConditions(form.value.caseId);
+  const [nextConditions, nextCameras] = await Promise.all([
+    listSearchConditions(form.value.caseId),
+    listCaseCameras(form.value.caseId)
+  ]);
+  conditions.value = nextConditions;
+  caseCameraIds.value = nextCameras
+    .filter((camera) => camera.searchEnabled && !camera.removedAt)
+    .map((camera) => camera.cameraId);
   if (!conditions.value.some((item) => String(item.id) === String(form.value.conditionId))) {
     form.value.conditionId = conditions.value[0]?.id ? String(conditions.value[0].id) : "";
   }
@@ -96,17 +115,23 @@ const selectCase = async (caseItem) => {
   form.value.caseId = String(caseItem.id);
   caseDropdownOpen.value = false;
   await loadCaseData();
+  await loadRecordings();
 };
 
 const selectAllCases = () => {
   form.value.caseId = "";
   form.value.conditionId = "";
   conditions.value = [];
+  caseCameraIds.value = [];
+  recordings.value = [];
+  form.value.recordingId = "";
   caseDropdownOpen.value = false;
 };
 
 const requestSearch = async () => {
-  if (!form.value.caseId || !form.value.conditionId || !form.value.recordingId) {
+  const selectedCameraId = selectedRecording.value?.camera?.cameraId;
+  if (!form.value.caseId || !form.value.conditionId || !form.value.recordingId
+      || !selectedRecording.value || !caseCameraIds.value.includes(selectedCameraId)) {
     error.value = "사건, 탐색 조건, 녹화를 모두 선택해주세요.";
     return;
   }
