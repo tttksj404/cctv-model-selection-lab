@@ -1,4 +1,4 @@
-import { auditLogs, cameras, candidates, cases, chartSeries, dashboardSummary, liveFeeds, monthlyChartSeries, notifications, routePoints, scanJobs, users } from "../mocks/mockData";
+import { auditLogs, candidates, cases, chartSeries, dashboardSummary, monthlyChartSeries, notifications, routePoints, scanJobs, users } from "../mocks/mockData";
 
 const wait = (ms = 220) => new Promise((resolve) => setTimeout(resolve, ms));
 const includes = (value, keyword) => String(value).toLowerCase().includes(String(keyword).toLowerCase());
@@ -27,21 +27,7 @@ export async function getCandidates(params = {}) {
   });
 }
 export async function reviewCandidate(candidateId, data) { await wait(); return { candidateId, ...data }; }
-export async function getCameras(params = {}) {
-  await wait();
-  return cameras.filter((item) => {
-    const keyword = params.keyword ? includes(item.name, params.keyword) || includes(item.address, params.keyword) : true;
-    const status = !params.status || params.status === "all" || item.status === params.status;
-    return keyword && status;
-  });
-}
-export async function getLiveFeeds() { await wait(); return liveFeeds; }
 export async function getScanJobs() { await wait(); return scanJobs; }
 export async function getRoutePoints() { await wait(); return routePoints; }
 export async function getAuditLogs() { await wait(); return auditLogs; }
 export async function getUsers() { await wait(); return users; }
-export async function login({ email, password }) {
-  await wait();
-  if (email === "admin" && password === "admin1234") return { accessToken: "mock-access-token", user: users[0] };
-  throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
-}
