@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({
   bootstrap: vi.fn(),
-  isAuthenticated: false
+  isAuthenticated: false,
+  isSuperAdmin: false
 }));
 
 vi.mock("../stores/auth", () => ({
@@ -24,6 +25,7 @@ describe("admin auth guard", () => {
     auth.bootstrap.mockReset();
     auth.bootstrap.mockResolvedValue(null);
     auth.isAuthenticated = false;
+    auth.isSuperAdmin = false;
   });
 
   it("외부·공개 경로를 로그인 후 복귀 경로로 사용하지 않는다", () => {
@@ -50,6 +52,31 @@ describe("admin auth guard", () => {
     await expect(authGuard(route())).resolves.toBeUndefined();
   });
 
+  it("일반 관리자는 최고 관리자 전용 경로에서 대시보드로 이동한다", async () => {
+    auth.isAuthenticated = true;
+    auth.bootstrap.mockResolvedValue({ id: 2, role: "ADMIN" });
+
+    const result = await authGuard(route({
+      fullPath: "/admin/users",
+      meta: { title: "관리자 계정 관리", requiresSuperAdmin: true },
+      path: "/admin/users"
+    }));
+
+    expect(result).toBe("/admin/dashboard");
+  });
+
+  it("최고 관리자는 최고 관리자 전용 경로에 진입할 수 있다", async () => {
+    auth.isAuthenticated = true;
+    auth.isSuperAdmin = true;
+    auth.bootstrap.mockResolvedValue({ id: 1, role: "SUPER_ADMIN" });
+
+    await expect(authGuard(route({
+      fullPath: "/admin/users",
+      meta: { title: "관리자 계정 관리", requiresSuperAdmin: true },
+      path: "/admin/users"
+    }))).resolves.toBeUndefined();
+  });
+
   it("로그인 페이지에서 기존 세션을 복원하면 안전한 관리자 경로로 보낸다", async () => {
     auth.isAuthenticated = true;
     const result = await authGuard(route({
@@ -60,6 +87,18 @@ describe("admin auth guard", () => {
     }));
 
     expect(result).toBe("/admin/cameras");
+  });
+
+  it("일반 관리자의 로그인 복귀 경로가 관리자 계정 관리면 대시보드로 보낸다", async () => {
+    auth.isAuthenticated = true;
+    const result = await authGuard(route({
+      fullPath: "/login?redirect=/admin/users",
+      meta: { public: true, title: "로그인" },
+      path: "/login",
+      query: { redirect: "/admin/users" }
+    }));
+
+    expect(result).toBe("/admin/dashboard");
   });
 
   it("공개 신고자·404 경로에서는 세션을 조회하지 않는다", async () => {

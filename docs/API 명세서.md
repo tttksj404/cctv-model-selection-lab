@@ -19,6 +19,7 @@
 | --- | --- | --- |
 | 신고자 | 인증 없음 | 관리자가 전달한 사건조회번호와 신고 전화번호를 이용한 진행 상황 조회 |
 | 관리자 | `EYESONU_SESSION` 세션 쿠키 (`ADMIN`) | 사건, 탐색 조건, 미디어 서버, 카메라, 후보, 작업 및 감사 로그 관리 |
+| 최고 관리자 | `EYESONU_SESSION` 세션 쿠키 (`SUPER_ADMIN`) | 모든 관리자 권한과 관리자 계정 생성·조회·활성화·비활성화 |
 | 미디어 서버 | `X-Device-Key: {deviceKey}` (`ROLE_MEDIA_SERVER`) | Heartbeat, 녹화 메타데이터와 Jetson 후보 이벤트 전송 |
 
 > v1 사건 등록은 ADMIN 세션을 가진 관리자만 수행한다. 신고자 진행 상황 조회에는 별도 로그인이나 전화번호 인증을 요구하지 않는다.
@@ -39,6 +40,9 @@
 | `POST` | `/auth/admin/logout` | 관리자 로그아웃 | CSRF | `204`, `403` |
 | `GET` | `/admins/me` | 로그인 관리자 정보 조회 | 세션 | `200`, `401` |
 | `PATCH` | `/admins/me` | 관리자 정보 수정 | 세션, CSRF, `name`, 비밀번호 변경 정보 | `200`, `400`, `401`, `403`, `503` |
+| `GET` | `/admins` | 관리자 계정 목록 | `SUPER_ADMIN` 세션 | `200`, `401`, `403` |
+| `POST` | `/admins` | 일반 관리자 계정 생성 | `SUPER_ADMIN` 세션, CSRF, `loginId`, `name`, `password` | `201`, `400`, `401`, `403`, `409`, `503` |
+| `PATCH` | `/admins/{adminId}/status` | 관리자 계정 활성화·비활성화 | `SUPER_ADMIN` 세션, CSRF, `enabled` | `200`, `400`, `401`, `403`, `404`, `409`, `503` |
 | `POST` | `/cases/status-inquiries` | 신고자 사건 진행 상황 조회 | `caseNumber`, `phone` | `200`, `400`, `404`, `429`, `503` |
 
 ### 2.2 관리자 사건·탐색·후보
@@ -118,7 +122,7 @@
 - 브라우저는 로그인 전에 `GET /api/v1/auth/csrf`를 호출하고, 응답 쿠키 `XSRF-TOKEN`의 값을 로그인 요청의 `X-XSRF-TOKEN` 헤더에 담는다.
 - 로그인 성공 또는 로그아웃 후에는 `GET /api/v1/auth/csrf`를 다시 호출해 새로운 CSRF 토큰을 사용한다.
 - `GET` 관리자 API는 세션만 필요하고, `POST`·`PATCH`·`DELETE` 관리자 API는 세션과 CSRF 토큰이 모두 필요하다.
-- 인증 API, `/admins/me`, 사건 진행 조회 API의 성공·오류 응답에는 `Cache-Control: no-store`를 적용한다.
+- 인증 API, `/admins/**`, 사건 진행 조회 API의 성공·오류 응답에는 `Cache-Control: no-store`를 적용한다.
 - Device Key 원문을 반환하는 미디어 서버 등록·키 교체 응답에도 `Cache-Control: no-store`를 적용한다.
 
 ### 3.2 미디어 서버 Device Key 인증
@@ -196,8 +200,8 @@
 | `400 Bad Request` | `INVALID_REQUEST`, `VALIDATION_ERROR`, `CURRENT_PASSWORD_MISMATCH`, `INVALID_STATE_TRANSITION` | 형식 오류, 필드 검증 실패, 현재 비밀번호 불일치, 허용되지 않은 상태 전이 |
 | `401 Unauthorized` | `AUTHENTICATION_REQUIRED`, `SESSION_EXPIRED`, `INVALID_CREDENTIALS`, `INVALID_DEVICE_KEY` | 관리자 세션 누락·만료, 로그인 정보 불일치 또는 장치 인증 실패 |
 | `403 Forbidden` | `ACCESS_DENIED` | 역할 또는 장치 권한 부족 |
-| `404 Not Found` | `RESOURCE_NOT_FOUND`, `INQUIRY_NOT_FOUND` | 리소스 없음 또는 사건조회번호·전화번호 불일치 |
-| `409 Conflict` | `DUPLICATE_RESOURCE`, `IDEMPOTENCY_KEY_CONFLICT`, `RESOURCE_STATE_CONFLICT`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 멱등 키 충돌, 리소스 상태 충돌, 버전 충돌, 종료 조건 불충족 |
+| `404 Not Found` | `RESOURCE_NOT_FOUND`, `INQUIRY_NOT_FOUND`, `ADMIN_NOT_FOUND` | 리소스 없음 또는 사건조회번호·전화번호 불일치 |
+| `409 Conflict` | `DUPLICATE_RESOURCE`, `ADMIN_LOGIN_ID_CONFLICT`, `SELF_DEACTIVATION_FORBIDDEN`, `LAST_SUPER_ADMIN_REQUIRED`, `IDEMPOTENCY_KEY_CONFLICT`, `RESOURCE_STATE_CONFLICT`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 관리자 상태 충돌, 멱등 키 충돌, 리소스 상태 충돌, 버전 충돌, 종료 조건 불충족 |
 | `413 Payload Too Large` | `FILE_TOO_LARGE` | 허용 용량을 초과한 파일 |
 | `415 Unsupported Media Type` | `UNSUPPORTED_MEDIA_TYPE` | 지원하지 않는 요청 Content-Type 또는 이미지·영상 형식 |
 | `422 Unprocessable Entity` | `BUSINESS_RULE_VIOLATION`, `STORAGE_OBJECT_NOT_FOUND`, `STORAGE_OBJECT_INVALID` | 업무 규칙 위반, 녹화 객체 미존재 또는 사용할 수 없는 저장소 객체 |
@@ -260,6 +264,7 @@
 
 | 구분 | 값 |
 | --- | --- |
+| `AdminRole` | `SUPER_ADMIN`, `ADMIN` |
 | `MediaServerStatus` | `ACTIVE`, `INACTIVE`, `REVOKED` |
 | `CameraStatus` | `ONLINE`, `OFFLINE`, `ERROR` |
 | `ReviewStatus` | `PENDING`, `KEPT`, `CONFIRMED`, `REJECTED` |
@@ -317,7 +322,8 @@
   "data": {
     "id": 1,
     "loginId": "control01",
-    "name": "관제 관리자"
+    "name": "관제 관리자",
+    "role": "SUPER_ADMIN"
   }
 }
 ```
@@ -361,7 +367,8 @@
   "data": {
     "id": 1,
     "loginId": "control01",
-    "name": "관제 관리자"
+    "name": "관제 관리자",
+    "role": "SUPER_ADMIN"
   }
 }
 ```
@@ -393,7 +400,8 @@
     "admin": {
       "id": 1,
       "loginId": "control01",
-      "name": "통합 관제 관리자"
+      "name": "통합 관제 관리자",
+      "role": "SUPER_ADMIN"
     },
     "reauthenticationRequired": true
   }
@@ -408,11 +416,90 @@
 - 이름만 변경하면 `reauthenticationRequired=false`이며 현재 세션을 유지한다.
 - 비밀번호를 변경하면 `reauthenticationRequired=true`를 반환한 뒤 해당 관리자의 모든 세션을 종료한다.
 
-### 5.5 사건 등록 주체
+### 5.5 관리자 계정 관리
+
+관리자 계정 관리 API는 `SUPER_ADMIN`만 호출할 수 있다. `ADMIN` 세션은 `403 ACCESS_DENIED`를 반환한다.
+
+#### 5.5.1 관리자 계정 목록
+
+`GET /api/v1/admins`
+
+- 인증: `SUPER_ADMIN` 세션
+- 응답 순서: `createdAt DESC`, `id DESC`
+- 서버 페이지네이션 없이 전체 목록을 반환한다.
+
+응답 `200 OK`:
+
+```json
+{
+  "timestamp": "2026-07-20T01:45:00Z",
+  "data": [
+    {
+      "id": 1,
+      "loginId": "admin",
+      "name": "최고 관리자",
+      "role": "SUPER_ADMIN",
+      "enabled": true,
+      "createdAt": "2026-07-20T01:00:00Z"
+    }
+  ]
+}
+```
+
+#### 5.5.2 일반 관리자 계정 생성
+
+`POST /api/v1/admins`
+
+- 인증: `SUPER_ADMIN` 세션
+- CSRF: 필수
+- 생성되는 계정의 역할은 항상 `ADMIN`, 상태는 활성이다.
+
+요청:
+
+```json
+{
+  "loginId": "control01",
+  "name": "1관제실 관리자",
+  "password": "initial-password-1234"
+}
+```
+
+응답 `201 Created`는 5.5.1의 계정 항목 형식을 사용한다.
+
+- `loginId`는 앞뒤 공백 제거와 소문자 변환 후 `[a-z0-9._-]{4,50}` 형식이어야 한다.
+- `name`은 앞뒤 공백을 제거한 1~50자 문자열이다.
+- `password`는 12~64자이며 UTF-8 기준 72바이트 이하여야 한다.
+- 중복 로그인 ID는 `409 ADMIN_LOGIN_ID_CONFLICT`를 반환한다.
+- 비밀번호 원문과 해시는 응답 및 감사 로그에 기록하지 않는다.
+
+#### 5.5.3 관리자 계정 상태 변경
+
+`PATCH /api/v1/admins/{adminId}/status`
+
+- 인증: `SUPER_ADMIN` 세션
+- CSRF: 필수
+
+요청:
+
+```json
+{
+  "enabled": false
+}
+```
+
+응답 `200 OK`는 갱신된 5.5.1의 계정 항목 형식을 사용한다. 현재 상태와 같은 요청도 동일한 계정을 반환한다.
+
+- 존재하지 않는 대상은 `404 ADMIN_NOT_FOUND`를 반환한다.
+- 자기 계정 비활성화는 `409 SELF_DEACTIVATION_FORBIDDEN`을 반환한다.
+- 마지막 활성 `SUPER_ADMIN` 비활성화는 `409 LAST_SUPER_ADMIN_REQUIRED`를 반환한다.
+- 비활성화에 성공하면 대상 관리자의 기존 세션을 만료시킨다.
+- 비활성 계정의 로그인은 계정 존재 여부를 노출하지 않도록 `401 INVALID_CREDENTIALS`를 반환한다.
+
+### 5.6 사건 등록 주체
 
 공개 사건 등록 API는 제공하지 않는다. 사건 등록은 6.1의 `POST /api/v1/admin/cases`를 사용하며 ADMIN 세션과 CSRF 토큰이 필요하다. reporter-webapp은 진행 조회만 제공하고 사건 등록 화면 제거는 별도 프런트 작업으로 관리한다.
 
-### 5.6 신고자 사건 진행 조회
+### 5.7 신고자 사건 진행 조회
 
 `POST /api/v1/cases/status-inquiries`
 

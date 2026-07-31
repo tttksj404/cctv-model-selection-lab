@@ -90,14 +90,8 @@ public class AuthController implements AuthControllerDocs {
 					UsernamePasswordAuthenticationToken.unauthenticated(loginId, body.password()));
 		}
 		catch (AuthenticationException exception) {
-			rateLimiter.recordFailure(RATE_LIMIT_SCOPE, ipAddress, loginId);
-			auditService.recordBestEffort(
-					"ADMIN_LOGIN_FAILURE", null, null, "ADMIN", null,
-					Map.of(
-							"loginFingerprint", rateLimiter.fingerprint(loginId),
-							"ipFingerprint", rateLimiter.fingerprint(ipAddress)));
-			throw new ApiException(
-					HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "로그인 정보가 올바르지 않습니다.");
+			recordLoginFailure(ipAddress, loginId);
+			throw invalidCredentials();
 		}
 
 		AdminPrincipal principal = (AdminPrincipal) authentication.getPrincipal();
@@ -106,6 +100,10 @@ public class AuthController implements AuthControllerDocs {
 						HttpStatus.SERVICE_UNAVAILABLE,
 						"AUTHENTICATION_UNAVAILABLE",
 						"로그인을 완료할 수 없습니다."));
+		if (!admin.enabled()) {
+			recordLoginFailure(ipAddress, loginId);
+			throw invalidCredentials();
+		}
 		auditService.recordRequired(
 				"ADMIN_LOGIN_SUCCESS", admin.id(), null, "ADMIN", admin.id(),
 				Map.of("ipFingerprint", rateLimiter.fingerprint(ipAddress)));
@@ -130,5 +128,21 @@ public class AuthController implements AuthControllerDocs {
 							"loginFingerprint", rateLimiter.fingerprint(loginId),
 							"ipFingerprint", rateLimiter.fingerprint(ipAddress)));
 		}
+	}
+
+	private void recordLoginFailure(String ipAddress, String loginId) {
+		rateLimiter.recordFailure(RATE_LIMIT_SCOPE, ipAddress, loginId);
+		auditService.recordBestEffort(
+				"ADMIN_LOGIN_FAILURE", null, null, "ADMIN", null,
+				Map.of(
+						"loginFingerprint", rateLimiter.fingerprint(loginId),
+						"ipFingerprint", rateLimiter.fingerprint(ipAddress)));
+	}
+
+	private ApiException invalidCredentials() {
+		return new ApiException(
+				HttpStatus.UNAUTHORIZED,
+				"INVALID_CREDENTIALS",
+				"로그인 정보가 올바르지 않습니다.");
 	}
 }

@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ssafy.eyesonu.admin.domain.Admin;
+import com.ssafy.eyesonu.admin.domain.AdminRole;
 import com.ssafy.eyesonu.admin.mapper.AdminMapper;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
@@ -99,7 +100,14 @@ class AuthAndInquiryApiTests {
 
 	@BeforeEach
 	void setUp() {
-		admin = new Admin(1L, "admin", passwordEncoder.encode("correct-password!"), "Administrator");
+		admin = new Admin(
+				1L,
+				"admin",
+				passwordEncoder.encode("correct-password!"),
+				"Administrator",
+				AdminRole.SUPER_ADMIN,
+				true,
+				Instant.parse("2026-07-31T00:00:00Z"));
 		when(adminMapper.findByLoginId("admin")).thenReturn(Optional.of(admin));
 		when(adminMapper.findById(1L)).thenReturn(Optional.of(admin));
 	}
@@ -134,13 +142,38 @@ class AuthAndInquiryApiTests {
 						.content(body))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.id").value(1))
+				.andExpect(jsonPath("$.data.role").value("SUPER_ADMIN"))
 				.andExpect(jsonPath("$.data.accessToken").doesNotExist())
 				.andReturn();
 
 		MockHttpSession session = (MockHttpSession) login.getRequest().getSession(false);
 		mockMvc.perform(get("/api/v1/admins/me").session(session))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.loginId").value("admin"));
+				.andExpect(jsonPath("$.data.loginId").value("admin"))
+				.andExpect(jsonPath("$.data.role").value("SUPER_ADMIN"));
+	}
+
+	@Test
+	void disabledAdminUsesTheSameInvalidCredentialsResponse() throws Exception {
+		Admin disabled = new Admin(
+				admin.id(),
+				admin.loginId(),
+				admin.passwordHash(),
+				admin.name(),
+				admin.role(),
+				false,
+				admin.createdAt());
+		when(adminMapper.findByLoginId("admin")).thenReturn(Optional.of(disabled));
+
+		mockMvc.perform(post("/api/v1/auth/admin/login")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{"loginId":"admin","password":"correct-password!"}
+							"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(header().string("Cache-Control", "no-store"))
+				.andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
 	}
 
 	@Test

@@ -5,6 +5,7 @@ import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
 import com.ssafy.eyesonu.auth.device.MediaServerAuthenticationService;
 import com.ssafy.eyesonu.auth.security.AdminAuthenticationProvider;
+import com.ssafy.eyesonu.auth.security.AdminAccountStatusFilter;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.auth.security.SecurityErrorWriter;
 import com.ssafy.eyesonu.auth.security.SpaCsrfTokenRequestHandler;
@@ -36,6 +37,7 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -139,11 +141,14 @@ public class SecurityConfig {
 	SecurityFilterChain applicationSecurityFilterChain(
 			HttpSecurity http,
 			ObjectMapper objectMapper,
+			AdminMapper adminMapper,
 			SecurityContextRepository securityContextRepository,
 			SessionRegistry sessionRegistry,
 			CookieCsrfTokenRepository csrfTokenRepository,
 			AuditService auditService) throws Exception {
 		SecurityErrorWriter errors = new SecurityErrorWriter(objectMapper);
+		AdminAccountStatusFilter adminAccountStatusFilter =
+				new AdminAccountStatusFilter(adminMapper, objectMapper);
 
 		http
 				.cors(cors -> cors.disable())
@@ -180,7 +185,10 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/v1/auth/admin/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/v1/cases/status-inquiries").permitAll()
 						.requestMatchers("/api/v1/device/**").denyAll()
-						.requestMatchers("/api/v1/admin/**", "/api/v1/admins/**").hasRole("ADMIN")
+						.requestMatchers("/api/v1/admins/me").hasRole("ADMIN")
+						.requestMatchers("/api/v1/admins", "/api/v1/admins/*/status")
+								.hasRole("SUPER_ADMIN")
+						.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 						.requestMatchers("/error").permitAll()
 						.anyRequest().denyAll())
 				.logout(logout -> logout
@@ -195,7 +203,8 @@ public class SecurityConfig {
 						})
 						.deleteCookies("EYESONU_SESSION", "XSRF-TOKEN")
 						.logoutSuccessHandler((request, response, authentication) -> response.setStatus(204))
-						.permitAll());
+						.permitAll())
+				.addFilterAfter(adminAccountStatusFilter, SecurityContextHolderFilter.class);
 
 		return http.build();
 	}
