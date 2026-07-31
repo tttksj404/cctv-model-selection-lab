@@ -62,7 +62,7 @@ public class CandidateEventCommandService {
         request.detections().forEach(detection -> verifyObject(detection.cropObjectKey()));
 
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
-        if (existing != null) return duplicateResult(existing, request);
+        if (existing != null) return duplicateResult(existing, request, camera.id());
 
         CandidateEvent event = new CandidateEvent();
         event.setEventId(request.eventId());
@@ -108,9 +108,12 @@ public class CandidateEventCommandService {
                 request.detections().size(), candidateIds, false, event.getCreatedAt() == null ? Instant.now() : event.getCreatedAt());
     }
 
-    private CandidateEventCreateResponse duplicateResult(CandidateEvent existing, CandidateEventCreateRequest request) {
+    private CandidateEventCreateResponse duplicateResult(CandidateEvent existing,
+                                                         CandidateEventCreateRequest request,
+                                                         Long cameraId) {
         List<CandidateEventDetection> stored = mapper.findDetectionsByEventId(request.eventId());
         boolean same = Objects.equals(existing.getCaseId(), request.caseId())
+                && Objects.equals(existing.getCameraId(), cameraId)
                 && Objects.equals(existing.getFrameObjectKey(), request.frameObjectKey())
                 && Objects.equals(existing.getDetectedAt(), request.detectedAt().toInstant())
                 && stored.size() == request.detections().size();
