@@ -3,6 +3,7 @@ package com.ssafy.eyesonu.camera.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
@@ -11,39 +12,21 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "spring.flyway.enabled=true")
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
+@Import(TestDatabaseConfiguration.class)
 @Transactional
 @Sql(
         scripts = "/recording-fixture.sql",
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
         config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.INFERRED))
 class CameraMapperTest {
-
-    @Container
-    @ServiceConnection
-    static final MySQLContainer<?> MYSQL = new MySQLContainer<>(
-            DockerImageName.parse("mysql:8.0.46"))
-            .withDatabaseName("eyesonu_camera_test")
-            .withUsername("eyesonu")
-            .withPassword("eyesonu_test_password");
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.flyway.enabled", () -> true);
-    }
 
     @Autowired
     private CameraMapper cameraMapper;
