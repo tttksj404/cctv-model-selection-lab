@@ -18,13 +18,13 @@ public interface CandidateEventMapper {
     CandidateAggregate findCandidateForUpdate(@Param("caseId") Long caseId,
                                                @Param("cameraId") Long cameraId,
                                                @Param("trackId") String trackId);
-    void insertCandidate(@Param("candidate") CandidateAggregate candidate);
-    int updateCandidate(@Param("candidate") CandidateAggregate candidate,
-                        @Param("detectedAt") Instant detectedAt,
-                        @Param("similarity") BigDecimal similarity,
-                        @Param("cropObjectKey") String cropObjectKey,
-                        @Param("frameObjectKey") String frameObjectKey,
-                        @Param("boundingBox") String boundingBox);
+    int insertCandidate(@Param("candidate") CandidateAggregate candidate);
+    void updateCandidate(@Param("candidate") CandidateAggregate candidate,
+                         @Param("detectedAt") Instant detectedAt,
+                         @Param("similarity") BigDecimal similarity,
+                         @Param("cropObjectKey") String cropObjectKey,
+                         @Param("frameObjectKey") String frameObjectKey,
+                         @Param("boundingBox") String boundingBox);
     void insertDetection(@Param("detection") CandidateEventDetection detection);
     void linkDetectionToCandidate(@Param("id") Long id, @Param("candidateId") Long candidateId);
 }

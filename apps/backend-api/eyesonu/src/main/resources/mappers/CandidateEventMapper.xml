@@ -82,6 +82,7 @@
              #{candidate.similarity}, #{candidate.bestSimilarity}, #{candidate.averageSimilarity},
              #{candidate.detectionCount}, #{candidate.cropObjectKey}, #{candidate.frameObjectKey},
              #{candidate.boundingBox}, 'PENDING', 0)
+        ON DUPLICATE KEY UPDATE id = id
     </insert>
     <update id="updateCandidate">
         UPDATE candidates
@@ -95,9 +96,8 @@
             crop_object_key = CASE WHEN #{similarity} &gt;= best_similarity THEN #{cropObjectKey} ELSE crop_object_key END,
             frame_object_key = CASE WHEN #{similarity} &gt;= best_similarity THEN #{frameObjectKey} ELSE frame_object_key END,
             bounding_box = CASE WHEN #{similarity} &gt;= best_similarity THEN #{boundingBox} ELSE bounding_box END,
-            version = version + 1,
             updated_at = CURRENT_TIMESTAMP(6)
-        WHERE id = #{candidate.id} AND version = #{candidate.version}
+        WHERE id = #{candidate.id}
     </update>
     <insert id="insertDetection" useGeneratedKeys="true" keyProperty="detection.id">
         INSERT INTO candidate_event_detections

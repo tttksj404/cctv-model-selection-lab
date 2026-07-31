@@ -14,9 +14,10 @@ import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
 import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
@@ -71,19 +72,28 @@ public class CandidateEventCommandService {
         event.setFrameObjectKey(request.frameObjectKey());
         mapper.insertEvent(event);
 
-        List<Long> candidateIds = new ArrayList<>();
+        List<Integer> processingOrder = new ArrayList<>();
         for (int index = 0; index < request.detections().size(); index++) {
+            processingOrder.add(index);
+        }
+        processingOrder.sort(Comparator.comparing(index -> request.detections().get(index).trackId()));
+
+        List<Long> candidateIds = new ArrayList<>(Collections.nCopies(request.detections().size(), null));
+        for (int index : processingOrder) {
             CandidateEventCreateRequest.Detection input = request.detections().get(index);
             String boundingBox = boundingBoxJson(input.boundingBox());
-            CandidateAggregate candidate = mapper.findCandidateForUpdate(request.caseId(), camera.id(), input.trackId());
-            if (candidate == null) {
-                candidate = newCandidate(request, camera.id(), input, boundingBox);
-                mapper.insertCandidate(candidate);
-            } else if (mapper.updateCandidate(candidate, request.detectedAt().toInstant(), input.similarity(),
-                    input.cropObjectKey(), request.frameObjectKey(), boundingBox) != 1) {
-                throw new ApiException(HttpStatus.CONFLICT, "OPTIMISTIC_LOCK_CONFLICT", "Candidate was modified concurrently");
+            CandidateAggregate candidate = newCandidate(request, camera.id(), input, boundingBox);
+            int inserted = mapper.insertCandidate(candidate);
+            if (inserted == 0) {
+                candidate = mapper.findCandidateForUpdate(request.caseId(), camera.id(), input.trackId());
+                if (candidate == null) {
+                    throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "CANDIDATE_UPSERT_FAILED", "Candidate could not be loaded after upsert");
+                }
+                mapper.updateCandidate(candidate, request.detectedAt().toInstant(), input.similarity(),
+                        input.cropObjectKey(), request.frameObjectKey(), boundingBox);
             }
-            candidateIds.add(candidate.getId());
+            candidateIds.set(index, candidate.getId());
             CandidateEventDetection detection = new CandidateEventDetection();
             detection.setCandidateEventId(event.getId());
             detection.setCandidateId(candidate.getId());
@@ -127,7 +137,7 @@ public class CandidateEventCommandService {
         candidate.setFirstDetectedAt(request.detectedAt().toInstant()); candidate.setLastDetectedAt(request.detectedAt().toInstant());
         candidate.setBestSimilarity(input.similarity()); candidate.setAverageSimilarity(input.similarity());
         candidate.setDetectionCount(1); candidate.setSimilarity(input.similarity()); candidate.setCropObjectKey(input.cropObjectKey());
-        candidate.setFrameObjectKey(request.frameObjectKey()); candidate.setBoundingBox(box); candidate.setVersion(0);
+        candidate.setFrameObjectKey(request.frameObjectKey()); candidate.setBoundingBox(box);
         return candidate;
     }
 
