@@ -23,12 +23,15 @@ public class RecordingAnalysisJobPublisher {
 
     private final RabbitTemplate rabbitTemplate;
     private final RecordingAnalysisOutboxMapper outboxMapper;
+    private final RecordingAnalysisOutboxClaimer outboxClaimer;
 
     public RecordingAnalysisJobPublisher(
             RabbitTemplate rabbitTemplate,
-            RecordingAnalysisOutboxMapper outboxMapper) {
+            RecordingAnalysisOutboxMapper outboxMapper,
+            RecordingAnalysisOutboxClaimer outboxClaimer) {
         this.rabbitTemplate = rabbitTemplate;
         this.outboxMapper = outboxMapper;
+        this.outboxClaimer = outboxClaimer;
     }
 
     public void enqueue(Long jobId, Long caseId) {
@@ -38,7 +41,12 @@ public class RecordingAnalysisJobPublisher {
 
     @Scheduled(fixedDelayString = "${recording.analysis.outbox.poll-delay-ms:1000}")
     public void publishPending() {
-        for (RecordingAnalysisOutbox outbox : outboxMapper.findReady(50)) {
+        for (int published = 0; published < 50; published++) {
+            ClaimedRecordingAnalysisOutbox claimed = outboxClaimer.claimNext().orElse(null);
+            if (claimed == null) {
+                return;
+            }
+            RecordingAnalysisOutbox outbox = claimed.outbox();
             try {
                 RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
@@ -49,13 +57,16 @@ public class RecordingAnalysisJobPublisher {
                     return message;
                 }, correlationData);
                 awaitBrokerAcceptance(correlationData);
-                outboxMapper.markPublished(outbox.getId(), Instant.now());
+                outboxMapper.markPublished(outbox.getId(), claimed.claimToken(), Instant.now());
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                outboxMapper.markFailed(outbox.getId(), "RabbitMQ publisher confirm was interrupted");
+                outboxMapper.markFailed(
+                        outbox.getId(), claimed.claimToken(),
+                        "RabbitMQ publisher confirm was interrupted");
                 return;
             } catch (Exception exception) {
-                outboxMapper.markFailed(outbox.getId(), failureMessage(exception));
+                outboxMapper.markFailed(
+                        outbox.getId(), claimed.claimToken(), failureMessage(exception));
             }
         }
     }

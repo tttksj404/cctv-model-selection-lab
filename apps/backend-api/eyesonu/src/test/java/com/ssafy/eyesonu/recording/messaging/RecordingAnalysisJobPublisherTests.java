@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
 import java.time.Instant;
-import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,10 +32,13 @@ class RecordingAnalysisJobPublisherTests {
     @Mock
     private RecordingAnalysisOutboxMapper outboxMapper;
 
+    @Mock
+    private RecordingAnalysisOutboxClaimer outboxClaimer;
+
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper);
+                rabbitTemplate, outboxMapper, outboxClaimer);
 
         publisher.enqueue(5001L, 101L);
 
@@ -47,10 +50,11 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void marksPublishedOnlyAfterBrokerAckWithoutReturn() {
         RecordingAnalysisOutbox outbox = readyOutbox();
-        when(outboxMapper.findReady(50)).thenReturn(List.of(outbox));
+        claim(outbox);
         completeConfirm(true, null, null);
 
-        new RecordingAnalysisJobPublisher(rabbitTemplate, outboxMapper).publishPending();
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
 
         verify(rabbitTemplate).convertAndSend(
                 eq(RecordingAnalysisJobPublisher.EXCHANGE),
@@ -58,48 +62,52 @@ class RecordingAnalysisJobPublisherTests {
                 any(RecordingAnalysisJobEvent.class),
                 any(MessagePostProcessor.class),
                 any(CorrelationData.class));
-        verify(outboxMapper).markPublished(eq(1L), any(Instant.class));
-        verify(outboxMapper, never()).markFailed(any(), anyString());
+        verify(outboxMapper).markPublished(eq(1L), eq("claim-1"), any(Instant.class));
+        verify(outboxMapper, never()).markFailed(any(), anyString(), anyString());
     }
 
     @Test
     void schedulesRetryWhenBrokerNacksMessage() {
-        when(outboxMapper.findReady(50)).thenReturn(List.of(readyOutbox()));
+        claim(readyOutbox());
         completeConfirm(false, "exchange unavailable", null);
 
-        new RecordingAnalysisJobPublisher(rabbitTemplate, outboxMapper).publishPending();
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
 
-        verify(outboxMapper).markFailed(1L, "RabbitMQ publisher NACK: exchange unavailable");
-        verify(outboxMapper, never()).markPublished(any(), any());
+        verify(outboxMapper).markFailed(
+                1L, "claim-1", "RabbitMQ publisher NACK: exchange unavailable");
+        verify(outboxMapper, never()).markPublished(any(), anyString(), any());
     }
 
     @Test
     void schedulesRetryWhenMessageIsReturnedAsUnroutable() {
-        when(outboxMapper.findReady(50)).thenReturn(List.of(readyOutbox()));
+        claim(readyOutbox());
         ReturnedMessage returned = new ReturnedMessage(
                 new Message(new byte[0]), 312, "NO_ROUTE",
                 RecordingAnalysisJobPublisher.EXCHANGE,
                 RecordingAnalysisJobPublisher.ROUTING_KEY);
         completeConfirm(true, null, returned);
 
-        new RecordingAnalysisJobPublisher(rabbitTemplate, outboxMapper).publishPending();
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
 
-        verify(outboxMapper).markFailed(1L, "RabbitMQ message was returned: NO_ROUTE");
-        verify(outboxMapper, never()).markPublished(any(), any());
+        verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ message was returned: NO_ROUTE");
+        verify(outboxMapper, never()).markPublished(any(), anyString(), any());
     }
 
     @Test
     void schedulesRetryWhenPublishingThrows() {
-        when(outboxMapper.findReady(50)).thenReturn(List.of(readyOutbox()));
+        claim(readyOutbox());
         doThrow(new IllegalStateException("RabbitMQ unavailable"))
                 .when(rabbitTemplate).convertAndSend(
                         anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
                         any(MessagePostProcessor.class), any(CorrelationData.class));
 
-        new RecordingAnalysisJobPublisher(rabbitTemplate, outboxMapper).publishPending();
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer).publishPending();
 
-        verify(outboxMapper).markFailed(1L, "RabbitMQ unavailable");
-        verify(outboxMapper, never()).markPublished(any(), any());
+        verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ unavailable");
+        verify(outboxMapper, never()).markPublished(any(), anyString(), any());
     }
 
     private void completeConfirm(boolean ack, String reason, ReturnedMessage returned) {
@@ -111,6 +119,12 @@ class RecordingAnalysisJobPublisherTests {
         }).when(rabbitTemplate).convertAndSend(
                 anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
                 any(MessagePostProcessor.class), any(CorrelationData.class));
+    }
+
+    private void claim(RecordingAnalysisOutbox outbox) {
+        when(outboxClaimer.claimNext()).thenReturn(
+                Optional.of(new ClaimedRecordingAnalysisOutbox(outbox, "claim-1")),
+                Optional.empty());
     }
 
     private RecordingAnalysisOutbox readyOutbox() {
