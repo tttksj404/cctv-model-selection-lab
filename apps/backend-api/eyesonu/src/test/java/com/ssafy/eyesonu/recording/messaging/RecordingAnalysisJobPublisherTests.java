@@ -114,6 +114,7 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void renewsLeaseWhileBrokerConfirmationIsSlow() {
         claim(readyOutbox());
+        when(outboxMapper.renewLease(any(), anyString(), any(Instant.class))).thenReturn(1);
         doAnswer(invocation -> {
             Thread.sleep(1200L);
             CorrelationData correlationData = invocation.getArgument(4);
@@ -128,6 +129,26 @@ class RecordingAnalysisJobPublisherTests {
 
         verify(outboxMapper, atLeastOnce()).renewLease(
                 eq(1L), eq("claim-1"), any(Instant.class));
+    }
+
+    @Test
+    void stopsPublishingWhenHeartbeatLosesLeaseOwnership() {
+        claim(readyOutbox());
+        when(outboxMapper.renewLease(any(), anyString(), any(Instant.class))).thenReturn(0);
+        doAnswer(invocation -> {
+            Thread.sleep(1200L);
+            CorrelationData correlationData = invocation.getArgument(4);
+            correlationData.getFuture().complete(new CorrelationData.Confirm(true, null));
+            return null;
+        }).when(rabbitTemplate).convertAndSend(
+                anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
+                any(MessagePostProcessor.class), any(CorrelationData.class));
+
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer, 3).publishPending();
+
+        verify(outboxMapper, never()).markPublished(any(), anyString(), any());
+        verify(outboxMapper, never()).markFailed(any(), anyString(), anyString());
     }
 
     private void completeConfirm(boolean ack, String reason, ReturnedMessage returned) {

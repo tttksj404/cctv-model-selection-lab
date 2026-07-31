@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
 import org.springframework.amqp.core.MessageDeliveryMode;
@@ -66,7 +67,9 @@ public class RecordingAnalysisJobPublisher {
                 return;
             }
             RecordingAnalysisOutbox outbox = claimed.outbox();
-            ScheduledFuture<?> heartbeat = startHeartbeat(outbox, claimed.claimToken());
+            AtomicBoolean leaseOwned = new AtomicBoolean(true);
+            ScheduledFuture<?> heartbeat = startHeartbeat(
+                    outbox, claimed.claimToken(), leaseOwned);
             try {
                 RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
@@ -76,8 +79,11 @@ public class RecordingAnalysisJobPublisher {
                     message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return message;
                 }, correlationData);
-                awaitBrokerAcceptance(correlationData);
+                ensureLeaseOwned(leaseOwned);
+                awaitBrokerAcceptance(correlationData, leaseOwned);
                 outboxMapper.markPublished(outbox.getId(), claimed.claimToken(), Instant.now());
+            } catch (LeaseOwnershipLostException exception) {
+                return;
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
                 outboxMapper.markFailed(
@@ -94,29 +100,53 @@ public class RecordingAnalysisJobPublisher {
     }
 
     private ScheduledFuture<?> startHeartbeat(
-            RecordingAnalysisOutbox outbox, String claimToken) {
+            RecordingAnalysisOutbox outbox,
+            String claimToken,
+            AtomicBoolean leaseOwned) {
         long intervalSeconds = Math.max(1L, claimLeaseSeconds / 3L);
         return heartbeatExecutor.scheduleAtFixedRate(
-                () -> renewLease(outbox.getId(), claimToken),
+                () -> renewLease(outbox.getId(), claimToken, leaseOwned),
                 intervalSeconds,
                 intervalSeconds,
                 TimeUnit.SECONDS);
     }
 
-    private void renewLease(Long outboxId, String claimToken) {
+    private void renewLease(Long outboxId, String claimToken, AtomicBoolean leaseOwned) {
         try {
-            outboxMapper.renewLease(
+            int renewed = outboxMapper.renewLease(
                     outboxId,
                     claimToken,
                     Instant.now().plusSeconds(claimLeaseSeconds));
+            if (renewed != 1) {
+                leaseOwned.set(false);
+            }
         } catch (RuntimeException ignored) {
-            // The publisher result decides the final outbox state; a transient heartbeat failure is retried.
+            leaseOwned.set(false);
         }
     }
 
-    private void awaitBrokerAcceptance(CorrelationData correlationData) throws Exception {
-        CorrelationData.Confirm confirm = correlationData.getFuture()
-                .get(CONFIRM_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    private void awaitBrokerAcceptance(
+            CorrelationData correlationData,
+            AtomicBoolean leaseOwned) throws Exception {
+        long deadline = System.nanoTime()
+                + TimeUnit.SECONDS.toNanos(CONFIRM_TIMEOUT_SECONDS);
+        CorrelationData.Confirm confirm;
+        while (true) {
+            ensureLeaseOwned(leaseOwned);
+            long remainingNanos = deadline - System.nanoTime();
+            if (remainingNanos <= 0) {
+                throw new java.util.concurrent.TimeoutException("RabbitMQ publisher confirm timed out");
+            }
+            try {
+                confirm = correlationData.getFuture().get(
+                        Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos), 200L),
+                        TimeUnit.MILLISECONDS);
+                break;
+            } catch (java.util.concurrent.TimeoutException ignored) {
+                // Re-check ownership while waiting for the broker.
+            }
+        }
+        ensureLeaseOwned(leaseOwned);
         if (!confirm.ack()) {
             throw new IllegalStateException("RabbitMQ publisher NACK: " + confirm.reason());
         }
@@ -124,6 +154,15 @@ public class RecordingAnalysisJobPublisher {
         if (returned != null) {
             throw new IllegalStateException("RabbitMQ message was returned: " + returned.getReplyText());
         }
+    }
+
+    private void ensureLeaseOwned(AtomicBoolean leaseOwned) {
+        if (!leaseOwned.get()) {
+            throw new LeaseOwnershipLostException();
+        }
+    }
+
+    private static class LeaseOwnershipLostException extends RuntimeException {
     }
 
     private String failureMessage(Exception exception) {
