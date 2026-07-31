@@ -126,6 +126,11 @@ export async function issueCsrfToken(options = {}) {
 }
 
 apiClient.interceptors.request.use(async (config) => {
+  const token = sessionStorage.getItem("accessToken");
+  if (token && token !== "mock-access-token") {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   const method = String(config.method || "get").toLowerCase();
   if (
     UNSAFE_METHODS.has(method)
@@ -190,3 +195,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(normalizedError);
   }
 );
+
+export default apiClient;
