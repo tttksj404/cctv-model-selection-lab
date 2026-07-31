@@ -12,24 +12,28 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeviceSearchTargetService {
 
 	private final MissingCaseMapper mapper;
-	private final EmbeddedPromptTranslator promptTranslator;
 
-	public DeviceSearchTargetService(MissingCaseMapper mapper, EmbeddedPromptTranslator promptTranslator) {
+	@Autowired
+	public DeviceSearchTargetService(MissingCaseMapper mapper) {
 		this.mapper = mapper;
-		this.promptTranslator = promptTranslator;
+	}
+
+	public DeviceSearchTargetService(MissingCaseMapper mapper, Object ignoredPromptNormalizer) {
+		this(mapper);
 	}
 
 	public List<SearchTargetResponse> findTargets(MediaServerPrincipal principal) {
 		Map<Long, TargetAccumulator> grouped = new LinkedHashMap<>();
 		for (DeviceSearchTargetRow row : mapper.findDeviceSearchTargetCameras(principal.mediaServerId())) {
 			TargetAccumulator target = grouped.computeIfAbsent(row.getCaseId(),
-					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber(), promptTranslator));
+					ignored -> new TargetAccumulator(row.getCaseId(), row.getCaseNumber()));
 			target.addCamera(row);
 			target.updateTimestamp(row.getUpdatedAt());
 		}
@@ -55,21 +59,21 @@ public class DeviceSearchTargetService {
 	private static final class TargetAccumulator {
 		private final Long caseId;
 		private final String caseNumber;
-		private final EmbeddedPromptTranslator promptTranslator;
 		private final Map<Long, SearchConditionTargetResponse> conditions = new LinkedHashMap<>();
 		private final Map<Long, SearchCameraTargetResponse> cameras = new LinkedHashMap<>();
 		private Instant updatedAt;
 
-		private TargetAccumulator(Long caseId, String caseNumber, EmbeddedPromptTranslator promptTranslator) {
+		private TargetAccumulator(Long caseId, String caseNumber) {
 			this.caseId = caseId;
 			this.caseNumber = caseNumber;
-			this.promptTranslator = promptTranslator;
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
-					row.getConditionId(), promptTranslator.translate(row.getPrompt()),
-					promptTranslator.translate(row.getExclusionPrompt()),
+					row.getConditionId(),
+					row.getEmbeddedPrompt() == null ? row.getPrompt() : row.getEmbeddedPrompt(),
+					row.getEmbeddedExclusionPrompt() == null
+							? row.getExclusionPrompt() : row.getEmbeddedExclusionPrompt(),
 					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
 					row.getSimilarityThreshold()));
 		}
