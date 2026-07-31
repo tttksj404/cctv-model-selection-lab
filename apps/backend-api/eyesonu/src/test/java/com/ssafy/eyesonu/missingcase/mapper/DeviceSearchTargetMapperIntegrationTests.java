@@ -133,6 +133,19 @@ class DeviceSearchTargetMapperIntegrationTests {
 				mapper.findDeviceSearchTargetLastModified(MEDIA_SERVER_ID));
 	}
 
+	@Test
+	void lastModifiedIncludesCaseClosure() {
+		jdbcTemplate.update("""
+				UPDATE cases
+				SET status = 'CLOSED', closed_at = ?, updated_at = ?
+				WHERE id = ?
+				""", LocalDateTime.of(2026, 7, 30, 14, 0),
+				LocalDateTime.of(2026, 7, 30, 14, 0), CASE_ID);
+
+		assertEquals(Instant.parse("2026-07-30T14:00:00Z"),
+				mapper.findDeviceSearchTargetLastModified(MEDIA_SERVER_ID));
+	}
+
 	private void cleanup() {
 		jdbcTemplate.update("DELETE FROM case_cameras WHERE case_id = ?", CASE_ID);
 		jdbcTemplate.update("DELETE FROM search_conditions WHERE case_id = ?", CASE_ID);
