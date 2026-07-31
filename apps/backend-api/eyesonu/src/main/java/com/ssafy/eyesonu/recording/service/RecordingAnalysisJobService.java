@@ -13,6 +13,7 @@ import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobCreateRequest;
 import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobResponse;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
@@ -35,6 +36,7 @@ public class RecordingAnalysisJobService {
     private final RecordingMapper recordingMapper;
     private final StorageObjectVerifier storageObjectVerifier;
     private final AuditService auditService;
+    private final RecordingAnalysisJobPublisher recordingAnalysisJobPublisher;
 
     public RecordingAnalysisJobService(
             AnalysisJobMapper analysisJobMapper,
@@ -42,13 +44,15 @@ public class RecordingAnalysisJobService {
             CaseQueryService caseQueryService,
             RecordingMapper recordingMapper,
             StorageObjectVerifier storageObjectVerifier,
-            AuditService auditService) {
+            AuditService auditService,
+            RecordingAnalysisJobPublisher recordingAnalysisJobPublisher) {
         this.analysisJobMapper = analysisJobMapper;
         this.missingCaseMapper = missingCaseMapper;
         this.caseQueryService = caseQueryService;
         this.recordingMapper = recordingMapper;
         this.storageObjectVerifier = storageObjectVerifier;
         this.auditService = auditService;
+        this.recordingAnalysisJobPublisher = recordingAnalysisJobPublisher;
     }
 
     @Transactional
@@ -103,6 +107,7 @@ public class RecordingAnalysisJobService {
         auditService.recordRequired("RECORDING_ANALYSIS_JOB_CREATED", adminId, caseId,
                 "ANALYSIS_JOB", job.getId(),
                 Map.of("conditionId", condition.getId(), "recordingId", recording.getId()));
+        recordingAnalysisJobPublisher.publishAfterCommit(job.getId(), caseId);
         return RecordingAnalysisJobResponse.from(job);
     }
 

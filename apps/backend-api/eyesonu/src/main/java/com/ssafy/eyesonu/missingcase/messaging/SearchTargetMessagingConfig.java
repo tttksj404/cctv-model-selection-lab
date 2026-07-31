@@ -7,8 +7,10 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import tools.jackson.databind.json.JsonMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 
 @Configuration
 public class SearchTargetMessagingConfig {
@@ -34,9 +36,25 @@ public class SearchTargetMessagingConfig {
 	}
 
 	@Bean
-	Binding realtimeSearchTargetBinding(Queue realtimeSearchTargetQueue, TopicExchange searchTargetExchange) {
+	Binding realtimeSearchTargetBinding(
+			@Qualifier("realtimeSearchTargetQueue") Queue realtimeSearchTargetQueue,
+			TopicExchange searchTargetExchange) {
 		return BindingBuilder.bind(realtimeSearchTargetQueue)
 				.to(searchTargetExchange)
 				.with(SearchTargetEventPublisher.ROUTING_KEY);
+	}
+
+	@Bean
+	Queue recordingAnalysisJobQueue() {
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE).build();
+	}
+
+	@Bean
+	Binding recordingAnalysisJobBinding(
+			@Qualifier("recordingAnalysisJobQueue") Queue recordingAnalysisJobQueue,
+			TopicExchange searchTargetExchange) {
+		return BindingBuilder.bind(recordingAnalysisJobQueue)
+				.to(searchTargetExchange)
+				.with(RecordingAnalysisJobPublisher.ROUTING_KEY);
 	}
 }
