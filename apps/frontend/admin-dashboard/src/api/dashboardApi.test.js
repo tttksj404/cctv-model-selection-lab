@@ -74,6 +74,12 @@ describe("dashboardApi", () => {
     expect(listCasesMock).toHaveBeenCalledWith({ page: 2, size: 10, sort: "reportedAt,desc" });
   });
 
+  it("rejects malformed paged responses instead of showing zero rows", async () => {
+    listCasesMock.mockResolvedValue({ data: [], meta: {} });
+
+    await expect(getCases()).rejects.toMatchObject({ code: "INVALID_API_RESPONSE" });
+  });
+
   it("builds chart buckets from report and candidate timestamps", async () => {
     listCasesMock.mockResolvedValue(paged([
       { reportedAt: "2026-07-31T02:00:00Z" }
@@ -98,5 +104,27 @@ describe("dashboardApi", () => {
       detectedFrom: "2026-07-25T00:00:00+09:00",
       detectedTo: "2026-08-01T00:00:00+09:00"
     }));
+  });
+
+  it("merges chart rows from bounded additional pages", async () => {
+    listCasesMock.mockImplementation(async (params) => {
+      if (!params.reportedFrom) return paged([], 0, 0);
+      return paged(
+        params.page === 0 ? [{ reportedAt: "2026-07-30T02:00:00Z" }] : [{ reportedAt: "2026-07-31T02:00:00Z" }],
+        2,
+        2
+      );
+    });
+    fetchAdminCandidatesMock.mockImplementation(async (params) => ({
+      rows: params.page === 0 ? [{ lastDetectedAt: "2026-07-30T02:30:00Z" }] : [{ lastDetectedAt: "2026-07-31T02:30:00Z" }],
+      meta: { page: params.page, size: 100, totalElements: 2, totalPages: 2, sort: "lastDetectedAt,asc" }
+    }));
+
+    const chart = await getChartData("7d");
+
+    expect(chart.find((item) => item.date === "07-30")).toMatchObject({ reports: 1, candidates: 1 });
+    expect(chart.find((item) => item.date === "07-31")).toMatchObject({ reports: 1, candidates: 1 });
+    expect(listCasesMock).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 100 }));
+    expect(fetchAdminCandidatesMock).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 100 }));
   });
 });
