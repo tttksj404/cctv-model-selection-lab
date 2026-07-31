@@ -141,13 +141,13 @@ const openCandidateReview = (job) => {
   router.push({ path: "/admin/candidates", query: { caseId: job.caseId } });
 };
 
-let refreshTimer;
+let jobRefreshTimer;
 onMounted(async () => {
   await load();
-  refreshTimer = window.setInterval(refreshJobs, 3000);
+  jobRefreshTimer = window.setInterval(refreshJobs, 3000);
 });
 onUnmounted(() => {
-  if (refreshTimer) window.clearInterval(refreshTimer);
+  if (jobRefreshTimer) window.clearInterval(jobRefreshTimer);
 });
 </script>
 
