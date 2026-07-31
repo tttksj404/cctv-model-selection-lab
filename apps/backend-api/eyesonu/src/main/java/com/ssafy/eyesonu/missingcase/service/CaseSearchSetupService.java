@@ -30,14 +30,17 @@ public class CaseSearchSetupService {
 	private final CaseQueryService caseQueryService;
 	private final AuditService auditService;
 	private final SearchTargetEventPublisher searchTargetEventPublisher;
+	private final EmbeddedPromptTranslator promptTranslator;
 
 	public CaseSearchSetupService(
 			MissingCaseMapper mapper, CaseQueryService caseQueryService, AuditService auditService,
-			SearchTargetEventPublisher searchTargetEventPublisher) {
+			SearchTargetEventPublisher searchTargetEventPublisher,
+			EmbeddedPromptTranslator promptTranslator) {
 		this.mapper = mapper;
 		this.caseQueryService = caseQueryService;
 		this.auditService = auditService;
 		this.searchTargetEventPublisher = searchTargetEventPublisher;
+		this.promptTranslator = promptTranslator;
 	}
 
 	public List<SearchConditionResponse> findConditions(Long caseId) {
@@ -53,6 +56,7 @@ public class CaseSearchSetupService {
 		row.setCaseId(caseId);
 		row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
 		row.setExclusionPrompt(normalizeOptional(request.exclusionPrompt()));
+		cacheEmbeddedPrompts(row);
 		row.setSearchStart(toInstant(request.searchStart()));
 		row.setSearchEnd(toInstant(request.searchEnd()));
 		row.setSearchArea(normalizeOptional(request.searchArea()));
@@ -81,6 +85,7 @@ public class CaseSearchSetupService {
 		}
 		if (request.prompt() != null) row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
 		if (request.exclusionPrompt() != null) row.setExclusionPrompt(normalizeOptional(request.exclusionPrompt()));
+		if (request.prompt() != null || request.exclusionPrompt() != null) cacheEmbeddedPrompts(row);
 		if (request.searchStart() != null) row.setSearchStart(request.searchStart().toInstant());
 		if (request.searchEnd() != null) row.setSearchEnd(request.searchEnd().toInstant());
 		if (request.searchArea() != null) row.setSearchArea(normalizeOptional(request.searchArea()));
@@ -108,6 +113,7 @@ public class CaseSearchSetupService {
 		}
 		row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
 		row.setExclusionPrompt(normalizeOptional(request.exclusionPrompt()));
+		cacheEmbeddedPrompts(row);
 		row.setSearchStart(toInstant(request.searchStart()));
 		row.setSearchEnd(toInstant(request.searchEnd()));
 		row.setSearchArea(normalizeOptional(request.searchArea()));
@@ -224,6 +230,11 @@ public class CaseSearchSetupService {
 	private void validateTimeRange(Instant start, Instant end) {
 		if ((start == null) != (end == null)) throw validation("searchStart and searchEnd must be provided together.");
 		if (start != null && end.isBefore(start)) throw validation("searchEnd must not be before searchStart.");
+	}
+
+	private void cacheEmbeddedPrompts(SearchConditionRow row) {
+		row.setEmbeddedPrompt(promptTranslator.translate(row.getPrompt()));
+		row.setEmbeddedExclusionPrompt(promptTranslator.translate(row.getExclusionPrompt()));
 	}
 
 	private ApiException validation(String message) {

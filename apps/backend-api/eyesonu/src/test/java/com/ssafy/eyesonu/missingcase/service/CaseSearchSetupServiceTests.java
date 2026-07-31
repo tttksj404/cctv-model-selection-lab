@@ -48,12 +48,15 @@ class CaseSearchSetupServiceTests {
 	@Mock
 	private SearchTargetEventPublisher searchTargetEventPublisher;
 
+	@Mock
+	private EmbeddedPromptTranslator promptTranslator;
+
 	private CaseSearchSetupService service;
 
 	@BeforeEach
 	void setUp() {
 		service = new CaseSearchSetupService(
-				mapper, caseQueryService, auditService, searchTargetEventPublisher);
+				mapper, caseQueryService, auditService, searchTargetEventPublisher, promptTranslator);
 		when(caseQueryService.require(CASE_ID)).thenReturn(openCase());
 	}
 
