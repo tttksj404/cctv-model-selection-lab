@@ -17,7 +17,7 @@ ALTER TABLE analysis_jobs
         GENERATED ALWAYS AS (
             CASE
                 WHEN status IN ('QUEUED', 'RUNNING')
-                    THEN CONCAT(case_id, ':', search_condition_id, ':', recording_id)
+                    THEN CONCAT(job_type, ':', case_id, ':', search_condition_id, ':', recording_id)
                 ELSE NULL
             END
         ) STORED,
