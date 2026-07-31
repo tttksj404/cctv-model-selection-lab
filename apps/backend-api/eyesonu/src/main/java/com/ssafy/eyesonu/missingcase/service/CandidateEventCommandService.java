@@ -70,8 +70,8 @@ public class CandidateEventCommandService {
         event.setCameraId(camera.id());
         event.setDetectedAt(request.detectedAt().toInstant());
         event.setFrameObjectKey(request.frameObjectKey());
-        int inserted = mapper.insertEvent(event);
-        if (inserted == 0) {
+        int eventInserted = mapper.insertEvent(event);
+        if (eventInserted == 0) {
             CandidateEvent concurrent = mapper.findEventByEventId(request.eventId());
             if (concurrent == null) {
                 throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -91,8 +91,8 @@ public class CandidateEventCommandService {
             CandidateEventCreateRequest.Detection input = request.detections().get(index);
             String boundingBox = boundingBoxJson(input.boundingBox());
             CandidateAggregate candidate = newCandidate(request, camera.id(), input, boundingBox);
-            int inserted = mapper.insertCandidate(candidate);
-            if (inserted == 0) {
+            int candidateInserted = mapper.insertCandidate(candidate);
+            if (candidateInserted == 0) {
                 candidate = mapper.findCandidateForUpdate(request.caseId(), camera.id(), input.trackId());
                 if (candidate == null) {
                     throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
