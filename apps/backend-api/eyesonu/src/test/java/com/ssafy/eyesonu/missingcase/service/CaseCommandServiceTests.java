@@ -19,6 +19,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseCloseRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseStatusUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ class CaseCommandServiceTests {
 	private CaseRequestValidator validator;
 	private CaseNumberGenerator caseNumberGenerator;
 	private CaseRegistrationWriter registrationWriter;
+	private SearchTargetEventPublisher searchTargetEventPublisher;
 	private CaseCommandService service;
 
 	@BeforeEach
@@ -40,12 +42,14 @@ class CaseCommandServiceTests {
 		validator = mock(CaseRequestValidator.class);
 		caseNumberGenerator = mock(CaseNumberGenerator.class);
 		registrationWriter = mock(CaseRegistrationWriter.class);
+		searchTargetEventPublisher = mock(SearchTargetEventPublisher.class);
 		service = new CaseCommandService(
 				mapper,
 				validator,
 				caseNumberGenerator,
 				registrationWriter,
-				auditService);
+				auditService,
+				searchTargetEventPublisher);
 	}
 
 	@Test
@@ -124,6 +128,8 @@ class CaseCommandServiceTests {
 				1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "탐색 시작"), 7L).status());
 
 		verify(mapper).updateStatus(1L, CaseStatus.SEARCHING, null);
+		verify(searchTargetEventPublisher).publish(
+				SearchTargetEventPublisher.TARGET_UPDATED, 1L, Instant.parse("2026-07-20T00:00:00Z"));
 	}
 
 	@Test
