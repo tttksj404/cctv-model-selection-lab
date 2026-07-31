@@ -13,7 +13,10 @@ public interface RecordingAnalysisOutboxMapper {
 
     List<RecordingAnalysisOutbox> findReady(@Param("limit") int limit);
 
-    int markProcessing(@Param("id") Long id, @Param("claimToken") String claimToken);
+    int markProcessing(
+            @Param("id") Long id,
+            @Param("claimToken") String claimToken,
+            @Param("leaseUntil") Instant leaseUntil);
 
     int markPublished(
             @Param("id") Long id,

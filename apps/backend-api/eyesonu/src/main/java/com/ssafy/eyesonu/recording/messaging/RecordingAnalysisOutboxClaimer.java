@@ -2,9 +2,11 @@ package com.ssafy.eyesonu.recording.messaging;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class RecordingAnalysisOutboxClaimer {
 
     private final RecordingAnalysisOutboxMapper outboxMapper;
+    private final long claimLeaseSeconds;
 
-    public RecordingAnalysisOutboxClaimer(RecordingAnalysisOutboxMapper outboxMapper) {
+    public RecordingAnalysisOutboxClaimer(
+            RecordingAnalysisOutboxMapper outboxMapper,
+            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds) {
         this.outboxMapper = outboxMapper;
+        this.claimLeaseSeconds = claimLeaseSeconds;
     }
 
     @Transactional
@@ -26,7 +32,8 @@ public class RecordingAnalysisOutboxClaimer {
 
         RecordingAnalysisOutbox outbox = ready.getFirst();
         String claimToken = UUID.randomUUID().toString();
-        int claimed = outboxMapper.markProcessing(outbox.getId(), claimToken);
+        Instant leaseUntil = Instant.now().plusSeconds(claimLeaseSeconds);
+        int claimed = outboxMapper.markProcessing(outbox.getId(), claimToken, leaseUntil);
         if (claimed != 1) {
             throw new IllegalStateException("Failed to claim recording analysis outbox: " + outbox.getId());
         }

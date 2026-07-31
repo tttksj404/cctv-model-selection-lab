@@ -39,7 +39,7 @@
         UPDATE recording_analysis_outbox
         SET status = 'PROCESSING',
             claim_token = #{claimToken},
-            next_attempt_at = DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 30 SECOND)
+            next_attempt_at = #{leaseUntil,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
         WHERE id = #{id}
           AND status IN ('PENDING', 'PROCESSING')
           AND next_attempt_at &lt;= UTC_TIMESTAMP(6)
