@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { login, logout } from "./authApi";
+import { getCurrentAdmin, login, logout } from "./authApi";
 import { apiClient, setUnauthorizedHandler } from "./httpClient";
 
 const originalAdapter = apiClient.defaults.adapter;
@@ -45,7 +45,7 @@ describe("authApi", () => {
         clearCsrfCookie();
         return response(config, {
           timestamp: "2026-07-30T00:00:00Z",
-          data: { id: 1, loginId: "admin", name: "Administrator" }
+          data: { id: 1, loginId: "admin", name: "Administrator", role: "SUPER_ADMIN" }
         });
       }
       throw new Error(`Unexpected request: ${config.url}`);
@@ -54,7 +54,7 @@ describe("authApi", () => {
 
     const admin = await login({ loginId: "admin", password: "password" });
 
-    expect(admin).toEqual({ id: 1, loginId: "admin", name: "Administrator" });
+    expect(admin).toEqual({ id: 1, loginId: "admin", name: "Administrator", role: "SUPER_ADMIN" });
     expect(adapter.mock.calls.map(([config]) => `${config.method} ${config.url}`)).toEqual([
       "get /auth/csrf",
       "post /auth/admin/login",
@@ -72,7 +72,7 @@ describe("authApi", () => {
       if (config.url === "/auth/admin/login") {
         return response(config, {
           timestamp: "2026-07-30T00:00:00Z",
-          data: { id: 1, loginId: "admin", name: "Administrator" }
+          data: { id: 1, loginId: "admin", name: "Administrator", role: "SUPER_ADMIN" }
         });
       }
       return Promise.reject({ config });
@@ -103,5 +103,14 @@ describe("authApi", () => {
       "post /auth/admin/logout",
       "get /auth/csrf"
     ]);
+  });
+
+  it("현재 관리자 응답의 역할을 그대로 반환한다", async () => {
+    const current = { id: 1, loginId: "admin", name: "Administrator", role: "SUPER_ADMIN" };
+    const adapter = vi.fn(async (config) => response(config, { data: current }));
+    apiClient.defaults.adapter = adapter;
+
+    await expect(getCurrentAdmin()).resolves.toEqual(current);
+    expect(adapter.mock.calls[0][0]).toMatchObject({ method: "get", url: "/admins/me" });
   });
 });

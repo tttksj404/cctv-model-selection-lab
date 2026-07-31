@@ -1,6 +1,9 @@
 package com.ssafy.eyesonu.admin.controller.docs;
 
+import com.ssafy.eyesonu.admin.dto.AdminCreateRequest;
+import com.ssafy.eyesonu.admin.dto.AdminManagementResponse;
 import com.ssafy.eyesonu.admin.dto.AdminResponse;
+import com.ssafy.eyesonu.admin.dto.AdminStatusUpdateRequest;
 import com.ssafy.eyesonu.admin.dto.AdminUpdateRequest;
 import com.ssafy.eyesonu.admin.dto.AdminUpdateResponse;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
@@ -16,68 +19,168 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-@Tag(name = "관리자", description = "로그인한 관리자 정보 API")
+@Tag(name = "관리자", description = "로그인한 관리자 정보와 관리자 계정 관리 API")
 public interface AdminControllerDocs {
 
 	@Operation(
-			summary = "내 정보 조회",
-			description = "현재 로그인한 관리자의 정보를 조회합니다.",
+			summary = "List administrator accounts",
+			description = "Returns every administrator account. SUPER_ADMIN authority is required.",
 			security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "200", description = "관리자 정보 조회 성공", useReturnTypeSchema = true,
-					content = @Content(mediaType = "application/json")),
+					responseCode = "200", description = "Administrator accounts returned",
+					useReturnTypeSchema = true, content = @Content(mediaType = "application/json")),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "401", description = "인증 세션 누락 또는 만료",
-					content = @Content(
-							mediaType = "application/json",
+					responseCode = "401", description = "Authentication required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "403", description = "SUPER_ADMIN authority required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "503", description = "Database temporarily unavailable",
+					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ApiErrorResponse.class)))
 	})
-	ResponseEntity<ApiResponse<AdminResponse>> me(
-			@Parameter(hidden = true) AdminPrincipal principal);
+	ResponseEntity<ApiResponse<List<AdminManagementResponse>>> list();
 
 	@Operation(
-			summary = "내 정보 수정",
-			description = "관리자 이름 또는 비밀번호를 수정합니다. 비밀번호가 변경되면 "
-					+ "현재 세션이 종료되므로 다시 로그인해야 합니다.",
+			summary = "Create an administrator account",
+			description = "Creates an enabled ADMIN account. SUPER_ADMIN authority and a CSRF token are required.",
 			security = {
 					@SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME),
 					@SecurityRequirement(name = SwaggerConfig.CSRF_SCHEME)
 			})
 	@ApiResponses({
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "200", description = "관리자 정보 수정 성공", useReturnTypeSchema = true,
-					content = @Content(mediaType = "application/json")),
+					responseCode = "201", description = "Administrator account created",
+					useReturnTypeSchema = true, content = @Content(mediaType = "application/json")),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "400", description = "요청 값 또는 현재 비밀번호 검증 실패",
-					content = @Content(
-							mediaType = "application/json",
+					responseCode = "400", description = "Invalid account values",
+					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ApiErrorResponse.class))),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "401", description = "인증 세션 누락 또는 만료",
-					content = @Content(
-							mediaType = "application/json",
+					responseCode = "401", description = "Authentication required",
+					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ApiErrorResponse.class))),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "403", description = "CSRF 토큰 누락 또는 불일치",
-					content = @Content(
-							mediaType = "application/json",
+					responseCode = "403", description = "SUPER_ADMIN authority or CSRF token required",
+					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ApiErrorResponse.class))),
 			@io.swagger.v3.oas.annotations.responses.ApiResponse(
-					responseCode = "503", description = "관리자 정보 수정 또는 데이터베이스 일시 장애",
-					content = @Content(
-							mediaType = "application/json",
+					responseCode = "409", description = "Login ID already exists",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "503", description = "Database temporarily unavailable",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	ResponseEntity<ApiResponse<AdminManagementResponse>> create(
+			@Parameter(hidden = true) AdminPrincipal principal,
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "Administrator account values", required = true,
+					content = @Content(schema = @Schema(implementation = AdminCreateRequest.class)))
+			AdminCreateRequest body);
+
+	@Operation(
+			summary = "Change administrator account status",
+			description = "Enables or disables an administrator account. SUPER_ADMIN authority and a CSRF token are required.",
+			security = {
+					@SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME),
+					@SecurityRequirement(name = SwaggerConfig.CSRF_SCHEME)
+			})
+	@ApiResponses({
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "200", description = "Administrator account status returned",
+					useReturnTypeSchema = true, content = @Content(mediaType = "application/json")),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "400", description = "Invalid status value",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "401", description = "Authentication required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "403", description = "SUPER_ADMIN authority or CSRF token required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "404", description = "Administrator account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "409", description = "Status change would violate account invariants",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "503", description = "Database temporarily unavailable",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	ResponseEntity<ApiResponse<AdminManagementResponse>> updateStatus(
+			@Parameter(hidden = true) AdminPrincipal principal,
+			@Parameter(description = "Administrator account ID", required = true) Long adminId,
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "Desired enabled state", required = true,
+					content = @Content(schema = @Schema(implementation = AdminStatusUpdateRequest.class)))
+			AdminStatusUpdateRequest body);
+
+	@Operation(
+			summary = "Get current administrator profile",
+			description = "Returns the currently authenticated administrator profile.",
+			security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
+	@ApiResponses({
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "200", description = "Administrator profile returned",
+					useReturnTypeSchema = true, content = @Content(mediaType = "application/json")),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "401", description = "Authentication required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class)))
+	})
+	ResponseEntity<ApiResponse<AdminResponse>> me(
+			@Parameter(hidden = true) AdminPrincipal principal);
+
+	@Operation(
+			summary = "Update current administrator profile",
+			description = "Updates the current administrator name or password.",
+			security = {
+					@SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME),
+					@SecurityRequirement(name = SwaggerConfig.CSRF_SCHEME)
+			})
+	@ApiResponses({
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "200", description = "Administrator profile updated",
+					useReturnTypeSchema = true, content = @Content(mediaType = "application/json")),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "400", description = "Invalid values or current password mismatch",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "401", description = "Authentication required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "403", description = "CSRF token required",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ApiErrorResponse.class))),
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+					responseCode = "503", description = "Administrator update or database temporarily unavailable",
+					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ApiErrorResponse.class)))
 	})
 	ResponseEntity<ApiResponse<AdminUpdateResponse>> update(
 			@Parameter(hidden = true) AdminPrincipal principal,
 			@Parameter(hidden = true) Authentication authentication,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(
-					description = "변경할 관리자 정보",
-					required = true,
+					description = "Administrator profile values", required = true,
 					content = @Content(schema = @Schema(implementation = AdminUpdateRequest.class)))
 			AdminUpdateRequest body,
 			@Parameter(hidden = true) HttpServletRequest request,

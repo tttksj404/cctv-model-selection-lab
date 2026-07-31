@@ -9,6 +9,7 @@ const props = defineProps({
   showReason: { type: Boolean, default: false },
   reason: { type: String, default: "" },
   reasonError: { type: String, default: "" },
+  error: { type: String, default: "" },
   loading: { type: Boolean, default: false },
   confirmDisabled: { type: Boolean, default: false }
 });
@@ -33,6 +34,7 @@ const confirm = () => {
     <section class="modal" role="dialog" aria-modal="true" :aria-labelledby="title ? 'confirm-modal-title' : undefined">
       <h3 id="confirm-modal-title">{{ title }}</h3>
       <p>{{ message }}</p>
+      <p v-if="error" class="modal-operation-error" role="alert">{{ error }}</p>
       <label v-if="showReason" class="modal-reason-field">
         <span>사유</span>
         <textarea
@@ -69,6 +71,16 @@ const confirm = () => {
   color: #b23b32;
   font-size: 12px;
   font-weight: 600;
+}
+
+.modal-operation-error {
+  margin-top: 14px;
+  border: 1px solid #efbcb6;
+  border-radius: 7px;
+  padding: 10px;
+  color: #b23b32;
+  background: #fff0ee;
+  font-size: 13px;
 }
 
 button:disabled,

@@ -28,6 +28,8 @@ public class SwaggerConfig {
 	public static final String DEVICE_KEY_SCHEME = "deviceKey";
 
 	private static final String ADMIN_ME_PATH = "/api/v1/admins/me";
+	private static final String ADMINS_PATH = "/api/v1/admins";
+	private static final String ADMIN_STATUS_PATH = "/api/v1/admins/{adminId}/status";
 	private static final String LOGOUT_PATH = "/api/v1/auth/admin/logout";
 	private static final String ERROR_SCHEMA_REF = "#/components/schemas/ApiErrorResponse";
 
@@ -75,19 +77,35 @@ public class SwaggerConfig {
 	@Bean
 	OpenApiCustomizer securityFilterEndpointCustomizer() {
 		return openApi -> {
-			combineAdminUpdateSecurity(openApi);
+			combineAdminMutationSecurity(openApi);
 			addLogoutPath(openApi);
 			normalizeJsonResponseMediaTypes(openApi);
 		};
 	}
 
-	private void combineAdminUpdateSecurity(OpenAPI openApi) {
+	private void combineAdminMutationSecurity(OpenAPI openApi) {
 		PathItem adminMe = openApi.getPaths() == null ? null : openApi.getPaths().get(ADMIN_ME_PATH);
 		if (adminMe != null && adminMe.getPatch() != null) {
-			adminMe.getPatch().setSecurity(List.of(new SecurityRequirement()
-					.addList(SESSION_SCHEME)
-					.addList(CSRF_SCHEME)));
+			setSessionAndCsrf(adminMe.getPatch());
 		}
+
+		PathItem admins = openApi.getPaths() == null ? null : openApi.getPaths().get(ADMINS_PATH);
+		if (admins != null && admins.getPost() != null) {
+			setSessionAndCsrf(admins.getPost());
+		}
+
+		PathItem adminStatus = openApi.getPaths() == null
+				? null
+				: openApi.getPaths().get(ADMIN_STATUS_PATH);
+		if (adminStatus != null && adminStatus.getPatch() != null) {
+			setSessionAndCsrf(adminStatus.getPatch());
+		}
+	}
+
+	private void setSessionAndCsrf(Operation operation) {
+		operation.setSecurity(List.of(new SecurityRequirement()
+				.addList(SESSION_SCHEME)
+				.addList(CSRF_SCHEME)));
 	}
 
 	private void addLogoutPath(OpenAPI openApi) {

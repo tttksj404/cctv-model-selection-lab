@@ -31,7 +31,7 @@ export const adminMenu = [
   { path: "/admin/candidates", label: "후보 검토", title: "후보 검토" },
   { path: "/admin/routes", label: "추정 동선", title: "추정 동선" },
   { path: "/admin/cameras", label: "CCTV 관리", title: "CCTV 관리" },
-  { path: "/admin/users", label: "사용자 관리", title: "사용자 관리" },
+  { path: "/admin/users", label: "관리자 계정", title: "관리자 계정 관리", requiresSuperAdmin: true },
   { path: "/admin/logs", label: "시스템 로그", title: "시스템 로그" },
   { path: "/admin/notifications", label: "알림", title: "알림" },
   { path: "/admin/settings", label: "설정", title: "설정" }
@@ -59,7 +59,7 @@ const routes = [
       { path: "cameras", component: CamerasView, meta: { title: "CCTV 관리" } },
       { path: "cameras/new", component: CameraFormView, meta: { title: "CCTV 등록" } },
       { path: "cameras/:cameraId/edit", component: CameraFormView, meta: { title: "CCTV 수정" } },
-      { path: "users", component: UsersView, meta: { title: "사용자 관리" } },
+      { path: "users", component: UsersView, meta: { title: "관리자 계정 관리", requiresSuperAdmin: true } },
       { path: "logs", component: LogsView, meta: { title: "시스템 로그" } },
       { path: "notifications", component: NotificationsView, meta: { title: "알림" } },
       { path: "notifications/settings", component: NotificationSettingsView, meta: { title: "알림 설정" } },
