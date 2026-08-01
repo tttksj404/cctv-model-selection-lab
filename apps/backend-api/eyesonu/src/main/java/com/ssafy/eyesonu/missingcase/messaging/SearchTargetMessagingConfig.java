@@ -8,7 +8,8 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import tools.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,10 +52,7 @@ public class SearchTargetMessagingConfig {
 
 	@Bean
 	Queue recordingAnalysisJobQueue() {
-		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE)
-				.deadLetterExchange(RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE)
-				.deadLetterRoutingKey(RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY)
-				.build();
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE).build();
 	}
 
 	@Bean
@@ -89,6 +87,7 @@ public class SearchTargetMessagingConfig {
 	SimpleRabbitListenerContainerFactory recordingAnalysisJobListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			JacksonJsonMessageConverter rabbitMessageConverter,
+			RabbitTemplate rabbitTemplate,
 			@Value("${recording.analysis.consumer.auto-start:true}") boolean consumerAutoStart) {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setConnectionFactory(connectionFactory);
@@ -98,7 +97,10 @@ public class SearchTargetMessagingConfig {
 				RetryInterceptorBuilder.stateless()
 						.maxRetries(2)
 						.backOffOptions(1_000L, 2.0, 10_000L)
-						.recoverer(new RejectAndDontRequeueRecoverer())
+						.recoverer(new RepublishMessageRecoverer(
+								rabbitTemplate,
+								RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE,
+								RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY))
 						.build()));
 		return factory;
 	}
