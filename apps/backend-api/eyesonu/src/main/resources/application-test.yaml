@@ -58,5 +58,7 @@ testcontainers:
 
 recording:
   analysis:
+    outbox:
+      auto-start: ${TEST_RECORDING_ANALYSIS_OUTBOX_AUTO_START:false}
     consumer:
-      auto-start: ${TEST_RECORDING_ANALYSIS_CONSUMER_AUTO_START:false}
+      auto-start: false
