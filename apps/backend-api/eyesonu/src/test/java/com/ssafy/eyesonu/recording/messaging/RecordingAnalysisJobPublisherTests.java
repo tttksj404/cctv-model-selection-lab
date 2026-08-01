@@ -13,7 +13,10 @@ import static org.mockito.Mockito.when;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -36,10 +39,16 @@ class RecordingAnalysisJobPublisherTests {
     @Mock
     private RecordingAnalysisOutboxClaimer outboxClaimer;
 
+    private final List<RecordingAnalysisJobPublisher> publishers = new ArrayList<>();
+
+    @AfterEach
+    void closePublishers() {
+        publishers.forEach(RecordingAnalysisJobPublisher::close);
+    }
+
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
-        RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 300);
+        RecordingAnalysisJobPublisher publisher = publisher(300);
 
         publisher.enqueue(5001L, 101L);
 
@@ -55,8 +64,7 @@ class RecordingAnalysisJobPublisherTests {
         stubLeaseRenewal(1);
         completeConfirm(true, null, null);
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
+        publisher(300).publishPending();
 
         verify(rabbitTemplate).convertAndSend(
                 eq(RecordingAnalysisJobPublisher.EXCHANGE),
@@ -74,8 +82,7 @@ class RecordingAnalysisJobPublisherTests {
         stubLeaseRenewal(1);
         completeConfirm(false, "exchange unavailable", null);
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
+        publisher(300).publishPending();
 
         verify(outboxMapper).markFailed(
                 1L, "claim-1", "RabbitMQ publisher NACK: exchange unavailable");
@@ -92,8 +99,7 @@ class RecordingAnalysisJobPublisherTests {
                 RecordingAnalysisJobPublisher.ROUTING_KEY);
         completeConfirm(true, null, returned);
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
+        publisher(300).publishPending();
 
         verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ message was returned: NO_ROUTE");
         verify(outboxMapper, never()).markPublished(any(), anyString(), any());
@@ -108,8 +114,7 @@ class RecordingAnalysisJobPublisherTests {
                         anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
                         any(MessagePostProcessor.class), any(CorrelationData.class));
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 300).publishPending();
+        publisher(300).publishPending();
 
         verify(outboxMapper).markFailed(1L, "claim-1", "RabbitMQ unavailable");
         verify(outboxMapper, never()).markPublished(any(), anyString(), any());
@@ -128,8 +133,7 @@ class RecordingAnalysisJobPublisherTests {
                 anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
                 any(MessagePostProcessor.class), any(CorrelationData.class));
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 3).publishPending();
+        publisher(3).publishPending();
 
         verify(outboxMapper, atLeastOnce()).renewLease(
                 eq(1L), eq("claim-1"), any(Instant.class));
@@ -140,8 +144,7 @@ class RecordingAnalysisJobPublisherTests {
         claim(readyOutbox());
         stubLeaseRenewal(0);
 
-        new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, 3).publishPending();
+        publisher(3).publishPending();
 
         verify(rabbitTemplate, never()).convertAndSend(
                 anyString(), anyString(), any(RecordingAnalysisJobEvent.class),
@@ -175,5 +178,12 @@ class RecordingAnalysisJobPublisherTests {
         return new RecordingAnalysisOutbox(
                 1L, "cmd-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
                 5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"), 0);
+    }
+
+    private RecordingAnalysisJobPublisher publisher(long claimLeaseSeconds) {
+        RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer, claimLeaseSeconds);
+        publishers.add(publisher);
+        return publisher;
     }
 }
