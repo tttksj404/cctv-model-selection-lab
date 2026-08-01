@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
@@ -46,6 +47,14 @@ class RecordingAnalysisJobPublisherTests {
         verify(outboxMapper).insert(any(RecordingAnalysisOutbox.class));
         verify(rabbitTemplate, never()).convertAndSend(
                 anyString(), anyString(), any(), any(MessagePostProcessor.class), any(CorrelationData.class));
+    }
+
+    @Test
+    void skipsOutboxPollingWhenSchedulerIsDisabled() {
+        new RecordingAnalysisJobPublisher(
+                rabbitTemplate, outboxMapper, outboxClaimer, 300, false).publishPending();
+
+        verifyNoInteractions(rabbitTemplate, outboxMapper, outboxClaimer);
     }
 
     @Test
