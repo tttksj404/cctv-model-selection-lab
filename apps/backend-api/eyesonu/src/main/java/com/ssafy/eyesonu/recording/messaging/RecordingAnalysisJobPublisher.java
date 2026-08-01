@@ -13,14 +13,12 @@ import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.annotation.PreDestroy;
 
 @Component
-public class RecordingAnalysisJobPublisher {
+public class RecordingAnalysisJobPublisher implements AutoCloseable {
 
     public static final String EVENT_TYPE = "RECORDING_ANALYSIS_JOB_CREATED";
     public static final String QUEUE = "search.target.recording.queue";
@@ -35,39 +33,29 @@ public class RecordingAnalysisJobPublisher {
     private final RecordingAnalysisOutboxMapper outboxMapper;
     private final RecordingAnalysisOutboxClaimer outboxClaimer;
     private final long claimLeaseSeconds;
-    private final boolean outboxPublisherAutoStart;
-    private final ScheduledExecutorService heartbeatExecutor =
-            Executors.newSingleThreadScheduledExecutor(runnable -> {
-                Thread thread = new Thread(runnable, "recording-analysis-outbox-heartbeat");
-                thread.setDaemon(true);
-                return thread;
-            });
+    private final Object heartbeatExecutorMonitor = new Object();
+    private ScheduledExecutorService heartbeatExecutor;
 
-    @Autowired
     public RecordingAnalysisJobPublisher(
             RabbitTemplate rabbitTemplate,
             RecordingAnalysisOutboxMapper outboxMapper,
             RecordingAnalysisOutboxClaimer outboxClaimer,
-            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds,
-            @Value("${recording.analysis.outbox.auto-start:true}") boolean outboxPublisherAutoStart) {
+            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds) {
         this.rabbitTemplate = rabbitTemplate;
         this.outboxMapper = outboxMapper;
         this.outboxClaimer = outboxClaimer;
         this.claimLeaseSeconds = claimLeaseSeconds;
-        this.outboxPublisherAutoStart = outboxPublisherAutoStart;
-    }
-
-    RecordingAnalysisJobPublisher(
-            RabbitTemplate rabbitTemplate,
-            RecordingAnalysisOutboxMapper outboxMapper,
-            RecordingAnalysisOutboxClaimer outboxClaimer,
-            long claimLeaseSeconds) {
-        this(rabbitTemplate, outboxMapper, outboxClaimer, claimLeaseSeconds, true);
     }
 
     @PreDestroy
-    void shutdownHeartbeatExecutor() {
-        heartbeatExecutor.shutdownNow();
+    @Override
+    public void close() {
+        synchronized (heartbeatExecutorMonitor) {
+            if (heartbeatExecutor != null) {
+                heartbeatExecutor.shutdownNow();
+                heartbeatExecutor = null;
+            }
+        }
     }
 
     public void enqueue(Long jobId, Long caseId) {
@@ -75,11 +63,7 @@ public class RecordingAnalysisJobPublisher {
                 null, UUID.randomUUID().toString(), EVENT_TYPE, jobId, caseId, Instant.now(), 0));
     }
 
-    @Scheduled(fixedDelayString = "${recording.analysis.outbox.poll-delay-ms:1000}")
     public void publishPending() {
-        if (!outboxPublisherAutoStart) {
-            return;
-        }
         for (int published = 0; published < 50; published++) {
             ClaimedRecordingAnalysisOutbox claimed = outboxClaimer.claimNext().orElse(null);
             if (claimed == null) {
@@ -125,14 +109,27 @@ public class RecordingAnalysisJobPublisher {
             AtomicBoolean leaseOwned) {
         renewLease(outbox.getId(), claimToken, leaseOwned);
         if (!leaseOwned.get()) {
-            return heartbeatExecutor.schedule(() -> { }, 0, TimeUnit.MILLISECONDS);
+            return heartbeatExecutor().schedule(() -> { }, 0, TimeUnit.MILLISECONDS);
         }
         long intervalSeconds = Math.max(1L, claimLeaseSeconds / 3L);
-        return heartbeatExecutor.scheduleAtFixedRate(
+        return heartbeatExecutor().scheduleAtFixedRate(
                 () -> renewLease(outbox.getId(), claimToken, leaseOwned),
                 intervalSeconds,
                 intervalSeconds,
                 TimeUnit.SECONDS);
+    }
+
+    private ScheduledExecutorService heartbeatExecutor() {
+        synchronized (heartbeatExecutorMonitor) {
+            if (heartbeatExecutor == null || heartbeatExecutor.isShutdown()) {
+                heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+                    Thread thread = new Thread(runnable, "recording-analysis-outbox-heartbeat");
+                    thread.setDaemon(true);
+                    return thread;
+                });
+            }
+            return heartbeatExecutor;
+        }
     }
 
     private void renewLease(Long outboxId, String claimToken, AtomicBoolean leaseOwned) {
