@@ -13,7 +13,6 @@ import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import tools.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
@@ -87,12 +86,10 @@ public class SearchTargetMessagingConfig {
 	SimpleRabbitListenerContainerFactory recordingAnalysisJobListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			JacksonJsonMessageConverter rabbitMessageConverter,
-			RabbitTemplate rabbitTemplate,
-			@Value("${recording.analysis.consumer.auto-start:true}") boolean consumerAutoStart) {
+			RabbitTemplate rabbitTemplate) {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setConnectionFactory(connectionFactory);
 		factory.setMessageConverter(rabbitMessageConverter);
-		factory.setAutoStartup(consumerAutoStart);
 		factory.setContainerCustomizer(container -> container.setAdviceChain(
 				RetryInterceptorBuilder.stateless()
 						.maxRetries(2)

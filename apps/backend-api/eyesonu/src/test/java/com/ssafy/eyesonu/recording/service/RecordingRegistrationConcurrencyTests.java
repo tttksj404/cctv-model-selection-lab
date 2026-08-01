@@ -90,12 +90,12 @@ class RecordingRegistrationConcurrencyTests {
                 .filter(RecordingCreateResult.class::isInstance)
                 .map(RecordingCreateResult.class::cast)
                 .filter(result -> !result.duplicate())
-                .count());
+                .count(), () -> "Unexpected outcomes: " + outcomes);
         assertEquals(1, outcomes.stream()
                 .filter(RecordingCreateResult.class::isInstance)
                 .map(RecordingCreateResult.class::cast)
                 .filter(RecordingCreateResult::duplicate)
-                .count());
+                .count(), () -> "Unexpected outcomes: " + outcomes);
         assertDatabaseCounts(1, 1);
     }
 
