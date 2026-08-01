@@ -13,6 +13,7 @@ import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ public class RecordingAnalysisJobPublisher {
     private final RecordingAnalysisOutboxMapper outboxMapper;
     private final RecordingAnalysisOutboxClaimer outboxClaimer;
     private final long claimLeaseSeconds;
+    private final boolean outboxPublisherAutoStart;
     private final ScheduledExecutorService heartbeatExecutor =
             Executors.newSingleThreadScheduledExecutor(runnable -> {
                 Thread thread = new Thread(runnable, "recording-analysis-outbox-heartbeat");
@@ -41,15 +43,26 @@ public class RecordingAnalysisJobPublisher {
                 return thread;
             });
 
+    @Autowired
     public RecordingAnalysisJobPublisher(
             RabbitTemplate rabbitTemplate,
             RecordingAnalysisOutboxMapper outboxMapper,
             RecordingAnalysisOutboxClaimer outboxClaimer,
-            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds) {
+            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds,
+            @Value("${recording.analysis.outbox.auto-start:true}") boolean outboxPublisherAutoStart) {
         this.rabbitTemplate = rabbitTemplate;
         this.outboxMapper = outboxMapper;
         this.outboxClaimer = outboxClaimer;
         this.claimLeaseSeconds = claimLeaseSeconds;
+        this.outboxPublisherAutoStart = outboxPublisherAutoStart;
+    }
+
+    RecordingAnalysisJobPublisher(
+            RabbitTemplate rabbitTemplate,
+            RecordingAnalysisOutboxMapper outboxMapper,
+            RecordingAnalysisOutboxClaimer outboxClaimer,
+            long claimLeaseSeconds) {
+        this(rabbitTemplate, outboxMapper, outboxClaimer, claimLeaseSeconds, true);
     }
 
     @PreDestroy
@@ -64,6 +77,9 @@ public class RecordingAnalysisJobPublisher {
 
     @Scheduled(fixedDelayString = "${recording.analysis.outbox.poll-delay-ms:1000}")
     public void publishPending() {
+        if (!outboxPublisherAutoStart) {
+            return;
+        }
         for (int published = 0; published < 50; published++) {
             ClaimedRecordingAnalysisOutbox claimed = outboxClaimer.claimNext().orElse(null);
             if (claimed == null) {
