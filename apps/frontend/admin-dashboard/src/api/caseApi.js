@@ -37,3 +37,11 @@ export async function updateCaseStatus(caseId, payload) {
 export async function closeCase(caseId, payload) {
   return unwrapData(await apiClient.post(casePath(caseId, "/close"), payload));
 }
+
+export async function listSearchConditions(caseId) {
+  return unwrapData(await apiClient.get(casePath(caseId, "/search-conditions")));
+}
+
+export async function listCaseCameras(caseId) {
+  return unwrapData(await apiClient.get(casePath(caseId, "/cameras")));
+}

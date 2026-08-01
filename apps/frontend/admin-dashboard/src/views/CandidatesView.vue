@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { LayoutGrid, Table2 } from "lucide-vue-next";
 import { useRoute, useRouter } from "vue-router";
 import { fetchAdminCandidates, objectUrl } from "../api/candidateApi";
@@ -37,12 +37,14 @@ const loadCases = async () => {
   }));
 
   const initialCaseNumber = String(route.query.caseNumber || "");
-  const initialCase = cases.value.find((item) => item.caseNumber === initialCaseNumber);
+  const initialCaseId = String(route.query.caseId || "");
+  const initialCase = cases.value.find((item) => String(item.id) === initialCaseId)
+    || cases.value.find((item) => item.caseNumber === initialCaseNumber);
   if (initialCase) filters.caseId = String(initialCase.id);
 };
 
-const load = async () => {
-  loading.value = true;
+const load = async ({ showLoading = true } = {}) => {
+  if (showLoading) loading.value = true;
   error.value = "";
   try {
     const result = await fetchAdminCandidates(listParams());
@@ -57,6 +59,12 @@ const load = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+let refreshTimer;
+const refresh = () => {
+  if (document.visibilityState === "hidden") return;
+  return load({ showLoading: false });
 };
 
 const selectCase = (caseItem) => {
@@ -80,6 +88,11 @@ onMounted(async () => {
     cases.value = [];
   }
   await load();
+  refreshTimer = window.setInterval(refresh, 5000);
+});
+
+onUnmounted(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer);
 });
 </script>
 

@@ -41,6 +41,10 @@ public class AdminCandidateQueryService {
                 (int) Math.min(Integer.MAX_VALUE, pages), sort[0] + "," + sort[1]);
     }
 
+    public Instant findLastModified() {
+        return mapper.findLastModified();
+    }
+
     public AdminCandidateDetailResponse findById(Long candidateId) {
         AdminCandidateRow candidate = mapper.findById(candidateId);
         if (candidate == null) {
