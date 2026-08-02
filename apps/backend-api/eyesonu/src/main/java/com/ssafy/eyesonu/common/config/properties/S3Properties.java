@@ -20,6 +20,9 @@ public class S3Properties {
 
 	private URI endpoint;
 
+	@NotNull
+	private URI publicEndpoint;
+
 	@NotBlank
 	private String region;
 
@@ -56,6 +59,14 @@ public class S3Properties {
 
 	public void setEndpoint(URI endpoint) {
 		this.endpoint = endpoint;
+	}
+
+	public URI getPublicEndpoint() {
+		return publicEndpoint;
+	}
+
+	public void setPublicEndpoint(URI publicEndpoint) {
+		this.publicEndpoint = publicEndpoint;
 	}
 
 	public String getRegion() {

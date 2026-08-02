@@ -20,6 +20,7 @@ class S3PropertiesBindingTests {
 	void bindsLocalS3Configuration() {
 		Map<String, Object> values = Map.ofEntries(
 				Map.entry("eyesonu.storage.s3.endpoint", "http://localhost:9000"),
+				Map.entry("eyesonu.storage.s3.public-endpoint", "https://storage.example.test"),
 				Map.entry("eyesonu.storage.s3.region", "ap-northeast-2"),
 				Map.entry("eyesonu.storage.s3.bucket", "eyesonu-media"),
 				Map.entry("eyesonu.storage.s3.path-style-access", "true"),
@@ -36,6 +37,7 @@ class S3PropertiesBindingTests {
 				.orElseThrow(() -> new AssertionError("S3 properties were not bound"));
 
 		assertEquals(URI.create("http://localhost:9000"), properties.getEndpoint());
+		assertEquals(URI.create("https://storage.example.test"), properties.getPublicEndpoint());
 		assertEquals("ap-northeast-2", properties.getRegion());
 		assertEquals("eyesonu-media", properties.getBucket());
 		assertTrue(properties.isPathStyleAccess());
@@ -51,6 +53,7 @@ class S3PropertiesBindingTests {
 	void bindsIamRoleConfigurationWithoutEndpointOrStaticCredentials() {
 		Map<String, Object> values = Map.of(
 				"eyesonu.storage.s3.endpoint", "",
+				"eyesonu.storage.s3.public-endpoint", "https://storage.example.test",
 				"eyesonu.storage.s3.region", "ap-northeast-2",
 				"eyesonu.storage.s3.bucket", "eyesonu-prod",
 				"eyesonu.storage.s3.path-style-access", "false",
