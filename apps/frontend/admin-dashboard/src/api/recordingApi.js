@@ -15,7 +15,7 @@ export async function listRecordingAnalysisJobs(caseId) {
   return unwrapData(await apiClient.get(analysisJobPath(caseId)));
 }
 
-export async function listRecordingAnalysisJobsByCaseIds(caseIds) {
+export async function listRecordingAnalysisJobsForDashboard(caseIds) {
   return unwrapData(await apiClient.get("/admin/recording-analysis-jobs", {
     params: { caseIds: caseIds.join(",") }
   }));

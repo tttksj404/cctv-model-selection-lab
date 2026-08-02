@@ -1,9 +1,9 @@
 package com.ssafy.eyesonu.recording.mapper;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import java.util.List;
 
 @Mapper
 public interface AnalysisJobMapper {
