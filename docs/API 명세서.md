@@ -1,5 +1,7 @@
 # EyesOnU REST API 명세서
 
+> 문서 구분: 별도 표시가 없는 본문은 현재 `dev` 브랜치에서 호출 가능한 API 계약이다. 문서 마지막의 **목표 API 계약 — 미구현**은 후속 설계를 위한 참고이며 현재 엔드포인트로 호출할 수 없고 호환성을 보장하지 않는다.
+
 ## 1. 문서 개요
 
 이 문서는 실종 신고, 사건별 CCTV 탐색, AI 후보 검토 및 운영 이력 관리를 위한 REST API를 정의한다.
@@ -65,10 +67,9 @@
 | `GET` | `/admin/cases/{caseId}/cameras` | 사건의 탐색 카메라 목록 | `caseId` | `200`, `404` |
 | `POST` | `/admin/cases/{caseId}/cameras` | 탐색 카메라 추가·재활성화 | `cameraIds` | `200`, `400`, `404` |
 | `DELETE` | `/admin/cases/{caseId}/cameras/{cameraId}` | 탐색 카메라 제외 | `caseId`, `cameraId` | `204`, `404` |
-| `GET` | `/admin/cases/{caseId}/candidates` | 사건 후보 목록 | 판정 상태, 카메라, 탐지 기간, 최소 유사도, 페이지 조건 | `200`, `400`, `404` |
+| `GET` | `/admin/candidates` | 전체 후보 목록 | 선택적 사건·카메라·판정 상태·탐지 기간, 페이지·정렬 조건 | `200`, `304`, `400` |
 | `GET` | `/admin/candidates/{candidateId}` | 후보 상세 | `candidateId` | `200`, `404` |
 | `PATCH` | `/admin/candidates/{candidateId}/review` | 후보 판정 | `reviewStatus`, `reviewComment`, `version` | `200`, `400`, `404`, `409` |
-| `GET` | `/admin/cases/{caseId}/route` | 확정 후보 기반 동선 조회 | `from`, `to` | `200`, `400`, `404` |
 
 ### 2.3 미디어 서버·카메라·녹화·장치
 
@@ -94,11 +95,12 @@
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/admin/cases/{caseId}/analysis-jobs` | 녹화 영상 분석 작업 생성 | 작업 유형, 탐색 조건, 녹화 ID 목록 | `202`, `400`, `404`, `409` |
-| `GET` | `/admin/cases/{caseId}/analysis-jobs` | 사건별 분석 작업 목록 | 상태, 작업 유형, 페이지 조건 | `200`, `404` |
-| `GET` | `/admin/analysis-jobs/{jobId}` | 분석 작업 상세 | `jobId` | `200`, `404` |
-| `POST` | `/admin/analysis-jobs/{jobId}/retry` | 실패 작업 재시도 | `jobId` | `202`, `404`, `409` |
-| `GET` | `/admin/audit-logs` | 감사 로그 조회 | 사건, 관리자, 행위, 대상, 기간, 페이지 조건 | `200`, `400`, `401`, `403` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs` | 녹화 분석 작업 생성 | 탐색 조건 ID, 녹화 ID | `201`, `400`, `404`, `409` |
+| `GET` | `/admin/cases/{caseId}/recording-analysis-jobs` | 사건별 분석 작업 목록 | `caseId` | `200`, `404` |
+| `GET` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}` | 사건별 작업 상세 | `caseId`, `jobId` | `200`, `404` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}/cancel` | 작업 취소 | `caseId`, `jobId` | `200`, `404`, `409` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}/retry` | 실패 작업 재시도 | `caseId`, `jobId` | `202`, `404`, `409` |
+| `GET` | `/admin/recording-analysis-jobs?caseIds=...` | 여러 사건 작업 일괄 조회 | 사건 ID 1~100개 | `200`, `400` |
 
 ---
 
@@ -712,11 +714,11 @@
 
 | 메서드 | 경로 | 설명 | 주요 요청·필터 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `GET` | `/admin/cases/{caseId}/candidates` | 사건 후보 목록 | `reviewStatus`, `cameraId`, `detectedFrom`, `detectedTo`, `minSimilarity`, 페이지 조건 | `200`, `400`, `404` |
+| `GET` | `/admin/candidates` | 전체 후보 목록 | `caseId`, `reviewStatus`, `cameraId`, `detectedFrom`, `detectedTo`, `page`, `size`, `sort` | `200`, `304`, `400` |
 | `GET` | `/admin/candidates/{candidateId}` | 후보 상세 | Path: `candidateId` | `200`, `404` |
 | `PATCH` | `/admin/candidates/{candidateId}/review` | 후보 판정 | `reviewStatus`, `reviewComment`, `version` | `200`, `400`, `404`, `409` |
 
-목록 기본 정렬은 `detectedTime,desc`이다.
+목록 기본 정렬은 `lastDetectedAt,desc`이며 `size`는 1~100이다. 응답에는 `ETag`와 `Cache-Control: private, no-cache, must-revalidate`가 포함되며 같은 조건으로 `If-None-Match`를 보내 변경이 없으면 `304 Not Modified`를 반환한다. 현재 응답은 `frameObjectKey`, `cropObjectKey`와 문자열 `boundingBox`를 포함한다.
 
 후보 판정 요청:
 
@@ -728,37 +730,7 @@
 }
 ```
 
-응답 `200 OK`:
-
-```json
-{
-  "timestamp": "2026-07-20T02:10:00Z",
-  "data": {
-    "id": 9001,
-    "caseId": 101,
-    "camera": {
-      "id": 2,
-      "cameraName": "Zone B 출입구",
-      "latitude": 37.5020000,
-      "longitude": 127.0410000,
-      "address": "서울특별시 강남구"
-    },
-    "detectedTime": "2026-07-20T02:00:12Z",
-    "similarity": 0.8421,
-    "imageUrl": "https://media.example.com/signed/...",
-    "clipUrl": "https://media.example.com/signed/...",
-    "clipStatus": "READY",
-    "reviewStatus": "CONFIRMED",
-    "reviewComment": "신고 사진의 의상과 소지품이 일치함",
-    "reviewedBy": {
-      "id": 1,
-      "name": "관제 관리자"
-    },
-    "reviewedAt": "2026-07-20T02:10:00Z",
-    "version": 4
-  }
-}
-```
+목록 응답은 후보 ID, 사건·카메라 식별 정보, `trackId`, 최초·최종 탐지 시각, 최고·평균 유사도, 탐지 횟수, 프레임·크롭 Object Key, bounding box, 판정 상태와 버전을 반환한다. 상세 응답에는 탐지 목록과 판정 의견·관리자·시각이 추가된다.
 
 - 요청 `version`이 DB의 현재 버전과 다르면 `409 OPTIMISTIC_LOCK_CONFLICT`와 최신 후보 정보를 반환한다.
 - `CONFIRMED` 판정은 사건 상태를 자동 종료하지 않는다.
@@ -766,51 +738,7 @@
 
 ### 6.5 확정 동선 조회
 
-`GET /api/v1/admin/cases/{caseId}/route`
-
-인증: ADMIN 세션
-
-주요 응답: `200`, `400`, `404`
-
-| 쿼리 파라미터 | 필수 | 설명 |
-| --- | --- | --- |
-| `from` | 아니요 | 조회 시작 시각 |
-| `to` | 아니요 | 조회 종료 시각 |
-
-응답은 `reviewStatus=CONFIRMED`인 후보만 `detectedTime,asc` 순서로 반환한다.
-
-```json
-{
-  "timestamp": "2026-07-20T02:20:00Z",
-  "data": {
-    "caseId": 101,
-    "latestSighting": {
-      "candidateId": 9001,
-      "detectedTime": "2026-07-20T02:00:12Z",
-      "latitude": 37.5020000,
-      "longitude": 127.0410000
-    },
-    "sightings": [
-      {
-        "candidateId": 8990,
-        "detectedTime": "2026-07-20T01:45:10Z",
-        "cameraName": "Zone A 복도",
-        "latitude": 37.5015000,
-        "longitude": 127.0402000,
-        "imageUrl": "https://media.example.com/signed/..."
-      },
-      {
-        "candidateId": 9001,
-        "detectedTime": "2026-07-20T02:00:12Z",
-        "cameraName": "Zone B 출입구",
-        "latitude": 37.5020000,
-        "longitude": 127.0410000,
-        "imageUrl": "https://media.example.com/signed/..."
-      }
-    ]
-  }
-}
-```
+현재 `dev`에는 확정 동선 조회 API가 없다. 목표 계약은 14장을 참고한다.
 
 ---
 
@@ -1410,82 +1338,47 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 
 | 메서드 | 경로 | 인증 | 설명 | 주요 응답 |
 | --- | --- | --- | --- | --- |
-| `POST` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN 세션 | 녹화 영상 분석 작업 생성 | `202`, `400`, `404`, `409` |
-| `GET` | `/admin/cases/{caseId}/analysis-jobs` | ADMIN 세션 | 사건별 분석 작업 목록 | `200`, `404` |
-| `GET` | `/admin/analysis-jobs/{jobId}` | ADMIN 세션 | 작업 상세 조회 | `200`, `404` |
-| `POST` | `/admin/analysis-jobs/{jobId}/retry` | ADMIN 세션 | 실패 작업 재시도 | `202`, `404`, `409` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs` | ADMIN 세션 | 녹화 분석 작업 생성 | `201`, `400`, `404`, `409` |
+| `GET` | `/admin/cases/{caseId}/recording-analysis-jobs` | ADMIN 세션 | 사건별 작업 목록 | `200`, `404` |
+| `GET` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}` | ADMIN 세션 | 사건별 작업 상세 | `200`, `404` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}/cancel` | ADMIN 세션 | 작업 취소 | `200`, `404`, `409` |
+| `POST` | `/admin/cases/{caseId}/recording-analysis-jobs/{jobId}/retry` | ADMIN 세션 | 실패 작업 재시도 | `202`, `404`, `409` |
+| `GET` | `/admin/recording-analysis-jobs` | ADMIN 세션 | `caseIds`에 해당하는 작업 일괄 조회 | `200`, `400` |
 
 작업 생성 요청:
 
 ```json
 {
-  "jobType": "RECORDING_ANALYSIS",
-  "searchConditionId": 301,
-  "recordingIds": [501, 502]
+  "conditionId": 301,
+  "recordingId": 501
 }
 ```
 
-- `recordingIds`를 생략하면 사건의 활성 카메라와 탐색 시간 범위에 포함되며 등록 및 저장소 검증이 끝난 녹화본을 서버가 선정한다.
-- 선택된 각 녹화본마다 `ANALYSIS_JOBS`를 생성하며, 응답에는 생성된 작업 ID 배열을 반환한다.
+- `conditionId`와 `recordingId`는 필수 양의 정수다. 한 요청은 녹화본 하나에 대한 작업 하나를 생성한다.
 - 사건이 `CLOSED`이면 작업을 생성할 수 없다.
-- `retry`는 `FAILED` 상태에서만 허용하며, `retryCount`를 증가시키고 오류 메시지를 유지한 채 `QUEUED`로 전환한다.
+- 같은 사건·조건·녹화에 활성 작업이 있으면 중복 생성하지 않는다.
+- `cancel`과 `retry`는 서비스가 허용하는 현재 작업 상태에서만 성공한다.
 
 작업 응답 주요 필드:
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
-| `id` | long | 작업 ID |
+| `jobId` | long | 작업 ID |
 | `caseId` | long | 사건 ID |
-| `recordingId` | long, nullable | 녹화본 분석 시 대상 ID |
-| `candidateId` | long, nullable | 클립 생성 시 후보 ID |
-| `jobType` | AnalysisJobType | 작업 종류 |
+| `conditionId` | long | 탐색 조건 ID |
+| `recordingId` | long | 녹화본 ID |
+| `jobType` | string | 현재 작업 종류 |
 | `status` | AnalysisJobStatus | 작업 상태 |
-| `retryCount` | integer | 재시도 횟수 |
-| `errorMessage` | string, nullable | 최근 실패 원인 |
+| `prompt`, `exclusionPrompt` | string, nullable | 생성 시점 탐색 문구 snapshot |
+| `searchStart`, `searchEnd`, `searchArea` | datetime/string, nullable | 생성 시점 탐색 범위 snapshot |
+| `similarityThreshold` | decimal | 생성 시점 유사도 임계값 snapshot |
 | `requestedAt` | datetime | 요청 시각 |
-| `startedAt` | datetime, nullable | 시작 시각 |
-| `completedAt` | datetime, nullable | 완료 시각 |
 
 ---
 
 ## 10. 감사 로그 API
 
-`GET /api/v1/admin/audit-logs`
-
-인증: ADMIN 세션
-주요 응답: `200`, `400`, `401`, `403`
-
-| 쿼리 파라미터 | 필수 | 설명 |
-| --- | --- | --- |
-| `caseId` | 아니요 | 사건 ID |
-| `adminId` | 아니요 | 수행 관리자 ID |
-| `actionType` | 아니요 | 작업 유형 |
-| `targetType` | 아니요 | 대상 엔터티 유형 |
-| `targetId` | 아니요 | 대상 ID |
-| `createdFrom` | 아니요 | 조회 시작 시각 |
-| `createdTo` | 아니요 | 조회 종료 시각 |
-| `page`, `size`, `sort` | 아니요 | 페이지·정렬 조건 |
-
-기본 정렬은 `createdAt,desc`이다.
-
-응답 주요 필드:
-
-| 필드 | 타입 | 설명 |
-| --- | --- | --- |
-| `id` | long | 감사 로그 ID |
-| `admin` | object, nullable | 수행 관리자의 ID와 이름 |
-| `caseId` | long, nullable | 관련 사건 ID |
-| `actionType` | string | 작업 유형 |
-| `targetType` | string, nullable | 작업 대상 유형 |
-| `targetId` | long, nullable | 작업 대상 ID |
-| `beforeValue` | object/string, nullable | 변경 전 값 |
-| `afterValue` | object/string, nullable | 변경 후 값 |
-| `detail` | string, nullable | 상세 설명 |
-| `createdAt` | datetime | 수행 시각 |
-
-- 비밀번호, 토큰, Device Key, 전체 RTSP URL 등 비밀정보는 변경 전후 값에 기록하지 않는다.
-- 개인정보 조회 이력도 남기되 응답 권한과 보존 정책은 별도 운영 정책을 따른다.
-- 감사 로그는 이 API로 수정·삭제할 수 없다.
+현재 `dev`는 주요 변경을 `audit_logs`에 저장하지만 관리자용 감사 로그 조회 컨트롤러를 제공하지 않는다. `/api/v1/admin/audit-logs`는 호출할 수 없는 후속 범위다.
 
 ---
 
@@ -1564,3 +1457,30 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 - 관리자 세션 만료 시간은 현재 30분이며 애플리케이션 설정으로 관리한다.
 - 로그인·사건 진행 조회 Rate Limit은 현재 애플리케이션 상수로 적용한다. 장치 Heartbeat의 `OFFLINE` 판정 시간, 임시 미디어 URL 만료 시간과 파일 용량은 환경 설정으로 관리한다.
 - REST 조회 API는 WebSocket 연결이 끊긴 동안 발생한 후보와 상태 변경을 복구 조회하는 기준 데이터로 사용한다.
+
+---
+
+## 14. 목표 API 계약 — 미구현
+
+> 이 장의 경로, 필드, 상태 값은 목표 설계다. 현재 `dev`에는 대응 컨트롤러·DTO·DB 마이그레이션이 없으며 클라이언트가 사용해서는 안 된다. 구현 시 별도 검토를 거쳐 변경될 수 있어 현재 호환성을 보장하지 않는다.
+
+### 14.1 후보 조회·판정·미디어 목표
+
+- 사건별 후보 목록 `GET /api/v1/admin/cases/{caseId}/candidates`와 `source`, `minSimilarity` 필터를 추가한다.
+- 후보 출처는 `JETSON_REALTIME`, `RECORDING_ANALYSIS`, `LEGACY_UNKNOWN`으로 구분하고 실시간 후보를 우선 정렬한다.
+- 대표 탐지와 변경 불가능한 판정 근거를 저장하며 판정 요청에 `evidenceDetectionId`를 포함한다.
+- 후보·탐지 미디어는 Object Key를 응답하지 않고 인증된 `/media/{mediaType}` 경로에서 소유 관계를 검증한 뒤 presigned URL로 리다이렉트한다.
+- 이 목표는 후보 provenance·대표 탐지·판정 근거 스키마가 추가된 뒤에만 활성화한다.
+
+### 14.2 자동 녹화 분석과 경로 예측 목표
+
+- 사건 탐색 시작 시 마지막 목격 장소·시각을 기준으로 `LAST_SIGHTING` 분석 작업을 자동 생성한다.
+- 녹화본 후보의 관측 추정 경로가 갱신되면 위·경도 기준 다음 카메라를 최대 2대 선정해 `ROUTE_PREDICTION` 작업을 생성한다.
+- 목표 작업 계약에는 `triggerType`, `triggerCandidateIds`, `predictedCameraRank`, `searchFrom`, `searchTo`를 포함한다.
+- 외부 AI Worker 연동에는 claim·lease·heartbeat·취소·멱등 결과 접수와 Worker 전용 인증을 추가한다.
+- 상세 메시지와 REST 목표 계약은 [RabbitMQ 작업 전달과 REST 결과 회신 연동 안내서](./realtime-embedded-integration-guide.md)를 따른다.
+
+### 14.3 확정 동선 조회 목표
+
+- `GET /api/v1/admin/cases/{caseId}/route`에서 관리자 확정 후보를 탐지 시각 순으로 조회하는 계약을 목표로 한다.
+- 실제 구현 전에는 경로, 응답 구조와 시간 필터의 호환성을 보장하지 않는다.
