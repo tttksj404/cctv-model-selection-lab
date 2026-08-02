@@ -37,14 +37,18 @@ public class AuditLogQueryService {
         Long caseId = condition.caseId();
         String actionType = normalizeOptional(condition.actionType());
         String actor = normalizeOptional(condition.actor());
-        long totalElements = auditLogMapper.countAdminAuditLogs(caseId, actionType, actor, from, to);
+        Long actorId = parseActorId(actor);
+        String actorText = actorId == null ? actor : null;
+        long totalElements = auditLogMapper.countAdminAuditLogs(
+                caseId, actionType, actorId, actorText, from, to);
         long offset = (long) condition.page() * condition.size();
         List<AuditLogListResponse> logs = totalElements == 0
                 ? List.of()
                 : auditLogMapper.findAdminPage(
                                 caseId,
                                 actionType,
-                                actor,
+                                actorId,
+                                actorText,
                                 from,
                                 to,
                                 sort.field(),
@@ -112,6 +116,19 @@ public class AuditLogQueryService {
         }
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private Long parseActorId(String actor) {
+        if (actor == null || actor.isEmpty()
+                || !actor.chars().allMatch(Character::isDigit)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(actor);
+        }
+        catch (NumberFormatException exception) {
+            return null;
+        }
     }
 
     private ApiException validation(String message) {

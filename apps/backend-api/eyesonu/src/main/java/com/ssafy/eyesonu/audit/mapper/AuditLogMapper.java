@@ -43,6 +43,7 @@ public interface AuditLogMapper {
     long countAdminAuditLogs(
             @Param("caseId") Long caseId,
             @Param("actionType") String actionType,
+            @Param("actorId") Long actorId,
             @Param("actor") String actor,
             @Param("fromTime") Instant fromTime,
             @Param("toTime") Instant toTime);
@@ -50,6 +51,7 @@ public interface AuditLogMapper {
     List<AuditLogRow> findAdminPage(
             @Param("caseId") Long caseId,
             @Param("actionType") String actionType,
+            @Param("actorId") Long actorId,
             @Param("actor") String actor,
             @Param("fromTime") Instant fromTime,
             @Param("toTime") Instant toTime,

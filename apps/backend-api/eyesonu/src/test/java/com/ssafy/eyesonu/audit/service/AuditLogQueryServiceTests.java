@@ -35,11 +35,13 @@ class AuditLogQueryServiceTests {
         Instant fromInstant = Instant.parse("2026-08-02T01:00:00Z");
         Instant toInstant = Instant.parse("2026-08-02T02:00:00Z");
         AuditLogRow row = row(12L);
-        when(auditLogMapper.countAdminAuditLogs(20L, "CASE_STATUS_CHANGED", "관리자", fromInstant, toInstant))
+        when(auditLogMapper.countAdminAuditLogs(
+                20L, "CASE_STATUS_CHANGED", null, "관리자", fromInstant, toInstant))
                 .thenReturn(21L);
         when(auditLogMapper.findAdminPage(
                 20L,
                 "CASE_STATUS_CHANGED",
+                null,
                 "관리자",
                 fromInstant,
                 toInstant,
@@ -62,6 +64,7 @@ class AuditLogQueryServiceTests {
         verify(auditLogMapper).findAdminPage(
                 20L,
                 "CASE_STATUS_CHANGED",
+                null,
                 "관리자",
                 fromInstant,
                 toInstant,
@@ -73,7 +76,7 @@ class AuditLogQueryServiceTests {
 
     @Test
     void emptyPageUsesDefaultsAndSkipsPageQuery() {
-        when(auditLogMapper.countAdminAuditLogs(null, null, null, null, null)).thenReturn(0L);
+        when(auditLogMapper.countAdminAuditLogs(null, null, null, null, null, null)).thenReturn(0L);
 
         AuditLogPageResult result = service.findAll(
                 new AuditLogSearchCondition(null, null, null, null, null, 0, 20, null));
@@ -82,7 +85,7 @@ class AuditLogQueryServiceTests {
         assertEquals(0, result.totalPages());
         assertEquals("createdAt,desc", result.sort());
         verify(auditLogMapper, never()).findAdminPage(
-                any(), any(), any(), any(), any(), any(), any(), eq(20), eq(0L));
+                any(), any(), any(), any(), any(), any(), any(), any(), eq(20), eq(0L));
     }
 
     @Test
@@ -120,9 +123,9 @@ class AuditLogQueryServiceTests {
                 "{\"password\":\"secret\",\"safe\":\"visible\"}",
                 "{\"apiToken\":\"token-value\"}",
                 "{\"photoUrl\":\"https://storage.example/photo.jpg\",\"image\":\"raw-image\",\"ok\":true}");
-        when(auditLogMapper.countAdminAuditLogs(null, null, null, null, null)).thenReturn(1L);
+        when(auditLogMapper.countAdminAuditLogs(null, null, null, null, null, null)).thenReturn(1L);
         when(auditLogMapper.findAdminPage(
-                any(), any(), any(), any(), any(), any(), any(), eq(20), eq(0L)))
+                any(), any(), any(), any(), any(), any(), any(), any(), eq(20), eq(0L)))
                 .thenReturn(List.of(row));
 
         AuditLogListResponse response = service.findAll(
@@ -139,6 +142,17 @@ class AuditLogQueryServiceTests {
         assertEquals("[REDACTED]", after.get("apiToken"));
         assertEquals("[REDACTED]", detail.get("photoUrl"));
         assertEquals("[REDACTED]", detail.get("image"));
+    }
+
+    @Test
+    void treatsNumericActorAsExactAdminIdFilter() {
+        when(auditLogMapper.countAdminAuditLogs(null, null, 255002L, null, null, null))
+                .thenReturn(0L);
+
+        service.findAll(new AuditLogSearchCondition(
+                null, null, " 255002 ", null, null, 0, 20, null));
+
+        verify(auditLogMapper).countAdminAuditLogs(null, null, 255002L, null, null, null);
     }
 
     private AuditLogRow row(Long id) {
