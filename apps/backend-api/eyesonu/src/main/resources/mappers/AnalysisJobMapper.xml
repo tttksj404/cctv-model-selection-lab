@@ -96,4 +96,21 @@
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
+
+    <update id="cancelActive">
+        UPDATE analysis_jobs
+        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status IN ('QUEUED', 'RUNNING')
+    </update>
+
+    <update id="retryFailed">
+        UPDATE analysis_jobs
+        SET status = 'QUEUED', retry_count = retry_count + 1,
+            error_message = NULL, started_at = NULL,
+            completed_at = NULL, requested_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'FAILED'
+    </update>
 </mapper>

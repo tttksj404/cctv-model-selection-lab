@@ -7,7 +7,9 @@ import {
   createRecordingAnalysisJob,
   fetchRecordingAnalysisJob,
   listAdminRecordings,
-  listRecordingAnalysisJobs
+  listRecordingAnalysisJobs,
+  cancelRecordingAnalysisJob,
+  retryRecordingAnalysisJob
 } from "../api/recordingApi";
 
 const router = useRouter();
@@ -175,6 +177,24 @@ const refreshJobs = async () => {
   }));
 };
 
+const cancelJob = async (job) => {
+  error.value = "";
+  try {
+    Object.assign(job, await cancelRecordingAnalysisJob(job.caseId, job.jobId));
+  } catch (exception) {
+    error.value = exception.message || "녹화 분석 작업을 취소하지 못했습니다.";
+  }
+};
+
+const retryJob = async (job) => {
+  error.value = "";
+  try {
+    Object.assign(job, await retryRecordingAnalysisJob(job.caseId, job.jobId));
+  } catch (exception) {
+    error.value = exception.message || "녹화 분석 작업을 재시도하지 못했습니다.";
+  }
+};
+
 const openCandidateReview = (job) => {
   router.push({ path: "/admin/candidates", query: { caseId: job.caseId } });
 };
@@ -244,7 +264,7 @@ onUnmounted(() => {
         </div>
         <div class="progress" :class="`progress-${jobStatus(job.status)}`"><span :style="{ width: `${jobProgress(job.status)}%` }" /></div>
         <div class="job-progress-meta"><span><strong>{{ jobProgress(job.status) }}%</strong> 완료</span><span>상태 <strong>{{ job.status }}</strong></span></div>
-        <div class="job-card-actions"><button v-if="job.status === 'SUCCEEDED'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button></div>
+        <div class="job-card-actions"><button v-if="job.status === 'SUCCEEDED'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button><button v-if="['QUEUED', 'RUNNING'].includes(job.status)" class="ghost-button" @click="cancelJob(job)">취소</button><button v-if="job.status === 'FAILED'" class="reset-button" @click="retryJob(job)">재시도</button></div>
       </article>
     </div>
   </section>
