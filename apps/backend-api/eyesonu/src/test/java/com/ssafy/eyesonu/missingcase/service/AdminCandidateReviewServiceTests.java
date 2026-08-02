@@ -54,6 +54,18 @@ class AdminCandidateReviewServiceTests {
         verify(mapper, never()).findByIdForUpdate(any());
     }
 
+    @Test
+    void rejectsWhenVersionChangesBetweenReadAndUpdate() {
+        when(mapper.findByIdForUpdate(CANDIDATE_ID)).thenReturn(candidate(3L));
+        when(mapper.updateReview(CANDIDATE_ID, "CONFIRMED", "확인", ADMIN_ID, 3L)).thenReturn(0);
+
+        assertThrows(ApiException.class, () -> service.review(
+                CANDIDATE_ID, new AdminCandidateReviewRequest("CONFIRMED", "확인", 3L), ADMIN_ID));
+
+        verify(auditService, never()).recordRequired(any(), any(), any(), any(), any(), any());
+        verify(queryService, never()).findById(any());
+    }
+
     private AdminCandidateRow candidate(Long version) {
         AdminCandidateRow row = new AdminCandidateRow();
         row.setId(CANDIDATE_ID);
