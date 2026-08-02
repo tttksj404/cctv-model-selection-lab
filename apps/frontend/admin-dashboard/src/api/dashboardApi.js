@@ -12,6 +12,13 @@ const SUMMARY_CASE_SORT = "reportedAt,desc";
 const CHART_CASE_SORT = "reportedAt,asc";
 const CHART_CANDIDATE_SORT = "lastDetectedAt,asc";
 
+async function settleAll(promises) {
+  const results = await Promise.allSettled(promises);
+  const rejected = results.find((result) => result.status === "rejected");
+  if (rejected) throw rejected.reason;
+  return results.map((result) => result.value);
+}
+
 const KST_DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone: KST_TIME_ZONE,
   year: "numeric",
@@ -143,7 +150,7 @@ export async function getCases({ page = 0, size = 10 } = {}) {
 
 export async function getChartData(range = "7d") {
   const period = periodFor(range);
-  const [cases, candidates] = await Promise.all([
+  const [cases, candidates] = await settleAll([
     fetchAllPages(listCases, {
       reportedFrom: period.from,
       reportedTo: period.to,
