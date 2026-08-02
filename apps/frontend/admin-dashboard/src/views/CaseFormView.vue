@@ -15,6 +15,12 @@ import {
   buildCreateCasePayload,
   caseDetailToForm
 } from "../domain/caseMapper";
+import AppearancePicker from "../components/cases/AppearancePicker.vue";
+import {
+  APPEARANCE_KEYS,
+  APPEARANCE_LIMITS,
+  getAppearanceCategory
+} from "../domain/appearancePicker";
 
 const router = useRouter();
 const route = useRoute();
@@ -57,17 +63,7 @@ const createEmptyForm = () => ({
   lastSeenDate: "",
   lastSeenTime: "",
   lastSeenLocation: "",
-  story: "",
-  prompt: "",
-  exclude: "",
-  searchFrom: "마지막 목격 시각",
-  searchFromCustomDate: "",
-  searchFromCustomTime: "",
-  searchTo: "현재 시각",
-  searchToCustomDate: "",
-  searchToCustomTime: "",
-  zones: "마지막 목격 위치 주변",
-  zonesCustom: ""
+  story: ""
 });
 const form = reactive(createEmptyForm());
 const photoPreviewUrl = ref("");
@@ -76,6 +72,24 @@ let photoObjectUrl = "";
 const isEditMode = computed(() => Boolean(route.params.caseId));
 const isClosed = computed(() => caseStatus.value === "CLOSED");
 const photoDisplayUrl = computed(() => photoPreviewUrl.value || existingPhotoUrl.value);
+const appearancePickerKey = computed(() => isEditMode.value ? `case-${route.params.caseId}` : "case-new");
+const appearanceModel = computed({
+  get: () => Object.fromEntries(APPEARANCE_KEYS.map((key) => [key, form[key]])),
+  set: (value) => {
+    for (const key of APPEARANCE_KEYS) form[key] = value?.[key] ?? "";
+
+    if (APPEARANCE_KEYS.some((key) => String(form[key]).trim())) {
+      delete errors.value.appearance;
+    }
+
+    const fieldErrors = { ...(errors.value.appearanceFields ?? {}) };
+    for (const key of APPEARANCE_KEYS) {
+      if (String(form[key]).trim().length <= APPEARANCE_LIMITS[key]) delete fieldErrors[key];
+    }
+    if (Object.keys(fieldErrors).length) errors.value.appearanceFields = fieldErrors;
+    else delete errors.value.appearanceFields;
+  }
+});
 const pageTitle = computed(() => isEditMode.value ? "사건 정보 수정" : "신규 사건 등록");
 const pageDescription = computed(() => isEditMode.value ? "등록된 사건 정보를 확인하고 수정합니다." : "필수 입력값 검증과 등록 확인 모달을 제공합니다.");
 const submitText = computed(() => {
@@ -98,7 +112,6 @@ const syncBirthYearFromAge = () => {
   if (age > 0 && age < 130) form.birthYear = String(currentYear - age + 1);
 };
 
-const appearanceKeys = ["head", "face", "top", "bottom", "shoes", "accessory", "body", "feature"];
 const acceptedPhotoTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxPhotoBytes = 10 * 1024 * 1024;
 
@@ -133,8 +146,21 @@ const validate = () => {
     errors.value.birthYear = `1900년부터 ${currentYear}년 사이로 입력해 주세요.`;
   }
 
-  if (!appearanceKeys.some((key) => String(form[key] ?? "").trim())) {
+  if (!APPEARANCE_KEYS.some((key) => String(form[key] ?? "").trim())) {
     errors.value.appearance = "인상착의 항목을 하나 이상 입력해 주세요.";
+  }
+
+  const appearanceFieldErrors = {};
+  for (const key of APPEARANCE_KEYS) {
+    const value = String(form[key] ?? "").trim();
+    const limit = APPEARANCE_LIMITS[key];
+    if (value.length > limit) {
+      const label = getAppearanceCategory(key)?.label ?? key;
+      appearanceFieldErrors[key] = `${label} 항목은 최대 ${limit}자까지 입력할 수 있습니다. (${value.length - limit}자 초과)`;
+    }
+  }
+  if (Object.keys(appearanceFieldErrors).length) {
+    errors.value.appearanceFields = appearanceFieldErrors;
   }
 
   if (!isEditMode.value && !form.photoFile) {
@@ -417,37 +443,17 @@ onBeforeUnmount(() => {
 
       <section class="wide appearance-section">
         <h3>인상착의</h3>
-        <div class="appearance-layout">
-          <div class="person-preview" aria-hidden="true">
-            <span class="person-head"></span>
-            <span class="person-body"></span>
-            <span class="person-arm left"></span>
-            <span class="person-arm right"></span>
-            <span class="person-leg left"></span>
-            <span class="person-leg right"></span>
-            <span class="person-shoe left"></span>
-            <span class="person-shoe right"></span>
-          </div>
-          <div class="appearance-fields">
-            <div class="body-side-fields">
-              <label class="head-field">머리<input v-model="form.head" :disabled="isClosed || submitting" placeholder="예: 흰머리, 짧은 검정 머리" /></label>
-              <label class="top-field">상의<input v-model="form.top" :disabled="isClosed || submitting" placeholder="예: 검은색 패딩, 남색 후드티" /></label>
-              <label class="bottom-field">하의<input v-model="form.bottom" :disabled="isClosed || submitting" placeholder="예: 회색 바지, 청바지" /></label>
-              <label class="shoes-field">신발<input v-model="form.shoes" :disabled="isClosed || submitting" placeholder="예: 흰 운동화, 검정 스니커즈" /></label>
-            </div>
-            <div class="appearance-extra-fields">
-              <label>얼굴 특징<input v-model="form.face" :disabled="isClosed || submitting" placeholder="예: 둥근 얼굴, 안경, 수염" /></label>
-              <label>가방/소지품<input v-model="form.accessory" :disabled="isClosed || submitting" placeholder="예: 지팡이, 빨간 백팩, 보행보조기" /></label>
-              <label>체형<input v-model="form.body" :disabled="isClosed || submitting" placeholder="예: 마른 체형, 보통 체형, 허리가 굽음" /></label>
-              <label>추가 설명<textarea v-model="form.feature" :disabled="isClosed || submitting" placeholder="예: 회색 지팡이를 짚고 걸음, 오른쪽 다리를 절음" /></label>
-            </div>
-          </div>
-        </div>
-        <small class="form-error">{{ errors.appearance }}</small>
+        <AppearancePicker
+          :key="appearancePickerKey"
+          v-model="appearanceModel"
+          :disabled="isClosed || submitting"
+          :errors="errors.appearanceFields || {}"
+        />
+        <small v-if="errors.appearance" class="form-error">{{ errors.appearance }}</small>
       </section>
 
       <section class="wide">
-        <h3>실종 정보 및 탐색 조건</h3>
+        <h3>실종 정보</h3>
         <div class="inline-grid">
           <label class="required-field"><span class="field-title">마지막 목격 날짜</span><input v-model="form.lastSeenDate" type="date" :disabled="isClosed || submitting" /><small>{{ errors.lastSeenDate }}</small></label>
           <label class="required-field"><span class="field-title">마지막 목격 시간</span><input v-model="form.lastSeenTime" type="time" :disabled="isClosed || submitting" /><small>{{ errors.lastSeenTime }}</small></label>
@@ -457,16 +463,6 @@ onBeforeUnmount(() => {
           </label>
         </div>
         <label class="required-field"><span class="field-title">실종 경위</span><textarea v-model="form.story" :disabled="isClosed || submitting" placeholder="신고자가 설명한 실종 경위를 입력하세요." /><small>{{ errors.story }}</small></label>
-        <p>탐색 조건 API 연결 후 제공됩니다. 아래 항목은 현재 서버에 저장되지 않습니다.</p>
-        <label>자연어 탐색 문장
-          <textarea v-model="form.prompt" disabled placeholder="예: 70대 여성, 검은색 패딩과 회색 바지를 착용, 지팡이 소지" />
-        </label>
-        <label>제외 조건<input v-model="form.exclude" disabled placeholder="예: 검은 모자 착용자는 제외, 유모차 동반자는 제외" /></label>
-        <div class="inline-grid">
-          <label>영상 조회 시작 기준<select v-model="form.searchFrom" disabled><option>신고 접수 시각</option><option>마지막 목격 시각</option><option>현재 시각</option><option>직접 입력</option></select><div class="custom-datetime"><input v-model="form.searchFromCustomDate" type="date" disabled /><input v-model="form.searchFromCustomTime" type="time" disabled /></div></label>
-          <label>영상 조회 종료 기준<select v-model="form.searchTo" disabled><option>신고 접수 시각</option><option>마지막 목격 시각</option><option>현재 시각</option><option>직접 입력</option></select><div class="custom-datetime"><input v-model="form.searchToCustomDate" type="date" disabled /><input v-model="form.searchToCustomTime" type="time" disabled /></div></label>
-          <label>우선 탐색 범위<select v-model="form.zones" disabled><option>마지막 목격 위치 주변</option><option>전체 CCTV 구역</option><option>Zone A</option><option>Zone B</option><option>주요 이동 경로 우선</option></select></label>
-        </div>
       </section>
       </div>
 
