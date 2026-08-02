@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { LayoutGrid, Table2 } from "lucide-vue-next";
 import { useRoute, useRouter } from "vue-router";
-import { fetchAdminCandidates, objectUrl } from "../api/candidateApi";
+import { fetchAdminCandidates } from "../api/candidateApi";
 import { listCases } from "../api/caseApi";
 import BasePagination from "../components/common/BasePagination.vue";
 import { formatCandidateDate, reviewStatusLabel, reviewStatusTone, similarityPercent, similarityTone } from "../domain/candidateMapper";
@@ -136,8 +136,8 @@ onUnmounted(() => {
     <template v-else>
       <div v-if="filters.view === 'card'" class="candidate-grid">
         <button v-for="item in rows" :key="item.id" class="candidate-card" @click="router.push(`/admin/candidates/${item.id}`)">
-          <img v-if="objectUrl(item.cropObjectKey)" :src="objectUrl(item.cropObjectKey)" alt="후보 캡처" />
-          <span v-else class="image-placeholder large">이미지 없음<br />{{ item.cropObjectKey || "없음" }}</span>
+          <img v-if="item.cropUrl" :src="item.cropUrl" alt="후보 캡처" />
+          <span v-else class="image-placeholder large">이미지 없음</span>
           <strong>{{ item.caseNumber }}</strong>
           <p>{{ item.cameraCode }} · {{ formatCandidateDate(item.lastDetectedAt) }}</p>
           <p class="candidate-location">{{ item.cameraName || "카메라 위치 미등록" }} · track {{ item.trackId }}</p>

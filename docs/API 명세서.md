@@ -720,6 +720,11 @@
 
 목록 기본 정렬은 `lastDetectedAt,desc`이며 `size`는 1~100이다. 응답에는 `ETag`와 `Cache-Control: private, no-cache, must-revalidate`가 포함되며 같은 조건으로 `If-None-Match`를 보내 변경이 없으면 `304 Not Modified`를 반환한다. 현재 응답은 `frameObjectKey`, `cropObjectKey`와 문자열 `boundingBox`를 포함한다.
 
+- 관리자 후보 목록은 내부 object key 대신 만료 시간이 있는 `cropUrl`만 반환한다.
+- 관리자 후보 상세 상단은 내부 object key 대신 `frameUrl`, `cropUrl`을 반환하고, 탐지 이력은 `cropUrl`만 반환한다.
+- 서명 URL을 새로 발급해야 하므로 후보 조회 응답은 `Cache-Control: no-store`이며 `ETag` 기반 `304`를 사용하지 않는다.
+- 서명 URL 발급에 실패하면 `503 STORAGE_UNAVAILABLE`을 반환한다.
+
 후보 판정 요청:
 
 ```json

@@ -8,6 +8,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateDetectionResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateListResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateSearchCondition;
 import com.ssafy.eyesonu.missingcase.mapper.AdminCandidateMapper;
+import com.ssafy.eyesonu.storage.StorageObjectUrlSigner;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdminCandidateQueryService {
     private final AdminCandidateMapper mapper;
+    private final StorageObjectUrlSigner urlSigner;
 
-    public AdminCandidateQueryService(AdminCandidateMapper mapper) {
+    public AdminCandidateQueryService(AdminCandidateMapper mapper, StorageObjectUrlSigner urlSigner) {
         this.mapper = mapper;
+        this.urlSigner = urlSigner;
     }
 
     public AdminCandidatePageResult findAll(AdminCandidateSearchCondition condition) {
@@ -35,14 +38,10 @@ public class AdminCandidateQueryService {
         List<AdminCandidateListResponse> candidates = total == 0 ? List.of() : mapper.findPage(
                         condition.caseId(), condition.cameraId(), reviewStatus, from, to,
                         sort[0], sort[1], condition.size(), (long) condition.page() * condition.size())
-                .stream().map(AdminCandidateListResponse::from).toList();
+                .stream().map(this::toListResponse).toList();
         long pages = total / condition.size() + (total % condition.size() == 0 ? 0 : 1);
         return new AdminCandidatePageResult(candidates, condition.page(), condition.size(), total,
                 (int) Math.min(Integer.MAX_VALUE, pages), sort[0] + "," + sort[1]);
-    }
-
-    public Instant findLastModified() {
-        return mapper.findLastModified();
     }
 
     public AdminCandidateDetailResponse findById(Long candidateId) {
@@ -51,8 +50,21 @@ public class AdminCandidateQueryService {
             throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Candidate was not found");
         }
         List<AdminCandidateDetectionResponse> detections = mapper.findDetections(candidateId).stream()
-                .map(AdminCandidateDetectionResponse::from).toList();
-        return AdminCandidateDetailResponse.from(candidate, detections);
+                .map(this::toDetectionResponse).toList();
+        return AdminCandidateDetailResponse.from(candidate,
+                sign(candidate.getFrameObjectKey()), sign(candidate.getCropObjectKey()), detections);
+    }
+
+    private AdminCandidateListResponse toListResponse(AdminCandidateRow row) {
+        return AdminCandidateListResponse.from(row, sign(row.getCropObjectKey()));
+    }
+
+    private AdminCandidateDetectionResponse toDetectionResponse(AdminCandidateDetectionRow row) {
+        return AdminCandidateDetectionResponse.from(row, sign(row.getCropObjectKey()));
+    }
+
+    private String sign(String objectKey) {
+        return objectKey == null ? null : urlSigner.createGetUrl(objectKey);
     }
 
     private String normalizeStatus(String value) {

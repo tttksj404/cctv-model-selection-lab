@@ -18,19 +18,18 @@ public record AdminCandidateListResponse(
         BigDecimal bestSimilarity,
         BigDecimal averageSimilarity,
         Integer detectionCount,
-        String frameObjectKey,
-        String cropObjectKey,
+        String cropUrl,
         String boundingBox,
         String reviewStatus,
         Long version,
         Instant createdAt,
         Instant updatedAt) {
 
-    public static AdminCandidateListResponse from(AdminCandidateRow row) {
+    public static AdminCandidateListResponse from(AdminCandidateRow row, String cropUrl) {
         return new AdminCandidateListResponse(row.getId(), row.getCaseId(), row.getCaseNumber(), row.getMissingName(),
                 row.getCameraId(), row.getCameraCode(), row.getCameraName(), row.getTrackId(), row.getFirstDetectedAt(),
                 row.getLastDetectedAt(), row.getBestSimilarity(), row.getAverageSimilarity(), row.getDetectionCount(),
-                row.getFrameObjectKey(), row.getCropObjectKey(), row.getBoundingBox(), row.getReviewStatus(), row.getVersion(),
+                cropUrl, row.getBoundingBox(), row.getReviewStatus(), row.getVersion(),
                 row.getCreatedAt(), row.getUpdatedAt());
     }
 }

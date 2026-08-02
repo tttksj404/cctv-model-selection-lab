@@ -40,6 +40,7 @@ eyesonu:
   storage:
     s3:
       endpoint: ${S3_ENDPOINT:http://localhost:9000}
+      public-endpoint: ${S3_PUBLIC_ENDPOINT:http://localhost:9000}
       region: ${S3_REGION:ap-northeast-2}
       bucket: ${S3_BUCKET:eyesonu-media}
       path-style-access: ${S3_PATH_STYLE_ACCESS:true}
