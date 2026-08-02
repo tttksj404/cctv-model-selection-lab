@@ -7,7 +7,7 @@ import {
   createRecordingAnalysisJob,
   fetchRecordingAnalysisJob,
   listAdminRecordings,
-  listRecordingAnalysisJobs,
+  listRecordingAnalysisJobsByCaseIds,
   cancelRecordingAnalysisJob,
   retryRecordingAnalysisJob
 } from "../api/recordingApi";
@@ -81,8 +81,8 @@ const loadJobs = async () => {
     jobs.value = [];
     return;
   }
-  const results = await Promise.all(cases.value.map((item) => listRecordingAnalysisJobs(item.id)));
-  jobs.value = results.flat().sort((left, right) => (
+  const result = await listRecordingAnalysisJobsByCaseIds(cases.value.map((item) => item.id));
+  jobs.value = result.sort((left, right) => (
     new Date(right.requestedAt).getTime() - new Date(left.requestedAt).getTime()
   ));
 };
