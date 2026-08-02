@@ -25,8 +25,8 @@ public class AdminRecordingAnalysisJobQueryController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RecordingAnalysisJobResponse>>> findAll(
+    public ResponseEntity<ApiResponse<List<RecordingAnalysisJobResponse>>> findAllForDashboard(
             @RequestParam @Size(min = 1, max = 100) List<@Positive Long> caseIds) {
-        return ResponseEntity.ok(ApiResponse.of(service.findAllByCaseIds(caseIds)));
+        return ResponseEntity.ok(ApiResponse.of(service.findAllForDashboard(caseIds)));
     }
 }

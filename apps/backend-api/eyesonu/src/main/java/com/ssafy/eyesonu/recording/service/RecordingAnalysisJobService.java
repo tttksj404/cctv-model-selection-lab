@@ -18,10 +18,10 @@ import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
-import java.util.Map;
 import java.util.List;
-import org.springframework.http.HttpStatus;
+import java.util.Map;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -129,7 +129,7 @@ public class RecordingAnalysisJobService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecordingAnalysisJobResponse> findAllByCaseIds(List<Long> caseIds) {
+    public List<RecordingAnalysisJobResponse> findAllForDashboard(List<Long> caseIds) {
         return analysisJobMapper.findRecordingAnalysisByCaseIds(caseIds).stream()
                 .map(RecordingAnalysisJobResponse::from)
                 .toList();

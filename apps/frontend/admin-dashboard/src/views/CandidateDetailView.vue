@@ -16,6 +16,11 @@ const similarityPercent = computed(() => toSimilarityPercent(item.value?.bestSim
 const frameUrl = computed(() => objectUrl(item.value?.frameObjectKey));
 const cropUrl = computed(() => objectUrl(item.value?.cropObjectKey));
 
+const syncReviewForm = (candidate) => {
+  reviewForm.reviewStatus = candidate.reviewStatus || "CONFIRMED";
+  reviewForm.reviewComment = candidate.reviewComment || "";
+};
+
 const submitReview = async () => {
   if (!item.value) return;
   reviewing.value = true;
@@ -27,6 +32,15 @@ const submitReview = async () => {
     });
   } catch (exception) {
     reviewError.value = exception.message || "후보 판정을 저장하지 못했습니다.";
+    if (exception.code === "OPTIMISTIC_LOCK_CONFLICT" || exception.status === 409) {
+      try {
+        item.value = await fetchAdminCandidate(route.params.candidateId);
+        syncReviewForm(item.value);
+        reviewError.value = "다른 관리자가 변경하여 최신 정보를 불러왔습니다. 다시 확인 후 저장해 주세요.";
+      } catch {
+        reviewError.value = "최신 후보 정보를 불러오지 못했습니다. 페이지를 새로고침해 주세요.";
+      }
+    }
   } finally {
     reviewing.value = false;
   }
@@ -35,8 +49,7 @@ const submitReview = async () => {
 onMounted(async () => {
   try {
     item.value = await fetchAdminCandidate(route.params.candidateId);
-    reviewForm.reviewStatus = item.value.reviewStatus || "CONFIRMED";
-    reviewForm.reviewComment = item.value.reviewComment || "";
+    syncReviewForm(item.value);
   } catch (exception) {
     error.value = exception.response?.data?.message || "후보 상세를 불러오지 못했습니다.";
   } finally {
