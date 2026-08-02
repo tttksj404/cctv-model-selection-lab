@@ -56,7 +56,11 @@ const totalPages = ref(1);
 const totalCount = ref(0);
 const loading = ref(true);
 const error = ref("");
+const TEXT_FILTER_DEBOUNCE_MS = 300;
 let latestRequestId = 0;
+let filterDebounceTimer = null;
+let skipNextPageLoad = false;
+let previousFilters = { ...filters };
 
 const errorMessage = (cause) => cause?.message || "감사 로그를 불러오지 못했습니다.";
 
@@ -145,16 +149,48 @@ const previewJson = (value) => {
   return preview.length > 100 ? `${preview.slice(0, 100)}…` : preview;
 };
 
-watch(filters, () => {
+const resetPageAndLoad = () => {
   if (page.value !== 1) {
+    skipNextPageLoad = true;
     page.value = 1;
+  }
+  load();
+};
+
+const scheduleTextFilterLoad = () => {
+  if (filterDebounceTimer !== null) {
+    clearTimeout(filterDebounceTimer);
+  }
+  filterDebounceTimer = setTimeout(() => {
+    filterDebounceTimer = null;
+    resetPageAndLoad();
+  }, TEXT_FILTER_DEBOUNCE_MS);
+};
+
+watch(filters, () => {
+  const currentFilters = { ...filters };
+  const textFilterChanged = currentFilters.actor !== previousFilters.actor
+    || currentFilters.caseId !== previousFilters.caseId;
+  previousFilters = currentFilters;
+
+  if (textFilterChanged) {
+    scheduleTextFilterLoad();
+    return;
+  }
+  resetPageAndLoad();
+}, { deep: true });
+watch(page, () => {
+  if (skipNextPageLoad) {
+    skipNextPageLoad = false;
     return;
   }
   load();
-}, { deep: true });
-watch(page, load);
+});
 onMounted(load);
 onBeforeUnmount(() => {
+  if (filterDebounceTimer !== null) {
+    clearTimeout(filterDebounceTimer);
+  }
   latestRequestId += 1;
   selected.value = null;
 });

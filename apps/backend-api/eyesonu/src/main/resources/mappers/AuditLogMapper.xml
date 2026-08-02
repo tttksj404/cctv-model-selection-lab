@@ -43,11 +43,13 @@
             <if test="actionType != null">
                 AND al.action_type = #{actionType}
             </if>
+            <if test="actorId != null">
+                AND al.admin_id = #{actorId}
+            </if>
             <if test="actor != null">
                 AND (
                     a.name LIKE CONCAT('%', #{actor}, '%')
                     OR a.login_id LIKE CONCAT('%', #{actor}, '%')
-                    OR CAST(al.admin_id AS CHAR) LIKE CONCAT('%', #{actor}, '%')
                 )
             </if>
             <if test="fromTime != null">

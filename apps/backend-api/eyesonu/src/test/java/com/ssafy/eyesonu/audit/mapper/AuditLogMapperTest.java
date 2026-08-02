@@ -36,6 +36,7 @@ class AuditLogMapperTest {
                 null,
                 null,
                 null,
+                null,
                 Instant.parse("2026-08-02T01:00:00Z"),
                 Instant.parse("2026-08-02T03:00:00Z"),
                 AuditLogSortField.CREATED_AT,
@@ -53,15 +54,16 @@ class AuditLogMapperTest {
     void appliesCaseActionActorFiltersAndPagination() {
         assertEquals(
                 2L,
-                auditLogMapper.countAdminAuditLogs(255001L, null, null, null, null));
+                auditLogMapper.countAdminAuditLogs(255001L, null, null, null, null, null));
         assertEquals(
                 1L,
-                auditLogMapper.countAdminAuditLogs(null, "ADMIN_LOGIN_SUCCESS", "255002", null, null));
+                auditLogMapper.countAdminAuditLogs(null, "ADMIN_LOGIN_SUCCESS", 255002L, null, null, null));
         assertEquals(
                 2L,
-                auditLogMapper.countAdminAuditLogs(null, null, "audit-admin-1", null, null));
+                auditLogMapper.countAdminAuditLogs(null, null, null, "audit-admin-1", null, null));
 
         List<AuditLogRow> rows = auditLogMapper.findAdminPage(
+                null,
                 null,
                 null,
                 null,

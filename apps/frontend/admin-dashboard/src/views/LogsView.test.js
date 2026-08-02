@@ -69,6 +69,7 @@ describe("LogsView", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     app?.unmount();
     root?.remove();
   });
@@ -93,6 +94,7 @@ describe("LogsView", () => {
   });
 
   it("resets to page one for filters and requests the next server page", async () => {
+    vi.useFakeTimers();
     listAuditLogsMock
       .mockResolvedValueOnce(result([rawLog()], { totalElements: 21, totalPages: 2 }))
       .mockResolvedValue(result([rawLog({ id: 2 })], { page: 1, totalElements: 21, totalPages: 2 }));
@@ -113,8 +115,20 @@ describe("LogsView", () => {
     }));
 
     await inputValue(root.querySelectorAll(".logs-filter-bar input")[0], "Administrator");
+    expect(listAuditLogsMock).toHaveBeenCalledTimes(3);
+    vi.advanceTimersByTime(300);
+    await settle();
     expect(listAuditLogsMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       actor: "Administrator",
+      page: 0
+    }));
+
+    await inputValue(root.querySelectorAll(".logs-filter-bar input")[1], "20");
+    expect(listAuditLogsMock).toHaveBeenCalledTimes(4);
+    vi.advanceTimersByTime(300);
+    await settle();
+    expect(listAuditLogsMock).toHaveBeenNthCalledWith(5, expect.objectContaining({
+      caseId: "20",
       page: 0
     }));
   });
