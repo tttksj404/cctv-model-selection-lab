@@ -25,6 +25,7 @@ import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -102,6 +103,53 @@ class RecordingAnalysisJobServiceTests {
 
         assertEquals(5001L, response.jobId());
         assertEquals("RECORDING_ANALYSIS", response.jobType());
+    }
+
+    @Test
+    void returnsRecordingAnalysisJobsForDashboardCases() {
+        AnalysisJob job = new AnalysisJob();
+        job.setId(5001L);
+        job.setCaseId(CASE_ID);
+        job.setJobType("RECORDING_ANALYSIS");
+        job.setStatus("QUEUED");
+        when(analysisJobMapper.findRecordingAnalysisByCaseIds(List.of(CASE_ID, 202L)))
+                .thenReturn(List.of(job));
+
+        var response = service.findAllForDashboard(List.of(CASE_ID, 202L));
+
+        assertEquals(1, response.size());
+        assertEquals(5001L, response.getFirst().jobId());
+        verify(analysisJobMapper).findRecordingAnalysisByCaseIds(List.of(CASE_ID, 202L));
+    }
+
+    @Test
+    void cancelsOnlyQueuedOrRunningJob() {
+        AnalysisJob job = new AnalysisJob();
+        job.setId(5001L);
+        job.setCaseId(CASE_ID);
+        job.setStatus("RUNNING");
+        when(analysisJobMapper.findById(CASE_ID, 5001L)).thenReturn(job);
+        when(analysisJobMapper.cancelActive(CASE_ID, 5001L)).thenReturn(1);
+
+        var response = service.cancel(CASE_ID, 5001L, 7L);
+
+        assertEquals("RUNNING", job.getStatus());
+        assertEquals(5001L, response.jobId());
+        verify(auditService).recordRequired(
+                "RECORDING_ANALYSIS_JOB_CANCELLED", 7L, CASE_ID, "ANALYSIS_JOB", 5001L, java.util.Map.of());
+    }
+
+    @Test
+    void rejectsRetryWhenJobIsNotFailed() {
+        AnalysisJob job = new AnalysisJob();
+        job.setId(5001L);
+        job.setCaseId(CASE_ID);
+        job.setStatus("SUCCEEDED");
+        when(analysisJobMapper.findById(CASE_ID, 5001L)).thenReturn(job);
+        when(analysisJobMapper.retryFailed(CASE_ID, 5001L)).thenReturn(0);
+
+        assertThrows(ApiException.class, () -> service.retry(CASE_ID, 5001L, 7L));
+        verifyNoInteractions(auditService, recordingAnalysisJobPublisher);
     }
 
     private void prepareValidTarget() {

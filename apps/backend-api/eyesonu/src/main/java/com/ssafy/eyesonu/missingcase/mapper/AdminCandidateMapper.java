@@ -22,5 +22,9 @@ public interface AdminCandidateMapper {
                                      @Param("limit") int limit, @Param("offset") long offset);
 
     AdminCandidateRow findById(@Param("id") Long id);
+    AdminCandidateRow findByIdForUpdate(@Param("id") Long id);
+    int updateReview(@Param("id") Long id, @Param("reviewStatus") String reviewStatus,
+                     @Param("reviewComment") String reviewComment, @Param("adminId") Long adminId,
+                     @Param("version") Long version);
     List<AdminCandidateDetectionRow> findDetections(@Param("candidateId") Long candidateId);
 }

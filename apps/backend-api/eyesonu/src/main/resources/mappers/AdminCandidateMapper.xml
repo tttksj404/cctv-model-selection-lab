@@ -21,6 +21,8 @@
         <result property="cropObjectKey" column="crop_object_key"/>
         <result property="boundingBox" column="bounding_box"/>
         <result property="reviewStatus" column="review_status"/>
+        <result property="reviewComment" column="review_comment"/>
+        <result property="version" column="version"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
@@ -49,7 +51,7 @@
                c.camera_id, cam.camera_code, cam.camera_name, c.track_id,
                c.first_detected_at, c.last_detected_at, c.best_similarity, c.average_similarity,
                c.detection_count, c.frame_object_key, c.crop_object_key,
-               CAST(c.bounding_box AS CHAR) AS bounding_box, c.review_status,
+               CAST(c.bounding_box AS CHAR) AS bounding_box, c.review_status, c.review_comment, c.version,
                c.created_at, c.updated_at
         FROM candidates c
         INNER JOIN cases cs ON cs.id = c.case_id
@@ -78,6 +80,15 @@
     <select id="findById" resultMap="candidateMap">
         <include refid="candidateSelect"/> WHERE c.id = #{id}
     </select>
+    <select id="findByIdForUpdate" resultMap="candidateMap">
+        <include refid="candidateSelect"/> WHERE c.id = #{id} FOR UPDATE
+    </select>
+    <update id="updateReview">
+        UPDATE candidates
+        SET review_status = #{reviewStatus}, review_comment = #{reviewComment},
+            reviewed_by = #{adminId}, reviewed_at = UTC_TIMESTAMP(6), version = version + 1
+        WHERE id = #{id} AND version = #{version}
+    </update>
     <select id="findDetections" resultMap="detectionMap">
         SELECT d.id, e.event_id, e.detected_at, e.frame_object_key, d.track_id,
                d.crop_object_key, d.similarity, CAST(d.bounding_box AS CHAR) AS bounding_box

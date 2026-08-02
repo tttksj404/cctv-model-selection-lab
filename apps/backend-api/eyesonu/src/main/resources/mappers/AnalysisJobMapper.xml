@@ -82,10 +82,46 @@
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 
+    <select id="findRecordingAnalysisByCaseId" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE case_id = #{caseId}
+          AND job_type = 'RECORDING_ANALYSIS'
+        ORDER BY requested_at DESC, id DESC
+    </select>
+
+    <select id="findRecordingAnalysisByCaseIds" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE job_type = 'RECORDING_ANALYSIS'
+          AND case_id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+        ORDER BY requested_at DESC, id DESC
+    </select>
+
     <select id="findRecordingAnalysisById" resultMap="analysisJobResultMap">
         SELECT <include refid="analysisJobColumns"/>
         FROM analysis_jobs
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
+
+    <update id="cancelActive">
+        UPDATE analysis_jobs
+        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status IN ('QUEUED', 'RUNNING')
+    </update>
+
+    <update id="retryFailed">
+        UPDATE analysis_jobs
+        SET status = 'QUEUED', retry_count = retry_count + 1,
+            error_message = NULL, started_at = NULL,
+            completed_at = NULL, requested_at = UTC_TIMESTAMP(6)
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'FAILED'
+    </update>
 </mapper>

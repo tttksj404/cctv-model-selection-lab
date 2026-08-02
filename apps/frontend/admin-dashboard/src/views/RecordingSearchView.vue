@@ -6,7 +6,10 @@ import { listCases, listCaseCameras, listSearchConditions } from "../api/caseApi
 import {
   createRecordingAnalysisJob,
   fetchRecordingAnalysisJob,
-  listAdminRecordings
+  listAdminRecordings,
+  listRecordingAnalysisJobsForDashboard,
+  cancelRecordingAnalysisJob,
+  retryRecordingAnalysisJob
 } from "../api/recordingApi";
 
 const router = useRouter();
@@ -73,6 +76,17 @@ const loadRecordings = async () => {
   }
 };
 
+const loadJobs = async () => {
+  if (cases.value.length === 0) {
+    jobs.value = [];
+    return;
+  }
+  const result = await listRecordingAnalysisJobsForDashboard(cases.value.map((item) => item.id));
+  jobs.value = result.sort((left, right) => (
+    new Date(right.requestedAt).getTime() - new Date(left.requestedAt).getTime()
+  ));
+};
+
 const loadCaseData = async () => {
   if (!form.value.caseId) {
     conditions.value = [];
@@ -102,6 +116,7 @@ const load = async () => {
       ...item,
       name: item.missingName || item.name || "이름 미등록"
     }));
+    await loadJobs();
     await loadCaseData();
     await loadRecordings();
   } catch (exception) {
@@ -160,6 +175,24 @@ const refreshJobs = async () => {
       // Keep the last known state while the next refresh retries the job.
     }
   }));
+};
+
+const cancelJob = async (job) => {
+  error.value = "";
+  try {
+    Object.assign(job, await cancelRecordingAnalysisJob(job.caseId, job.jobId));
+  } catch (exception) {
+    error.value = exception.message || "녹화 분석 작업을 취소하지 못했습니다.";
+  }
+};
+
+const retryJob = async (job) => {
+  error.value = "";
+  try {
+    Object.assign(job, await retryRecordingAnalysisJob(job.caseId, job.jobId));
+  } catch (exception) {
+    error.value = exception.message || "녹화 분석 작업을 재시도하지 못했습니다.";
+  }
 };
 
 const openCandidateReview = (job) => {
@@ -231,7 +264,7 @@ onUnmounted(() => {
         </div>
         <div class="progress" :class="`progress-${jobStatus(job.status)}`"><span :style="{ width: `${jobProgress(job.status)}%` }" /></div>
         <div class="job-progress-meta"><span><strong>{{ jobProgress(job.status) }}%</strong> 완료</span><span>상태 <strong>{{ job.status }}</strong></span></div>
-        <div class="job-card-actions"><button v-if="job.status === 'SUCCEEDED'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button></div>
+        <div class="job-card-actions"><button v-if="job.status === 'SUCCEEDED'" class="primary-button" @click="openCandidateReview(job)">후보 검토</button><button v-if="['QUEUED', 'RUNNING'].includes(job.status)" class="ghost-button" @click="cancelJob(job)">취소</button><button v-if="job.status === 'FAILED'" class="reset-button" @click="retryJob(job)">재시도</button></div>
       </article>
     </div>
   </section>

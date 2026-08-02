@@ -33,6 +33,11 @@ export async function fetchAdminCandidate(candidateId) {
   return data.data;
 }
 
+export async function reviewAdminCandidate(candidateId, payload) {
+  const { data } = await client.patch(`/admin/candidates/${candidateId}/review`, payload);
+  return data.data;
+}
+
 export function objectUrl(objectKey) {
   if (!objectKey) return "";
   const base = import.meta.env.VITE_STORAGE_PUBLIC_URL;

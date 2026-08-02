@@ -25,6 +25,8 @@ public class AdminCandidateRow {
     private String cropObjectKey;
     private String boundingBox;
     private String reviewStatus;
+    private String reviewComment;
+    private Long version;
     private Instant createdAt;
     private Instant updatedAt;
 }
