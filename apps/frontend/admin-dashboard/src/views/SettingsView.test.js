@@ -40,4 +40,12 @@ describe("SettingsView", () => {
     mount("SUPER_ADMIN");
     expect(root.textContent).toContain("관리자 계정 관리");
   });
+
+  it("프로필 관리 버튼에서 확인 절차 없이 프로필 경로로 직접 이동한다", () => {
+    mount("ADMIN");
+
+    root.querySelector(".settings-profile-summary button").click();
+
+    expect(routerPushMock).toHaveBeenCalledWith("/admin/profile");
+  });
 });
