@@ -24,6 +24,8 @@ public interface AnalysisJobMapper {
 
     List<AnalysisJob> findRecordingAnalysisByCaseId(@Param("caseId") Long caseId);
 
+    List<AnalysisJob> findRecordingAnalysisByCaseIds(@Param("caseIds") List<Long> caseIds);
+
     int cancelActive(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
 
     int retryFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId);

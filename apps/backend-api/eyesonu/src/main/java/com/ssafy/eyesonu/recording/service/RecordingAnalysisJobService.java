@@ -128,6 +128,13 @@ public class RecordingAnalysisJobService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<RecordingAnalysisJobResponse> findAllByCaseIds(List<Long> caseIds) {
+        return analysisJobMapper.findRecordingAnalysisByCaseIds(caseIds).stream()
+                .map(RecordingAnalysisJobResponse::from)
+                .toList();
+    }
+
     @Transactional
     public RecordingAnalysisJobResponse cancel(Long caseId, Long jobId, Long adminId) {
         AnalysisJob job = requireJob(caseId, jobId);

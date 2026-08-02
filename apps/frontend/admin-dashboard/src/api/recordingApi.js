@@ -15,6 +15,12 @@ export async function listRecordingAnalysisJobs(caseId) {
   return unwrapData(await apiClient.get(analysisJobPath(caseId)));
 }
 
+export async function listRecordingAnalysisJobsByCaseIds(caseIds) {
+  return unwrapData(await apiClient.get("/admin/recording-analysis-jobs", {
+    params: { caseIds: caseIds.join(",") }
+  }));
+}
+
 export async function fetchRecordingAnalysisJob(caseId, jobId) {
   return unwrapData(await apiClient.get(analysisJobPath(caseId, `/${encodeURIComponent(jobId)}`)));
 }

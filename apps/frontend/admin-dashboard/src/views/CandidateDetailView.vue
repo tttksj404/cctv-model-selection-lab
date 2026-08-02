@@ -35,6 +35,8 @@ const submitReview = async () => {
 onMounted(async () => {
   try {
     item.value = await fetchAdminCandidate(route.params.candidateId);
+    reviewForm.reviewStatus = item.value.reviewStatus || "CONFIRMED";
+    reviewForm.reviewComment = item.value.reviewComment || "";
   } catch (exception) {
     error.value = exception.response?.data?.message || "후보 상세를 불러오지 못했습니다.";
   } finally {

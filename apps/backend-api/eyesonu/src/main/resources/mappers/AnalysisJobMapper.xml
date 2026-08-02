@@ -90,6 +90,17 @@
         ORDER BY requested_at DESC, id DESC
     </select>
 
+    <select id="findRecordingAnalysisByCaseIds" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE job_type = 'RECORDING_ANALYSIS'
+          AND case_id IN
+        <foreach collection="caseIds" item="caseId" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+        ORDER BY requested_at DESC, id DESC
+    </select>
+
     <select id="findRecordingAnalysisById" resultMap="analysisJobResultMap">
         SELECT <include refid="analysisJobColumns"/>
         FROM analysis_jobs
