@@ -18,3 +18,11 @@ export async function listRecordingAnalysisJobs(caseId) {
 export async function fetchRecordingAnalysisJob(caseId, jobId) {
   return unwrapData(await apiClient.get(analysisJobPath(caseId, `/${encodeURIComponent(jobId)}`)));
 }
+
+export async function cancelRecordingAnalysisJob(caseId, jobId) {
+  return unwrapData(await apiClient.post(analysisJobPath(caseId, `/${encodeURIComponent(jobId)}/cancel`)));
+}
+
+export async function retryRecordingAnalysisJob(caseId, jobId) {
+  return unwrapData(await apiClient.post(analysisJobPath(caseId, `/${encodeURIComponent(jobId)}/retry`)));
+}

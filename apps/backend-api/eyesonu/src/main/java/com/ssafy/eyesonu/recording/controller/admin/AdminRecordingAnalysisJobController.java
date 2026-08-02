@@ -47,6 +47,22 @@ public class AdminRecordingAnalysisJobController {
         return ResponseEntity.ok(ApiResponse.of(service.findAll(caseId)));
     }
 
+    @PostMapping("/{jobId}/cancel")
+    public ResponseEntity<ApiResponse<RecordingAnalysisJobResponse>> cancel(
+            @PathVariable @Positive Long caseId,
+            @PathVariable @Positive Long jobId,
+            @AuthenticationPrincipal AdminPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.of(service.cancel(caseId, jobId, principal.getAdminId())));
+    }
+
+    @PostMapping("/{jobId}/retry")
+    public ResponseEntity<ApiResponse<RecordingAnalysisJobResponse>> retry(
+            @PathVariable @Positive Long caseId,
+            @PathVariable @Positive Long jobId,
+            @AuthenticationPrincipal AdminPrincipal principal) {
+        return ResponseEntity.accepted().body(ApiResponse.of(service.retry(caseId, jobId, principal.getAdminId())));
+    }
+
     @GetMapping("/{jobId}")
     public ResponseEntity<ApiResponse<RecordingAnalysisJobResponse>> findById(
             @PathVariable @Positive Long caseId,

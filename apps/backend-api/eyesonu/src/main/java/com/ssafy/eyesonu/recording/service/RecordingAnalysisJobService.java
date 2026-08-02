@@ -128,6 +128,37 @@ public class RecordingAnalysisJobService {
                 .toList();
     }
 
+    @Transactional
+    public RecordingAnalysisJobResponse cancel(Long caseId, Long jobId, Long adminId) {
+        AnalysisJob job = requireJob(caseId, jobId);
+        if (analysisJobMapper.cancelActive(caseId, jobId) != 1) {
+            throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                    "Only queued or running recording analysis jobs can be cancelled.");
+        }
+        auditService.recordRequired("RECORDING_ANALYSIS_JOB_CANCELLED", adminId, caseId,
+                "ANALYSIS_JOB", jobId, Map.of());
+        return findById(caseId, jobId);
+    }
+
+    @Transactional
+    public RecordingAnalysisJobResponse retry(Long caseId, Long jobId, Long adminId) {
+        AnalysisJob job = requireJob(caseId, jobId);
+        if (analysisJobMapper.retryFailed(caseId, jobId) != 1) {
+            throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                    "Only failed recording analysis jobs can be retried.");
+        }
+        auditService.recordRequired("RECORDING_ANALYSIS_JOB_RETRIED", adminId, caseId,
+                "ANALYSIS_JOB", jobId, Map.of("previousStatus", job.getStatus()));
+        recordingAnalysisJobPublisher.enqueue(jobId, caseId);
+        return findById(caseId, jobId);
+    }
+
+    private AnalysisJob requireJob(Long caseId, Long jobId) {
+        AnalysisJob job = analysisJobMapper.findById(caseId, jobId);
+        if (job == null) throw notFound("Recording analysis job was not found.");
+        return job;
+    }
+
     private ApiException notFound(String message) {
         return new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", message);
     }
