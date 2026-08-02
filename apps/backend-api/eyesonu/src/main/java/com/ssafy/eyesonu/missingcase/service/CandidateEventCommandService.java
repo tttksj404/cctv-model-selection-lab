@@ -43,6 +43,13 @@ public class CandidateEventCommandService {
     @Transactional
     public CandidateEventCreateResponse create(MediaServerPrincipal principal,
                                                CandidateEventCreateRequest request) {
+        return create(principal, request, null);
+    }
+
+    @Transactional
+    public CandidateEventCreateResponse create(MediaServerPrincipal principal,
+                                               CandidateEventCreateRequest request,
+                                               Long expectedCameraId) {
         if (principal == null || principal.mediaServerId() == null) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Authentication is required");
         }
@@ -51,6 +58,10 @@ public class CandidateEventCommandService {
                 new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
         if (!Objects.equals(camera.mediaServerId(), principal.mediaServerId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Camera does not belong to the authenticated media server");
+        }
+        if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
+                    "Camera does not match the requested recording analysis job");
         }
         if (caseQueryService.require(request.caseId()).getStatus() != CaseStatus.SEARCHING) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CASE_NOT_SEARCHABLE", "Case is not searchable");
