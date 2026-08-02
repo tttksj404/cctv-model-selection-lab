@@ -1,16 +1,13 @@
 package com.ssafy.eyesonu.missingcase.controller.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.missingcase.service.AdminCandidatePageResult;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidateQueryService;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidateReviewService;
-import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,23 +26,16 @@ class AdminCandidateControllerTests {
     private AdminCandidateReviewService reviewService;
 
     @Test
-    void returnsNotModifiedWithoutLoadingCandidatePageWhenEtagMatches() {
-        Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
-        when(queryService.findLastModified()).thenReturn(updatedAt);
+    void returnsFreshSignedUrlsWithoutCachingCandidatePage() {
         when(queryService.findAll(any())).thenReturn(
                 new AdminCandidatePageResult(List.of(), 0, 20, 0, 0, "lastDetectedAt,desc"));
         AdminCandidateController controller = new AdminCandidateController(queryService, reviewService);
 
-        ResponseEntity<?> first = controller.findAll(null, null, null, null, null,
-                0, 20, "lastDetectedAt,desc", null);
-        ResponseEntity<?> unchanged = controller.findAll(null, null, null, null, null,
-                0, 20, "lastDetectedAt,desc", first.getHeaders().getETag());
+        ResponseEntity<?> response = controller.findAll(null, null, null, null, null,
+                0, 20, "lastDetectedAt,desc");
 
-        assertEquals(HttpStatus.OK, first.getStatusCode());
-        assertNotNull(first.getHeaders().getETag());
-        assertEquals(HttpStatus.NOT_MODIFIED, unchanged.getStatusCode());
-        assertEquals(first.getHeaders().getETag(), unchanged.getHeaders().getETag());
-        verify(queryService, times(2)).findLastModified();
-        verify(queryService, times(1)).findAll(any());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("no-store", response.getHeaders().getCacheControl());
+        verify(queryService).findAll(any());
     }
 }

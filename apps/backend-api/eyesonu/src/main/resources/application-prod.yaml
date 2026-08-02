@@ -37,6 +37,7 @@ eyesonu:
   storage:
     s3:
       endpoint: ${S3_ENDPOINT:}
+      public-endpoint: ${S3_PUBLIC_ENDPOINT}
       region: ${S3_REGION}
       bucket: ${S3_BUCKET}
       path-style-access: ${S3_PATH_STYLE_ACCESS:false}
