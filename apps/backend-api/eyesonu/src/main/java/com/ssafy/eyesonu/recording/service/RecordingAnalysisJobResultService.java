@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.service;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
+import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
@@ -13,6 +14,7 @@ import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisJobResultResponse
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
+import java.util.Map;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,16 +30,19 @@ public class RecordingAnalysisJobResultService {
     private final CandidateEventCommandService candidateEventCommandService;
     private final RecordingMapper recordingMapper;
     private final CameraMapper cameraMapper;
+    private final AuditService auditService;
 
     public RecordingAnalysisJobResultService(
             AnalysisJobMapper analysisJobMapper,
             CandidateEventCommandService candidateEventCommandService,
             RecordingMapper recordingMapper,
-            CameraMapper cameraMapper) {
+            CameraMapper cameraMapper,
+            AuditService auditService) {
         this.analysisJobMapper = analysisJobMapper;
         this.candidateEventCommandService = candidateEventCommandService;
         this.recordingMapper = recordingMapper;
         this.cameraMapper = cameraMapper;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -65,6 +70,9 @@ public class RecordingAnalysisJobResultService {
         }
 
         job.setStatus(SUCCEEDED);
+        auditService.recordRequired(
+                "RECORDING_ANALYSIS_JOB_SUCCEEDED", null, job.getCaseId(), "ANALYSIS_JOB", jobId,
+                Map.of("mediaServerId", principal.mediaServerId(), "candidateEventId", candidateResult.eventId()));
         return new RecordingAnalysisJobResultResponse(
                 RecordingAnalysisJobResponse.from(job), candidateResult);
     }
