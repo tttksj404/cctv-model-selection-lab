@@ -82,6 +82,14 @@
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 
+    <select id="findRecordingAnalysisByCaseId" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE case_id = #{caseId}
+          AND job_type = 'RECORDING_ANALYSIS'
+        ORDER BY requested_at DESC, id DESC
+    </select>
+
     <select id="findRecordingAnalysisById" resultMap="analysisJobResultMap">
         SELECT <include refid="analysisJobColumns"/>
         FROM analysis_jobs
