@@ -124,4 +124,11 @@
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'FAILED'
     </update>
+
+    <update id="markSucceeded">
+        UPDATE analysis_jobs
+        SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
+    </update>
 </mapper>
