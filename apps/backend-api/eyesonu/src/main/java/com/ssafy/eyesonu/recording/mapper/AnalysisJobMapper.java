@@ -29,4 +29,6 @@ public interface AnalysisJobMapper {
     int cancelActive(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
 
     int retryFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
+
+    int markSucceeded(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
 }
