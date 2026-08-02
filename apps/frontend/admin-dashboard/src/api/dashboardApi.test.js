@@ -80,6 +80,21 @@ describe("dashboardApi", () => {
     await expect(getCases()).rejects.toMatchObject({ code: "INVALID_API_RESPONSE" });
   });
 
+  it("stops chart pagination before requesting an oversized response", async () => {
+    listCasesMock.mockResolvedValue({
+      data: [],
+      meta: { page: 0, size: 100, totalElements: 10100, totalPages: 101, sort: "reportedAt,asc" }
+    });
+    fetchAdminCandidatesMock.mockResolvedValue({
+      rows: [],
+      meta: { page: 0, size: 100, totalElements: 0, totalPages: 0, sort: "lastDetectedAt,asc" }
+    });
+
+    await expect(getChartData("7d")).rejects.toMatchObject({ code: "RESPONSE_TOO_LARGE" });
+    expect(listCasesMock).toHaveBeenCalledTimes(1);
+    expect(listCasesMock).not.toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
+  });
+
   it("builds chart buckets from report and candidate timestamps", async () => {
     listCasesMock.mockResolvedValue(paged([
       { reportedAt: "2026-07-31T02:00:00Z" }
@@ -106,6 +121,28 @@ describe("dashboardApi", () => {
     }));
   });
 
+  it("waits for both chart sources before surfacing a failure", async () => {
+    let resolveCandidate;
+    const candidateRequest = new Promise((resolve) => {
+      resolveCandidate = resolve;
+    });
+    listCasesMock.mockRejectedValue(new Error("사건 페이지 조회 실패"));
+    fetchAdminCandidatesMock.mockReturnValue(candidateRequest);
+
+    const chartRequest = getChartData("7d");
+    let settled = false;
+    chartRequest.then(() => { settled = true; }, () => { settled = true; });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    resolveCandidate({
+      rows: [],
+      meta: { page: 0, size: 100, totalElements: 0, totalPages: 0, sort: "lastDetectedAt,asc" }
+    });
+    await expect(chartRequest).rejects.toThrow("사건 페이지 조회 실패");
+  });
+
   it("merges chart rows from bounded additional pages", async () => {
     listCasesMock.mockImplementation(async (params) => {
       if (!params.reportedFrom) return paged([], 0, 0);
@@ -126,5 +163,35 @@ describe("dashboardApi", () => {
     expect(chart.find((item) => item.date === "07-31")).toMatchObject({ reports: 1, candidates: 1 });
     expect(listCasesMock).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 100 }));
     expect(fetchAdminCandidatesMock).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 100 }));
+  });
+
+  it("keeps additional chart page requests within the concurrency limit", async () => {
+    let activeRequests = 0;
+    let maxActiveRequests = 0;
+    const requestedPages = [];
+
+    listCasesMock.mockImplementation(async (params) => {
+      if (!params.reportedFrom) return paged([], 0, 0);
+
+      requestedPages.push(params.page);
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      await Promise.resolve();
+      activeRequests -= 1;
+
+      return {
+        data: [{ reportedAt: "2026-07-31T02:00:00Z" }],
+        meta: { page: params.page, size: 100, totalElements: 11, totalPages: 11, sort: "reportedAt,asc" }
+      };
+    });
+    fetchAdminCandidatesMock.mockResolvedValue({
+      rows: [],
+      meta: { page: 0, size: 100, totalElements: 0, totalPages: 0, sort: "lastDetectedAt,asc" }
+    });
+
+    await getChartData("7d");
+
+    expect(maxActiveRequests).toBeLessThanOrEqual(4);
+    expect(requestedPages).toEqual(Array.from({ length: 11 }, (_, page) => page));
   });
 });
