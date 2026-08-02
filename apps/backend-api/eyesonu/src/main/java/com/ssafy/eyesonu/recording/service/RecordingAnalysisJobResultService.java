@@ -2,8 +2,6 @@ package com.ssafy.eyesonu.recording.service;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.audit.service.AuditService;
-import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
@@ -15,7 +13,6 @@ import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import java.util.Map;
-import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,19 +26,16 @@ public class RecordingAnalysisJobResultService {
     private final AnalysisJobMapper analysisJobMapper;
     private final CandidateEventCommandService candidateEventCommandService;
     private final RecordingMapper recordingMapper;
-    private final CameraMapper cameraMapper;
     private final AuditService auditService;
 
     public RecordingAnalysisJobResultService(
             AnalysisJobMapper analysisJobMapper,
             CandidateEventCommandService candidateEventCommandService,
             RecordingMapper recordingMapper,
-            CameraMapper cameraMapper,
             AuditService auditService) {
         this.analysisJobMapper = analysisJobMapper;
         this.candidateEventCommandService = candidateEventCommandService;
         this.recordingMapper = recordingMapper;
-        this.cameraMapper = cameraMapper;
         this.auditService = auditService;
     }
 
@@ -61,9 +55,10 @@ public class RecordingAnalysisJobResultService {
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
                     "Candidate result case does not match the analysis job.");
         }
-        validateCameraOwnership(principal, job, request);
+        Long recordingCameraId = validateRecordingTarget(principal, job);
 
-        CandidateEventCreateResponse candidateResult = candidateEventCommandService.create(principal, request);
+        CandidateEventCreateResponse candidateResult = candidateEventCommandService.create(
+                principal, request, recordingCameraId);
         if (analysisJobMapper.markSucceeded(job.getCaseId(), jobId) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job was changed before its result was completed.");
@@ -77,22 +72,16 @@ public class RecordingAnalysisJobResultService {
                 RecordingAnalysisJobResponse.from(job), candidateResult);
     }
 
-    private void validateCameraOwnership(
-            MediaServerPrincipal principal, AnalysisJob job, CandidateEventCreateRequest request) {
+    private Long validateRecordingTarget(MediaServerPrincipal principal, AnalysisJob job) {
         if (principal == null || principal.mediaServerId() == null) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED",
                     "Authentication is required");
         }
         Recording recording = recordingMapper.findById(job.getRecordingId());
-        Camera camera = cameraMapper.findByCameraCode(request.cameraCode()).orElseThrow(() ->
-                new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
-        if (!Objects.equals(camera.mediaServerId(), principal.mediaServerId())) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "ACCESS_DENIED",
-                    "Camera does not belong to the authenticated media server");
-        }
-        if (recording == null || !Objects.equals(recording.getCameraId(), camera.id())) {
+        if (recording == null || recording.getCameraId() == null) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
                     "Candidate result camera does not match the recording analysis job.");
         }
+        return recording.getCameraId();
     }
 }

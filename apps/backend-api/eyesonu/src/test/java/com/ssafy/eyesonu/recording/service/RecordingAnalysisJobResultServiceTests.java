@@ -8,8 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.audit.service.AuditService;
-import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
@@ -22,12 +20,12 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class RecordingAnalysisJobResultServiceTests {
@@ -38,7 +36,6 @@ class RecordingAnalysisJobResultServiceTests {
     @Mock private AnalysisJobMapper analysisJobMapper;
     @Mock private CandidateEventCommandService candidateEventCommandService;
     @Mock private RecordingMapper recordingMapper;
-    @Mock private CameraMapper cameraMapper;
     @Mock private AuditService auditService;
 
     private RecordingAnalysisJobResultService service;
@@ -46,7 +43,7 @@ class RecordingAnalysisJobResultServiceTests {
     @BeforeEach
     void setUp() {
         service = new RecordingAnalysisJobResultService(
-                analysisJobMapper, candidateEventCommandService, recordingMapper, cameraMapper, auditService);
+                analysisJobMapper, candidateEventCommandService, recordingMapper, auditService);
     }
 
     @Test
@@ -58,9 +55,7 @@ class RecordingAnalysisJobResultServiceTests {
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(running);
         running.setRecordingId(3001L);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(3001L, 2L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
-        when(cameraMapper.findByCameraCode("CAM-001"))
-                .thenReturn(Optional.of(new Camera(2L, 2L, "CAM-001", "Camera 1")));
-        when(candidateEventCommandService.create(new MediaServerPrincipal(2L, "CAM-001"), request))
+        when(candidateEventCommandService.create(new MediaServerPrincipal(2L, "CAM-001"), request, 2L))
                 .thenReturn(candidateResult);
         when(analysisJobMapper.markSucceeded(CASE_ID, JOB_ID)).thenReturn(1);
 
@@ -93,7 +88,7 @@ class RecordingAnalysisJobResultServiceTests {
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(202L)));
 
         verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(202L));
+                new MediaServerPrincipal(2L, "CAM-001"), request(202L), 3001L);
         verify(analysisJobMapper, never()).markSucceeded(CASE_ID, JOB_ID);
     }
 
@@ -105,23 +100,24 @@ class RecordingAnalysisJobResultServiceTests {
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
 
         verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID));
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 3001L);
     }
 
     @Test
-    void rejectsResultForRecordingAssignedToAnotherCamera() {
+    void passesRecordingCameraIdToCandidateEventService() {
         AnalysisJob running = job("RUNNING");
         running.setRecordingId(3001L);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(running);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(3001L, 99L, null, null, "recordings/CAM-099/video.mp4", 100L, null));
-        when(cameraMapper.findByCameraCode("CAM-001"))
-                .thenReturn(Optional.of(new Camera(2L, 2L, "CAM-001", "Camera 1")));
+        when(candidateEventCommandService.create(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L))
+                .thenThrow(new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH", "mismatch"));
 
         assertThrows(ApiException.class, () -> service.complete(
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
 
-        verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID));
+        verify(candidateEventCommandService).create(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L);
         verify(analysisJobMapper, never()).markSucceeded(CASE_ID, JOB_ID);
     }
 
