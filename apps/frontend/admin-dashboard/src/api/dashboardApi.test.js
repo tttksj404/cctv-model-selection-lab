@@ -95,6 +95,40 @@ describe("dashboardApi", () => {
     expect(listCasesMock).not.toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
   });
 
+  it("waits for every page in a failed batch before surfacing an error", async () => {
+    let resolveLatePage;
+    const latePage = new Promise((resolve) => {
+      resolveLatePage = resolve;
+    });
+    listCasesMock.mockImplementation((params) => {
+      if (!params.reportedFrom) return paged([], 0, 0);
+      if (params.page === 0) {
+        return Promise.resolve({
+          data: [],
+          meta: { page: 0, size: 100, totalElements: 3, totalPages: 3, sort: "reportedAt,asc" }
+        });
+      }
+      if (params.page === 1) return Promise.reject(new Error("차트 페이지 조회 실패"));
+      return latePage;
+    });
+    fetchAdminCandidatesMock.mockResolvedValue({
+      rows: [],
+      meta: { page: 0, size: 100, totalElements: 0, totalPages: 0, sort: "lastDetectedAt,asc" }
+    });
+
+    const chartRequest = getChartData("7d");
+    let settled = false;
+    chartRequest.then(() => { settled = true; }, () => { settled = true; });
+    for (let index = 0; index < 8; index += 1) await Promise.resolve();
+
+    expect(settled).toBe(false);
+    resolveLatePage({
+      data: [],
+      meta: { page: 2, size: 100, totalElements: 3, totalPages: 3, sort: "reportedAt,asc" }
+    });
+    await expect(chartRequest).rejects.toThrow("차트 페이지 조회 실패");
+  });
+
   it("builds chart buckets from report and candidate timestamps", async () => {
     listCasesMock.mockResolvedValue(paged([
       { reportedAt: "2026-07-31T02:00:00Z" }

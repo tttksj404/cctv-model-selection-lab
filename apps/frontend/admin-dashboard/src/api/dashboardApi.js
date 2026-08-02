@@ -94,7 +94,7 @@ async function fetchAllPages(fetchPage, params) {
 
   const pages = [firstPage];
   for (let start = 1; start < totalPages; start += PAGE_CONCURRENCY) {
-    const batch = await Promise.all(
+    const batch = await settleAll(
       Array.from(
         { length: Math.min(PAGE_CONCURRENCY, totalPages - start) },
         (_, index) => fetchPage({ ...params, page: start + index, size: PAGE_SIZE })
