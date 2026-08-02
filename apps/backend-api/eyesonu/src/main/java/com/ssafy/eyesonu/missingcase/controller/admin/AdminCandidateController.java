@@ -6,6 +6,11 @@ import com.ssafy.eyesonu.common.api.PagedApiResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateListResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateSearchCondition;
+import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateReviewRequest;
+import com.ssafy.eyesonu.missingcase.service.AdminCandidateReviewService;
+import com.ssafy.eyesonu.auth.security.AdminPrincipal;
+import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidatePageResult;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidateQueryService;
 import jakarta.validation.constraints.Max;
@@ -32,9 +37,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/admin/candidates")
 public class AdminCandidateController {
     private final AdminCandidateQueryService queryService;
+    private final AdminCandidateReviewService reviewService;
 
-    public AdminCandidateController(AdminCandidateQueryService queryService) {
+    public AdminCandidateController(AdminCandidateQueryService queryService, AdminCandidateReviewService reviewService) {
         this.queryService = queryService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping
@@ -90,5 +97,13 @@ public class AdminCandidateController {
     public ResponseEntity<ApiResponse<AdminCandidateDetailResponse>> findById(
             @PathVariable @Positive Long candidateId) {
         return ResponseEntity.ok(ApiResponse.of(queryService.findById(candidateId)));
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/{candidateId}/review")
+    public ResponseEntity<ApiResponse<AdminCandidateDetailResponse>> review(
+            @PathVariable @Positive Long candidateId,
+            @Valid @org.springframework.web.bind.annotation.RequestBody AdminCandidateReviewRequest request,
+            @AuthenticationPrincipal AdminPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.of(reviewService.review(candidateId, request, principal.getAdminId())));
     }
 }
