@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
+import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
@@ -20,6 +21,7 @@ import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,13 +39,14 @@ class RecordingAnalysisJobResultServiceTests {
     @Mock private CandidateEventCommandService candidateEventCommandService;
     @Mock private RecordingMapper recordingMapper;
     @Mock private CameraMapper cameraMapper;
+    @Mock private AuditService auditService;
 
     private RecordingAnalysisJobResultService service;
 
     @BeforeEach
     void setUp() {
         service = new RecordingAnalysisJobResultService(
-                analysisJobMapper, candidateEventCommandService, recordingMapper, cameraMapper);
+                analysisJobMapper, candidateEventCommandService, recordingMapper, cameraMapper, auditService);
     }
 
     @Test
@@ -66,6 +69,20 @@ class RecordingAnalysisJobResultServiceTests {
         assertEquals("SUCCEEDED", response.job().status());
         assertEquals(List.of(9001L), response.candidateResult().candidateIds());
         verify(analysisJobMapper).markSucceeded(CASE_ID, JOB_ID);
+        verify(auditService).recordRequired(
+                "RECORDING_ANALYSIS_JOB_SUCCEEDED", null, CASE_ID, "ANALYSIS_JOB", JOB_ID,
+                Map.of("mediaServerId", 2L, "candidateEventId", "event-1"));
+    }
+
+    @Test
+    void returnsNotFoundWhenJobDoesNotExist() {
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(null);
+
+        assertThrows(ApiException.class, () -> service.complete(
+                new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
+
+        verify(candidateEventCommandService, never()).create(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID));
     }
 
     @Test
