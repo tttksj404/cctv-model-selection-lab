@@ -18,9 +18,10 @@ import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
+import java.util.List;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,6 +118,52 @@ public class RecordingAnalysisJobService {
             throw notFound("Recording analysis job was not found.");
         }
         return RecordingAnalysisJobResponse.from(job);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecordingAnalysisJobResponse> findAll(Long caseId) {
+        caseQueryService.require(caseId);
+        return analysisJobMapper.findRecordingAnalysisByCaseId(caseId).stream()
+                .map(RecordingAnalysisJobResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecordingAnalysisJobResponse> findAllForDashboard(List<Long> caseIds) {
+        return analysisJobMapper.findRecordingAnalysisByCaseIds(caseIds).stream()
+                .map(RecordingAnalysisJobResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public RecordingAnalysisJobResponse cancel(Long caseId, Long jobId, Long adminId) {
+        AnalysisJob job = requireJob(caseId, jobId);
+        if (analysisJobMapper.cancelActive(caseId, jobId) != 1) {
+            throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                    "Only queued or running recording analysis jobs can be cancelled.");
+        }
+        auditService.recordRequired("RECORDING_ANALYSIS_JOB_CANCELLED", adminId, caseId,
+                "ANALYSIS_JOB", jobId, Map.of());
+        return findById(caseId, jobId);
+    }
+
+    @Transactional
+    public RecordingAnalysisJobResponse retry(Long caseId, Long jobId, Long adminId) {
+        AnalysisJob job = requireJob(caseId, jobId);
+        if (analysisJobMapper.retryFailed(caseId, jobId) != 1) {
+            throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
+                    "Only failed recording analysis jobs can be retried.");
+        }
+        auditService.recordRequired("RECORDING_ANALYSIS_JOB_RETRIED", adminId, caseId,
+                "ANALYSIS_JOB", jobId, Map.of("previousStatus", job.getStatus()));
+        recordingAnalysisJobPublisher.enqueue(jobId, caseId);
+        return findById(caseId, jobId);
+    }
+
+    private AnalysisJob requireJob(Long caseId, Long jobId) {
+        AnalysisJob job = analysisJobMapper.findById(caseId, jobId);
+        if (job == null) throw notFound("Recording analysis job was not found.");
+        return job;
     }
 
     private ApiException notFound(String message) {

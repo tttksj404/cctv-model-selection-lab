@@ -23,6 +23,8 @@ public record AdminCandidateDetailResponse(
         String cropObjectKey,
         String boundingBox,
         String reviewStatus,
+        String reviewComment,
+        Long version,
         Instant createdAt,
         Instant updatedAt,
         List<AdminCandidateDetectionResponse> detections) {
@@ -33,6 +35,7 @@ public record AdminCandidateDetailResponse(
                 row.getCameraId(), row.getCameraCode(), row.getCameraName(), row.getTrackId(), row.getFirstDetectedAt(),
                 row.getLastDetectedAt(), row.getBestSimilarity(), row.getAverageSimilarity(), row.getDetectionCount(),
                 row.getFrameObjectKey(), row.getCropObjectKey(), row.getBoundingBox(), row.getReviewStatus(),
+                row.getReviewComment(), row.getVersion(),
                 row.getCreatedAt(), row.getUpdatedAt(), detections);
     }
 }

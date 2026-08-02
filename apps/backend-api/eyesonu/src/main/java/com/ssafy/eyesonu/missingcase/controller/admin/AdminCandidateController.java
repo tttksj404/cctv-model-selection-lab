@@ -1,13 +1,17 @@
 package com.ssafy.eyesonu.missingcase.controller.admin;
 
+import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.common.api.ApiResponse;
 import com.ssafy.eyesonu.common.api.PageMeta;
 import com.ssafy.eyesonu.common.api.PagedApiResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateListResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateSearchCondition;
+import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateReviewRequest;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidatePageResult;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidateQueryService;
+import com.ssafy.eyesonu.missingcase.service.AdminCandidateReviewService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
@@ -19,9 +23,12 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,9 +39,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/admin/candidates")
 public class AdminCandidateController {
     private final AdminCandidateQueryService queryService;
+    private final AdminCandidateReviewService reviewService;
 
-    public AdminCandidateController(AdminCandidateQueryService queryService) {
+    public AdminCandidateController(AdminCandidateQueryService queryService, AdminCandidateReviewService reviewService) {
         this.queryService = queryService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping
@@ -90,5 +99,13 @@ public class AdminCandidateController {
     public ResponseEntity<ApiResponse<AdminCandidateDetailResponse>> findById(
             @PathVariable @Positive Long candidateId) {
         return ResponseEntity.ok(ApiResponse.of(queryService.findById(candidateId)));
+    }
+
+    @PatchMapping("/{candidateId}/review")
+    public ResponseEntity<ApiResponse<AdminCandidateDetailResponse>> review(
+            @PathVariable @Positive Long candidateId,
+            @Valid @RequestBody AdminCandidateReviewRequest request,
+            @AuthenticationPrincipal AdminPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.of(reviewService.review(candidateId, request, principal.getAdminId())));
     }
 }

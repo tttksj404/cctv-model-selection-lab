@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.missingcase.service.AdminCandidatePageResult;
 import com.ssafy.eyesonu.missingcase.service.AdminCandidateQueryService;
+import com.ssafy.eyesonu.missingcase.service.AdminCandidateReviewService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -24,13 +25,16 @@ class AdminCandidateControllerTests {
     @Mock
     private AdminCandidateQueryService queryService;
 
+    @Mock
+    private AdminCandidateReviewService reviewService;
+
     @Test
     void returnsNotModifiedWithoutLoadingCandidatePageWhenEtagMatches() {
         Instant updatedAt = Instant.parse("2026-07-30T04:00:00Z");
         when(queryService.findLastModified()).thenReturn(updatedAt);
         when(queryService.findAll(any())).thenReturn(
                 new AdminCandidatePageResult(List.of(), 0, 20, 0, 0, "lastDetectedAt,desc"));
-        AdminCandidateController controller = new AdminCandidateController(queryService);
+        AdminCandidateController controller = new AdminCandidateController(queryService, reviewService);
 
         ResponseEntity<?> first = controller.findAll(null, null, null, null, null,
                 0, 20, "lastDetectedAt,desc", null);
