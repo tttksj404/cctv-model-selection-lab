@@ -8,6 +8,7 @@ import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.net.URI;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +39,12 @@ public class AdminRecordingAnalysisJobController {
         return ResponseEntity.created(URI.create(
                         "/api/v1/admin/cases/" + caseId + "/recording-analysis-jobs/" + response.jobId()))
                 .body(ApiResponse.of(response));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RecordingAnalysisJobResponse>>> findAll(
+            @PathVariable @Positive Long caseId) {
+        return ResponseEntity.ok(ApiResponse.of(service.findAll(caseId)));
     }
 
     @GetMapping("/{jobId}")

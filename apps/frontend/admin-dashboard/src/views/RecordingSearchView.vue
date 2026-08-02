@@ -6,7 +6,8 @@ import { listCases, listCaseCameras, listSearchConditions } from "../api/caseApi
 import {
   createRecordingAnalysisJob,
   fetchRecordingAnalysisJob,
-  listAdminRecordings
+  listAdminRecordings,
+  listRecordingAnalysisJobs
 } from "../api/recordingApi";
 
 const router = useRouter();
@@ -73,6 +74,17 @@ const loadRecordings = async () => {
   }
 };
 
+const loadJobs = async () => {
+  if (cases.value.length === 0) {
+    jobs.value = [];
+    return;
+  }
+  const results = await Promise.all(cases.value.map((item) => listRecordingAnalysisJobs(item.id)));
+  jobs.value = results.flat().sort((left, right) => (
+    new Date(right.requestedAt).getTime() - new Date(left.requestedAt).getTime()
+  ));
+};
+
 const loadCaseData = async () => {
   if (!form.value.caseId) {
     conditions.value = [];
@@ -102,6 +114,7 @@ const load = async () => {
       ...item,
       name: item.missingName || item.name || "이름 미등록"
     }));
+    await loadJobs();
     await loadCaseData();
     await loadRecordings();
   } catch (exception) {

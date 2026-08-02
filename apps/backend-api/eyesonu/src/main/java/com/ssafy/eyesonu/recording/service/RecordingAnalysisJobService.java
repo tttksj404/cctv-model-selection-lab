@@ -19,6 +19,7 @@ import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.util.Map;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -117,6 +118,14 @@ public class RecordingAnalysisJobService {
             throw notFound("Recording analysis job was not found.");
         }
         return RecordingAnalysisJobResponse.from(job);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecordingAnalysisJobResponse> findAll(Long caseId) {
+        caseQueryService.require(caseId);
+        return analysisJobMapper.findRecordingAnalysisByCaseId(caseId).stream()
+                .map(RecordingAnalysisJobResponse::from)
+                .toList();
     }
 
     private ApiException notFound(String message) {
