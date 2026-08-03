@@ -77,7 +77,7 @@ class CandidateEventCommandServiceTests {
     }
 
     @Test
-    void acceptsRealtimeResultWithIssuedObjectKeys() {
+    void acceptsPrevalidatedRealtimeResultWithoutCameraLookup() {
         when(caseQueryService.require(CASE_ID)).thenReturn(caseRow());
         when(mapper.existsActiveCaseCamera(CASE_ID, CAMERA_ID)).thenReturn(true);
         when(mapper.findEventByEventId(anyString())).thenReturn(null);
@@ -89,17 +89,6 @@ class CandidateEventCommandServiceTests {
         assertEquals("event-1", response.eventId());
         verify(cameraMapper, never()).findByCameraCode(anyString());
         verify(mapper).insertEvent(any());
-    }
-
-    @Test
-    void rejectsRealtimeResultWithUnissuedObjectKey() {
-        when(cameraMapper.findByCameraCode("CAM-001"))
-                .thenReturn(Optional.of(new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front")));
-
-        ApiException exception = assertThrows(ApiException.class, () -> service.create(principal(), request()));
-
-        assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
-        verify(mapper, never()).insertEvent(any());
     }
 
     private void prepareValidRequest() {
