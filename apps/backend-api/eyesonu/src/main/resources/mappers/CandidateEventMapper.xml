@@ -82,7 +82,7 @@
                crop_object_key, frame_object_key, CAST(bounding_box AS CHAR) AS bounding_box,
                version, created_at
         FROM candidates
-        WHERE case_id = #{caseId} AND camera_id = #{cameraId} AND track_id = #{trackId}
+        WHERE dedupe_scope = #{dedupeScope} AND track_id = #{trackId}
         FOR UPDATE
     </select>
     <insert id="insertCandidate" useGeneratedKeys="true" keyProperty="candidate.id">
