@@ -9,11 +9,13 @@ import com.ssafy.eyesonu.auth.security.AdminAccountStatusFilter;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.auth.security.SecurityErrorWriter;
 import com.ssafy.eyesonu.auth.security.SpaCsrfTokenRequestHandler;
+import com.ssafy.eyesonu.auth.worker.WorkerKeyAuthenticationFilter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -104,6 +106,35 @@ public class SecurityConfig {
 
 	@Bean
 	@Order(1)
+	SecurityFilterChain workerSecurityFilterChain(
+			HttpSecurity http,
+			ObjectMapper objectMapper,
+			@Value("${worker.authentication.key:}") String workerKey,
+			@Value("${worker.authentication.id:recording-ai-worker}") String workerId) throws Exception {
+		SecurityErrorWriter errors = new SecurityErrorWriter(objectMapper);
+		WorkerKeyAuthenticationFilter workerFilter = new WorkerKeyAuthenticationFilter(
+				workerKey, workerId, errors);
+
+		http
+				.securityMatcher("/api/v1/internal/recording-analysis-jobs/**")
+				.cors(cors -> cors.disable())
+				.csrf(csrf -> csrf.disable())
+				.httpBasic(basic -> basic.disable())
+				.formLogin(form -> form.disable())
+				.logout(logout -> logout.disable())
+				.requestCache(cache -> cache.disable())
+				.securityContext(context -> context
+						.securityContextRepository(new NullSecurityContextRepository()))
+				.sessionManagement(session -> session
+						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(authorize -> authorize
+						.anyRequest().hasRole("AI_WORKER"))
+				.addFilterBefore(workerFilter, AnonymousAuthenticationFilter.class);
+		return http.build();
+	}
+
+	@Bean
+	@Order(2)
 	SecurityFilterChain mediaServerSecurityFilterChain(
 			HttpSecurity http,
 			ObjectMapper objectMapper,
@@ -137,7 +168,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	@Order(2)
+	@Order(3)
 	SecurityFilterChain applicationSecurityFilterChain(
 			HttpSecurity http,
 			ObjectMapper objectMapper,

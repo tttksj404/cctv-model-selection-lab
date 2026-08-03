@@ -27,5 +27,7 @@ public class AnalysisJob {
     private String errorMessage;
     private Instant requestedAt;
     private Instant startedAt;
+    private String claimedBy;
+    private Instant claimExpiresAt;
     private Instant completedAt;
 }
