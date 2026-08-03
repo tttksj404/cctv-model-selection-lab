@@ -2,6 +2,7 @@ package com.ssafy.eyesonu.missingcase.controller.device;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.common.api.ApiResponse;
+import com.ssafy.eyesonu.missingcase.controller.docs.DeviceCandidateEventUploadControllerDocs;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventUploadUrlCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventUploadUrlCreateResponse;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventUploadUrlService;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/device")
-public class DeviceCandidateEventUploadController {
+public class DeviceCandidateEventUploadController implements DeviceCandidateEventUploadControllerDocs {
 
     private final CandidateEventUploadUrlService uploadUrlService;
 
@@ -26,6 +27,7 @@ public class DeviceCandidateEventUploadController {
     }
 
     @PostMapping(value = "/candidate-event-upload-urls", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public ResponseEntity<ApiResponse<CandidateEventUploadUrlCreateResponse>> create(
             @AuthenticationPrincipal MediaServerPrincipal principal,
             @Valid @RequestBody CandidateEventUploadUrlCreateRequest request) {
