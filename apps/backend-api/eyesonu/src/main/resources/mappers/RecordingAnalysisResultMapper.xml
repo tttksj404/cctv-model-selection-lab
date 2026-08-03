@@ -5,23 +5,29 @@
     <resultMap id="resultMap" type="com.ssafy.eyesonu.recording.domain.RecordingAnalysisResult">
         <id property="id" column="id"/>
         <result property="jobId" column="job_id"/>
+        <result property="attempt" column="attempt"/>
         <result property="resultId" column="result_id"/>
         <result property="payloadHash" column="payload_hash"/>
+        <result property="status" column="status"/>
         <result property="candidateCount" column="candidate_count"/>
+        <result property="errorCode" column="error_code"/>
+        <result property="errorMessage" column="error_message"/>
         <result property="receivedAt" column="received_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
-    <select id="findByJobId" resultMap="resultMap">
-        SELECT id, job_id, result_id, payload_hash, candidate_count, received_at
+    <select id="findByJobIdAndAttempt" resultMap="resultMap">
+        SELECT id, job_id, attempt, result_id, payload_hash, status, candidate_count,
+               error_code, error_message, received_at
         FROM recording_analysis_results
-        WHERE job_id = #{jobId}
+        WHERE job_id = #{jobId} AND attempt = #{attempt}
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO recording_analysis_results
-            (job_id, result_id, payload_hash, candidate_count)
+            (job_id, attempt, result_id, payload_hash, status, candidate_count, error_code, error_message)
         VALUES
-            (#{jobId}, #{resultId}, #{payloadHash}, #{candidateCount})
+            (#{jobId}, #{attempt}, #{resultId}, #{payloadHash}, #{status}, #{candidateCount},
+             #{errorCode}, #{errorMessage})
     </insert>
 </mapper>

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface RecordingAnalysisResultMapper {
-    RecordingAnalysisResult findByJobId(@Param("jobId") Long jobId);
+    RecordingAnalysisResult findByJobIdAndAttempt(
+            @Param("jobId") Long jobId, @Param("attempt") int attempt);
     int insert(RecordingAnalysisResult result);
 }

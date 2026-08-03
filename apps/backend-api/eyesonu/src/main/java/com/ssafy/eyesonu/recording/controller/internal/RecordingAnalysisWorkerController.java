@@ -7,6 +7,9 @@ import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultReques
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultResponse;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobClaimService;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisBatchResultService;
+import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureRequest;
+import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureResponse;
+import com.ssafy.eyesonu.recording.service.RecordingAnalysisFailureService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +28,15 @@ public class RecordingAnalysisWorkerController {
 
     private final RecordingAnalysisJobClaimService claimService;
     private final RecordingAnalysisBatchResultService resultService;
+    private final RecordingAnalysisFailureService failureService;
 
     public RecordingAnalysisWorkerController(
             RecordingAnalysisJobClaimService claimService,
-            RecordingAnalysisBatchResultService resultService) {
+            RecordingAnalysisBatchResultService resultService,
+            RecordingAnalysisFailureService failureService) {
         this.claimService = claimService;
         this.resultService = resultService;
+        this.failureService = failureService;
     }
 
     @PostMapping("/{jobId}/claim")
@@ -48,5 +54,13 @@ public class RecordingAnalysisWorkerController {
             @PathVariable @Positive Long jobId,
             @Valid @RequestBody RecordingAnalysisBatchResultRequest request) {
         return ResponseEntity.ok(ApiResponse.of(resultService.complete(jobId, request, worker.workerId())));
+    }
+
+    @PostMapping("/{jobId}/fail")
+    public ResponseEntity<ApiResponse<RecordingAnalysisFailureResponse>> fail(
+            @AuthenticationPrincipal WorkerPrincipal worker,
+            @PathVariable @Positive Long jobId,
+            @Valid @RequestBody RecordingAnalysisFailureRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(failureService.fail(jobId, request, worker.workerId())));
     }
 }
