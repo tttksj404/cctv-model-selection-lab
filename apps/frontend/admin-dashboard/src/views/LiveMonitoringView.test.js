@@ -46,6 +46,7 @@ describe("LiveMonitoringView", () => {
   afterEach(() => {
     app?.unmount();
     root?.remove();
+    vi.useRealTimers();
   });
 
   it("loads up to four cameras and fills the remaining quad slots", async () => {
@@ -91,5 +92,21 @@ describe("LiveMonitoringView", () => {
 
     expect(listCamerasMock).toHaveBeenCalledTimes(2);
     expect(root.textContent).toContain("Camera 01");
+  });
+
+  it("polls camera state and clears the timer on unmount", async () => {
+    vi.useFakeTimers();
+    listCamerasMock.mockResolvedValue(result([rawCamera(1, "camera-01")]));
+    mount();
+    await settle();
+
+    expect(listCamerasMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settle();
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
+
+    app.unmount();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -96,6 +96,11 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath("$.paths['/api/v1/auth/admin/logout'].post").exists())
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/heartbeat'].post").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/heartbeat'].post.summary")
+						.value("카메라 Heartbeat 수신"))
 				.andExpect(jsonPath("$.paths['/api/v1/device/search-targets'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/device/candidate-event-upload-urls'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings'].get").exists())

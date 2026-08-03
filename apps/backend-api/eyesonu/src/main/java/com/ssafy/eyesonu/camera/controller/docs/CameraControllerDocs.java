@@ -26,7 +26,7 @@ import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "관리자 카메라", description = "Media Server에 소속된 카메라 관리 API")
+@Tag(name = "관리자 카메라", description = "미디어 서버에 소속된 카메라 관리 API")
 public interface CameraControllerDocs {
 
     @Operation(
@@ -57,7 +57,7 @@ public interface CameraControllerDocs {
 
     @Operation(
             summary = "카메라 등록",
-            description = "Media Server에 카메라를 등록합니다. 최초 상태는 OFFLINE이며 RTSP URL은 저장하지만 응답에는 포함하지 않습니다.",
+            description = "미디어 서버에 카메라를 등록합니다. 최초 상태는 OFFLINE이며 RTSP URL은 저장하지만 응답에는 포함하지 않습니다.",
             security = {
                 @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME),
                 @SecurityRequirement(name = SwaggerConfig.CSRF_SCHEME)
@@ -75,7 +75,7 @@ public interface CameraControllerDocs {
                 responseCode = "403", description = "CSRF 토큰 누락 또는 불일치",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404", description = "Media Server를 찾을 수 없음",
+                responseCode = "404", description = "미디어 서버를 찾을 수 없음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "409", description = "이미 존재하는 cameraCode",
@@ -87,14 +87,14 @@ public interface CameraControllerDocs {
     ResponseEntity<ApiResponse<CameraDetailResponse>> create(
             @Parameter(hidden = true) AdminPrincipal principal,
             @RequestBody(
-                    description = "등록할 카메라 정보. mediaServerId는 존재하는 Media Server ID여야 합니다.",
+                    description = "등록할 카메라 정보. mediaServerId는 존재하는 미디어 서버 ID여야 합니다.",
                     required = true,
                     content = @Content(schema = @Schema(implementation = CameraCreateRequest.class)))
             @Valid CameraCreateRequest request);
 
     @Operation(
             summary = "카메라 상세 조회",
-            description = "카메라의 기본 정보와 소속 Media Server 정보를 조회합니다. RTSP URL은 반환하지 않습니다.",
+            description = "카메라의 기본 정보와 소속 미디어 서버 정보를 조회합니다. RTSP URL은 반환하지 않습니다.",
             security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -146,7 +146,7 @@ public interface CameraControllerDocs {
 
     @Operation(
             summary = "카메라 정보·소속 전체 수정",
-            description = "이름, 설치 위치, 좌표, 주소, RTSP URL, Media Server 소속을 전체 수정합니다. cameraCode, 상태, heartbeat는 유지됩니다.",
+            description = "이름, 설치 위치, 좌표, 주소, RTSP URL, 미디어 서버 소속을 전체 수정합니다. cameraCode, 상태, heartbeat는 유지됩니다.",
             security = {
                 @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME),
                 @SecurityRequirement(name = SwaggerConfig.CSRF_SCHEME)
@@ -164,7 +164,7 @@ public interface CameraControllerDocs {
                 responseCode = "403", description = "CSRF 토큰 누락 또는 불일치",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404", description = "카메라 또는 Media Server를 찾을 수 없음",
+                responseCode = "404", description = "카메라 또는 미디어 서버를 찾을 수 없음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "503", description = "데이터베이스 또는 감사 로그 저장 실패",

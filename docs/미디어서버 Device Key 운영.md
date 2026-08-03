@@ -59,6 +59,15 @@ X-Device-Key: msk_<keyId>.<secret>
 
 Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배포에서는 HTTPS로만 전송한다.
 
+### Heartbeat 발신 주기
+
+미디어 서버가 카메라 Heartbeat 발신 주기를 소유한다. 기본값은 10초이며, 실제 발신 주기는 미디어 서버 설정에서 조정한다.
+중앙 서버는 Heartbeat를 생성하거나 발신하지 않고, 마지막 Heartbeat 수신 시각을 기준으로 timeout을 판정한다.
+중앙 서버의 기본 `OFFLINE` timeout은 30초, 상태 확인 주기는 10초이며 다음 백엔드 환경 변수로 조정한다.
+
+- `CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS`
+- `CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS`
+
 ### 녹화 메타데이터 등록 순서
 
 dev Tailscale 구성이 구현된 뒤 Raspberry Pi 5 업로더는 [dev Tailscale 연동 운영](<./Tailscale 연동 운영.md>)에 정의된 tailnet MinIO endpoint를 장치 업로드 전용으로 사용한다. 현재 `dev` 저장소에는 해당 Tailscale·MinIO 노출 구성이 적용되어 있지 않다. 적용 후에도 이 주소는 브라우저에 반환하지 않으며, 녹화 객체 업로드 후 메타데이터 등록은 기존 공용 HTTPS Device API로 수행한다.
