@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.missingcase.dto.admin;
 
 import com.ssafy.eyesonu.missingcase.domain.AdminCandidateRow;
+import com.ssafy.eyesonu.missingcase.domain.CandidateSourceType;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -12,6 +13,9 @@ public record AdminCandidateListResponse(
         Long cameraId,
         String cameraCode,
         String cameraName,
+        CandidateSourceType sourceType,
+        Long analysisJobId,
+        Long recordingId,
         String trackId,
         Instant firstDetectedAt,
         Instant lastDetectedAt,
@@ -27,7 +31,8 @@ public record AdminCandidateListResponse(
 
     public static AdminCandidateListResponse from(AdminCandidateRow row, String cropUrl) {
         return new AdminCandidateListResponse(row.getId(), row.getCaseId(), row.getCaseNumber(), row.getMissingName(),
-                row.getCameraId(), row.getCameraCode(), row.getCameraName(), row.getTrackId(), row.getFirstDetectedAt(),
+                row.getCameraId(), row.getCameraCode(), row.getCameraName(), row.getSourceType(),
+                row.getAnalysisJobId(), row.getRecordingId(), row.getTrackId(), row.getFirstDetectedAt(),
                 row.getLastDetectedAt(), row.getBestSimilarity(), row.getAverageSimilarity(), row.getDetectionCount(),
                 cropUrl, row.getBoundingBox(), row.getReviewStatus(), row.getVersion(),
                 row.getCreatedAt(), row.getUpdatedAt());
