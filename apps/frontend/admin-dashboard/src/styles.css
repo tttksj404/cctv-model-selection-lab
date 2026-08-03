@@ -592,6 +592,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .login-card label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: #5d6675; }
 .form-error { color: #b23b32; background: #fff0ee; border: 1px solid #efbcb6; padding: 10px; border-radius: 7px; font-size: 13px; }
 .form-error:empty { display: none; }
+.form-success { margin: 0; color: #276749; background: #edf9f2; border: 1px solid #a9d8bc; padding: 10px; border-radius: 7px; font-size: 13px; }
 .notification-line { display: grid; gap: 4px; }
 .notification-line p { margin: 0; color: #6b7280; }
 .notification-line.unread { background: #f2f8fb; border-color: #bdd5ef; }
