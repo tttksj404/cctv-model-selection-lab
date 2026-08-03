@@ -16,8 +16,6 @@ import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
-import com.ssafy.eyesonu.storage.StorageObject;
-import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -38,14 +36,17 @@ class CandidateEventCommandServiceTests {
     @Mock private CameraMapper cameraMapper;
     @Mock private CandidateEventMapper mapper;
     @Mock private CaseQueryService caseQueryService;
-    @Mock private StorageObjectVerifier storageObjectVerifier;
 
     private CandidateEventCommandService service;
+    private CandidateEventObjectKeyFactory objectKeyFactory;
 
     @BeforeEach
     void setUp() {
+        objectKeyFactory = new CandidateEventObjectKeyFactory();
+        CandidateEventAccessValidator accessValidator = new CandidateEventAccessValidator(
+                cameraMapper, objectKeyFactory);
         service = new CandidateEventCommandService(
-                cameraMapper, mapper, caseQueryService, storageObjectVerifier);
+                mapper, caseQueryService, accessValidator);
     }
 
     @Test
@@ -75,13 +76,31 @@ class CandidateEventCommandServiceTests {
         verify(mapper, never()).insertEvent(any());
     }
 
+    @Test
+    void acceptsPrevalidatedRealtimeResultWithoutCameraLookup() {
+        when(caseQueryService.require(CASE_ID)).thenReturn(caseRow());
+        when(mapper.existsActiveCaseCamera(CASE_ID, CAMERA_ID)).thenReturn(true);
+        when(mapper.findEventByEventId(anyString())).thenReturn(null);
+        when(mapper.insertEvent(any())).thenReturn(1);
+        when(mapper.insertCandidate(any())).thenReturn(1);
+
+        var response = service.createValidatedRealtime(principal(), realtimeRequest(), camera());
+
+        assertEquals("event-1", response.eventId());
+        verify(cameraMapper, never()).findByCameraCode(anyString());
+        verify(mapper).insertEvent(any());
+    }
+
     private void prepareValidRequest() {
+        prepareValidContext();
+        when(mapper.findEventByEventId(anyString())).thenReturn(null);
+    }
+
+    private void prepareValidContext() {
         when(cameraMapper.findByCameraCode("CAM-001"))
                 .thenReturn(Optional.of(new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front")));
         when(caseQueryService.require(CASE_ID)).thenReturn(caseRow());
         when(mapper.existsActiveCaseCamera(CASE_ID, CAMERA_ID)).thenReturn(true);
-        when(mapper.findEventByEventId(anyString())).thenReturn(null);
-        when(storageObjectVerifier.stat(anyString())).thenReturn(new StorageObject(100L, "image/jpeg"));
     }
 
     private MissingCaseRow caseRow() {
@@ -95,11 +114,27 @@ class CandidateEventCommandServiceTests {
         return new MediaServerPrincipal(MEDIA_SERVER_ID, "media-01");
     }
 
+    private Camera camera() {
+        return new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front");
+    }
+
     private CandidateEventCreateRequest request() {
         return new CandidateEventCreateRequest(
                 CASE_ID, "CAM-001", "event-1", OffsetDateTime.parse("2026-08-02T10:00:00Z"),
                 "frames/frame.jpg", List.of(new CandidateEventCreateRequest.Detection(
                         "track-1", new BigDecimal("0.91"), "crops/crop.jpg",
+                        new CandidateEventCreateRequest.BoundingBox(1, 2, 30, 40))));
+    }
+
+    private CandidateEventCreateRequest realtimeRequest() {
+        String frameKey = objectKeyFactory.frameKey(MEDIA_SERVER_ID, CAMERA_ID, CASE_ID,
+                "event-1", "image/jpeg");
+        String cropKey = objectKeyFactory.cropKey(MEDIA_SERVER_ID, CAMERA_ID, CASE_ID,
+                "event-1", "track-1", "image/jpeg");
+        return new CandidateEventCreateRequest(
+                CASE_ID, "CAM-001", "event-1", OffsetDateTime.parse("2026-08-02T10:00:00Z"),
+                frameKey, List.of(new CandidateEventCreateRequest.Detection(
+                        "track-1", new BigDecimal("0.91"), cropKey,
                         new CandidateEventCreateRequest.BoundingBox(1, 2, 30, 40))));
     }
 }

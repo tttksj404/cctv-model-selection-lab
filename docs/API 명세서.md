@@ -87,9 +87,10 @@
 | `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `X-Device-Key`, `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404`, `429` |
 | `POST` | `/device/cameras/{cameraCode}/recordings` | 업로드 완료 녹화 메타데이터 등록 | `X-Device-Key`, `Idempotency-Key`, 촬영 시간, Object Key | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `503` |
 | `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key`, `If-None-Match` | `200`, `304`, `401`, `403` |
+| `POST` | `/device/candidate-event-upload-urls` | 후보 프레임·crop 이미지의 임시 업로드 URL 발급 | `X-Device-Key`, 사건, 카메라, eventId, 이미지 형식 | `201`, `400`, `401`, `403`, `404`, `422`, `503` |
 | `GET` | `/admin/recordings` | 녹화 목록 | `cameraId`, 촬영 구간, 페이지·정렬 조건 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | 녹화 상세와 재생 URL | `recordingId` | `200`, `404`, `503` |
-| `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, 사건, 카메라, eventId, 탐지 시각, detections 배열 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `422`, `429` |
+| `POST` | `/device/candidate-events` | 미디어 서버 후보 이벤트 등록 | `X-Device-Key`, 사건, 카메라, eventId, 탐지 시각, detections 배열 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `422`, `429`, `503` |
 
 ### 2.4 분석 작업·감사 로그
 
@@ -1225,7 +1226,68 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 
 ---
 
-### 8.2 후보 이벤트 등록
+### 8.2 후보 이미지 업로드 URL 발급
+
+`POST /api/v1/device/candidate-event-upload-urls`
+
+- 인증: `X-Device-Key: {deviceKey}`
+- Content-Type: `application/json`
+- 지원 이미지 형식: `image/jpeg`, `image/png`
+- URL 유효 시간: 기본 15분, 응답의 `expiresInSeconds`로 확인
+- 전체 프레임 1개와 사람별 crop 이미지를 한 요청에서 함께 발급한다.
+- `objectKey`는 Jetson이 만들지 않고 백엔드가 생성한다.
+- 같은 `caseId`, `cameraCode`, `eventId`, `trackId`, `contentType`으로 다시 요청하면 같은 object key와 새 URL을 받는다.
+
+```http
+POST /api/v1/device/candidate-event-upload-urls
+X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+Content-Type: application/json
+```
+
+```json
+{
+  "caseId": 101,
+  "cameraCode": "CAM-001",
+  "eventId": "CAM-001-20260731-000001",
+  "frame": {
+    "contentType": "image/jpeg"
+  },
+  "detections": [
+    {
+      "trackId": "track-42",
+      "contentType": "image/jpeg"
+    }
+  ]
+}
+```
+
+응답 `201 Created`:
+
+```json
+{
+  "timestamp": "2026-07-31T01:20:09.500Z",
+  "data": {
+    "frame": {
+      "objectKey": "realtime/2/11/101/abc123.../frame.jpg",
+      "uploadUrl": "https://storage.example/upload/...",
+      "contentType": "image/jpeg"
+    },
+    "detections": [
+      {
+        "trackId": "track-42",
+        "objectKey": "realtime/2/11/101/abc123.../crops/def456....jpg",
+        "uploadUrl": "https://storage.example/upload/...",
+        "contentType": "image/jpeg"
+      }
+    ],
+    "expiresInSeconds": 900
+  }
+}
+```
+
+Jetson은 각 `uploadUrl`에 응답의 `contentType`으로 이미지 바이너리만 `PUT`한다. `.jpg` 키에는 `image/jpeg`, `.png` 키에는 `image/png`를 사용해야 한다. presigned PUT은 Object Key와 만료 시간만 제한하므로 후보 이벤트 등록 전에 객체 크기와 Content-Type을 확인하고, Range GET으로 앞 8바이트를 읽어 JPEG·PNG 파일 시그니처까지 검증한다. 모든 업로드가 성공한 뒤 발급받은 `objectKey`를 사용해 후보 이벤트를 등록한다. URL이 만료되면 같은 내용으로 이 API를 다시 호출한 뒤 업로드를 재시도한다.
+
+### 8.3 후보 이벤트 등록
 
 `POST /api/v1/device/candidate-events`
 
@@ -1233,8 +1295,8 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 - Content-Type: `application/json`
 - `eventId`가 이벤트 중복 요청 방지 키 역할을 하므로 별도 `Idempotency-Key` 헤더는 사용하지 않는다.
 - 한 프레임에서 여러 사람이 탐지될 수 있으므로 `detections` 배열을 사용한다.
-- 원본 프레임과 crop 이미지는 미디어 서버가 S3 호환 저장소·개발 환경 MinIO에 저장한 뒤 object key만 전달한다.
-- 주요 응답: `201`, `200`(동일 eventId 재전송), `400`, `401`, `403`, `404`, `409`, `422`, `429`
+- 원본 프레임과 crop 이미지는 `POST /api/v1/device/candidate-event-upload-urls`로 발급받은 URL에 먼저 업로드한 뒤 응답의 object key만 전달한다.
+- 주요 응답: `201`, `200`(동일 eventId 재전송), `400`, `401`, `403`, `404`, `409`, `422`, `429`, `503`
 
 ```http
 POST /api/v1/device/candidate-events
@@ -1248,12 +1310,12 @@ Content-Type: application/json
   "cameraCode": "CAM-001",
   "eventId": "CAM-001-20260731-000001",
   "detectedAt": "2026-07-31T01:20:10.123Z",
-  "frameObjectKey": "realtime/CAM-001/frame-000001.jpg",
+  "frameObjectKey": "realtime/2/11/101/abc123.../frame.jpg",
   "detections": [
     {
       "trackId": "track-42",
       "similarity": 0.8421,
-      "cropObjectKey": "realtime/CAM-001/crop-000001.jpg",
+      "cropObjectKey": "realtime/2/11/101/abc123.../crops/def456....jpg",
       "boundingBox": {
         "x": 120,
         "y": 80,
@@ -1317,12 +1379,13 @@ Content-Type: application/json
 검증 순서:
 
 1. `X-Device-Key`를 인증하고 `MediaServerPrincipal`을 생성한다.
-2. `cameraCode`가 인증된 미디어 서버 소속인지 확인한다.
-3. 사건이 존재하고 `SEARCHING` 상태인지 확인한다.
-4. 카메라가 해당 사건의 활성 검색 대상으로 지정됐는지 확인한다.
-5. `eventId` 중복 여부를 확인하고, 동일 eventId의 다른 내용은 거부한다.
-6. 탐지 배열, trackId, similarity, bounding box, object key를 검증한다.
-7. 이벤트와 탐지 결과를 저장하고 후보를 생성하거나 기존 후보에 병합한다.
+2. DB 트랜잭션을 시작하기 전에 프레임과 crop 객체의 존재 여부, 크기, 확장자와 Content-Type 일치 여부를 확인한다.
+3. DB 트랜잭션 안에서 `cameraCode`가 인증된 미디어 서버 소속인지 확인한다.
+4. 사건이 존재하고 `SEARCHING` 상태인지 확인한다.
+5. 카메라가 해당 사건의 활성 검색 대상으로 지정됐는지 확인한다.
+6. `eventId` 중복 여부를 확인하고, 동일 eventId의 다른 내용은 거부한다.
+7. 탐지 배열, trackId, similarity, bounding box, object key를 검증한다.
+8. 이벤트와 탐지 결과를 저장하고 후보를 생성하거나 기존 후보에 병합한다.
 
 오류:
 
@@ -1335,6 +1398,11 @@ Content-Type: application/json
 | 종료·비탐색 상태 사건 또는 비활성 검색 카메라 | `422 BUSINESS_RULE_VIOLATION` |
 | 동일 eventId에 다른 payload 사용 | `409 EVENT_ID_CONFLICT` |
 | 필수 필드, RFC 3339, object key, 좌표 또는 유사도 오류 | `400 VALIDATION_ERROR` |
+| 이미지가 없거나 비어 있음 | `422 STORAGE_OBJECT_NOT_FOUND` 또는 `422 STORAGE_OBJECT_INVALID` |
+| 이미지가 설정된 최대 크기를 초과함 | `422 STORAGE_OBJECT_TOO_LARGE` |
+| 이미지 확장자가 JPEG·PNG가 아니거나 Content-Type과 일치하지 않음 | `422 STORAGE_OBJECT_TYPE_INVALID` 또는 `422 STORAGE_OBJECT_TYPE_MISMATCH` |
+| 저장 객체의 실제 파일 시그니처가 JPEG·PNG 형식과 일치하지 않음 | `422 STORAGE_OBJECT_CONTENT_INVALID` |
+| 스토리지 조회 실패 | `503 STORAGE_UNAVAILABLE` |
 | 요청 속도 제한 초과 | `429 RATE_LIMIT_EXCEEDED` |
 
 Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디어 서버에 결과를 전달한다. 중앙 서버 Device API 호출과 Device Key 보관은 미디어 서버가 담당한다.

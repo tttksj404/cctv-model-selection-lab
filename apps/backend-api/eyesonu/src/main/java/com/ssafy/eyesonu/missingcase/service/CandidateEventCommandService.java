@@ -2,7 +2,6 @@ package com.ssafy.eyesonu.missingcase.service;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CandidateAggregate;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEvent;
@@ -11,9 +10,6 @@ import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
-import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
-import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
-import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,39 +22,44 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CandidateEventCommandService {
-    private final CameraMapper cameraMapper;
     private final CandidateEventMapper mapper;
     private final CaseQueryService caseQueryService;
-    private final StorageObjectVerifier storageObjectVerifier;
+    private final CandidateEventAccessValidator accessValidator;
 
-    public CandidateEventCommandService(CameraMapper cameraMapper, CandidateEventMapper mapper,
+    public CandidateEventCommandService(CandidateEventMapper mapper,
                                         CaseQueryService caseQueryService,
-                                        StorageObjectVerifier storageObjectVerifier) {
-        this.cameraMapper = cameraMapper;
+                                        CandidateEventAccessValidator accessValidator) {
         this.mapper = mapper;
         this.caseQueryService = caseQueryService;
-        this.storageObjectVerifier = storageObjectVerifier;
-    }
-
-    @Transactional
-    public CandidateEventCreateResponse create(MediaServerPrincipal principal,
-                                               CandidateEventCreateRequest request) {
-        return create(principal, request, null);
+        this.accessValidator = accessValidator;
     }
 
     @Transactional
     public CandidateEventCreateResponse create(MediaServerPrincipal principal,
                                                CandidateEventCreateRequest request,
-                                               Long expectedCameraId) {
-        if (principal == null || principal.mediaServerId() == null) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Authentication is required");
+        Long expectedCameraId) {
+        Camera camera = accessValidator.validateCameraAccess(principal, request);
+        return create(request, expectedCameraId, camera);
+    }
+
+    @Transactional
+    public CandidateEventCreateResponse createValidatedRealtime(
+            MediaServerPrincipal principal,
+            CandidateEventCreateRequest request,
+            Camera camera) {
+        if (principal == null || camera == null
+                || !Objects.equals(camera.mediaServerId(), principal.mediaServerId())
+                || !Objects.equals(camera.cameraCode(), request.cameraCode())) {
+            throw new ApiException(HttpStatus.FORBIDDEN,
+                    "ACCESS_DENIED", "Validated camera context does not match the request");
         }
-        validateKeys(request);
-        Camera camera = cameraMapper.findByCameraCode(request.cameraCode()).orElseThrow(() ->
-                new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
-        if (!Objects.equals(camera.mediaServerId(), principal.mediaServerId())) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Camera does not belong to the authenticated media server");
-        }
+        return create(request, null, camera);
+    }
+
+    private CandidateEventCreateResponse create(
+            CandidateEventCreateRequest request,
+            Long expectedCameraId,
+            Camera camera) {
         if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
                     "Camera does not match the requested recording analysis job");
@@ -69,9 +70,6 @@ public class CandidateEventCommandService {
         if (!mapper.existsActiveCaseCamera(request.caseId(), camera.id())) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_NOT_SELECTED", "Camera is not selected for this case");
         }
-        verifyObject(request.frameObjectKey());
-        request.detections().forEach(detection -> verifyObject(detection.cropObjectKey()));
-
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
         if (existing != null) return duplicateResult(existing, request, camera.id());
 
@@ -161,26 +159,6 @@ public class CandidateEventCommandService {
         candidate.setDetectionCount(1); candidate.setSimilarity(input.similarity()); candidate.setCropObjectKey(input.cropObjectKey());
         candidate.setFrameObjectKey(request.frameObjectKey()); candidate.setBoundingBox(box);
         return candidate;
-    }
-
-    private void validateKeys(CandidateEventCreateRequest request) {
-        if (invalidKey(request.frameObjectKey()) || request.detections().stream().anyMatch(d -> invalidKey(d.cropObjectKey()))) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Invalid object key");
-        }
-    }
-
-    private boolean invalidKey(String key) {
-        return key == null || key.isBlank() || key.contains("\\") || key.contains("..") || key.chars().anyMatch(Character::isISOControl);
-    }
-
-    private void verifyObject(String key) {
-        try {
-            if (storageObjectVerifier.stat(key).size() <= 0) throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_INVALID", "Storage object is empty");
-        } catch (StorageObjectNotFoundException e) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_NOT_FOUND", "Storage object was not found");
-        } catch (StorageObjectUnavailableException e) {
-            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_UNAVAILABLE", "Storage object could not be verified");
-        }
     }
 
     private String boundingBoxJson(CandidateEventCreateRequest.BoundingBox box) {
