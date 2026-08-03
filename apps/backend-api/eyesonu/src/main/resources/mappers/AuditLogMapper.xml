@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.audit.mapper.AuditLogMapper">
+
+    <resultMap id="auditLogRowResultMap" type="com.ssafy.eyesonu.audit.domain.AuditLogRow">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="created_at" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+            <arg column="admin_id" javaType="java.lang.Long"/>
+            <arg column="admin_name" javaType="java.lang.String"/>
+            <arg column="case_id" javaType="java.lang.Long"/>
+            <arg column="action_type" javaType="java.lang.String"/>
+            <arg column="target_type" javaType="java.lang.String"/>
+            <arg column="target_id" javaType="java.lang.Long"/>
+            <arg column="before_value" javaType="java.lang.String"/>
+            <arg column="after_value" javaType="java.lang.String"/>
+            <arg column="detail" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
+    <sql id="adminAuditLogColumns">
+        al.id,
+        al.created_at,
+        al.admin_id,
+        COALESCE(a.name, CAST(al.admin_id AS CHAR)) AS admin_name,
+        al.case_id,
+        al.action_type,
+        al.target_type,
+        al.target_id,
+        CAST(al.before_value AS CHAR) AS before_value,
+        CAST(al.after_value AS CHAR) AS after_value,
+        al.detail
+    </sql>
+
+    <sql id="adminAuditLogWhere">
+        <where>
+            <if test="caseId != null">
+                AND al.case_id = #{caseId}
+            </if>
+            <if test="actionType != null">
+                AND al.action_type = #{actionType}
+            </if>
+            <if test="actorId != null">
+                AND al.admin_id = #{actorId}
+            </if>
+            <if test="actor != null">
+                AND (
+                    a.name LIKE CONCAT('%', #{actor}, '%')
+                    OR a.login_id LIKE CONCAT('%', #{actor}, '%')
+                )
+            </if>
+            <if test="fromTime != null">
+                AND al.created_at &gt;= #{fromTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+            <if test="toTime != null">
+                AND al.created_at &lt; #{toTime,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countAdminAuditLogs" resultType="long">
+        SELECT COUNT(*)
+        FROM audit_logs al
+        LEFT JOIN admins a ON a.id = al.admin_id
+        <include refid="adminAuditLogWhere"/>
+    </select>
+
+    <select id="findAdminPage" resultMap="auditLogRowResultMap">
+        SELECT <include refid="adminAuditLogColumns"/>
+        FROM audit_logs al
+        LEFT JOIN admins a ON a.id = al.admin_id
+        <include refid="adminAuditLogWhere"/>
+        ORDER BY
+        <choose>
+            <when test="sortField != null and sortField.name() == 'ID'">al.id</when>
+            <when test="sortField != null and sortField.name() == 'ACTION_TYPE'">al.action_type</when>
+            <when test="sortField != null and sortField.name() == 'ADMIN_ID'">al.admin_id</when>
+            <when test="sortField != null and sortField.name() == 'CASE_ID'">al.case_id</when>
+            <otherwise>al.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sortDirection != null and sortDirection.name() == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>,
+        al.id DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+</mapper>

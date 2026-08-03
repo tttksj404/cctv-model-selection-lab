@@ -112,7 +112,9 @@ sh infra/scripts/bootstrap-certificates.sh \
   admin@example.com \
   admin.example.com \
   dev.example.com \
-  admin-dev.example.com
+  admin-dev.example.com \
+  storage.example.com \
+  storage-dev.example.com
 ```
 
 첫 번째 도메인이 인증서 디렉터리 이름이 된다. 따라서 Nginx 설정의 다음 경로와 일치해야 한다.
@@ -211,5 +213,7 @@ Jenkins 이미지 내부의 고정된 `docker` 그룹만 사용하는 것보다 
 - `infra/.env.deploy`와 인증서 개인키는 Git에 올리지 않는다.
 - AWS 보안 그룹에는 `80`, `443`, 제한된 관리자용 `22`만 허용한다.
 - MySQL, RabbitMQ, MinIO, Docker API 포트는 외부에 열지 않는다.
+- MinIO API는 `storage` 전용 HTTPS 도메인을 통해서만 프록시하며 Console 포트는 공개하지 않는다.
+- MinIO 초기화 시 버킷의 익명 정책을 `private`으로 재설정한다. 외부 객체 조회는 유효한 presigned URL로만 허용한다.
 - master 볼륨은 배포 전 백업 정책을 별도로 둔다.
 - 현재 레거시 정리 스크립트는 컨테이너만 삭제하며 데이터 볼륨은 삭제하지 않는다.

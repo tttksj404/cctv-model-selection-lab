@@ -41,6 +41,7 @@ eyesonu:
   storage:
     s3:
       endpoint: ${TEST_S3_ENDPOINT:http://localhost:9000}
+      public-endpoint: ${TEST_S3_PUBLIC_ENDPOINT:http://localhost:9000}
       region: ${TEST_S3_REGION:ap-northeast-2}
       bucket: ${TEST_S3_BUCKET:eyesonu-test}
       path-style-access: ${TEST_S3_PATH_STYLE_ACCESS:true}

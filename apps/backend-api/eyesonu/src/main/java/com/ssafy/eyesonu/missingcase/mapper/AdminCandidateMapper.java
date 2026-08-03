@@ -9,8 +9,6 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface AdminCandidateMapper {
-    Instant findLastModified();
-
     long countCandidates(@Param("caseId") Long caseId, @Param("cameraId") Long cameraId,
                          @Param("reviewStatus") String reviewStatus,
                          @Param("detectedFrom") Instant detectedFrom, @Param("detectedTo") Instant detectedTo);

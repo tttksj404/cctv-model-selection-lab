@@ -1,5 +1,10 @@
 import { defineStore } from "pinia";
-import { getCurrentAdmin, login as loginApi, logout as logoutApi } from "../api/authApi";
+import {
+  getCurrentAdmin,
+  login as loginApi,
+  logout as logoutApi,
+  updateCurrentAdmin as updateCurrentAdminApi
+} from "../api/authApi";
 
 let bootstrapPromise = null;
 
@@ -40,11 +45,25 @@ export const useAuthStore = defineStore("auth", {
 
       return bootstrapPromise;
     },
+    async refreshCurrentAdmin() {
+      const user = await getCurrentAdmin();
+      this.user = user;
+      this.initialized = true;
+      return user;
+    },
     async login(credentials) {
       const user = await loginApi(credentials);
       this.user = user;
       this.initialized = true;
       return user;
+    },
+    async updateCurrentAdmin(payload) {
+      const result = await updateCurrentAdminApi(payload);
+      this.user = result.admin;
+      this.initialized = true;
+
+      if (result.reauthenticationRequired) this.expireSession();
+      return result;
     },
     async logout() {
       try {
