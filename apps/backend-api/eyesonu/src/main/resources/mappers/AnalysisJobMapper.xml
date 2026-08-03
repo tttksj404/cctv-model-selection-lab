@@ -89,7 +89,7 @@
               status = 'QUEUED'
               OR (status = 'RUNNING'
                   AND claim_expires_at IS NOT NULL
-                  AND claim_expires_at <= UTC_TIMESTAMP(6))
+                  AND claim_expires_at &lt;= UTC_TIMESTAMP(6))
           )
     </update>
 
