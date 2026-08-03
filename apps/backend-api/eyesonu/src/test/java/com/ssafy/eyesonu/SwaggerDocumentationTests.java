@@ -160,6 +160,30 @@ class SwaggerDocumentationTests {
 	}
 
 	@Test
+	void recordingAnalysisWorkerContractIsPublished() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.components.securitySchemes.%s.name"
+						.formatted(SwaggerConfig.WORKER_KEY_SCHEME)).value("X-Worker-Key"))
+				.andExpect(jsonPath("$.components.securitySchemes.%s.in"
+						.formatted(SwaggerConfig.WORKER_KEY_SCHEME)).value("header"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/claim'].post"
+								+ ".security[0].%s".formatted(SwaggerConfig.WORKER_KEY_SCHEME))
+						.isArray())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/result'].post")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/fail'].post")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisBatchResultRequest")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisFailureRequest")
+						.exists());
+	}
+
+	@Test
 	void apiDocsDescribeSecurityAndFilterResponses() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())

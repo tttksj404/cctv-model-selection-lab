@@ -24,6 +24,9 @@
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="startedAt" column="started_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="claimedBy" column="claimed_by"/>
+        <result property="claimExpiresAt" column="claim_expires_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="completedAt" column="completed_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
@@ -68,18 +71,26 @@
         id, case_id, search_condition_id, recording_id, job_type, status,
         prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
         search_end_snapshot, search_area_snapshot, similarity_threshold_snapshot,
-        retry_count, error_message, requested_at, started_at, completed_at
+        retry_count, error_message, requested_at, started_at, claimed_by,
+        claim_expires_at, completed_at
     </sql>
 
     <update id="claimQueued">
         UPDATE analysis_jobs
         SET status = 'RUNNING',
             started_at = UTC_TIMESTAMP(6),
+            claimed_by = #{workerId},
+            claim_expires_at = DATE_ADD(UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND),
             completed_at = NULL,
             error_message = NULL
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
-          AND status = 'QUEUED'
+          AND (
+              status = 'QUEUED'
+              OR (status = 'RUNNING'
+                  AND claim_expires_at IS NOT NULL
+                  AND claim_expires_at &lt;= UTC_TIMESTAMP(6))
+          )
     </update>
 
     <select id="findActiveByTarget" resultMap="analysisJobResultMap">
@@ -128,6 +139,14 @@
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 
+    <select id="findRecordingAnalysisByIdForUpdate" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+        FOR UPDATE
+    </select>
+
     <select id="findRecordingAnalysisPublishSnapshot"
             resultMap="recordingAnalysisPublishSnapshotResultMap">
         SELECT aj.id AS job_id,
@@ -154,7 +173,8 @@
 
     <update id="cancelActive">
         UPDATE analysis_jobs
-        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6)
+        SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6),
+            claimed_by = NULL, claim_expires_at = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
           AND status IN ('QUEUED', 'RUNNING')
@@ -164,14 +184,23 @@
         UPDATE analysis_jobs
         SET status = 'QUEUED', retry_count = retry_count + 1,
             error_message = NULL, started_at = NULL,
-            completed_at = NULL, requested_at = UTC_TIMESTAMP(6)
+            completed_at = NULL, requested_at = UTC_TIMESTAMP(6),
+            claimed_by = NULL, claim_expires_at = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'FAILED'
     </update>
 
     <update id="markSucceeded">
         UPDATE analysis_jobs
-        SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL
+        SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL,
+            claimed_by = NULL, claim_expires_at = NULL
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
+    </update>
+
+    <update id="markFailed">
+        UPDATE analysis_jobs
+        SET status = 'FAILED', completed_at = UTC_TIMESTAMP(6), error_message = #{errorMessage}
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
     </update>

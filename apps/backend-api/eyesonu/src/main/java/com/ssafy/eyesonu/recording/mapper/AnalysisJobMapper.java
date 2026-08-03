@@ -11,9 +11,14 @@ public interface AnalysisJobMapper {
 
     int insert(AnalysisJob job);
 
-    int claimQueued(Long jobId);
+    int claimQueued(
+            @Param("jobId") Long jobId,
+            @Param("workerId") String workerId,
+            @Param("leaseSeconds") long leaseSeconds);
 
     AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
+
+    AnalysisJob findRecordingAnalysisByIdForUpdate(@Param("jobId") Long jobId);
 
     RecordingAnalysisPublishSnapshot findRecordingAnalysisPublishSnapshot(
             @Param("jobId") Long jobId, @Param("caseId") Long caseId);
@@ -35,4 +40,7 @@ public interface AnalysisJobMapper {
     int retryFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
 
     int markSucceeded(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
+
+    int markFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId,
+                   @Param("errorMessage") String errorMessage);
 }

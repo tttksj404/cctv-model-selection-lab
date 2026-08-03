@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.common.config;
 
 import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
+import com.ssafy.eyesonu.auth.worker.WorkerKeyAuthenticationFilter;
 import com.ssafy.eyesonu.common.api.ApiErrorResponse;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
@@ -26,6 +27,7 @@ public class SwaggerConfig {
 	public static final String SESSION_SCHEME = "sessionCookie";
 	public static final String CSRF_SCHEME = "csrfToken";
 	public static final String DEVICE_KEY_SCHEME = "deviceKey";
+	public static final String WORKER_KEY_SCHEME = "workerKey";
 
 	private static final String ADMIN_ME_PATH = "/api/v1/admins/me";
 	private static final String ADMINS_PATH = "/api/v1/admins";
@@ -50,7 +52,12 @@ public class SwaggerConfig {
 						.type(SecurityScheme.Type.APIKEY)
 						.in(SecurityScheme.In.HEADER)
 						.name(DeviceKeyAuthenticationFilter.HEADER_NAME)
-						.description("미디어 서버에 발급된 Device Key"));
+						.description("Media server Device Key"))
+				.addSecuritySchemes(WORKER_KEY_SCHEME, new SecurityScheme()
+						.type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER)
+						.name(WorkerKeyAuthenticationFilter.HEADER_NAME)
+						.description("AI Worker Key"));
 		ModelConverters.getInstance().read(ApiErrorResponse.class)
 				.forEach(components::addSchemas);
 

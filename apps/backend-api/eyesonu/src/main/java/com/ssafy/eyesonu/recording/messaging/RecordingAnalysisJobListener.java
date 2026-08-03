@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
         prefix = "recording.analysis.consumer",
         name = "auto-start",
         havingValue = "true",
-        matchIfMissing = true)
+        matchIfMissing = false)
 public class RecordingAnalysisJobListener {
 
     private final RecordingAnalysisJobConsumer consumer;
