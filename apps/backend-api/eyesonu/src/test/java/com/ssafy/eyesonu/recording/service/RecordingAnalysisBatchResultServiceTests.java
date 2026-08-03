@@ -67,24 +67,23 @@ class RecordingAnalysisBatchResultServiceTests {
 
         assertEquals("SUCCEEDED", response.status());
         assertEquals(0, response.candidateCount());
-        verify(candidateService, never()).createRecordingAnalysis(any(), any(), any(), any(), any());
+        verify(candidateService, never()).createRecordingAnalysisBatch(any(), any(), any(), any(), any());
         verify(jobMapper).markSucceeded(101L, 5001L);
     }
 
     @Test
     void storesOneCandidatePerDeduplicatedTrack() {
         prepareRunningJob();
-        when(candidateService.createRecordingAnalysis(any(), any(), any(), any(), any()))
-                .thenReturn(new CandidateEventCreateResponse(
-                        "event-1", 101L, 11L, 1, List.of(9001L), false, null));
+        when(candidateService.createRecordingAnalysisBatch(any(), any(), any(), any(), any()))
+                .thenReturn(List.of(9001L, 9001L));
         RecordingAnalysisBatchResultRequest request = new RecordingAnalysisBatchResultRequest(
                 "result-1", List.of(candidate("track-1"), candidate("track-2")));
 
         var response = service.complete(5001L, request, "worker-1");
 
         assertEquals(List.of(9001L, 9001L), response.candidateIds());
-        verify(candidateService, org.mockito.Mockito.times(2))
-                .createRecordingAnalysis(any(), any(), any(), any(), any());
+        verify(candidateService)
+                .createRecordingAnalysisBatch(any(), any(), any(), any(), any());
     }
 
     @Test

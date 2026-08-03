@@ -6,7 +6,6 @@ import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
-import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventCommandService;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.domain.Recording;
@@ -147,14 +146,13 @@ public class RecordingAnalysisBatchResultService {
         MediaServerPrincipal sourcePrincipal = new MediaServerPrincipal(
                 camera.mediaServerId(), camera.cameraCode());
 
-        List<Long> candidateIds = new ArrayList<>();
+        List<CandidateEventCreateRequest> events = new ArrayList<>();
         for (int index = 0; index < request.candidates().size(); index++) {
             RecordingAnalysisBatchResultRequest.Candidate candidate = request.candidates().get(index);
-            CandidateEventCreateRequest event = toEvent(job, camera, candidate, attempt, index);
-            CandidateEventCreateResponse created = candidateService.createRecordingAnalysis(
-                    sourcePrincipal, event, camera.id(), jobId, recording.getId());
-            candidateIds.addAll(created.candidateIds());
+            events.add(toEvent(job, camera, candidate, attempt, index));
         }
+        List<Long> candidateIds = candidateService.createRecordingAnalysisBatch(
+                sourcePrincipal, events, camera.id(), jobId, recording.getId());
 
         RecordingAnalysisResult result = new RecordingAnalysisResult();
         result.setJobId(jobId);
