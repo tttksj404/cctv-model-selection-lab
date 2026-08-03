@@ -18,6 +18,8 @@ public interface AnalysisJobMapper {
 
     AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
 
+    AnalysisJob findRecordingAnalysisByIdForUpdate(@Param("jobId") Long jobId);
+
     RecordingAnalysisPublishSnapshot findRecordingAnalysisPublishSnapshot(
             @Param("jobId") Long jobId, @Param("caseId") Long caseId);
 

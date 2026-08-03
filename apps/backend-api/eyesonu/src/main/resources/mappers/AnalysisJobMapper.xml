@@ -139,6 +139,14 @@
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 
+    <select id="findRecordingAnalysisByIdForUpdate" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+        FOR UPDATE
+    </select>
+
     <select id="findRecordingAnalysisPublishSnapshot"
             resultMap="recordingAnalysisPublishSnapshotResultMap">
         SELECT aj.id AS job_id,

@@ -1,0 +1,27 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.eyesonu.recording.mapper.RecordingAnalysisResultMapper">
+    <resultMap id="resultMap" type="com.ssafy.eyesonu.recording.domain.RecordingAnalysisResult">
+        <id property="id" column="id"/>
+        <result property="jobId" column="job_id"/>
+        <result property="resultId" column="result_id"/>
+        <result property="payloadHash" column="payload_hash"/>
+        <result property="candidateCount" column="candidate_count"/>
+        <result property="receivedAt" column="received_at"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+    </resultMap>
+
+    <select id="findByJobId" resultMap="resultMap">
+        SELECT id, job_id, result_id, payload_hash, candidate_count, received_at
+        FROM recording_analysis_results
+        WHERE job_id = #{jobId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO recording_analysis_results
+            (job_id, result_id, payload_hash, candidate_count)
+        VALUES
+            (#{jobId}, #{resultId}, #{payloadHash}, #{candidateCount})
+    </insert>
+</mapper>
