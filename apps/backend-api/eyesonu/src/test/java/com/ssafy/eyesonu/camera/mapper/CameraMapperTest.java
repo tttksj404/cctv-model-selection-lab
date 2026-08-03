@@ -45,6 +45,13 @@ class CameraMapperTest {
     }
 
     @Test
+    void findsStreamUrlWithoutLoadingTheFullCameraProjection() {
+        assertThat(cameraMapper.findStreamUrlById(153001L))
+                .contains("rtsp://recording-fixture/153001/stream");
+        assertThat(cameraMapper.findStreamUrlById(999999L)).isEmpty();
+    }
+
+    @Test
     void adminPageFiltersAndUsesStableAllowedSort() {
         List<CameraManagementRow> rows = cameraMapper.findAdminPage(
                 "OFFLINE", "15300", "camera_code", "ASC", 20, 0);

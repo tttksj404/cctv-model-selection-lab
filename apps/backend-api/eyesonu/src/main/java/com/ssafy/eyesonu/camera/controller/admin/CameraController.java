@@ -6,6 +6,7 @@ import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.camera.service.CameraPageResult;
 import com.ssafy.eyesonu.camera.service.CameraService;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
@@ -70,6 +71,13 @@ public class CameraController implements CameraControllerDocs {
     public ResponseEntity<ApiResponse<CameraDetailResponse>> findById(
             @PathVariable @Positive Long cameraId) {
         return ResponseEntity.ok(ApiResponse.of(cameraService.findAdminById(cameraId)));
+    }
+
+    @GetMapping("/{cameraId}/streamUrl")
+    @Override
+    public ResponseEntity<ApiResponse<CameraStreamUrlResponse>> findStreamUrlById(
+            @PathVariable @Positive Long cameraId) {
+        return ResponseEntity.ok(ApiResponse.of(cameraService.findStreamUrlById(cameraId)));
     }
 
     @PatchMapping("/{cameraId}/name")

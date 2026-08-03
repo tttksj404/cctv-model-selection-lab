@@ -91,6 +91,12 @@
         WHERE c.id = #{cameraId}
     </select>
 
+    <select id="findStreamUrlById" resultType="java.lang.String">
+        SELECT stream_url
+        FROM cameras
+        WHERE id = #{cameraId}
+    </select>
+
     <select id="findAdminByIdForUpdate" resultMap="cameraManagementRowResultMap">
         SELECT <include refid="adminCameraColumns"/>
         FROM cameras c
