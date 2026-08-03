@@ -60,8 +60,13 @@ export function buildRelativeCoverageSet(zonePosterior, target = 0.8) {
 
 export function buildConditionalZonePosterior(zonePosterior) {
   const totalZoneMass = zonePosterior.reduce((sum, item) => sum + item.probability, 0);
-  if (totalZoneMass <= 0) {
-    throw new Error("관할 내 구역 확률 질량은 0보다 커야 합니다.");
+  if (totalZoneMass <= SUM_TOLERANCE) {
+    const uniformProbability = 1 / zonePosterior.length;
+    return zonePosterior.map((item) => ({
+      ...item,
+      rawProbability: item.probability,
+      probability: uniformProbability,
+    }));
   }
   return zonePosterior.map((item) => ({
     ...item,
@@ -224,6 +229,14 @@ export function buildDashboardView(response) {
   const autoRecommendationAllowed =
     jurisdictionProbability >=
     MOCK_AUTOMATIC_RECOMMENDATION_POLICY.minimumJurisdictionMass;
+  const jurisdictionStatus =
+    response.outsideProbability >= Math.max(jurisdictionProbability, response.unknownProbability)
+      ? "outside_dominant"
+      : response.unknownProbability >= Math.max(jurisdictionProbability, response.outsideProbability)
+        ? "unknown_dominant"
+        : autoRecommendationAllowed
+          ? "in_jurisdiction"
+          : "low_jurisdiction_mass";
   const cameraByZone = Map.groupBy(response.rankedCameras, (camera) => camera.zoneId);
   const summaryByZone = new Map(
     response.zoneCandidateSummaries.map((summary) => [summary.zoneId, summary]),
@@ -231,12 +244,20 @@ export function buildDashboardView(response) {
   const rankedZones = [...conditionalZonePosterior].sort(
     (left, right) => right.probability - left.probability || left.zoneId - right.zoneId,
   );
-  const rankByZone = new Map(rankedZones.map((item, index) => [item.zoneId, index + 1]));
+  const conditionalZonePosteriorFallback = jurisdictionProbability <= SUM_TOLERANCE ? "uniform" : null;
+  const rankByZone = new Map(
+    conditionalZonePosteriorFallback === null
+      ? rankedZones.map((item, index) => [item.zoneId, index + 1])
+      : [],
+  );
   return {
     ...response,
     rawMostLikelyZoneProbability: response.mostLikelyZoneProbability,
     jurisdictionProbability,
+    jurisdictionStatus,
+    conditionalZonePosteriorFallback,
     autoRecommendationAllowed,
+    rankedCameras: autoRecommendationAllowed ? response.rankedCameras : [],
     mostLikelyZoneId: autoRecommendationAllowed ? response.mostLikelyZoneId : null,
     mostLikelyZoneProbability: autoRecommendationAllowed
       ? conditionalZonePosterior.find((item) => item.zoneId === response.mostLikelyZoneId)
@@ -249,7 +270,7 @@ export function buildDashboardView(response) {
       .toSorted((left, right) => left.zoneId - right.zoneId)
       .map((item) => ({
         ...item,
-        rank: rankByZone.get(item.zoneId),
+        rank: rankByZone.get(item.zoneId) ?? null,
         summary: summaryByZone.get(item.zoneId),
         cameras: (cameraByZone.get(item.zoneId) ?? []).toSorted(
           (left, right) => left.position - right.position,

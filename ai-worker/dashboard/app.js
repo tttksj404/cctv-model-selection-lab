@@ -7,6 +7,7 @@ import {
 import { loadMockScenario, scenarioOptions } from "./mock-data.js";
 import { zoneRegionExperiment } from "./experiment-data.js";
 import { assertOfflineRuntime, runtimeConfig } from "./runtime-config.js";
+import { createLatestRequestRunner } from "./interaction-controller.js";
 
 assertOfflineRuntime();
 
@@ -14,6 +15,14 @@ const app = document.querySelector("#app");
 let selectedScenario = "certain";
 let selectedZoneId = null;
 let localDecision = "review";
+let isInteractionPending = false;
+
+const jurisdictionStatusLabels = Object.freeze({
+  in_jurisdiction: "관할 내 우세",
+  outside_dominant: "관할 이탈 우세",
+  unknown_dominant: "정보 부족 우세",
+  low_jurisdiction_mass: "관할 내 질량 낮음",
+});
 
 const decisionLabels = Object.freeze({
   confirm: "후보 확정",
@@ -28,6 +37,16 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function updateInteractionPending(pending) {
+  isInteractionPending = pending;
+  app.setAttribute("aria-busy", String(pending));
+}
+
+function renderError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  app.innerHTML = `<main class="showcase-page"><div class="notice"><strong>화면 초기화 실패</strong><span>${escapeHtml(message)}</span></div></main>`;
 }
 
 function statusClass(status) {
@@ -67,7 +86,7 @@ function zoneCard(zone, view) {
       style="--probability-opacity: ${Math.max(0.2, zone.probability)}"
     >
       <span class="zone-card-header">
-        <span><span class="zone-rank">우선순위 ${zone.rank}</span><h3>${zone.zoneId}구역</h3></span>
+        <span><span class="zone-rank">${zone.rank === null ? "동률 · 순위 보류" : `우선순위 ${zone.rank}`}</span><h3>${zone.zoneId}구역</h3></span>
         <span class="status-badge ${stateClass}">${stateLabel}</span>
       </span>
       <span class="probability-row">
@@ -115,7 +134,11 @@ function render(view) {
   const canDecideCandidate = (selectedZone?.summary?.candidateCount ?? 0) > 0;
   const recommendation = view.autoRecommendationAllowed
     ? `${view.mostLikelyZoneId}구역 · ${formatPercent(view.mostLikelyZoneProbability)}`
-    : "보류 · 관할 이탈 우세";
+    : view.jurisdictionStatus === "outside_dominant"
+      ? "보류 · 관할 이탈 우세"
+      : view.jurisdictionStatus === "unknown_dominant"
+        ? "보류 · 정보 부족 우세"
+        : "보류 · 관할 내 질량 낮음";
   const nextCameraLabel = nextCamera?.cameraId ?? "보류";
   const nextCameraDetail = nextCamera
     ? `효용 ${nextCamera.utility.toFixed(4)} · EIG ${nextCamera.expectedInformationGain.toFixed(4)}`
@@ -123,6 +146,16 @@ function render(view) {
   const recommendationMethod = view.autoRecommendationAllowed
     ? "자동 · Argmax"
     : "자동 추천 중지";
+  const jurisdictionStatusLabel =
+    jurisdictionStatusLabels[view.jurisdictionStatus] ?? "검토 필요";
+  const cameraPriorityContent = view.autoRecommendationAllowed
+    ? `<ol class="priority-list" data-camera-ranking-state="available">
+                  ${view.rankedCameras.slice(0, 6).map((camera, index) => `<li><span class="priority-rank">${index + 1}</span><span><strong class="mono">${escapeHtml(camera.cameraId)}</strong><br><span class="label">${camera.zoneId}구역 · 운영계수 ${camera.operationalFactor.toFixed(2)}</span></span><strong>${camera.utility.toFixed(4)}</strong></li>`).join("")}
+                </ol>`
+    : `<div class="notice" data-camera-ranking-state="suppressed"><strong>자동 카메라 순위 중지</strong><span>관할 내 질량 기준 미달로 자동 카메라 순서를 표시하지 않습니다. 관할 이탈·정보 부족 우세 상태를 먼저 확인하세요.</span></div>`;
+  const coverageNotice = view.autoRecommendationAllowed
+    ? `<div class="notice"><strong>관할 내 상대 80% 탐색 집합</strong><span>${coverageLabel}. outside·unknown을 제외한 관할 내 질량의 우선순위 표현이며 탐지 보장률이 아닙니다.</span></div>`
+    : `<div class="notice"><strong>자동 탐색 집합 보류</strong><span>관할 이탈 또는 정보 부족이 우세해 구역·카메라 자동 추천을 중지했습니다. 관리자 판단 후 다음 작업을 등록하세요.</span></div>`;
   app.innerHTML = `
     <div class="app-shell">
       <aside class="sidebar" aria-label="AI Worker 메뉴">
@@ -164,7 +197,7 @@ function render(view) {
             </label>
           </div>
           <section class="summary-grid" aria-label="확률 요약">
-            <article class="summary-card"><span class="eyebrow">자동 추천 구역</span><strong>${recommendation}</strong><p>관할 내 질량 ${formatPercent(view.jurisdictionProbability)} · 관할 밖 ${formatPercent(view.outsideProbability)} · 정보 부족 ${formatPercent(view.unknownProbability)}</p></article>
+            <article class="summary-card" data-jurisdiction-status="${view.jurisdictionStatus}"><span class="eyebrow">자동 추천 구역</span><strong>${recommendation}</strong><p>관할 내 질량 ${formatPercent(view.jurisdictionProbability)} · 관할 밖 ${formatPercent(view.outsideProbability)} · 정보 부족 ${formatPercent(view.unknownProbability)} · 상태 ${jurisdictionStatusLabel}</p></article>
             <article class="summary-card"><span class="eyebrow">다음 분석 카메라</span><strong class="mono">${escapeHtml(nextCameraLabel)}</strong><p>${nextCameraDetail}</p></article>
             <article class="summary-card"><span class="eyebrow">추천 방식</span><strong>${recommendationMethod}</strong><p>4개 구역 합계 100%, 관리자가 최종 확인</p></article>
             <article class="summary-card"><span class="eyebrow">불확실성 지수</span><strong>${formatPercent(view.uncertaintyIndex)}</strong><p>자연로그 entropy ÷ ln(6), 낮을수록 판단 집중</p></article>
@@ -180,10 +213,8 @@ function render(view) {
             <div class="side-stack">
               <section class="panel" aria-labelledby="priority-title">
                 <div class="section-heading"><div><h2 id="priority-title">카메라 분석 우선순위</h2><p>${policyDisplayName(view.cameraSelectionPolicy)}</p></div></div>
-                <ol class="priority-list">
-                  ${view.rankedCameras.slice(0, 6).map((camera, index) => `<li><span class="priority-rank">${index + 1}</span><span><strong class="mono">${escapeHtml(camera.cameraId)}</strong><br><span class="label">${camera.zoneId}구역 · 운영계수 ${camera.operationalFactor.toFixed(2)}</span></span><strong>${camera.utility.toFixed(4)}</strong></li>`).join("")}
-                </ol>
-                <div class="notice"><strong>관할 내 상대 80% 탐색 집합</strong><span>${coverageLabel}. outside·unknown을 제외한 관할 내 질량의 우선순위 표현이며 탐지 보장률이 아닙니다.</span></div>
+                ${cameraPriorityContent}
+                ${coverageNotice}
               </section>
               <section class="panel" aria-labelledby="decision-title">
                 <div class="section-heading"><div><h2 id="decision-title">관리자 로컬 판단</h2><p>화면 검증용 상태만 바뀌며 외부 전송은 차단됩니다.</p></div></div>
@@ -223,41 +254,51 @@ function render(view) {
       </div>
     </div>`;
   bindInteractions();
+  updateInteractionPending(isInteractionPending);
 }
 
 function bindInteractions() {
-  document.querySelector("#scenario-select")?.addEventListener("change", async (event) => {
-    selectedScenario = event.target.value;
-    const response = await loadMockScenario(selectedScenario);
-    const view = buildDashboardView(response);
-    selectedZoneId = view.mostLikelyZoneId;
-    localDecision = "review";
-    render(view);
-    document.querySelector("#scenario-select")?.focus();
+  document.querySelector("#scenario-select")?.addEventListener("change", (event) => {
+    selectedScenario = event.currentTarget.value;
+    runLatestScenarioRequest(selectedScenario, (response) => {
+      const view = buildDashboardView(response);
+      selectedZoneId = view.mostLikelyZoneId;
+      localDecision = "review";
+      render(view);
+      document.querySelector("#scenario-select")?.focus();
+    });
   });
   document.querySelectorAll("[data-zone-id]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      selectedZoneId = Number(button.dataset.zoneId);
-      localDecision = "review";
-      render(buildDashboardView(await loadMockScenario(selectedScenario)));
-      document.querySelector(`[data-zone-id="${selectedZoneId}"]`)?.focus();
+    button.addEventListener("click", () => {
+      const requestedZoneId = Number(button.dataset.zoneId);
+      runLatestScenarioRequest(selectedScenario, (response) => {
+        selectedZoneId = requestedZoneId;
+        localDecision = "review";
+        render(buildDashboardView(response));
+        document.querySelector(`[data-zone-id="${requestedZoneId}"]`)?.focus();
+      });
     });
   });
   document.querySelectorAll("[data-decision]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      localDecision = button.dataset.decision;
-      render(buildDashboardView(await loadMockScenario(selectedScenario)));
-      document.querySelector(`[data-decision="${localDecision}"]`)?.focus();
+    button.addEventListener("click", () => {
+      const requestedDecision = button.dataset.decision ?? "review";
+      runLatestScenarioRequest(selectedScenario, (response) => {
+        localDecision = requestedDecision;
+        render(buildDashboardView(response));
+        document.querySelector(`[data-decision="${requestedDecision}"]`)?.focus();
+      });
     });
   });
 }
 
-loadMockScenario(selectedScenario)
-  .then((response) => {
+const runLatestScenarioRequest = createLatestRequestRunner({
+  loadScenario: loadMockScenario,
+  onPendingChange: updateInteractionPending,
+  onError: renderError,
+});
+
+runLatestScenarioRequest(selectedScenario, (response) => {
     const view = buildDashboardView(response);
     selectedZoneId = view.mostLikelyZoneId;
     render(view);
-  })
-  .catch((error) => {
-    app.innerHTML = `<main class="showcase-page"><div class="notice"><strong>화면 초기화 실패</strong><span>${escapeHtml(error.message)}</span></div></main>`;
   });

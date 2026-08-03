@@ -53,6 +53,63 @@ test("conditional dashboard probabilities sum to one across four zones", () => {
   );
 });
 
+test("zero in-jurisdiction mass uses a uniform conditional fallback", () => {
+  const conditional = buildConditionalZonePosterior([
+    { zoneId: 1, probability: 0 },
+    { zoneId: 2, probability: 0 },
+    { zoneId: 3, probability: 0 },
+    { zoneId: 4, probability: 0 },
+  ]);
+
+  assert.deepEqual(
+    conditional.map((item) => item.probability),
+    [0.25, 0.25, 0.25, 0.25],
+  );
+  assert.deepEqual(
+    conditional.map((item) => item.rawProbability),
+    [0, 0, 0, 0],
+  );
+});
+
+test("outside-dominant zero mass remains safe for the dashboard view", () => {
+  const response = structuredClone(mockScenarios.outside);
+  response.zonePosterior.forEach((item) => {
+    item.probability = 0;
+  });
+  response.zoneCandidateSummaries.forEach((summary) => {
+    summary.zonePresenceProbability = 0;
+  });
+  response.mostLikelyZoneProbability = 0;
+  response.outsideProbability = 1;
+  response.unknownProbability = 0;
+  response.posteriorEntropy = 0;
+
+  const view = buildDashboardView(response);
+
+  assert.equal(view.jurisdictionProbability, 0);
+  assert.equal(view.jurisdictionStatus, "outside_dominant");
+  assert.equal(view.conditionalZonePosteriorFallback, "uniform");
+  assert.equal(view.autoRecommendationAllowed, false);
+  assert.equal(view.mostLikelyZoneId, null);
+  assert.equal(view.nextCameraId, null);
+  assert.deepEqual(view.rankedCameras, []);
+  assert.deepEqual(view.zones.map((zone) => zone.rank), [null, null, null, null]);
+  assert.deepEqual(view.relativeCoverageSet, [1, 2, 3, 4]);
+  assert.deepEqual(
+    view.zones.map((zone) => zone.probability),
+    [0.25, 0.25, 0.25, 0.25],
+  );
+
+  const unknownDominantResponse = structuredClone(response);
+  unknownDominantResponse.outsideProbability = 0;
+  unknownDominantResponse.unknownProbability = 1;
+  const unknownDominantView = buildDashboardView(unknownDominantResponse);
+
+  assert.equal(unknownDominantView.jurisdictionStatus, "unknown_dominant");
+  assert.equal(unknownDominantView.conditionalZonePosteriorFallback, "uniform");
+  assert.deepEqual(unknownDominantView.zones.map((zone) => zone.rank), [null, null, null, null]);
+});
+
 test("dashboard view places the ranked first camera in nextCameraId", () => {
   const view = buildDashboardView(mockScenarios.current);
   assert.equal(view.nextCameraId, view.rankedCameras[0].cameraId);
