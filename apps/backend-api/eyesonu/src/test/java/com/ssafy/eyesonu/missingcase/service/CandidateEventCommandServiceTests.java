@@ -8,11 +8,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mockito.ArgumentCaptor;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
+import com.ssafy.eyesonu.missingcase.domain.CandidateAggregate;
+import com.ssafy.eyesonu.missingcase.domain.CandidateEvent;
+import com.ssafy.eyesonu.missingcase.domain.CandidateSourceType;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
@@ -55,12 +59,19 @@ class CandidateEventCommandServiceTests {
         when(mapper.insertEvent(any())).thenReturn(1);
         when(mapper.insertCandidate(any())).thenReturn(1);
 
-        var response = service.create(
-                principal(), request(), CAMERA_ID);
+        var response = service.createRecordingAnalysis(
+                principal(), request(), CAMERA_ID, 5001L, 3001L);
 
         assertEquals("event-1", response.eventId());
         assertEquals(1, response.detectionCount());
-        verify(mapper).insertCandidate(any());
+        ArgumentCaptor<CandidateEvent> eventCaptor = ArgumentCaptor.forClass(CandidateEvent.class);
+        ArgumentCaptor<CandidateAggregate> candidateCaptor = ArgumentCaptor.forClass(CandidateAggregate.class);
+        verify(mapper).insertEvent(eventCaptor.capture());
+        verify(mapper).insertCandidate(candidateCaptor.capture());
+        assertEquals(CandidateSourceType.RECORDING_ANALYSIS, eventCaptor.getValue().getSourceType());
+        assertEquals(5001L, eventCaptor.getValue().getAnalysisJobId());
+        assertEquals(3001L, eventCaptor.getValue().getRecordingId());
+        assertEquals("recording-job:5001", candidateCaptor.getValue().getDedupeScope());
     }
 
     @Test
@@ -68,8 +79,8 @@ class CandidateEventCommandServiceTests {
         when(cameraMapper.findByCameraCode("CAM-001"))
                 .thenReturn(Optional.of(new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front")));
 
-        ApiException exception = assertThrows(ApiException.class, () -> service.create(
-                principal(), request(), 99L));
+        ApiException exception = assertThrows(ApiException.class, () -> service.createRecordingAnalysis(
+                principal(), request(), 99L, 5001L, 3001L));
 
         assertEquals("CAMERA_MISMATCH", exception.getCode());
         verify(caseQueryService, never()).require(any());
@@ -88,7 +99,12 @@ class CandidateEventCommandServiceTests {
 
         assertEquals("event-1", response.eventId());
         verify(cameraMapper, never()).findByCameraCode(anyString());
-        verify(mapper).insertEvent(any());
+        ArgumentCaptor<CandidateEvent> eventCaptor = ArgumentCaptor.forClass(CandidateEvent.class);
+        ArgumentCaptor<CandidateAggregate> candidateCaptor = ArgumentCaptor.forClass(CandidateAggregate.class);
+        verify(mapper).insertEvent(eventCaptor.capture());
+        verify(mapper).insertCandidate(candidateCaptor.capture());
+        assertEquals(CandidateSourceType.REALTIME, eventCaptor.getValue().getSourceType());
+        assertEquals("realtime:101:11", candidateCaptor.getValue().getDedupeScope());
     }
 
     private void prepareValidRequest() {

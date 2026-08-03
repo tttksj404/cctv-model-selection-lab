@@ -6,6 +6,7 @@ import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CandidateAggregate;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEvent;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEventDetection;
+import com.ssafy.eyesonu.missingcase.domain.CandidateSourceContext;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
@@ -35,11 +36,15 @@ public class CandidateEventCommandService {
     }
 
     @Transactional
-    public CandidateEventCreateResponse create(MediaServerPrincipal principal,
-                                               CandidateEventCreateRequest request,
-        Long expectedCameraId) {
+    public CandidateEventCreateResponse createRecordingAnalysis(
+            MediaServerPrincipal principal,
+            CandidateEventCreateRequest request,
+            Long expectedCameraId,
+            Long analysisJobId,
+            Long recordingId) {
         Camera camera = accessValidator.validateCameraAccess(principal, request);
-        return create(request, expectedCameraId, camera);
+        return create(request, expectedCameraId, camera,
+                CandidateSourceContext.recordingAnalysis(analysisJobId, recordingId));
     }
 
     @Transactional
@@ -53,13 +58,15 @@ public class CandidateEventCommandService {
             throw new ApiException(HttpStatus.FORBIDDEN,
                     "ACCESS_DENIED", "Validated camera context does not match the request");
         }
-        return create(request, null, camera);
+        return create(request, null, camera,
+                CandidateSourceContext.realtime(request.caseId(), camera.id()));
     }
 
     private CandidateEventCreateResponse create(
             CandidateEventCreateRequest request,
             Long expectedCameraId,
-            Camera camera) {
+            Camera camera,
+            CandidateSourceContext source) {
         if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
                     "Camera does not match the requested recording analysis job");
@@ -71,12 +78,15 @@ public class CandidateEventCommandService {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_NOT_SELECTED", "Camera is not selected for this case");
         }
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
-        if (existing != null) return duplicateResult(existing, request, camera.id());
+        if (existing != null) return duplicateResult(existing, request, camera.id(), source);
 
         CandidateEvent event = new CandidateEvent();
         event.setEventId(request.eventId());
         event.setCaseId(request.caseId());
         event.setCameraId(camera.id());
+        event.setSourceType(source.sourceType());
+        event.setAnalysisJobId(source.analysisJobId());
+        event.setRecordingId(source.recordingId());
         event.setDetectedAt(request.detectedAt().toInstant());
         event.setFrameObjectKey(request.frameObjectKey());
         int eventInserted = mapper.insertEvent(event);
@@ -86,7 +96,7 @@ public class CandidateEventCommandService {
                 throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "EVENT_ID_UPSERT_FAILED", "Event could not be loaded after upsert");
             }
-            return duplicateResult(concurrent, request, camera.id());
+            return duplicateResult(concurrent, request, camera.id(), source);
         }
 
         List<Integer> processingOrder = new ArrayList<>();
@@ -99,10 +109,10 @@ public class CandidateEventCommandService {
         for (int index : processingOrder) {
             CandidateEventCreateRequest.Detection input = request.detections().get(index);
             String boundingBox = boundingBoxJson(input.boundingBox());
-            CandidateAggregate candidate = newCandidate(request, camera.id(), input, boundingBox);
+            CandidateAggregate candidate = newCandidate(request, camera.id(), input, boundingBox, source);
             int candidateInserted = mapper.insertCandidate(candidate);
             if (candidateInserted == 0) {
-                candidate = mapper.findCandidateForUpdate(request.caseId(), camera.id(), input.trackId());
+                candidate = mapper.findCandidateForUpdate(source.dedupeScope(), input.trackId());
                 if (candidate == null) {
                     throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "CANDIDATE_UPSERT_FAILED", "Candidate could not be loaded after upsert");
@@ -127,10 +137,14 @@ public class CandidateEventCommandService {
 
     private CandidateEventCreateResponse duplicateResult(CandidateEvent existing,
                                                          CandidateEventCreateRequest request,
-                                                         Long cameraId) {
+                                                         Long cameraId,
+                                                         CandidateSourceContext source) {
         List<CandidateEventDetection> stored = mapper.findDetectionsByEventId(request.eventId());
         boolean same = Objects.equals(existing.getCaseId(), request.caseId())
                 && Objects.equals(existing.getCameraId(), cameraId)
+                && existing.getSourceType() == source.sourceType()
+                && Objects.equals(existing.getAnalysisJobId(), source.analysisJobId())
+                && Objects.equals(existing.getRecordingId(), source.recordingId())
                 && Objects.equals(existing.getFrameObjectKey(), request.frameObjectKey())
                 && Objects.equals(existing.getDetectedAt(), request.detectedAt().toInstant())
                 && stored.size() == request.detections().size();
@@ -151,9 +165,13 @@ public class CandidateEventCommandService {
     }
 
     private CandidateAggregate newCandidate(CandidateEventCreateRequest request, Long cameraId,
-                                             CandidateEventCreateRequest.Detection input, String box) {
+                                             CandidateEventCreateRequest.Detection input, String box,
+                                             CandidateSourceContext source) {
         CandidateAggregate candidate = new CandidateAggregate();
-        candidate.setCaseId(request.caseId()); candidate.setCameraId(cameraId); candidate.setTrackId(input.trackId());
+        candidate.setCaseId(request.caseId()); candidate.setCameraId(cameraId);
+        candidate.setSourceType(source.sourceType()); candidate.setAnalysisJobId(source.analysisJobId());
+        candidate.setRecordingId(source.recordingId()); candidate.setDedupeScope(source.dedupeScope());
+        candidate.setTrackId(input.trackId());
         candidate.setFirstDetectedAt(request.detectedAt().toInstant()); candidate.setLastDetectedAt(request.detectedAt().toInstant());
         candidate.setBestSimilarity(input.similarity()); candidate.setAverageSimilarity(input.similarity());
         candidate.setDetectionCount(1); candidate.setSimilarity(input.similarity()); candidate.setCropObjectKey(input.cropObjectKey());
