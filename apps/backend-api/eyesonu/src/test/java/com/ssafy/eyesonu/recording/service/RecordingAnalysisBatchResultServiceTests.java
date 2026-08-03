@@ -41,13 +41,15 @@ class RecordingAnalysisBatchResultServiceTests {
     @Mock private CameraMapper cameraMapper;
     @Mock private CandidateEventCommandService candidateService;
     @Mock private AuditService auditService;
+    @Mock private RecordingAnalysisResultStorageValidator resultStorageValidator;
 
     private RecordingAnalysisBatchResultService service;
 
     @BeforeEach
     void setUp() {
         service = new RecordingAnalysisBatchResultService(
-                jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService, auditService);
+                jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService,
+                auditService, resultStorageValidator);
     }
 
     @Test
