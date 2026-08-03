@@ -4,7 +4,7 @@ import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.common.api.ApiResponse;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
-import com.ssafy.eyesonu.missingcase.service.CandidateEventCommandService;
+import com.ssafy.eyesonu.missingcase.service.CandidateEventSubmissionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,17 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/device")
 public class DeviceCandidateEventController {
-    private final CandidateEventCommandService commandService;
+    private final CandidateEventSubmissionService submissionService;
 
-    public DeviceCandidateEventController(CandidateEventCommandService commandService) {
-        this.commandService = commandService;
+    public DeviceCandidateEventController(CandidateEventSubmissionService submissionService) {
+        this.submissionService = submissionService;
     }
 
     @PostMapping(value = "/candidate-events", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<CandidateEventCreateResponse>> create(
             @AuthenticationPrincipal MediaServerPrincipal principal,
             @Valid @RequestBody CandidateEventCreateRequest request) {
-        CandidateEventCreateResponse response = commandService.create(principal, request);
+        CandidateEventCreateResponse response = submissionService.create(principal, request);
         return ResponseEntity.status(response.duplicate() ? HttpStatus.OK : HttpStatus.CREATED)
                 .body(ApiResponse.of(response));
     }

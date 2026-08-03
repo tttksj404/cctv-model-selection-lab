@@ -4,7 +4,6 @@ import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
 import com.ssafy.eyesonu.missingcase.domain.CandidateAggregate;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEvent;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEventDetection;
@@ -12,10 +11,6 @@ import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
-import com.ssafy.eyesonu.storage.StorageObjectNotFoundException;
-import com.ssafy.eyesonu.storage.StorageObject;
-import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
-import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,21 +26,15 @@ public class CandidateEventCommandService {
     private final CameraMapper cameraMapper;
     private final CandidateEventMapper mapper;
     private final CaseQueryService caseQueryService;
-    private final StorageObjectVerifier storageObjectVerifier;
     private final CandidateEventObjectKeyFactory objectKeyFactory;
-    private final S3Properties s3Properties;
 
     public CandidateEventCommandService(CameraMapper cameraMapper, CandidateEventMapper mapper,
                                         CaseQueryService caseQueryService,
-                                        StorageObjectVerifier storageObjectVerifier,
-                                        CandidateEventObjectKeyFactory objectKeyFactory,
-                                        S3Properties s3Properties) {
+                                        CandidateEventObjectKeyFactory objectKeyFactory) {
         this.cameraMapper = cameraMapper;
         this.mapper = mapper;
         this.caseQueryService = caseQueryService;
-        this.storageObjectVerifier = storageObjectVerifier;
         this.objectKeyFactory = objectKeyFactory;
-        this.s3Properties = s3Properties;
     }
 
     @Transactional
@@ -80,9 +69,6 @@ public class CandidateEventCommandService {
         if (expectedCameraId == null) {
             validateRealtimeObjectKeys(principal, camera, request);
         }
-        verifyObject(request.frameObjectKey());
-        request.detections().forEach(detection -> verifyObject(detection.cropObjectKey()));
-
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
         if (existing != null) return duplicateResult(existing, request, camera.id());
 
@@ -182,26 +168,6 @@ public class CandidateEventCommandService {
 
     private boolean invalidKey(String key) {
         return key == null || key.isBlank() || key.contains("\\") || key.contains("..") || key.chars().anyMatch(Character::isISOControl);
-    }
-
-    private void verifyObject(String key) {
-        try {
-            StorageObject object = storageObjectVerifier.stat(key);
-            if (object.size() <= 0) {
-                throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_INVALID", "Storage object is empty");
-            }
-            if (object.size() > s3Properties.getCandidateImageMaxFileSizeBytes()) {
-                throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_TOO_LARGE", "Storage object is too large");
-            }
-            if (!"image/jpeg".equals(object.contentType()) && !"image/png".equals(object.contentType())) {
-                throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_TYPE_INVALID",
-                        "Storage object must be a JPEG or PNG image");
-            }
-        } catch (StorageObjectNotFoundException e) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_NOT_FOUND", "Storage object was not found");
-        } catch (StorageObjectUnavailableException e) {
-            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_UNAVAILABLE", "Storage object could not be verified");
-        }
     }
 
     private void validateRealtimeObjectKeys(MediaServerPrincipal principal, Camera camera,

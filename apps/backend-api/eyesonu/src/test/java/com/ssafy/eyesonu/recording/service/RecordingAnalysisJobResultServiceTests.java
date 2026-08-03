@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.audit.service.AuditService;
@@ -12,6 +15,7 @@ import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventCommandService;
+import com.ssafy.eyesonu.missingcase.service.CandidateEventStorageValidator;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
@@ -26,6 +30,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class RecordingAnalysisJobResultServiceTests {
@@ -37,13 +44,20 @@ class RecordingAnalysisJobResultServiceTests {
     @Mock private CandidateEventCommandService candidateEventCommandService;
     @Mock private RecordingMapper recordingMapper;
     @Mock private AuditService auditService;
+    @Mock private CandidateEventStorageValidator storageValidator;
+    @Mock private TransactionTemplate transactionTemplate;
 
     private RecordingAnalysisJobResultService service;
 
     @BeforeEach
     void setUp() {
+        lenient().when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
+            TransactionCallback<?> callback = invocation.getArgument(0);
+            return callback.doInTransaction(mock(TransactionStatus.class));
+        });
         service = new RecordingAnalysisJobResultService(
-                analysisJobMapper, candidateEventCommandService, recordingMapper, auditService);
+                analysisJobMapper, candidateEventCommandService, recordingMapper, auditService,
+                storageValidator, transactionTemplate);
     }
 
     @Test
@@ -64,6 +78,7 @@ class RecordingAnalysisJobResultServiceTests {
         assertEquals("SUCCEEDED", response.job().status());
         assertEquals(List.of(9001L), response.candidateResult().candidateIds());
         verify(analysisJobMapper).markSucceeded(CASE_ID, JOB_ID);
+        verify(storageValidator).verify(request);
         verify(auditService).recordRequired(
                 "RECORDING_ANALYSIS_JOB_SUCCEEDED", null, CASE_ID, "ANALYSIS_JOB", JOB_ID,
                 Map.of("mediaServerId", 2L, "candidateEventId", "event-1"));
