@@ -106,17 +106,19 @@ class CameraMapperTest {
         String cameraCode = "recording-fixture-camera-153001";
         Instant occurredAt = Instant.parse("2026-07-20T02:00:00Z");
         CameraHeartbeatState initial = cameraMapper
-                .findHeartbeatStateByCameraCodeForUpdate(cameraCode)
+                .findHeartbeatStateByCameraCode(cameraCode)
                 .orElseThrow();
         Instant initialUpdatedAt = cameraMapper.findAdminById(initial.id()).updatedAt();
 
         assertThat(initial.status()).isEqualTo("OFFLINE");
-        assertThat(cameraMapper.updateHeartbeat(initial.id(), "ONLINE", occurredAt)).isEqualTo(1);
+        assertThat(cameraMapper.updateHeartbeat(initial.id(), initial.mediaServerId(), "ONLINE", occurredAt)).isEqualTo(1);
         assertThat(cameraMapper.updateHeartbeat(
-                initial.id(), "ERROR", occurredAt.minusSeconds(1))).isZero();
+                initial.id(), initial.mediaServerId(), "ERROR", occurredAt.minusSeconds(1))).isZero();
+        assertThat(cameraMapper.updateHeartbeat(
+                initial.id(), 999999L, "ERROR", occurredAt.plusSeconds(1))).isZero();
 
         CameraHeartbeatState online = cameraMapper
-                .findHeartbeatStateByCameraCodeForUpdate(cameraCode)
+                .findHeartbeatStateByCameraCode(cameraCode)
                 .orElseThrow();
         assertThat(online.status()).isEqualTo("ONLINE");
         assertThat(online.lastHeartbeat()).isEqualTo(occurredAt);
@@ -124,14 +126,11 @@ class CameraMapperTest {
                 .isAfter(initialUpdatedAt);
 
         Instant threshold = occurredAt.plusSeconds(30);
-        assertThat(cameraMapper.findOfflineCandidates(threshold))
-                .extracting(CameraHeartbeatState::cameraCode)
-                .contains(cameraCode);
-        assertThat(cameraMapper.markOffline(initial.id(), occurredAt, threshold)).isEqualTo(1);
-        assertThat(cameraMapper.markOffline(initial.id(), occurredAt, threshold)).isZero();
+        assertThat(cameraMapper.markOffline(threshold)).isEqualTo(1);
+        assertThat(cameraMapper.markOffline(threshold)).isZero();
 
         CameraHeartbeatState offline = cameraMapper
-                .findHeartbeatStateByCameraCodeForUpdate(cameraCode)
+                .findHeartbeatStateByCameraCode(cameraCode)
                 .orElseThrow();
         assertThat(offline.status()).isEqualTo("OFFLINE");
         assertThat(offline.lastHeartbeat()).isEqualTo(occurredAt);

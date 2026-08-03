@@ -70,19 +70,10 @@
         </where>
     </sql>
 
-    <select id="findHeartbeatStateByCameraCodeForUpdate" resultMap="cameraHeartbeatStateResultMap">
+    <select id="findHeartbeatStateByCameraCode" resultMap="cameraHeartbeatStateResultMap">
         SELECT id, media_server_id, camera_code, status, last_heartbeat
         FROM cameras
         WHERE camera_code = #{cameraCode}
-        FOR UPDATE
-    </select>
-
-    <select id="findOfflineCandidates" resultMap="cameraHeartbeatStateResultMap">
-        SELECT id, media_server_id, camera_code, status, last_heartbeat
-        FROM cameras
-        WHERE status &lt;&gt; 'OFFLINE'
-          AND last_heartbeat IS NOT NULL
-          AND last_heartbeat &lt; #{threshold,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
     </select>
 
     <update id="updateHeartbeat">
@@ -91,6 +82,7 @@
             last_heartbeat = #{lastHeartbeat,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             updated_at = UTC_TIMESTAMP(6)
         WHERE id = #{cameraId}
+          AND media_server_id = #{mediaServerId}
           AND (last_heartbeat IS NULL OR last_heartbeat &lt; #{lastHeartbeat,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler})
     </update>
 
@@ -98,9 +90,8 @@
         UPDATE cameras
         SET status = 'OFFLINE',
             updated_at = UTC_TIMESTAMP(6)
-        WHERE id = #{cameraId}
-          AND status &lt;&gt; 'OFFLINE'
-          AND last_heartbeat = #{lastHeartbeat,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+        WHERE status &lt;&gt; 'OFFLINE'
+          AND last_heartbeat IS NOT NULL
           AND last_heartbeat &lt; #{threshold,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
     </update>
 

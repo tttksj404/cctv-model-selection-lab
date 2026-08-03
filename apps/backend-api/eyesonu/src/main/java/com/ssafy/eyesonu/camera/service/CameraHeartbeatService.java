@@ -47,7 +47,7 @@ public class CameraHeartbeatService {
         Instant occurredAt = request.occurredAt().toInstant();
         CameraHeartbeatState current;
         try {
-            current = cameraMapper.findHeartbeatStateByCameraCodeForUpdate(normalizedCameraCode)
+            current = cameraMapper.findHeartbeatStateByCameraCode(normalizedCameraCode)
                     .orElseThrow(() -> new ApiException(
                             HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
 
@@ -67,12 +67,11 @@ public class CameraHeartbeatService {
                 return;
             }
 
-            if (cameraMapper.updateHeartbeat(current.id(), normalizedStatus, occurredAt) != 1) {
-                log.error(
-                        "Camera heartbeat database update failed cameraId={} cameraCode={} mediaServerId={} status={} lastHeartbeat={}",
-                        current.id(), current.cameraCode(), current.mediaServerId(),
-                        normalizedStatus, occurredAt);
-                throw operationFailed();
+            if (cameraMapper.updateHeartbeat(
+                    current.id(), principal.mediaServerId(), normalizedStatus, occurredAt) != 1) {
+                handleRejectedUpdate(
+                        principal.mediaServerId(), normalizedCameraCode, normalizedStatus, occurredAt);
+                return;
             }
 
             logStateChange(current, normalizedStatus, occurredAt, request.detail());
@@ -91,23 +90,47 @@ public class CameraHeartbeatService {
         }
 
         Instant threshold = now.minus(timeout);
-        int changed = 0;
         try {
-            for (CameraHeartbeatState candidate : cameraMapper.findOfflineCandidates(threshold)) {
-                if (cameraMapper.markOffline(
-                        candidate.id(), candidate.lastHeartbeat(), threshold) == 1) {
-                    changed++;
-                    log.info(
-                            "Camera status changed cameraId={} cameraCode={} mediaServerId={} status={} lastHeartbeat={}",
-                            candidate.id(), candidate.cameraCode(), candidate.mediaServerId(),
-                            OFFLINE, candidate.lastHeartbeat());
-                }
+            int changed = cameraMapper.markOffline(threshold);
+            if (changed > 0) {
+                log.info(
+                        "Camera statuses changed status={} offlineCount={} threshold={}",
+                        OFFLINE, changed, threshold);
             }
             return changed;
         } catch (DataAccessException exception) {
             log.error("Camera offline status check database processing failed", exception);
             throw exception;
         }
+    }
+
+    private void handleRejectedUpdate(
+            Long mediaServerId,
+            String cameraCode,
+            String status,
+            Instant occurredAt) {
+        CameraHeartbeatState latest = cameraMapper.findHeartbeatStateByCameraCode(cameraCode)
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
+
+        if (!Objects.equals(latest.mediaServerId(), mediaServerId)) {
+            throw new ApiException(
+                    HttpStatus.FORBIDDEN,
+                    "ACCESS_DENIED",
+                    "Camera does not belong to the authenticated media server");
+        }
+
+        if (latest.lastHeartbeat() != null && !occurredAt.isAfter(latest.lastHeartbeat())) {
+            log.warn(
+                    "Ignored stale camera heartbeat after optimistic update cameraId={} cameraCode={} mediaServerId={} status={} lastHeartbeat={}",
+                    latest.id(), latest.cameraCode(), latest.mediaServerId(), status, latest.lastHeartbeat());
+            return;
+        }
+
+        log.error(
+                "Camera heartbeat database update failed cameraId={} cameraCode={} mediaServerId={} status={} lastHeartbeat={}",
+                latest.id(), latest.cameraCode(), latest.mediaServerId(), status, occurredAt);
+        throw operationFailed();
     }
 
     private void logStateChange(
