@@ -19,6 +19,10 @@ import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.domain.ReporterRecord;
 import com.ssafy.eyesonu.missingcase.mapper.CaseStatusInquiryMapper;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
+import com.ssafy.eyesonu.missingcase.mapper.AdminCandidateMapper;
+import com.ssafy.eyesonu.missingcase.domain.AdminCandidateRow;
+import com.ssafy.eyesonu.missingcase.domain.CandidateSourceType;
+import java.util.List;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -58,6 +62,9 @@ class MySqlPersistenceIntegrationTests {
 
 	@Autowired
 	private MediaServerMapper mediaServerMapper;
+
+	@Autowired
+	private AdminCandidateMapper adminCandidateMapper;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -140,6 +147,74 @@ class MySqlPersistenceIntegrationTests {
 		auditLogMapper.insert(command.getId(), null, "ADMIN_LOGIN_SUCCESS", "ADMIN", command.getId(), "{}");
 		Integer auditCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM audit_logs", Integer.class);
 		assertEquals(1, auditCount);
+	}
+
+	@Test
+	void candidateSourcesRemainSeparateAndRealtimeCandidatesSortFirst() {
+		jdbcTemplate.update("INSERT INTO reporters (name, phone) VALUES ('Candidate Reporter', '01033334444')");
+		Long reporterId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM reporters", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cases
+				(reporter_id, case_number, status, report_content, missing_name, gender,
+				 distinctive_features, last_seen_time, last_seen_address)
+				VALUES (?, 'EFU-CANDIDATESOURCE000000001', 'SEARCHING', 'content',
+				        'Candidate Missing', 'UNKNOWN', 'coat', UTC_TIMESTAMP(6), 'address')
+				""", reporterId);
+		Long caseId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cases", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO media_servers
+				(server_code, name, device_key_id, device_key_hash, status)
+				VALUES ('candidate-source-server', 'Candidate Source Server',
+				        'candsource000001', 'hash', 'ACTIVE')
+				""");
+		Long mediaServerId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM media_servers", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cameras
+				(media_server_id, camera_name, camera_code, latitude, longitude, address, stream_url)
+				VALUES (?, 'Candidate Camera', 'candidate-source-camera', 37.5, 127.0,
+				        'address', 'rtsp://candidate-source')
+				""", mediaServerId);
+		Long cameraId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cameras", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO recordings (camera_id, start_time, end_time, s3_key, file_size)
+				VALUES (?, '2026-08-03 09:00:00', '2026-08-03 10:00:00',
+				        'recordings/candidate-source/video.mp4', 100)
+				""", cameraId);
+		Long recordingId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM recordings", Long.class);
+		jdbcTemplate.update("INSERT INTO search_conditions (case_id, prompt, similarity_threshold) VALUES (?, 'person', 0.7000)", caseId);
+		Long conditionId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM search_conditions", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO analysis_jobs (case_id, search_condition_id, recording_id, job_type, status)
+				VALUES (?, ?, ?, 'RECORDING_ANALYSIS', 'RUNNING')
+				""", caseId, conditionId, recordingId);
+		Long jobId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM analysis_jobs", Long.class);
+
+		insertCandidate(caseId, cameraId, null, null, "REALTIME",
+				"track-1", "2026-08-03 09:00:00");
+		insertCandidate(caseId, cameraId, jobId, recordingId, "RECORDING_ANALYSIS",
+				"track-1", "2026-08-03 10:00:00");
+
+		List<AdminCandidateRow> rows = adminCandidateMapper.findPage(
+				caseId, cameraId, null, null, null, null, "lastDetectedAt", "desc", 20, 0);
+
+		assertEquals(2, rows.size());
+		assertEquals(CandidateSourceType.REALTIME, rows.getFirst().getSourceType());
+		assertEquals(CandidateSourceType.RECORDING_ANALYSIS, rows.get(1).getSourceType());
+	}
+
+	private void insertCandidate(Long caseId, Long cameraId, Long jobId, Long recordingId,
+			String sourceType, String trackId, String detectedAt) {
+		jdbcTemplate.update("""
+				INSERT INTO candidates
+				(case_id, camera_id, source_type, analysis_job_id, recording_id,
+				 track_id, detected_time, first_detected_at, last_detected_at,
+				 similarity, best_similarity, average_similarity, detection_count,
+				 crop_object_key, frame_object_key, bounding_box, review_status, version)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.7200, 0.7200, 0.7200, 1,
+				        'crops/candidate.jpg', 'frames/candidate.jpg',
+				        JSON_OBJECT('x', 1, 'y', 2, 'width', 30, 'height', 40), 'PENDING', 0)
+				""", caseId, cameraId, sourceType, jobId, recordingId,
+				trackId, detectedAt, detectedAt, detectedAt);
 	}
 
 	@Test

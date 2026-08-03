@@ -47,6 +47,40 @@ public class CandidateEventCommandService {
                 CandidateSourceContext.recordingAnalysis(analysisJobId, recordingId));
     }
 
+    /**
+     * Persists a recording result batch in one service transaction. Shared access and case
+     * validation are performed once instead of once per candidate submission.
+     */
+    @Transactional
+    public List<Long> createRecordingAnalysisBatch(
+            MediaServerPrincipal principal,
+            List<CandidateEventCreateRequest> requests,
+            Long expectedCameraId,
+            Long analysisJobId,
+            Long recordingId) {
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+        Camera camera = accessValidator.validateCameraAccess(principal, requests.get(0));
+        if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
+                    "Camera does not match the requested recording analysis job");
+        }
+        if (caseQueryService.require(requests.get(0).caseId()).getStatus() != CaseStatus.SEARCHING) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CASE_NOT_SEARCHABLE", "Case is not searchable");
+        }
+        if (!mapper.existsActiveCaseCamera(requests.get(0).caseId(), camera.id())) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_NOT_SELECTED", "Camera is not selected for this case");
+        }
+        CandidateSourceContext source = CandidateSourceContext.recordingAnalysis(analysisJobId, recordingId);
+        List<Long> candidateIds = new ArrayList<>();
+        for (CandidateEventCreateRequest request : requests) {
+            CandidateEventCreateResponse response = createAfterValidation(request, expectedCameraId, camera, source);
+            candidateIds.addAll(response.candidateIds());
+        }
+        return List.copyOf(candidateIds);
+    }
+
     @Transactional
     public CandidateEventCreateResponse createValidatedRealtime(
             MediaServerPrincipal principal,
@@ -77,6 +111,14 @@ public class CandidateEventCommandService {
         if (!mapper.existsActiveCaseCamera(request.caseId(), camera.id())) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_NOT_SELECTED", "Camera is not selected for this case");
         }
+        return createAfterValidation(request, expectedCameraId, camera, source);
+    }
+
+    private CandidateEventCreateResponse createAfterValidation(
+            CandidateEventCreateRequest request,
+            Long expectedCameraId,
+            Camera camera,
+            CandidateSourceContext source) {
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
         if (existing != null) return duplicateResult(existing, request, camera.id(), source);
 
