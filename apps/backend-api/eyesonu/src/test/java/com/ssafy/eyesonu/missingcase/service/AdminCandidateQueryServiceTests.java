@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.missingcase.domain.AdminCandidateDetectionRow;
 import com.ssafy.eyesonu.missingcase.domain.AdminCandidateRow;
+import com.ssafy.eyesonu.missingcase.domain.CandidateSourceType;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.AdminCandidateSearchCondition;
 import com.ssafy.eyesonu.missingcase.mapper.AdminCandidateMapper;
@@ -35,15 +36,17 @@ class AdminCandidateQueryServiceTests {
     @Test
     void returnsSignedUrlsInsteadOfObjectKeysInCandidateList() {
         AdminCandidateRow row = candidate();
-        when(mapper.countCandidates(isNull(), isNull(), isNull(), isNull(), isNull())).thenReturn(1L);
-        when(mapper.findPage(isNull(), isNull(), isNull(), isNull(), isNull(),
+        when(mapper.countCandidates(isNull(), isNull(), isNull(), isNull(), isNull(), isNull())).thenReturn(1L);
+        when(mapper.findPage(isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                 any(), any(), anyInt(), anyLong())).thenReturn(List.of(row));
         stubSignedUrls();
 
         AdminCandidatePageResult result = service.findAll(
-                new AdminCandidateSearchCondition(null, null, null, null, null, 0, 20, "lastDetectedAt,desc"));
+                new AdminCandidateSearchCondition(null, null, null, null, null, null,
+                        0, 20, "lastDetectedAt,desc"));
 
         assertEquals("https://storage.example/crop", result.candidates().getFirst().cropUrl());
+        assertEquals(CandidateSourceType.REALTIME, result.candidates().getFirst().sourceType());
         verify(signer, never()).createGetUrl("frames/frame.jpg");
     }
 
@@ -78,6 +81,7 @@ class AdminCandidateQueryServiceTests {
     private AdminCandidateRow candidate() {
         AdminCandidateRow row = new AdminCandidateRow();
         row.setId(1L);
+        row.setSourceType(CandidateSourceType.REALTIME);
         row.setFrameObjectKey("frames/frame.jpg");
         row.setCropObjectKey("crops/crop.jpg");
         return row;

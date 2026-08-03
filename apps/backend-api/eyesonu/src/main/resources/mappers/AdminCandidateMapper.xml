@@ -45,6 +45,7 @@
         <where>
             <if test="caseId != null">AND c.case_id = #{caseId}</if>
             <if test="cameraId != null">AND c.camera_id = #{cameraId}</if>
+            <if test="sourceType != null">AND c.source_type = #{sourceType}</if>
             <if test="reviewStatus != null and reviewStatus != ''">AND c.review_status = #{reviewStatus}</if>
             <if test="detectedFrom != null">AND c.last_detected_at &gt;= #{detectedFrom}</if>
             <if test="detectedTo != null">AND c.first_detected_at &lt; #{detectedTo}</if>
@@ -70,6 +71,7 @@
         <include refid="candidateSelect"/>
         <include refid="filters"/>
         ORDER BY
+        CASE WHEN c.source_type = 'REALTIME' THEN 0 ELSE 1 END ASC,
         <choose>
             <when test="sortField == 'bestSimilarity'">c.best_similarity</when>
             <when test="sortField == 'firstDetectedAt'">c.first_detected_at</when>
