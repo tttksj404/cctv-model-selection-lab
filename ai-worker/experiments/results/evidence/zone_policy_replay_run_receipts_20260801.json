@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "eyesonu-zone-policy-run-receipts-v2",
+  "environment": {
+    "python": "3.14.6",
+    "execution": "cpu-deterministic-policy-replay"
+  },
+  "runs": [
+    {
+      "captureId": "20260801-172508728-4fcb0941",
+      "commandSha256": "5b1070bd2d643bfed6f1660f057020d74fa5c6d625e0ac07ee18072af92cac8f",
+      "exactCommandRecorded": false,
+      "durationMilliseconds": 436862,
+      "stdoutSha256": "3323a42ea4de3cd936c5d42b1c64fa958f63e3c6570aae6f4da2403ae5524c92"
+    },
+    {
+      "captureId": "20260801-173645669-b54bd25d",
+      "commandSha256": "5b1070bd2d643bfed6f1660f057020d74fa5c6d625e0ac07ee18072af92cac8f",
+      "exactCommandRecorded": false,
+      "durationMilliseconds": 437492,
+      "stdoutSha256": "3323a42ea4de3cd936c5d42b1c64fa958f63e3c6570aae6f4da2403ae5524c92"
+    },
+    {
+      "captureId": "20260801-183942602-f150f63c",
+      "command": "uv run --offline python scripts/benchmark_zone_probability_policy.py --episodes-per-cell 500 --seed 20260806 --public-reid-result experiments/results/evidence/prid2011_solider_open_set_v3_revalidated_summary.json --paired-evidence-output experiments/results/evidence/zone_policy_paired_outcomes_20260801.jsonl.zlib --output experiments/results/zone_policy_risk_replay_large_20260801.json",
+      "commandSha256": "7598de452664ce755b6b2e9af46a850b75d9448074f3133eaa7d5e7758984577",
+      "exactCommandRecorded": true,
+      "durationMilliseconds": 436614,
+      "stdoutSha256": "3323a42ea4de3cd936c5d42b1c64fa958f63e3c6570aae6f4da2403ae5524c92",
+      "artifacts": {
+        "pairedEvidenceSha256": "cb9ab656127bc6d374d7e34f3985722c35f37ba9d235257b16e8993598752f3e",
+        "replayRawSha256": "20566f5d3b1c7b438a2b8c026aa36efb5b5be36f3baa528b2dd2f20e64afe0e2",
+        "replayCanonicalSha256": "5f23698edcceb17c3dfd1cd1154bc462a494cc1902babd9e6c5c9e354cd946fc"
+      }
+    }
+  ],
+  "attestationBoundary": "Repository-tracked local run receipt; not an independent protected-CI attestation."
+}

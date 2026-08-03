@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.basedpyright/
+*.pyc
+*.mov
+artifacts/
+models/*.pt
+experiments/data/cctv_real/source_videos/
+experiments/data/cctv_real/**/crops/

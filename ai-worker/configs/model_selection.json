@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "model-selection-v1",
+  "status": "provisional",
+  "execution": {
+    "runtimeEnforced": true,
+    "productionApproved": false,
+    "enforcedBy": [
+      "src/qwen_backend/config.py",
+      "src/qwen_backend/main.py",
+      "src/qwen_backend/decision_gate.py",
+      "src/qwen_backend/decision_engine.py",
+      "src/qwen_backend/distillation.py"
+    ],
+    "reason": "The API is runtime-enforced as retrieval-only by decision_gate.py; production approval and automatic identity confirmation remain blocked until the promotion evidence passes."
+  },
+  "benchmark": {
+    "type": "project_track_proxy_plus_public_strict_cross_camera_sequence_proxy",
+    "dataset": "six project MOV files; three new multi-person videos produced 395 person crops and 57 raw track fragments",
+    "proxyDataset": "CHIRLA public CCTV benchmark",
+    "split": "project same-camera temporal track-heldout plus CHIRLA per-query same-camera and same-sequence gallery exclusion",
+    "projectGroundTruthAvailable": true,
+    "projectGroundTruthScope": "10 manually reviewed stable tracks; identity is valid only inside each source track",
+    "crossCameraProjectGroundTruthAvailable": false,
+    "rawArtifacts": {
+      "location": "authenticated remote Jupyter workspace",
+      "mirroredLocally": true,
+      "localMirrorScope": "aggregate legacy runs, ten fair strict run JSONs with 95 per-query rankings each, manifests, logs, checkpoint and hashes",
+      "requiredForPromotion": true
+    },
+    "promotionBlockedUntil": [
+      "the same independently reviewed people are labeled across at least two project cameras or events",
+      "strict cross-camera Rank-1 and its 95% confidence lower bound both reach 0.85",
+      "Recall@5 reaches 0.95 and false-match/false-reject thresholds pass on an untouched test split"
+    ]
+  },
+  "videoEvaluation": {
+    "unitOfEvaluation": "person_track",
+    "frameSampling": "fixed_fps_or_keyframe_quality_sampling",
+    "requiredInputs": [
+      "video file or extracted frames",
+      "frame timestamp",
+      "caseId",
+      "videoId",
+      "cameraId",
+      "trackId",
+      "bbox or mask",
+      "quality metadata or quality score",
+      "identityGroupId when cross-camera identity is known",
+      "reviewed attributes and identity match labels"
+    ],
+    "trackAggregation": "quality-weighted aggregation across independent frames",
+    "forbidLeakageAcrossSplits": [
+      "same caseId",
+      "same videoId",
+      "same cameraId when the camera event is identity-correlated",
+      "same trackId",
+      "same identityGroupId",
+      "adjacent frames from the same video event"
+    ],
+    "requiredMetrics": [
+      "identity top-1 and recall@K",
+      "false match rate",
+      "false reject rate",
+      "review rate",
+      "attribute mA",
+      "attribute InsF1",
+      "attribute track-level exact match",
+      "attribute macro-F1",
+      "JSON valid rate for any generative review output",
+      "p50/p95 latency",
+      "GPU memory"
+    ]
+  },
+  "attributeRecognition": {
+    "serverBaseCandidate": "solider_swin_b_par",
+    "serverBaseStatus": "selected_for_implementation_not_production_approved",
+    "teacherOrReference": "crosspar",
+    "teacherRole": "offline_performance_reference_and_reviewed_label_candidate",
+    "reportedBenchmark": {
+      "dataset": "PA-100K",
+      "metric": "mA",
+      "value": 0.869,
+      "instanceF1": 0.906,
+      "source": "https://openaccess.thecvf.com/content/ACCV2024/papers/Ngo_CrossPAR_Enhancing_Pedestrian_Attribute_Recognition_with_Vision-Language_Fusion_and_Human-Centric_ACCV2024_paper.pdf"
+    },
+    "deploymentReference": {
+      "model": "SOLIDER Swin-B",
+      "reportedPa100kMa": 0.8637,
+      "source": "https://github.com/tinyvision/SOLIDER"
+    },
+    "localProxyResult": {
+      "dataset": "PA-100K local 100-image subset",
+      "split": "deterministic image-level 5-fold; no identity or track IDs",
+      "fields": 6,
+      "metric": "mean of per-field multiclass top-1 validation accuracies",
+      "bestObserved": 0.72666668,
+      "notEquivalentTo": [
+        "sample-level all-field exact match",
+        "track-level exact match",
+        "CCTV identity accuracy"
+      ],
+      "evidence": "experiments/results/attribute-ceiling-ft40.json"
+    },
+    "metricWarning": "External PA-100K mA/InsF1 is not the same metric as the local six-field per-field top-1 mean. The 85% project gate requires a real CCTV track-held-out rerun with mA, InsF1 and track-level exact match."
+  },
+  "distillationArms": [
+    {
+      "name": "student_CLIP_hard",
+      "surface": "embedded",
+      "strategy": "CLIP features with hard labels",
+      "status": "provisional_winner",
+      "cvAccuracy": 1.0,
+      "cvF1": 0.6,
+      "flipRecall": 1.0,
+      "selectionScore": 0.9,
+      "evidence": "distillation_ablation_results.csv and distillation_ablation_summary.csv",
+      "promotionReason": "best embedded-scope result; ties resolved by lower complexity and measured latency"
+    },
+    {
+      "name": "student_CLIP_soft_ensemble",
+      "surface": "embedded",
+      "strategy": "CLIP features with CLIP/Qwen soft targets",
+      "status": "rejected_on_proxy",
+      "cvAccuracy": 0.4,
+      "cvF1": 0.2,
+      "flipRecall": 1.0,
+      "selectionScore": null,
+      "evidence": "distillation_ablation_results.csv and distillation_ablation_summary.csv",
+      "promotionReason": "hard labels reached 1.00 proxy accuracy while soft targets reached 0.40"
+    },
+    {
+      "name": "student_CLIP_extended_variants",
+      "surface": "embedded",
+      "strategy": "label smoothing, DINO hint, SupCon, prototype, KNN, confidence gates, KD temperatures and agreement gates",
+      "status": "not_superior_on_proxy",
+      "selectionScore": null,
+      "evidence": "distillation_extended_results.csv",
+      "promotionReason": "no reproducible gain over the hard-label CLIP student on the current proxy"
+    },
+    {
+      "name": "student_FUSED_variants",
+      "surface": "embedded",
+      "strategy": "CLIP plus DINO features with hard or soft targets",
+      "status": "not_promoted",
+      "selectionScore": null,
+      "evidence": "distillation_ablation_results.csv and distillation_final_decision.csv",
+      "promotionReason": "no measurable embedded benefit that justifies extra feature and deployment complexity"
+    }
+  ],
+  "backendArms": [
+    {
+      "name": "solider_swin_b_attribute_plus_qwen_deterministic_fusion",
+      "surface": "gpu_backend",
+      "status": "selected_as_topk_candidate_retriever_not_automatic_match",
+      "generativeModelsPerRequest": 1,
+      "components": [
+        "SOLIDER Swin-B pedestrian attribute recognition head",
+        "SOLIDER or TransReID-family person ReID embedding",
+        "embedded CLIP candidate score",
+        "historical retrieval score",
+        "track/temporal/spatial consistency",
+        "Qwen3-VL-8B only for conflict explanation and low-confidence review",
+        "fail-closed deterministic decision engine"
+      ],
+      "reason": "A fair strict GPU rerun of CLIP B/32, CLIP L/14, DINOv2, SigLIP2, OSNet, FastReID SBS and four SOLIDER variants selected SOLIDER-ReID Swin-B at Rank-1 0.4737, Recall@5 0.7789 and identity-MRR 0.6074. The earlier 0.6421 result used an overlapping gallery. SOLIDER is enabled only for Top-K retrieval because the 0.85 automatic-match gate did not pass; Qwen is not used as the primary calibrated identity classifier."
+    },
+    {
+      "name": "qwen3vl_8b_historical_baseline",
+      "surface": "gpu_backend",
+      "status": "historical_baseline",
+      "generativeModelsPerRequest": 1,
+      "components": [
+        "Qwen3-VL-8B semantic analysis",
+        "embedded CLIP score",
+        "historical retrieval score",
+        "track/temporal/spatial consistency",
+        "fail-closed deterministic decision engine"
+      ],
+      "reason": "retained only as the historical Qwen-centered comparison arm; it is not the selected calibrated attribute classifier and is not an automatic fallback"
+    },
+    {
+      "name": "qwen_plus_gemma_runtime_ensemble",
+      "surface": "gpu_backend",
+      "status": "not_evaluated",
+      "reason": "Only separate model outputs were measured on the small crop proxy; the runtime ensemble itself has not been evaluated on the same CCTV track split.",
+      "evidence": "person_crop_model_comparison.json and backend_model_selection_reassessment_report.md"
+    }
+  ],
+  "runtimePolicy": {
+    "embeddedDefault": "student_CLIP_hard",
+    "serverPrimary": "solider_swin_b_attribute_plus_qwen_deterministic_fusion",
+    "serverAttributeModel": "solider_swin_b_par",
+    "serverReidModel": "solider_or_transreid_family",
+    "serverGenerativeReviewModel": "qwen3_5_9b_candidate",
+    "serverGenerativeFallbackModel": "qwen2_5_vl_7b_fallback",
+    "qwenRuntimeCandidates": [
+      {
+        "id": "qwen3_5_9b_candidate",
+        "modelId": "Qwen/Qwen3.5-9B",
+        "status": "not_measured_on_project_cctv",
+        "runtime": "vllm-openai"
+      },
+      {
+        "id": "qwen2_5_vl_7b_fallback",
+        "modelId": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "status": "fallback_not_measured_on_project_cctv",
+        "runtime": "vllm-openai"
+      }
+    ],
+    "qwenModelSwapKey": "QWEN_MODEL_ID",
+    "automaticGenerativeFallback": false,
+    "dinoRole": "offline geometry/retrieval teacher or optional server retrieval baseline",
+    "samRole": "offline mask and track generation; never a replacement for the embedded student",
+    "florenceRole": "offline attribute-label candidate; not enabled as a second runtime generator",
+    "sonnetRole": "offline Claude CLI attribute annotation pilot only; no CHIRLA identity arm was run and provider training-use terms still require approval",
+    "runtimeGenerativeEnsemble": false,
+    "autoMatchRequires": [
+      "embedded score present",
+      "historical score present",
+      "server PAR probabilities present",
+      "server ReID embedding and calibrated same/different score present",
+      "sufficient observed frames and image quality",
+      "top-candidate margin above policy threshold",
+      "no model disagreement or multi-view conflict"
+    ],
+    "qwenCondition": "if_invoked_json_confidence_valid_and_no_conflict",
+    "qwenRequiredForAutoMatch": false
+  }
+}
