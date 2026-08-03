@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -92,8 +93,7 @@ class RecordingAnalysisJobResultServiceTests {
         assertThrows(ApiException.class, () -> service.complete(
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
 
-        verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID));
+        verifyNoInteractions(candidateEventCommandService);
     }
 
     @Test

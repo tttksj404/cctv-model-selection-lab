@@ -36,18 +36,10 @@ public class CandidateEventCommandService {
 
     @Transactional
     public CandidateEventCreateResponse create(MediaServerPrincipal principal,
-                                               CandidateEventCreateRequest request) {
-        return create(principal, request, null);
-    }
-
-    @Transactional
-    public CandidateEventCreateResponse create(MediaServerPrincipal principal,
                                                CandidateEventCreateRequest request,
-                                               Long expectedCameraId) {
-        Camera camera = expectedCameraId == null
-                ? accessValidator.validateRealtimeAccess(principal, request)
-                : accessValidator.validateCameraAccess(principal, request);
-        return create(principal, request, expectedCameraId, camera);
+        Long expectedCameraId) {
+        Camera camera = accessValidator.validateCameraAccess(principal, request);
+        return create(request, expectedCameraId, camera);
     }
 
     @Transactional
@@ -61,11 +53,10 @@ public class CandidateEventCommandService {
             throw new ApiException(HttpStatus.FORBIDDEN,
                     "ACCESS_DENIED", "Validated camera context does not match the request");
         }
-        return create(principal, request, null, camera);
+        return create(request, null, camera);
     }
 
     private CandidateEventCreateResponse create(
-            MediaServerPrincipal principal,
             CandidateEventCreateRequest request,
             Long expectedCameraId,
             Camera camera) {
