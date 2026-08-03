@@ -39,6 +39,7 @@ public class RecordingAnalysisBatchResultService {
     private final CameraMapper cameraMapper;
     private final CandidateEventCommandService candidateService;
     private final AuditService auditService;
+    private final RecordingAnalysisResultStorageValidator resultStorageValidator;
 
     public RecordingAnalysisBatchResultService(
             AnalysisJobMapper jobMapper,
@@ -46,13 +47,15 @@ public class RecordingAnalysisBatchResultService {
             RecordingMapper recordingMapper,
             CameraMapper cameraMapper,
             CandidateEventCommandService candidateService,
-            AuditService auditService) {
+            AuditService auditService,
+            RecordingAnalysisResultStorageValidator resultStorageValidator) {
         this.jobMapper = jobMapper;
         this.resultMapper = resultMapper;
         this.recordingMapper = recordingMapper;
         this.cameraMapper = cameraMapper;
         this.candidateService = candidateService;
         this.auditService = auditService;
+        this.resultStorageValidator = resultStorageValidator;
     }
 
     @Transactional
@@ -82,6 +85,7 @@ public class RecordingAnalysisBatchResultService {
             throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
                     "Only running recording analysis jobs can submit results.");
         }
+        resultStorageValidator.verify(job, request);
 
         Recording recording = recordingMapper.findById(job.getRecordingId());
         if (recording == null) {
