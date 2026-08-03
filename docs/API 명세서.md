@@ -871,7 +871,7 @@ Content-Type: application/json
 - `lastHeartbeat`에는 요청의 `occurredAt`을 UTC로 정규화하여 저장한다. 기존 값보다 과거이거나 같은 시각의 지연·중복 Heartbeat는 `204`로 수락하되 상태와 시간을 되돌리지 않는다.
 - 미디어 서버가 보내는 상태는 `ONLINE` 또는 `ERROR`이며, `OFFLINE`은 중앙 서버가 마지막 Heartbeat 기준 timeout으로 판정한다.
 - `detail`은 카메라 테이블에 저장하지 않는다. `ERROR`로 실제 전이될 때만 줄바꿈 등 제어 문자를 정제한 진단 로그에 제한적으로 남기며, Heartbeat마다 감사 로그를 생성하지 않는다.
-- 기본 운영값은 미디어 서버 Heartbeat 발신 주기 10초, 백엔드의 미수신 30초 후 `OFFLINE` 판정, 백엔드 상태 확인 주기 10초다. Heartbeat 발신 주기는 미디어 서버가 소유하며 미디어 서버 설정에서 조정한다. 백엔드는 `CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS`와 `CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS` 환경 변수로 `OFFLINE` 판정 기준과 상태 확인 주기를 조정할 수 있다.
+- 기본 운영값은 미디어 서버 Heartbeat 발신 주기 10초, 백엔드의 미수신 30초 후 `OFFLINE` 판정, 백엔드 상태 확인 주기 10초다. Heartbeat 발신 주기는 미디어 서버가 소유하며 미디어 서버의 `CAMERA_HEARTBEAT_INTERVAL` 설정(기본 `10s`)으로 조정한다. 중앙 서버는 Heartbeat를 생성하지 않는다. 백엔드는 `CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS`와 `CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS` 환경 변수로 `OFFLINE` 판정 기준과 상태 확인 주기를 조정할 수 있다.
 
 ### 7.4 녹화 메타데이터 API
 
