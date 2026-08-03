@@ -34,9 +34,10 @@ public class AdminCandidateQueryService {
         if (from != null && to != null && !from.isBefore(to)) {
             throw validation("detectedFrom must be before detectedTo");
         }
-        long total = mapper.countCandidates(condition.caseId(), condition.cameraId(), reviewStatus, from, to);
+        long total = mapper.countCandidates(
+                condition.caseId(), condition.cameraId(), condition.sourceType(), reviewStatus, from, to);
         List<AdminCandidateListResponse> candidates = total == 0 ? List.of() : mapper.findPage(
-                        condition.caseId(), condition.cameraId(), reviewStatus, from, to,
+                        condition.caseId(), condition.cameraId(), condition.sourceType(), reviewStatus, from, to,
                         sort[0], sort[1], condition.size(), (long) condition.page() * condition.size())
                 .stream().map(this::toListResponse).toList();
         long pages = total / condition.size() + (total % condition.size() == 0 ? 0 : 1);

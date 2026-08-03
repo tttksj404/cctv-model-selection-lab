@@ -5,11 +5,11 @@ import { useRoute, useRouter } from "vue-router";
 import { fetchAdminCandidates } from "../api/candidateApi";
 import { listCases } from "../api/caseApi";
 import BasePagination from "../components/common/BasePagination.vue";
-import { formatCandidateDate, reviewStatusLabel, reviewStatusTone, similarityPercent, similarityTone } from "../domain/candidateMapper";
+import { candidateSourceLabel, candidateSourceTone, formatCandidateDate, reviewStatusLabel, reviewStatusTone, similarityPercent, similarityTone } from "../domain/candidateMapper";
 
 const router = useRouter();
 const route = useRoute();
-const filters = reactive({ caseId: "", review: "all", view: "card" });
+const filters = reactive({ caseId: "", source: "all", review: "all", view: "card" });
 const rows = ref([]);
 const cases = ref([]);
 const caseDropdownOpen = ref(false);
@@ -22,6 +22,7 @@ const totalCount = ref(0);
 const selectedCase = computed(() => cases.value.find((item) => String(item.id) === String(filters.caseId)));
 const listParams = () => ({
   caseId: filters.caseId || undefined,
+  sourceType: filters.source === "all" ? undefined : filters.source,
   reviewStatus: filters.review === "all" ? undefined : filters.review.toUpperCase(),
   page: page.value - 1,
   size: pageSize.value,
@@ -72,7 +73,7 @@ const selectCase = (caseItem) => {
   caseDropdownOpen.value = false;
 };
 
-watch(() => [filters.caseId, filters.review, pageSize.value], () => {
+watch(() => [filters.caseId, filters.source, filters.review, pageSize.value], () => {
   if (page.value !== 1) {
     page.value = 1;
     return;
@@ -116,6 +117,13 @@ onUnmounted(() => {
           </div>
         </div>
       </label>
+      <label>탐색 출처
+        <select v-model="filters.source">
+          <option value="all">전체</option>
+          <option value="REALTIME">실시간</option>
+          <option value="RECORDING_ANALYSIS">녹화영상</option>
+        </select>
+      </label>
       <label>판정 상태
         <select v-model="filters.review">
           <option value="all">전체</option>
@@ -139,14 +147,15 @@ onUnmounted(() => {
           <img v-if="item.cropUrl" :src="item.cropUrl" alt="후보 캡처" />
           <span v-else class="image-placeholder large">이미지 없음</span>
           <strong>{{ item.caseNumber }}</strong>
+          <span :class="['status-badge', candidateSourceTone(item.sourceType)]">{{ candidateSourceLabel(item.sourceType) }}</span>
           <p>{{ item.cameraCode }} · {{ formatCandidateDate(item.lastDetectedAt) }}</p>
           <p class="candidate-location">{{ item.cameraName || "카메라 위치 미등록" }} · track {{ item.trackId }}</p>
           <b :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</b><span :class="['status-badge', reviewStatusTone(item.reviewStatus)]">{{ reviewStatusLabel(item.reviewStatus) }}</span>
         </button>
       </div>
       <div v-else class="table-scroll">
-        <table class="case-table"><thead><tr><th>사건</th><th>CCTV</th><th>카메라</th><th>최근 탐지</th><th>유사도</th><th>상태</th><th></th></tr></thead>
-          <tbody><tr v-for="item in rows" :key="item.id"><td>{{ item.caseNumber }}</td><td>{{ item.cameraCode }}</td><td>{{ item.cameraName || "-" }}</td><td>{{ formatCandidateDate(item.lastDetectedAt) }}</td><td :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</td><td><span :class="['status-badge', reviewStatusTone(item.reviewStatus)]">{{ reviewStatusLabel(item.reviewStatus) }}</span></td><td><button class="ghost-button" @click="router.push(`/admin/candidates/${item.id}`)">상세 보기</button></td></tr></tbody>
+        <table class="case-table"><thead><tr><th>사건</th><th>출처</th><th>CCTV</th><th>카메라</th><th>최근 탐지</th><th>유사도</th><th>상태</th><th></th></tr></thead>
+          <tbody><tr v-for="item in rows" :key="item.id"><td>{{ item.caseNumber }}</td><td><span :class="['status-badge', candidateSourceTone(item.sourceType)]">{{ candidateSourceLabel(item.sourceType) }}</span></td><td>{{ item.cameraCode }}</td><td>{{ item.cameraName || "-" }}</td><td>{{ formatCandidateDate(item.lastDetectedAt) }}</td><td :class="['similarity-score', similarityTone(item.bestSimilarity)]">{{ similarityPercent(item.bestSimilarity) }}%</td><td><span :class="['status-badge', reviewStatusTone(item.reviewStatus)]">{{ reviewStatusLabel(item.reviewStatus) }}</span></td><td><button class="ghost-button" @click="router.push(`/admin/candidates/${item.id}`)">상세 보기</button></td></tr></tbody>
         </table>
       </div>
       <BasePagination v-model:page="page" :total-pages="totalPages" :total-count="totalCount" />
