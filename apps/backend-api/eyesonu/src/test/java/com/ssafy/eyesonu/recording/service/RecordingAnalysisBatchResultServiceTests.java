@@ -53,7 +53,7 @@ class RecordingAnalysisBatchResultServiceTests {
         service = new RecordingAnalysisBatchResultService(
                 jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService,
                 auditService, resultStorageValidator, transactionTemplate);
-        when(transactionTemplate.execute(any(TransactionCallback.class))).thenAnswer(invocation ->
+        org.mockito.Mockito.lenient().when(transactionTemplate.execute(any(TransactionCallback.class))).thenAnswer(invocation ->
                 ((TransactionCallback<?>) invocation.getArgument(0)).doInTransaction(null));
     }
 
@@ -90,7 +90,6 @@ class RecordingAnalysisBatchResultServiceTests {
     void acceptsIdenticalResultRetryWithoutSavingCandidatesAgain() {
         AnalysisJob succeeded = job("SUCCEEDED");
         when(jobMapper.findRecordingAnalysisById(5001L)).thenReturn(succeeded);
-        when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(succeeded);
         RecordingAnalysisBatchResultRequest request = new RecordingAnalysisBatchResultRequest(
                 "result-1", List.of());
         RecordingAnalysisResult existing = new RecordingAnalysisResult();

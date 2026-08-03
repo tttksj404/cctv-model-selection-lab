@@ -153,8 +153,10 @@ public class RecordingAnalysisBatchResultService {
             RecordingAnalysisBatchResultRequest.Candidate candidate = request.candidates().get(index);
             events.add(toEvent(job, camera, candidate, attempt, index));
         }
-        List<Long> candidateIds = candidateService.createRecordingAnalysisBatch(
-                sourcePrincipal, events, camera.id(), jobId, recording.getId());
+        List<Long> candidateIds = events.isEmpty()
+                ? List.of()
+                : candidateService.createRecordingAnalysisBatch(
+                        sourcePrincipal, events, camera.id(), jobId, recording.getId());
 
         RecordingAnalysisResult result = new RecordingAnalysisResult();
         result.setJobId(jobId);
