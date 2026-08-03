@@ -58,6 +58,8 @@ public interface CameraMapper {
 
     CameraManagementRow findAdminById(@Param("cameraId") Long cameraId);
 
+    Optional<String> findStreamUrlById(@Param("cameraId") Long cameraId);
+
     CameraManagementRow findAdminByIdForUpdate(@Param("cameraId") Long cameraId);
 
     int insert(CameraCreateCommand command);

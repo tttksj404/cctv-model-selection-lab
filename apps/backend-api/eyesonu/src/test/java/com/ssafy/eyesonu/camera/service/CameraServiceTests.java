@@ -16,6 +16,7 @@ import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.mediaserver.domain.MediaServer;
@@ -78,6 +79,25 @@ class CameraServiceTests {
         assertEquals(2, result.totalPages());
         assertEquals("createdAt,desc", result.sort());
         assertEquals(1, result.cameras().size());
+    }
+
+    @Test
+    void findsStreamUrlFromCameraRecord() {
+        when(cameraMapper.findStreamUrlById(CAMERA_ID))
+                .thenReturn(Optional.of("rtsp://internal/stream"));
+
+        CameraStreamUrlResponse result = cameraService.findStreamUrlById(CAMERA_ID);
+
+        assertEquals("rtsp://internal/stream", result.streamUrl());
+        verify(cameraMapper).findStreamUrlById(CAMERA_ID);
+    }
+
+    @Test
+    void missingCameraPreventsStreamUrlLookup() {
+        when(cameraMapper.findStreamUrlById(CAMERA_ID)).thenReturn(Optional.empty());
+
+        assertApiError("RESOURCE_NOT_FOUND", 404,
+                () -> cameraService.findStreamUrlById(CAMERA_ID));
     }
 
     @Test

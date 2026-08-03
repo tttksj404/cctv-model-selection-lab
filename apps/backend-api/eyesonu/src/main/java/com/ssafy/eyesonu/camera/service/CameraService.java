@@ -9,6 +9,7 @@ import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
@@ -67,6 +68,13 @@ public class CameraService {
 
     public CameraDetailResponse findAdminById(Long cameraId) {
         return toDetail(cameraMapper.findAdminById(cameraId));
+    }
+
+    public CameraStreamUrlResponse findStreamUrlById(Long cameraId) {
+        return cameraMapper.findStreamUrlById(cameraId)
+                .map(CameraStreamUrlResponse::new)
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found."));
     }
 
     @Transactional
