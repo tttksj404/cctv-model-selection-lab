@@ -11,7 +11,10 @@ public interface AnalysisJobMapper {
 
     int insert(AnalysisJob job);
 
-    int claimQueued(Long jobId);
+    int claimQueued(
+            @Param("jobId") Long jobId,
+            @Param("workerId") String workerId,
+            @Param("leaseSeconds") long leaseSeconds);
 
     AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
 
