@@ -496,6 +496,8 @@ Content-Type: application/json
 
 Backend는 후보를 곧바로 공개 `candidate_events`에 넣지 않고 `(jobId, attempt, eventId)`가 UNIQUE인 staging에 저장합니다. 응답은 각 event의 `CREATED`, `DUPLICATE`, `CONFLICT` 결과를 포함합니다. 동일 `eventId`와 같은 canonical payload는 성공한 중복이고, 다른 payload는 `409 EVENT_PAYLOAD_CONFLICT`입니다. 성공 attempt의 후보만 `source=RECORDING_ANALYSIS`로 공개하고, 임계값 이상 후보로 관측 추정 경로와 후속 작업을 갱신합니다.
 
+프레임과 crop의 Object Key는 현재 작업의 `analysis/analysis-{jobId}/attempt-{attempt}/frames/` 또는 `analysis/analysis-{jobId}/attempt-{attempt}/crops/` 하위 경로여야 한다. 다른 작업이나 attempt의 키는 `400 INVALID_UPLOAD_OBJECT_KEY`로 거부한다.
+
 ### 7.5 종단 결과 접수
 
 성공·실패·취소는 하나의 API로 내구 접수합니다.

@@ -16,6 +16,7 @@ import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventCommandService;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventStorageValidator;
+import com.ssafy.eyesonu.missingcase.service.CandidateEventObjectKeyFactory;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
@@ -57,7 +58,7 @@ class RecordingAnalysisJobResultServiceTests {
         });
         service = new RecordingAnalysisJobResultService(
                 analysisJobMapper, candidateEventCommandService, recordingMapper, auditService,
-                storageValidator, transactionTemplate);
+                storageValidator, transactionTemplate, new CandidateEventObjectKeyFactory());
     }
 
     @Test
@@ -136,6 +137,25 @@ class RecordingAnalysisJobResultServiceTests {
         verify(analysisJobMapper, never()).markSucceeded(CASE_ID, JOB_ID);
     }
 
+    @Test
+    void rejectsObjectKeyFromAnotherAnalysisJobBeforeStorageAccess() {
+        AnalysisJob running = job("RUNNING");
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(running);
+        when(recordingMapper.findById(3001L)).thenReturn(new Recording(
+                3001L, 2L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
+        CandidateEventCreateRequest request = requestWithKeys(
+                CASE_ID,
+                "analysis/analysis-9999/attempt-1/frames/event-1.jpg",
+                "analysis/analysis-9999/attempt-1/crops/track-1.jpg");
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.complete(
+                new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request));
+
+        assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
+        verify(storageValidator, never()).verify(request);
+        verify(candidateEventCommandService, never()).create(any(), any(), any());
+    }
+
     private AnalysisJob job(String status) {
         AnalysisJob job = new AnalysisJob();
         job.setId(JOB_ID);
@@ -147,10 +167,17 @@ class RecordingAnalysisJobResultServiceTests {
     }
 
     private CandidateEventCreateRequest request(Long caseId) {
+        return requestWithKeys(
+                caseId,
+                "analysis/analysis-5001/attempt-1/frames/event-1.jpg",
+                "analysis/analysis-5001/attempt-1/crops/track-1.jpg");
+    }
+
+    private CandidateEventCreateRequest requestWithKeys(Long caseId, String frameKey, String cropKey) {
         return new CandidateEventCreateRequest(
                 caseId, "CAM-001", "event-1", OffsetDateTime.parse("2026-08-02T10:00:00Z"),
-                "frames/frame.jpg", List.of(new CandidateEventCreateRequest.Detection(
-                        "track-1", new BigDecimal("0.91"), "crops/crop.jpg",
+                frameKey, List.of(new CandidateEventCreateRequest.Detection(
+                        "track-1", new BigDecimal("0.91"), cropKey,
                         new CandidateEventCreateRequest.BoundingBox(1, 2, 30, 40))));
     }
 }

@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class CandidateEventStorageValidator {
 
+    private static final int IMAGE_SIGNATURE_LENGTH = 8;
+    private static final byte[] PNG_SIGNATURE = {
+            (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
+    };
+
     private final StorageObjectVerifier storageObjectVerifier;
     private final S3Properties s3Properties;
 
@@ -47,6 +52,12 @@ public class CandidateEventStorageValidator {
                         "STORAGE_OBJECT_TYPE_MISMATCH",
                         "Storage object content type does not match its file extension");
             }
+            byte[] prefix = storageObjectVerifier.readPrefix(key, IMAGE_SIGNATURE_LENGTH);
+            if (!matchesImageSignature(expectedContentType, prefix)) {
+                throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT,
+                        "STORAGE_OBJECT_CONTENT_INVALID",
+                        "Storage object bytes do not match the declared image type");
+            }
         } catch (StorageObjectNotFoundException exception) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT,
                     "STORAGE_OBJECT_NOT_FOUND", "Storage object was not found");
@@ -73,5 +84,26 @@ public class CandidateEventStorageValidator {
             return "";
         }
         return contentType.split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean matchesImageSignature(String contentType, byte[] prefix) {
+        if (prefix == null) {
+            return false;
+        }
+        if ("image/jpeg".equals(contentType)) {
+            return prefix.length >= 3
+                    && prefix[0] == (byte) 0xff
+                    && prefix[1] == (byte) 0xd8
+                    && prefix[2] == (byte) 0xff;
+        }
+        if (prefix.length < PNG_SIGNATURE.length) {
+            return false;
+        }
+        for (int index = 0; index < PNG_SIGNATURE.length; index++) {
+            if (prefix[index] != PNG_SIGNATURE[index]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

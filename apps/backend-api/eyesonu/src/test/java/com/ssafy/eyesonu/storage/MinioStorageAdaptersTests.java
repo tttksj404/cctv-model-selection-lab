@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,8 @@ import java.time.Duration;
 
 import com.ssafy.eyesonu.common.config.properties.S3Properties;
 import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
 import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
@@ -40,6 +43,25 @@ class MinioStorageAdaptersTests {
 		StorageObject result = new MinioStorageObjectVerifier(client, properties).stat(OBJECT_KEY);
 
 		assertEquals(new StorageObject(1024L, "video/mp4"), result);
+	}
+
+	@Test
+	void readsOnlyRequestedObjectPrefix() throws Exception {
+		GetObjectResponse response = mock(GetObjectResponse.class);
+		byte[] signature = {(byte) 0xff, (byte) 0xd8, (byte) 0xff, (byte) 0xe0};
+		when(response.readNBytes(8)).thenReturn(signature);
+		when(client.getObject(any(GetObjectArgs.class))).thenReturn(response);
+		ArgumentCaptor<GetObjectArgs> argsCaptor = ArgumentCaptor.forClass(GetObjectArgs.class);
+
+		byte[] result = new MinioStorageObjectVerifier(client, properties).readPrefix(OBJECT_KEY, 8);
+
+		verify(client).getObject(argsCaptor.capture());
+		GetObjectArgs args = argsCaptor.getValue();
+		assertEquals(OBJECT_KEY, args.object());
+		assertEquals(0L, args.offset());
+		assertEquals(8L, args.length());
+		assertArrayEquals(signature, result);
+		verify(response).close();
 	}
 
 	@Test
