@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.net.URI;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -74,6 +75,7 @@ class S3PropertiesValidationTests {
 		S3Properties properties = new S3Properties();
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
+		properties.setPublicEndpoint(URI.create("https://storage.example.test"));
 		properties.setMaxFileSizeBytes(5_368_709_120L);
 		return properties;
 	}

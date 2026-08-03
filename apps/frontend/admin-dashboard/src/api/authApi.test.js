@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getCurrentAdmin, login, logout } from "./authApi";
+import { getCurrentAdmin, login, logout, updateCurrentAdmin } from "./authApi";
 import { apiClient, setUnauthorizedHandler } from "./httpClient";
 
 const originalAdapter = apiClient.defaults.adapter;
@@ -112,5 +112,30 @@ describe("authApi", () => {
 
     await expect(getCurrentAdmin()).resolves.toEqual(current);
     expect(adapter.mock.calls[0][0]).toMatchObject({ method: "get", url: "/admins/me" });
+  });
+
+  it("현재 관리자 수정에 CSRF를 발급하고 PATCH 응답을 반환한다", async () => {
+    const result = {
+      admin: { id: 1, loginId: "admin", name: "Renamed Admin", role: "SUPER_ADMIN" },
+      reauthenticationRequired: false
+    };
+    const adapter = vi.fn(async (config) => {
+      if (config.url === "/auth/csrf") {
+        setCsrfCookie("profile-update-token");
+        return response(config, "", 204);
+      }
+      if (config.url === "/admins/me") {
+        return response(config, { data: result });
+      }
+      throw new Error(`Unexpected request: ${config.url}`);
+    });
+    apiClient.defaults.adapter = adapter;
+
+    await expect(updateCurrentAdmin({ name: "Renamed Admin" })).resolves.toEqual(result);
+    expect(adapter.mock.calls.map(([config]) => `${config.method} ${config.url}`)).toEqual([
+      "get /auth/csrf",
+      "patch /admins/me"
+    ]);
+    expect(JSON.parse(adapter.mock.calls[1][0].data)).toEqual({ name: "Renamed Admin" });
   });
 });

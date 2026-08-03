@@ -1,5 +1,8 @@
 package com.ssafy.eyesonu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -21,6 +24,7 @@ import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import com.ssafy.eyesonu.admin.controller.AdminController;
+import jakarta.servlet.http.Cookie;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +33,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @ActiveProfiles("test")
@@ -90,8 +96,10 @@ class AdminProfileApiTests {
 		when(adminService.update(eq(PRINCIPAL), eq(request)))
 				.thenReturn(new AdminService.UpdateResult(
 						new Admin(1L, "admin", "changed-hash", "Admin"), true));
+		MockHttpSession session = new MockHttpSession();
 
-		mockMvc.perform(patch("/api/v1/admins/me")
+		MvcResult result = mockMvc.perform(patch("/api/v1/admins/me")
+					.session(session)
 					.with(adminAuthentication())
 					.with(csrf())
 					.contentType(MediaType.APPLICATION_JSON)
@@ -100,10 +108,14 @@ class AdminProfileApiTests {
 						"""))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.admin.name").value("Admin"))
-				.andExpect(jsonPath("$.data.reauthenticationRequired").value(true));
+				.andExpect(jsonPath("$.data.reauthenticationRequired").value(true))
+				.andReturn();
 
 		verify(adminService).update(eq(PRINCIPAL), eq(request));
 		verify(adminService).expireSessions(eq(PRINCIPAL));
+		assertTrue(session.isInvalid());
+		assertRemovalCookie(result, "EYESONU_SESSION");
+		assertRemovalCookie(result, "XSRF-TOKEN");
 	}
 
 	@Test
@@ -140,5 +152,11 @@ class AdminProfileApiTests {
 	private RequestPostProcessor adminAuthentication() {
 		return authentication(new UsernamePasswordAuthenticationToken(
 				PRINCIPAL, null, PRINCIPAL.getAuthorities()));
+	}
+
+	private void assertRemovalCookie(MvcResult result, String name) {
+		Cookie cookie = result.getResponse().getCookie(name);
+		assertNotNull(cookie, name + " removal cookie must be present");
+		assertEquals(0, cookie.getMaxAge());
 	}
 }

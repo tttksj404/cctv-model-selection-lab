@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const api = vi.hoisted(() => ({
   getCurrentAdmin: vi.fn(),
   login: vi.fn(),
-  logout: vi.fn()
+  logout: vi.fn(),
+  updateCurrentAdmin: vi.fn()
 }));
 
 vi.mock("../api/authApi", () => api);
@@ -67,6 +68,20 @@ describe("auth store", () => {
     expect(store.initialized).toBe(false);
   });
 
+  it("초기화 여부와 관계없이 현재 관리자를 강제로 다시 조회한다", async () => {
+    const refreshed = { ...admin, name: "Refreshed Admin" };
+    api.getCurrentAdmin.mockResolvedValue(refreshed);
+    const store = useAuthStore();
+    store.user = admin;
+    store.initialized = true;
+
+    await expect(store.refreshCurrentAdmin()).resolves.toEqual(refreshed);
+
+    expect(api.getCurrentAdmin).toHaveBeenCalledOnce();
+    expect(store.user).toEqual(refreshed);
+    expect(store.initialized).toBe(true);
+  });
+
   it("로그인 사용자를 메모리에만 저장한다", async () => {
     api.login.mockResolvedValue(admin);
     const storageSpy = vi.spyOn(Storage.prototype, "setItem");
@@ -88,6 +103,40 @@ describe("auth store", () => {
     await expect(store.login({ loginId: "admin", password: "wrong" })).rejects.toBe(failure);
     expect(store.user).toBeNull();
     expect(store.initialized).toBe(false);
+    expect(store.isAuthenticated).toBe(false);
+  });
+
+  it("현재 관리자 수정 결과로 로컬 사용자를 갱신한다", async () => {
+    const updated = { ...admin, name: "Renamed Admin" };
+    const result = { admin: updated, reauthenticationRequired: false };
+    api.updateCurrentAdmin.mockResolvedValue(result);
+    const store = useAuthStore();
+    store.user = admin;
+    store.initialized = true;
+
+    await expect(store.updateCurrentAdmin({ name: "Renamed Admin" })).resolves.toBe(result);
+
+    expect(api.updateCurrentAdmin).toHaveBeenCalledWith({ name: "Renamed Admin" });
+    expect(store.user).toEqual(updated);
+    expect(store.initialized).toBe(true);
+    expect(store.isAuthenticated).toBe(true);
+  });
+
+  it("재인증이 필요한 관리자 수정 후 로컬 세션을 만료시킨다", async () => {
+    const updated = { ...admin, name: "Renamed Admin" };
+    const result = { admin: updated, reauthenticationRequired: true };
+    api.updateCurrentAdmin.mockResolvedValue(result);
+    const store = useAuthStore();
+    store.user = admin;
+    store.initialized = true;
+
+    await expect(store.updateCurrentAdmin({
+      currentPassword: "current-password",
+      newPassword: "new-password"
+    })).resolves.toBe(result);
+
+    expect(store.user).toBeNull();
+    expect(store.initialized).toBe(true);
     expect(store.isAuthenticated).toBe(false);
   });
 

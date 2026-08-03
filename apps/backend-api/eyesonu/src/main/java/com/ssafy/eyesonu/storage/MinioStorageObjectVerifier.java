@@ -5,6 +5,7 @@ import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +14,9 @@ public class MinioStorageObjectVerifier implements StorageObjectVerifier {
 	private final MinioClient client;
 	private final S3Properties properties;
 
-	public MinioStorageObjectVerifier(MinioClient client, S3Properties properties) {
+	public MinioStorageObjectVerifier(
+			@Qualifier("minioClient") MinioClient client,
+			S3Properties properties) {
 		this.client = client;
 		this.properties = properties;
 	}

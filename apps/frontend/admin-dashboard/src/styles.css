@@ -191,6 +191,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .case-table td { padding: 13px 14px; border-bottom: 1px solid #edf0f4; font-size: 13px; vertical-align: middle; }
 .case-table tr { transition: background .15s ease; }
 .case-table tbody tr:hover { background: #f3f8fa; }
+.case-table tbody tr:focus-visible { outline: 2px solid #2f7896; outline-offset: -2px; }
 .log-detail-cell { display: flex; align-items: center; gap: 8px; min-width: 260px; }
 .log-preview { display: block !important; overflow: hidden; flex: 1; min-width: 0; margin-top: 0 !important; color: #6b7280; text-overflow: ellipsis; white-space: nowrap; }
 .log-detail-cell .ghost-button { flex: 0 0 auto; margin-right: 0; white-space: nowrap; }
@@ -482,13 +483,21 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .toggle-switch.active { background: #3d7896; }
 .toggle-switch.active span { transform: translateX(18px); }
 .notification-settings-page .notification-settings-save { justify-self: end; }
-.profile-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr); gap: 24px; }
-.profile-form-grid > section:first-child { max-width: 460px; }
-.profile-form-grid .ghost-button { width: max-content; }
 .profile-page { width: 100%; max-width: none; }
-.profile-auth-backdrop { z-index: 90; }
-.profile-auth-modal label { display: grid; gap: 6px; margin-top: 16px; color: #64748b; font-size: 12px; font-weight: 700; }
-.profile-auth-modal .form-error { display: block; margin-top: 6px; color: #c53030; font-size: 12px; }
+.profile-state { min-height: 260px; }
+.profile-state .ghost-button { margin: 4px 0 0; }
+.profile-section { min-width: 0; border: 1px solid #dfe6ec; border-radius: 8px; padding: 18px; background: #fff; }
+.profile-section-heading { margin-bottom: 16px; }
+.profile-section-heading h3 { margin: 0 0 4px; font-size: 15px; }
+.profile-section-heading p { margin: 0; color: #64748b; font-size: 12px; line-height: 1.5; }
+.profile-readonly-section { margin-bottom: 20px; background: #f8fafc; }
+.profile-readonly-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.profile-readonly-grid label { grid-template-rows: auto auto; }
+.profile-readonly-grid input[readonly] { color: #475569; background: #eef2f6; cursor: default; }
+.profile-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.profile-name-form, .profile-password-form { display: grid; gap: 12px; }
+.profile-form-actions { display: flex; justify-content: flex-end; margin-top: 2px; }
+.profile-form-actions .primary-button { min-width: 112px; }
 .camera-active-field { display: grid; gap: 4px; }
 .camera-active-field > small { margin-left: 22px; color: #64748b; font-size: 11px; line-height: 1.4; }
 .camera-integration-note, .camera-readonly-notice { color: #64748b; font-size: 12px; line-height: 1.5; }
@@ -641,6 +650,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   .header { align-items: center; }
   .header p { display: none; }
   .summary-grid, .filter-bar, .cases-filter-bar, .candidate-filter-bar, .recording-filter-main, .recording-filter-time, .settings-shortcut-grid { grid-template-columns: 1fr; }
+  .profile-form-grid, .profile-readonly-grid { grid-template-columns: 1fr; }
   .two-column, .detail-layout, .route-layout, .monitor-layout, .candidate-detail, .form-grid, .inline-grid { grid-template-columns: 1fr; }
   .job-meta-grid { grid-template-columns: 1fr; }
   .form-grid .wide { grid-column: auto; }
@@ -657,4 +667,13 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   .case-table thead { display: none; }
   .case-table tr { padding: 12px; border-bottom: 1px solid #e4e8ef; }
   .case-table td { border: 0; padding: 6px 0; }
+}
+
+@media (max-width: 600px) {
+  .header-actions { gap: 8px; }
+  .system-online, .clock-text, .header-divider { display: none; }
+  .header-title, .logout-button { white-space: nowrap; }
+  .operator-name { display: none; }
+  .section-heading p { word-break: keep-all; }
+  .logout-button { padding-inline: 9px; }
 }
