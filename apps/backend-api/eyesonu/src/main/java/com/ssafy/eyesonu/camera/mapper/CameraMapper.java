@@ -47,20 +47,16 @@ public interface CameraMapper {
     """)
     Optional<Camera> findByCameraCodeForUpdate(@Param("cameraCode") String cameraCode);
 
-    Optional<CameraHeartbeatState> findHeartbeatStateByCameraCodeForUpdate(
+    Optional<CameraHeartbeatState> findHeartbeatStateByCameraCode(
             @Param("cameraCode") String cameraCode);
-
-    List<CameraHeartbeatState> findOfflineCandidates(@Param("threshold") Instant threshold);
 
     int updateHeartbeat(
             @Param("cameraId") Long cameraId,
+            @Param("mediaServerId") Long mediaServerId,
             @Param("status") String status,
             @Param("lastHeartbeat") Instant lastHeartbeat);
 
-    int markOffline(
-            @Param("cameraId") Long cameraId,
-            @Param("lastHeartbeat") Instant lastHeartbeat,
-            @Param("threshold") Instant threshold);
+    int markOffline(@Param("threshold") Instant threshold);
 
     long countAdminCameras(
             @Param("status") String status,
