@@ -3,6 +3,7 @@ package com.ssafy.eyesonu.camera.service;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
@@ -70,11 +71,20 @@ public class CameraService {
         return toDetail(cameraMapper.findAdminById(cameraId));
     }
 
+    @Transactional(readOnly = true)
     public CameraStreamUrlResponse findStreamUrlById(Long cameraId) {
-        return cameraMapper.findStreamUrlById(cameraId)
-                .map(CameraStreamUrlResponse::new)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found."));
+        CameraStreamUrlRow row = cameraMapper.findStreamUrlById(cameraId);
+        if (row == null) {
+            throw new ApiException(
+                    HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found.");
+        }
+        if (row.streamUrl() == null) {
+            throw new ApiException(
+                    HttpStatus.NOT_FOUND,
+                    "STREAM_URL_NOT_CONFIGURED",
+                    "Camera stream URL is not configured.");
+        }
+        return new CameraStreamUrlResponse(row.streamUrl());
     }
 
     @Transactional

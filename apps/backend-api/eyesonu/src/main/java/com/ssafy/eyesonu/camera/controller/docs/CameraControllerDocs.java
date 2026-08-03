@@ -190,7 +190,7 @@ public interface CameraControllerDocs {
                 responseCode = "401", description = "관리자 인증 세션이 없거나 만료됨",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404", description = "카메라를 찾을 수 없음",
+                responseCode = "404", description = "카메라를 찾을 수 없거나 스트리밍 URL이 설정되지 않음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<CameraStreamUrlResponse>> findStreamUrlById(

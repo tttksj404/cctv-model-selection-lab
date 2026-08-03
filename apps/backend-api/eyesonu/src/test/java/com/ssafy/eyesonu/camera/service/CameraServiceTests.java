@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
@@ -84,7 +85,7 @@ class CameraServiceTests {
     @Test
     void findsStreamUrlFromCameraRecord() {
         when(cameraMapper.findStreamUrlById(CAMERA_ID))
-                .thenReturn(Optional.of("rtsp://internal/stream"));
+                .thenReturn(new CameraStreamUrlRow(CAMERA_ID, "rtsp://internal/stream"));
 
         CameraStreamUrlResponse result = cameraService.findStreamUrlById(CAMERA_ID);
 
@@ -94,9 +95,18 @@ class CameraServiceTests {
 
     @Test
     void missingCameraPreventsStreamUrlLookup() {
-        when(cameraMapper.findStreamUrlById(CAMERA_ID)).thenReturn(Optional.empty());
+        when(cameraMapper.findStreamUrlById(CAMERA_ID)).thenReturn(null);
 
         assertApiError("RESOURCE_NOT_FOUND", 404,
+                () -> cameraService.findStreamUrlById(CAMERA_ID));
+    }
+
+    @Test
+    void unconfiguredStreamUrlIsReportedSeparatelyFromMissingCamera() {
+        when(cameraMapper.findStreamUrlById(CAMERA_ID))
+                .thenReturn(new CameraStreamUrlRow(CAMERA_ID, null));
+
+        assertApiError("STREAM_URL_NOT_CONFIGURED", 404,
                 () -> cameraService.findStreamUrlById(CAMERA_ID));
     }
 
