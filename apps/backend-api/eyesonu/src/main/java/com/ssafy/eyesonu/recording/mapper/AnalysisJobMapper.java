@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.mapper;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
+import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,6 +14,9 @@ public interface AnalysisJobMapper {
     int claimQueued(Long jobId);
 
     AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
+
+    RecordingAnalysisPublishSnapshot findRecordingAnalysisPublishSnapshot(
+            @Param("jobId") Long jobId, @Param("caseId") Long caseId);
 
     AnalysisJob findActiveByTarget(
             @Param("caseId") Long caseId,
