@@ -11,6 +11,10 @@
         <result property="cameraId" column="camera_id"/>
         <result property="cameraCode" column="camera_code"/>
         <result property="cameraName" column="camera_name"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="analysisJobId" column="analysis_job_id"/>
+        <result property="recordingId" column="recording_id"/>
+        <result property="dedupeScope" column="dedupe_scope"/>
         <result property="trackId" column="track_id"/>
         <result property="firstDetectedAt" column="first_detected_at"/>
         <result property="lastDetectedAt" column="last_detected_at"/>
@@ -48,7 +52,8 @@
     </sql>
     <sql id="candidateSelect">
         SELECT c.id, c.case_id, cs.case_number, cs.missing_name,
-               c.camera_id, cam.camera_code, cam.camera_name, c.track_id,
+               c.camera_id, cam.camera_code, cam.camera_name, c.source_type,
+               c.analysis_job_id, c.recording_id, c.dedupe_scope, c.track_id,
                c.first_detected_at, c.last_detected_at, c.best_similarity, c.average_similarity,
                c.detection_count, c.frame_object_key, c.crop_object_key,
                CAST(c.bounding_box AS CHAR) AS bounding_box, c.review_status, c.review_comment, c.version,
