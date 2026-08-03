@@ -30,6 +30,7 @@ class S3PropertiesBindingTests {
 				Map.entry("eyesonu.storage.s3.read-timeout", "4s"),
 				Map.entry("eyesonu.storage.s3.call-timeout", "8s"),
 				Map.entry("eyesonu.storage.s3.max-file-size-bytes", "5368709120"),
+				Map.entry("eyesonu.storage.s3.candidate-image-max-file-size-bytes", "8388608"),
 				Map.entry("eyesonu.storage.s3.presigned-url-expiry", "10m"));
 
 		S3Properties properties = new Binder(new MapConfigurationPropertySource(values))
@@ -46,6 +47,7 @@ class S3PropertiesBindingTests {
 		assertEquals(Duration.ofSeconds(4), properties.getReadTimeout());
 		assertEquals(Duration.ofSeconds(8), properties.getCallTimeout());
 		assertEquals(5_368_709_120L, properties.getMaxFileSizeBytes());
+		assertEquals(8_388_608L, properties.getCandidateImageMaxFileSizeBytes());
 		assertEquals(Duration.ofMinutes(10), properties.getPresignedUrlExpiry());
 	}
 
