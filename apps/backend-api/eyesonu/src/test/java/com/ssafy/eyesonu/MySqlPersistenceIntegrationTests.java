@@ -189,9 +189,9 @@ class MySqlPersistenceIntegrationTests {
 				""", caseId, conditionId, recordingId);
 		Long jobId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM analysis_jobs", Long.class);
 
-		insertCandidate(caseId, cameraId, null, null, "REALTIME", "realtime:" + caseId + ":" + cameraId,
+		insertCandidate(caseId, cameraId, null, null, "REALTIME",
 				"track-1", "2026-08-03 09:00:00");
-		insertCandidate(caseId, cameraId, jobId, recordingId, "RECORDING_ANALYSIS", "recording-job:" + jobId,
+		insertCandidate(caseId, cameraId, jobId, recordingId, "RECORDING_ANALYSIS",
 				"track-1", "2026-08-03 10:00:00");
 
 		List<AdminCandidateRow> rows = adminCandidateMapper.findPage(
@@ -203,17 +203,17 @@ class MySqlPersistenceIntegrationTests {
 	}
 
 	private void insertCandidate(Long caseId, Long cameraId, Long jobId, Long recordingId,
-			String sourceType, String dedupeScope, String trackId, String detectedAt) {
+			String sourceType, String trackId, String detectedAt) {
 		jdbcTemplate.update("""
 				INSERT INTO candidates
-				(case_id, camera_id, source_type, analysis_job_id, recording_id, dedupe_scope,
+				(case_id, camera_id, source_type, analysis_job_id, recording_id,
 				 track_id, detected_time, first_detected_at, last_detected_at,
 				 similarity, best_similarity, average_similarity, detection_count,
 				 crop_object_key, frame_object_key, bounding_box, review_status, version)
 				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.8000, 0.8000, 0.8000, 1,
 				        'crops/candidate.jpg', 'frames/candidate.jpg',
 				        JSON_OBJECT('x', 1, 'y', 2, 'width', 30, 'height', 40), 'PENDING', 0)
-				""", caseId, cameraId, sourceType, jobId, recordingId, dedupeScope,
+				""", caseId, cameraId, sourceType, jobId, recordingId,
 				trackId, detectedAt, detectedAt, detectedAt);
 	}
 
