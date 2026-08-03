@@ -22,6 +22,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CandidateEventStorageValidatorTests {
 
+    private static final byte[] JPEG_SIGNATURE = {
+            (byte) 0xff, (byte) 0xd8, (byte) 0xff, (byte) 0xe0
+    };
+    private static final byte[] PNG_SIGNATURE = {
+            (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
+    };
+
     @Mock private StorageObjectVerifier storageObjectVerifier;
 
     private CandidateEventStorageValidator validator;
@@ -39,6 +46,8 @@ class CandidateEventStorageValidatorTests {
                 .thenReturn(new StorageObject(100L, "image/jpeg"));
         when(storageObjectVerifier.stat("crops/crop.png"))
                 .thenReturn(new StorageObject(50L, "image/png"));
+        when(storageObjectVerifier.readPrefix("frames/frame.jpg", 8)).thenReturn(JPEG_SIGNATURE);
+        when(storageObjectVerifier.readPrefix("crops/crop.png", 8)).thenReturn(PNG_SIGNATURE);
 
         validator.verify(request("frames/frame.jpg", "crops/crop.png"));
     }
@@ -63,6 +72,19 @@ class CandidateEventStorageValidatorTests {
                 validator.verify(request("frames/frame.gif", "crops/crop.png")));
 
         assertEquals("STORAGE_OBJECT_TYPE_INVALID", exception.getCode());
+    }
+
+    @Test
+    void rejectsDeclaredJpegContainingNonImageBytes() {
+        when(storageObjectVerifier.stat("frames/frame.jpg"))
+                .thenReturn(new StorageObject(100L, "image/jpeg"));
+        when(storageObjectVerifier.readPrefix("frames/frame.jpg", 8))
+                .thenReturn("<script>".getBytes());
+
+        ApiException exception = assertThrows(ApiException.class, () ->
+                validator.verify(request("frames/frame.jpg", "crops/crop.png")));
+
+        assertEquals("STORAGE_OBJECT_CONTENT_INVALID", exception.getCode());
     }
 
     @Test

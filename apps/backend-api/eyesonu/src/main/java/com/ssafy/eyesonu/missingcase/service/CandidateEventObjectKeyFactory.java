@@ -31,8 +31,28 @@ public class CandidateEventObjectKeyFactory {
                 || cropKey(mediaServerId, cameraId, caseId, eventId, trackId, "image/png").equals(objectKey);
     }
 
+    public boolean matchesAnalysisFrameKey(Long jobId, int attempt, String objectKey) {
+        return validAnalysisDescendant(jobId, attempt, "frames", objectKey);
+    }
+
+    public boolean matchesAnalysisCropKey(Long jobId, int attempt, String objectKey) {
+        return validAnalysisDescendant(jobId, attempt, "crops", objectKey);
+    }
+
     private String eventPrefix(Long mediaServerId, Long cameraId, Long caseId, String eventId) {
         return "realtime/%d/%d/%d/%s".formatted(mediaServerId, cameraId, caseId, digest(eventId));
+    }
+
+    private boolean validAnalysisDescendant(Long jobId, int attempt, String directory, String objectKey) {
+        if (jobId == null || attempt < 1 || objectKey == null) {
+            return false;
+        }
+        String prefix = "analysis/analysis-%d/attempt-%d/%s/".formatted(jobId, attempt, directory);
+        return objectKey.startsWith(prefix)
+                && objectKey.length() > prefix.length()
+                && !objectKey.contains("\\")
+                && !objectKey.contains("..")
+                && objectKey.chars().noneMatch(Character::isISOControl);
     }
 
     private String extension(String contentType) {

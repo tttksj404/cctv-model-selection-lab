@@ -1285,7 +1285,7 @@ Content-Type: application/json
 }
 ```
 
-Jetson은 각 `uploadUrl`에 응답의 `contentType`으로 이미지 바이너리만 `PUT`한다. `.jpg` 키에는 `image/jpeg`, `.png` 키에는 `image/png`를 사용해야 하며 후보 이벤트 등록 시 확장자와 저장 객체의 Content-Type이 일치하는지 검증한다. 모든 업로드가 성공한 뒤 발급받은 `objectKey`를 사용해 후보 이벤트를 등록한다. URL이 만료되면 같은 내용으로 이 API를 다시 호출한 뒤 업로드를 재시도한다.
+Jetson은 각 `uploadUrl`에 응답의 `contentType`으로 이미지 바이너리만 `PUT`한다. `.jpg` 키에는 `image/jpeg`, `.png` 키에는 `image/png`를 사용해야 한다. presigned PUT은 Object Key와 만료 시간만 제한하므로 후보 이벤트 등록 전에 객체 크기와 Content-Type을 확인하고, Range GET으로 앞 8바이트를 읽어 JPEG·PNG 파일 시그니처까지 검증한다. 모든 업로드가 성공한 뒤 발급받은 `objectKey`를 사용해 후보 이벤트를 등록한다. URL이 만료되면 같은 내용으로 이 API를 다시 호출한 뒤 업로드를 재시도한다.
 
 ### 8.3 후보 이벤트 등록
 
@@ -1401,6 +1401,7 @@ Content-Type: application/json
 | 이미지가 없거나 비어 있음 | `422 STORAGE_OBJECT_NOT_FOUND` 또는 `422 STORAGE_OBJECT_INVALID` |
 | 이미지가 설정된 최대 크기를 초과함 | `422 STORAGE_OBJECT_TOO_LARGE` |
 | 이미지 확장자가 JPEG·PNG가 아니거나 Content-Type과 일치하지 않음 | `422 STORAGE_OBJECT_TYPE_INVALID` 또는 `422 STORAGE_OBJECT_TYPE_MISMATCH` |
+| 저장 객체의 실제 파일 시그니처가 JPEG·PNG 형식과 일치하지 않음 | `422 STORAGE_OBJECT_CONTENT_INVALID` |
 | 스토리지 조회 실패 | `503 STORAGE_UNAVAILABLE` |
 | 요청 속도 제한 초과 | `429 RATE_LIMIT_EXCEEDED` |
 

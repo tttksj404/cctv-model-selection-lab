@@ -7,6 +7,7 @@ import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventCommandService;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventStorageValidator;
+import com.ssafy.eyesonu.missingcase.service.CandidateEventObjectKeyFactory;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.dto.admin.RecordingAnalysisJobResponse;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisJobResultResponse;
@@ -30,6 +31,7 @@ public class RecordingAnalysisJobResultService {
     private final AuditService auditService;
     private final CandidateEventStorageValidator storageValidator;
     private final TransactionTemplate transactionTemplate;
+    private final CandidateEventObjectKeyFactory objectKeyFactory;
 
     public RecordingAnalysisJobResultService(
             AnalysisJobMapper analysisJobMapper,
@@ -37,18 +39,21 @@ public class RecordingAnalysisJobResultService {
             RecordingMapper recordingMapper,
             AuditService auditService,
             CandidateEventStorageValidator storageValidator,
-            TransactionTemplate transactionTemplate) {
+            TransactionTemplate transactionTemplate,
+            CandidateEventObjectKeyFactory objectKeyFactory) {
         this.analysisJobMapper = analysisJobMapper;
         this.candidateEventCommandService = candidateEventCommandService;
         this.recordingMapper = recordingMapper;
         this.auditService = auditService;
         this.storageValidator = storageValidator;
         this.transactionTemplate = transactionTemplate;
+        this.objectKeyFactory = objectKeyFactory;
     }
 
     public RecordingAnalysisJobResultResponse complete(
             MediaServerPrincipal principal, Long jobId, CandidateEventCreateRequest request) {
-        validateJob(principal, jobId, request);
+        ValidatedJob validated = validateJob(principal, jobId, request);
+        validateAnalysisObjectKeys(validated.job(), request);
         storageValidator.verify(request);
         return transactionTemplate.execute(status -> completeInTransaction(principal, jobId, request));
     }
@@ -58,6 +63,7 @@ public class RecordingAnalysisJobResultService {
         ValidatedJob validated = validateJob(principal, jobId, request);
         AnalysisJob job = validated.job();
         Long recordingCameraId = validated.cameraId();
+        validateAnalysisObjectKeys(job, request);
 
         CandidateEventCreateResponse candidateResult = candidateEventCommandService.create(
                 principal, request, recordingCameraId);
@@ -104,6 +110,18 @@ public class RecordingAnalysisJobResultService {
                     "Candidate result camera does not match the recording analysis job.");
         }
         return recording.getCameraId();
+    }
+
+    private void validateAnalysisObjectKeys(AnalysisJob job, CandidateEventCreateRequest request) {
+        int attempt = job.getRetryCount() + 1;
+        boolean validFrame = objectKeyFactory.matchesAnalysisFrameKey(job.getId(), attempt,
+                request.frameObjectKey());
+        boolean validCrops = request.detections().stream().allMatch(detection ->
+                objectKeyFactory.matchesAnalysisCropKey(job.getId(), attempt, detection.cropObjectKey()));
+        if (!validFrame || !validCrops) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD_OBJECT_KEY",
+                    "Image object key does not belong to this recording analysis attempt");
+        }
     }
 
     private record ValidatedJob(AnalysisJob job, Long cameraId) {
