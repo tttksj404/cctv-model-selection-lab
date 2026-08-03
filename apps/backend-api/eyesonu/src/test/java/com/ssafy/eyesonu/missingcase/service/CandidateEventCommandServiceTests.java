@@ -78,13 +78,16 @@ class CandidateEventCommandServiceTests {
 
     @Test
     void acceptsRealtimeResultWithIssuedObjectKeys() {
-        prepareValidRequest();
+        when(caseQueryService.require(CASE_ID)).thenReturn(caseRow());
+        when(mapper.existsActiveCaseCamera(CASE_ID, CAMERA_ID)).thenReturn(true);
+        when(mapper.findEventByEventId(anyString())).thenReturn(null);
         when(mapper.insertEvent(any())).thenReturn(1);
         when(mapper.insertCandidate(any())).thenReturn(1);
 
-        var response = service.create(principal(), realtimeRequest());
+        var response = service.createValidatedRealtime(principal(), realtimeRequest(), camera());
 
         assertEquals("event-1", response.eventId());
+        verify(cameraMapper, never()).findByCameraCode(anyString());
         verify(mapper).insertEvent(any());
     }
 
@@ -120,6 +123,10 @@ class CandidateEventCommandServiceTests {
 
     private MediaServerPrincipal principal() {
         return new MediaServerPrincipal(MEDIA_SERVER_ID, "media-01");
+    }
+
+    private Camera camera() {
+        return new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front");
     }
 
     private CandidateEventCreateRequest request() {

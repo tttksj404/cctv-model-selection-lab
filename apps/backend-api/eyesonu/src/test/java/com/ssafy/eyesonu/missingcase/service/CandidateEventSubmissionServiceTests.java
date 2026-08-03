@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
+import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
@@ -35,7 +36,9 @@ class CandidateEventSubmissionServiceTests {
         MediaServerPrincipal principal = new MediaServerPrincipal(2L, "media-01");
         CandidateEventCreateResponse expected = new CandidateEventCreateResponse(
                 "event-1", 101L, 11L, 1, List.of(9001L), false, null);
-        when(commandService.create(principal, request)).thenReturn(expected);
+        Camera camera = new Camera(11L, 2L, "CAM-001", "Front");
+        when(accessValidator.validateRealtimeAccess(principal, request)).thenReturn(camera);
+        when(commandService.createValidatedRealtime(principal, request, camera)).thenReturn(expected);
         CandidateEventSubmissionService service = new CandidateEventSubmissionService(
                 accessValidator, storageValidator, commandService);
 
@@ -45,7 +48,7 @@ class CandidateEventSubmissionServiceTests {
         InOrder order = inOrder(accessValidator, storageValidator, commandService);
         order.verify(accessValidator).validateRealtimeAccess(principal, request);
         order.verify(storageValidator).verify(request);
-        order.verify(commandService).create(principal, request);
+        order.verify(commandService).createValidatedRealtime(principal, request, camera);
     }
 
     @Test
@@ -60,7 +63,7 @@ class CandidateEventSubmissionServiceTests {
 
         verify(accessValidator).validateRealtimeAccess(null, request());
         verify(storageValidator, never()).verify(request());
-        verify(commandService, never()).create(null, request());
+        verify(commandService, never()).createValidatedRealtime(null, request(), null);
     }
 
     @Test
@@ -78,7 +81,7 @@ class CandidateEventSubmissionServiceTests {
 
         assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
         verify(storageValidator, never()).verify(request);
-        verify(commandService, never()).create(principal, request);
+        verify(commandService, never()).createValidatedRealtime(principal, request, null);
     }
 
     private CandidateEventCreateRequest request() {

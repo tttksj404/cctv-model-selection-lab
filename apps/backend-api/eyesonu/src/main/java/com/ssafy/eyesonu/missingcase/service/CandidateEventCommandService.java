@@ -47,6 +47,28 @@ public class CandidateEventCommandService {
         Camera camera = expectedCameraId == null
                 ? accessValidator.validateRealtimeAccess(principal, request)
                 : accessValidator.validateCameraAccess(principal, request);
+        return create(principal, request, expectedCameraId, camera);
+    }
+
+    @Transactional
+    public CandidateEventCreateResponse createValidatedRealtime(
+            MediaServerPrincipal principal,
+            CandidateEventCreateRequest request,
+            Camera camera) {
+        if (principal == null || camera == null
+                || !Objects.equals(camera.mediaServerId(), principal.mediaServerId())
+                || !Objects.equals(camera.cameraCode(), request.cameraCode())) {
+            throw new ApiException(HttpStatus.FORBIDDEN,
+                    "ACCESS_DENIED", "Validated camera context does not match the request");
+        }
+        return create(principal, request, null, camera);
+    }
+
+    private CandidateEventCreateResponse create(
+            MediaServerPrincipal principal,
+            CandidateEventCreateRequest request,
+            Long expectedCameraId,
+            Camera camera) {
         if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
                     "Camera does not match the requested recording analysis job");
