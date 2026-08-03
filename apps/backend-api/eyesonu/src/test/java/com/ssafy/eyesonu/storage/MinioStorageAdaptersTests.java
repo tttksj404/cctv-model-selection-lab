@@ -92,6 +92,24 @@ class MinioStorageAdaptersTests {
 	}
 
 	@Test
+	void createsFifteenMinutePutUrl() throws Exception {
+		when(client.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
+				.thenReturn("https://media.example.test/upload");
+		ArgumentCaptor<GetPresignedObjectUrlArgs> argsCaptor =
+				ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
+
+		String result = new MinioStorageObjectUrlSigner(client, properties).createPutUrl(OBJECT_KEY);
+
+		verify(client).getPresignedObjectUrl(argsCaptor.capture());
+		GetPresignedObjectUrlArgs args = argsCaptor.getValue();
+		assertEquals("https://media.example.test/upload", result);
+		assertEquals(Method.PUT, args.method());
+		assertEquals("eyesonu-media", args.bucket());
+		assertEquals(OBJECT_KEY, args.object());
+		assertEquals(900, args.expiry());
+	}
+
+	@Test
 	void mapsSigningFailureToUnavailableWithoutLeakingKey() throws Exception {
 		when(client.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
 				.thenThrow(new IOException("could not sign"));

@@ -25,10 +25,19 @@ public class MinioStorageObjectUrlSigner implements StorageObjectUrlSigner {
 
 	@Override
 	public String createGetUrl(String objectKey) {
+		return createUrl(objectKey, Method.GET);
+	}
+
+	@Override
+	public String createPutUrl(String objectKey) {
+		return createUrl(objectKey, Method.PUT);
+	}
+
+	private String createUrl(String objectKey, Method method) {
 		try {
 			int expirySeconds = Math.toIntExact(properties.getPresignedUrlExpiry().toSeconds());
 			return client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-					.method(Method.GET)
+					.method(method)
 					.bucket(properties.getBucket())
 					.object(objectKey)
 					.expiry(expirySeconds, TimeUnit.SECONDS)
