@@ -43,8 +43,10 @@ class CandidateEventCommandServiceTests {
     @BeforeEach
     void setUp() {
         objectKeyFactory = new CandidateEventObjectKeyFactory();
+        CandidateEventAccessValidator accessValidator = new CandidateEventAccessValidator(
+                cameraMapper, objectKeyFactory);
         service = new CandidateEventCommandService(
-                cameraMapper, mapper, caseQueryService, objectKeyFactory);
+                mapper, caseQueryService, accessValidator);
     }
 
     @Test
@@ -88,7 +90,8 @@ class CandidateEventCommandServiceTests {
 
     @Test
     void rejectsRealtimeResultWithUnissuedObjectKey() {
-        prepareValidContext();
+        when(cameraMapper.findByCameraCode("CAM-001"))
+                .thenReturn(Optional.of(new Camera(CAMERA_ID, MEDIA_SERVER_ID, "CAM-001", "Front")));
 
         ApiException exception = assertThrows(ApiException.class, () -> service.create(principal(), request()));
 
