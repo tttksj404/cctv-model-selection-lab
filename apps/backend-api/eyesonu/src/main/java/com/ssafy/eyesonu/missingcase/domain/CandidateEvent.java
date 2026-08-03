@@ -11,6 +11,9 @@ public class CandidateEvent {
     private String eventId;
     private Long caseId;
     private Long cameraId;
+    private CandidateSourceType sourceType;
+    private Long analysisJobId;
+    private Long recordingId;
     private Instant detectedAt;
     private String frameObjectKey;
     private Instant createdAt;
