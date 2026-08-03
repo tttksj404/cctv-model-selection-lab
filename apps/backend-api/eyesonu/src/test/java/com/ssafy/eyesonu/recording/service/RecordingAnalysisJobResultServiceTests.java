@@ -71,7 +71,8 @@ class RecordingAnalysisJobResultServiceTests {
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(running);
         running.setRecordingId(3001L);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(3001L, 2L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
-        when(candidateEventCommandService.create(new MediaServerPrincipal(2L, "CAM-001"), request, 2L))
+        when(candidateEventCommandService.createRecordingAnalysis(
+                new MediaServerPrincipal(2L, "CAM-001"), request, 2L, JOB_ID, 3001L))
                 .thenReturn(candidateResult);
         when(analysisJobMapper.markSucceeded(CASE_ID, JOB_ID)).thenReturn(1);
 
@@ -103,8 +104,8 @@ class RecordingAnalysisJobResultServiceTests {
         assertThrows(ApiException.class, () -> service.complete(
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(202L)));
 
-        verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(202L), 3001L);
+        verify(candidateEventCommandService, never()).createRecordingAnalysis(
+                new MediaServerPrincipal(2L, "CAM-001"), request(202L), 3001L, JOB_ID, 3001L);
         verify(analysisJobMapper, never()).markSucceeded(CASE_ID, JOB_ID);
     }
 
@@ -115,8 +116,8 @@ class RecordingAnalysisJobResultServiceTests {
         assertThrows(ApiException.class, () -> service.complete(
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
 
-        verify(candidateEventCommandService, never()).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 3001L);
+        verify(candidateEventCommandService, never()).createRecordingAnalysis(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 3001L, JOB_ID, 3001L);
     }
 
     @Test
@@ -125,15 +126,15 @@ class RecordingAnalysisJobResultServiceTests {
         running.setRecordingId(3001L);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(running);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(3001L, 99L, null, null, "recordings/CAM-099/video.mp4", 100L, null));
-        when(candidateEventCommandService.create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L))
+        when(candidateEventCommandService.createRecordingAnalysis(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L, JOB_ID, 3001L))
                 .thenThrow(new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH", "mismatch"));
 
         assertThrows(ApiException.class, () -> service.complete(
                 new MediaServerPrincipal(2L, "CAM-001"), JOB_ID, request(CASE_ID)));
 
-        verify(candidateEventCommandService).create(
-                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L);
+        verify(candidateEventCommandService).createRecordingAnalysis(
+                new MediaServerPrincipal(2L, "CAM-001"), request(CASE_ID), 99L, JOB_ID, 3001L);
         verify(analysisJobMapper, never()).markSucceeded(CASE_ID, JOB_ID);
     }
 
@@ -153,7 +154,7 @@ class RecordingAnalysisJobResultServiceTests {
 
         assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
         verify(storageValidator, never()).verify(request);
-        verify(candidateEventCommandService, never()).create(any(), any(), any());
+        verify(candidateEventCommandService, never()).createRecordingAnalysis(any(), any(), any(), any(), any());
     }
 
     private AnalysisJob job(String status) {
