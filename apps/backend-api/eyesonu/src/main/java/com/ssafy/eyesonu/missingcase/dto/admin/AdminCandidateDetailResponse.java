@@ -19,8 +19,8 @@ public record AdminCandidateDetailResponse(
         BigDecimal bestSimilarity,
         BigDecimal averageSimilarity,
         Integer detectionCount,
-        String frameObjectKey,
-        String cropObjectKey,
+        String frameUrl,
+        String cropUrl,
         String boundingBox,
         String reviewStatus,
         String reviewComment,
@@ -29,12 +29,12 @@ public record AdminCandidateDetailResponse(
         Instant updatedAt,
         List<AdminCandidateDetectionResponse> detections) {
 
-    public static AdminCandidateDetailResponse from(AdminCandidateRow row,
+    public static AdminCandidateDetailResponse from(AdminCandidateRow row, String frameUrl, String cropUrl,
                                                      List<AdminCandidateDetectionResponse> detections) {
         return new AdminCandidateDetailResponse(row.getId(), row.getCaseId(), row.getCaseNumber(), row.getMissingName(),
                 row.getCameraId(), row.getCameraCode(), row.getCameraName(), row.getTrackId(), row.getFirstDetectedAt(),
                 row.getLastDetectedAt(), row.getBestSimilarity(), row.getAverageSimilarity(), row.getDetectionCount(),
-                row.getFrameObjectKey(), row.getCropObjectKey(), row.getBoundingBox(), row.getReviewStatus(),
+                frameUrl, cropUrl, row.getBoundingBox(), row.getReviewStatus(),
                 row.getReviewComment(), row.getVersion(),
                 row.getCreatedAt(), row.getUpdatedAt(), detections);
     }

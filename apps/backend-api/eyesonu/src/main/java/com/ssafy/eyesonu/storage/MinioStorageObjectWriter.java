@@ -4,6 +4,7 @@ import com.ssafy.eyesonu.common.config.properties.S3Properties;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import java.io.ByteArrayInputStream;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,7 +13,9 @@ public class MinioStorageObjectWriter implements StorageObjectWriter {
 	private final io.minio.MinioClient client;
 	private final S3Properties properties;
 
-	public MinioStorageObjectWriter(io.minio.MinioClient client, S3Properties properties) {
+	public MinioStorageObjectWriter(
+			@Qualifier("minioClient") io.minio.MinioClient client,
+			S3Properties properties) {
 		this.client = client;
 		this.properties = properties;
 	}

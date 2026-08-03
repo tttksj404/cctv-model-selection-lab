@@ -316,6 +316,43 @@ describe("CaseFormView", () => {
     expect(routing.router.push).toHaveBeenCalledWith("/admin/cases/31");
   });
 
+  it("사건 POST가 실패하면 사진 업로드와 이동을 막고 명시적 재시도만 수행한다", async () => {
+    caseApi.createCase
+      .mockRejectedValueOnce({ status: 503, message: "사건을 등록할 수 없습니다." })
+      .mockResolvedValueOnce({
+        id: 33,
+        caseNumber: "EFU-NEW-33",
+        status: "RECEIVED",
+        reportedAt: "2026-07-30T05:30:00Z"
+      });
+    caseApi.putCasePhoto.mockResolvedValue({ photoUrl: "https://storage.example/33.jpg" });
+    const root = await mountView();
+    const photo = fillRequiredForm(root);
+
+    buttonByText(root, "사건 등록 · ID 발급").click();
+    await nextTick();
+    buttonByText(root, "등록").click();
+    await flushUi();
+
+    expect(caseApi.createCase).toHaveBeenCalledTimes(1);
+    expect(caseApi.putCasePhoto).not.toHaveBeenCalled();
+    expect(routing.router.push).not.toHaveBeenCalled();
+    expect(routing.router.replace).not.toHaveBeenCalled();
+    expect(root.querySelector('[role="dialog"]')).toBeNull();
+    expect(root.textContent).toContain("사건을 등록할 수 없습니다.");
+
+    buttonByText(root, "사건 등록 · ID 발급").click();
+    await nextTick();
+    buttonByText(root, "등록").click();
+    await flushUi();
+
+    expect(caseApi.createCase).toHaveBeenCalledTimes(2);
+    expect(caseApi.putCasePhoto).toHaveBeenCalledTimes(1);
+    expect(caseApi.putCasePhoto).toHaveBeenCalledWith(33, photo);
+    expect(routing.router.push).toHaveBeenCalledWith("/admin/cases/33");
+    expect(root.textContent).not.toContain("사건을 등록할 수 없습니다.");
+  });
+
   it("사진 업로드가 실패하면 사건 POST를 반복하지 않고 수정 화면으로 보낸다", async () => {
     caseApi.createCase.mockResolvedValue({ id: 32, caseNumber: "EFU-NEW-32", status: "RECEIVED" });
     caseApi.putCasePhoto.mockRejectedValue({ status: 503, message: "스토리지를 사용할 수 없습니다." });
