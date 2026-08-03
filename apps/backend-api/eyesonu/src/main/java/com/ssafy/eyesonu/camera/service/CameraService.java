@@ -3,12 +3,14 @@ package com.ssafy.eyesonu.camera.service;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
@@ -67,6 +69,22 @@ public class CameraService {
 
     public CameraDetailResponse findAdminById(Long cameraId) {
         return toDetail(cameraMapper.findAdminById(cameraId));
+    }
+
+    @Transactional(readOnly = true)
+    public CameraStreamUrlResponse findStreamUrlById(Long cameraId) {
+        CameraStreamUrlRow row = cameraMapper.findStreamUrlById(cameraId);
+        if (row == null) {
+            throw new ApiException(
+                    HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found.");
+        }
+        if (row.streamUrl() == null) {
+            throw new ApiException(
+                    HttpStatus.NOT_FOUND,
+                    "STREAM_URL_NOT_CONFIGURED",
+                    "Camera stream URL is not configured.");
+        }
+        return new CameraStreamUrlResponse(row.streamUrl());
     }
 
     @Transactional

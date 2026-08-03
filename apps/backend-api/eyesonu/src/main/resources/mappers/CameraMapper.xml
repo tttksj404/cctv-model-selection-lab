@@ -91,6 +91,20 @@
         WHERE c.id = #{cameraId}
     </select>
 
+    <resultMap id="cameraStreamUrlResultMap"
+               type="com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="stream_url" javaType="java.lang.String"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findStreamUrlById" resultMap="cameraStreamUrlResultMap">
+        SELECT id, stream_url
+        FROM cameras
+        WHERE id = #{cameraId}
+    </select>
+
     <select id="findAdminByIdForUpdate" resultMap="cameraManagementRowResultMap">
         SELECT <include refid="adminCameraColumns"/>
         FROM cameras c
