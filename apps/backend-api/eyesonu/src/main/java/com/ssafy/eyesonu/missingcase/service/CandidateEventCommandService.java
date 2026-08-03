@@ -2,7 +2,6 @@ package com.ssafy.eyesonu.missingcase.service;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CandidateAggregate;
 import com.ssafy.eyesonu.missingcase.domain.CandidateEvent;
@@ -23,18 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CandidateEventCommandService {
-    private final CameraMapper cameraMapper;
     private final CandidateEventMapper mapper;
     private final CaseQueryService caseQueryService;
-    private final CandidateEventObjectKeyFactory objectKeyFactory;
+    private final CandidateEventAccessValidator accessValidator;
 
-    public CandidateEventCommandService(CameraMapper cameraMapper, CandidateEventMapper mapper,
+    public CandidateEventCommandService(CandidateEventMapper mapper,
                                         CaseQueryService caseQueryService,
-                                        CandidateEventObjectKeyFactory objectKeyFactory) {
-        this.cameraMapper = cameraMapper;
+                                        CandidateEventAccessValidator accessValidator) {
         this.mapper = mapper;
         this.caseQueryService = caseQueryService;
-        this.objectKeyFactory = objectKeyFactory;
+        this.accessValidator = accessValidator;
     }
 
     @Transactional
@@ -47,15 +44,9 @@ public class CandidateEventCommandService {
     public CandidateEventCreateResponse create(MediaServerPrincipal principal,
                                                CandidateEventCreateRequest request,
                                                Long expectedCameraId) {
-        if (principal == null || principal.mediaServerId() == null) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Authentication is required");
-        }
-        validateKeys(request);
-        Camera camera = cameraMapper.findByCameraCode(request.cameraCode()).orElseThrow(() ->
-                new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Camera was not found"));
-        if (!Objects.equals(camera.mediaServerId(), principal.mediaServerId())) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Camera does not belong to the authenticated media server");
-        }
+        Camera camera = expectedCameraId == null
+                ? accessValidator.validateRealtimeAccess(principal, request)
+                : accessValidator.validateCameraAccess(principal, request);
         if (expectedCameraId != null && !Objects.equals(camera.id(), expectedCameraId)) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_MISMATCH",
                     "Camera does not match the requested recording analysis job");
@@ -65,9 +56,6 @@ public class CandidateEventCommandService {
         }
         if (!mapper.existsActiveCaseCamera(request.caseId(), camera.id())) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "CAMERA_NOT_SELECTED", "Camera is not selected for this case");
-        }
-        if (expectedCameraId == null) {
-            validateRealtimeObjectKeys(principal, camera, request);
         }
         CandidateEvent existing = mapper.findEventByEventId(request.eventId());
         if (existing != null) return duplicateResult(existing, request, camera.id());
@@ -158,29 +146,6 @@ public class CandidateEventCommandService {
         candidate.setDetectionCount(1); candidate.setSimilarity(input.similarity()); candidate.setCropObjectKey(input.cropObjectKey());
         candidate.setFrameObjectKey(request.frameObjectKey()); candidate.setBoundingBox(box);
         return candidate;
-    }
-
-    private void validateKeys(CandidateEventCreateRequest request) {
-        if (invalidKey(request.frameObjectKey()) || request.detections().stream().anyMatch(d -> invalidKey(d.cropObjectKey()))) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Invalid object key");
-        }
-    }
-
-    private boolean invalidKey(String key) {
-        return key == null || key.isBlank() || key.contains("\\") || key.contains("..") || key.chars().anyMatch(Character::isISOControl);
-    }
-
-    private void validateRealtimeObjectKeys(MediaServerPrincipal principal, Camera camera,
-                                            CandidateEventCreateRequest request) {
-        boolean validFrame = objectKeyFactory.matchesFrameKey(principal.mediaServerId(), camera.id(),
-                request.caseId(), request.eventId(), request.frameObjectKey());
-        boolean validCrops = request.detections().stream().allMatch(detection ->
-                objectKeyFactory.matchesCropKey(principal.mediaServerId(), camera.id(), request.caseId(),
-                        request.eventId(), detection.trackId(), detection.cropObjectKey()));
-        if (!validFrame || !validCrops) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD_OBJECT_KEY",
-                    "Image object key was not issued for this candidate event");
-        }
     }
 
     private String boundingBoxJson(CandidateEventCreateRequest.BoundingBox box) {
