@@ -8,13 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
-import com.ssafy.eyesonu.recording.domain.AnalysisJob;
-import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
-import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
-import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
-import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -38,9 +32,6 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
     private final RabbitTemplate rabbitTemplate;
     private final RecordingAnalysisOutboxMapper outboxMapper;
     private final RecordingAnalysisOutboxClaimer outboxClaimer;
-    private final AnalysisJobMapper analysisJobMapper;
-    private final RecordingMapper recordingMapper;
-    private final CameraMapper cameraMapper;
     private final long claimLeaseSeconds;
     private final Object heartbeatExecutorMonitor = new Object();
     private ScheduledExecutorService heartbeatExecutor;
@@ -49,16 +40,10 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             RabbitTemplate rabbitTemplate,
             RecordingAnalysisOutboxMapper outboxMapper,
             RecordingAnalysisOutboxClaimer outboxClaimer,
-            AnalysisJobMapper analysisJobMapper,
-            RecordingMapper recordingMapper,
-            CameraMapper cameraMapper,
             @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds) {
         this.rabbitTemplate = rabbitTemplate;
         this.outboxMapper = outboxMapper;
         this.outboxClaimer = outboxClaimer;
-        this.analysisJobMapper = analysisJobMapper;
-        this.recordingMapper = recordingMapper;
-        this.cameraMapper = cameraMapper;
         this.claimLeaseSeconds = claimLeaseSeconds;
     }
 
@@ -74,36 +59,8 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
     }
 
     public void enqueue(Long jobId, Long caseId) {
-        AnalysisJob job = analysisJobMapper.findRecordingAnalysisById(jobId);
-        if (job == null || !caseId.equals(job.getCaseId())) {
-            throw new IllegalStateException("Recording analysis job could not be loaded for publishing: " + jobId);
-        }
-        Recording recording = recordingMapper.findById(job.getRecordingId());
-        if (recording == null) {
-            throw new IllegalStateException("Recording could not be loaded for publishing: " + job.getRecordingId());
-        }
-        Camera camera = cameraMapper.findById(recording.getCameraId()).orElseThrow(() ->
-                new IllegalStateException("Camera could not be loaded for publishing: " + recording.getCameraId()));
-
-        RecordingAnalysisOutbox outbox = new RecordingAnalysisOutbox();
-        outbox.setCommandId(UUID.randomUUID().toString());
-        outbox.setEventType(EVENT_TYPE);
-        outbox.setJobId(jobId);
-        outbox.setCaseId(caseId);
-        outbox.setRecordingId(recording.getId());
-        outbox.setCameraId(camera.id());
-        outbox.setCameraCode(camera.cameraCode());
-        outbox.setCameraName(camera.cameraName());
-        outbox.setRecordingObjectKey(recording.getS3Key());
-        outbox.setPrompt(job.getPromptSnapshot());
-        outbox.setExclusionPrompt(job.getExclusionPromptSnapshot());
-        outbox.setSimilarityThreshold(job.getSimilarityThresholdSnapshot());
-        outbox.setSearchStart(job.getSearchStartSnapshot());
-        outbox.setSearchEnd(job.getSearchEndSnapshot());
-        outbox.setSearchArea(job.getSearchAreaSnapshot());
-        outbox.setAttempt(job.getRetryCount() + 1);
-        outbox.setOccurredAt(Instant.now());
-        outboxMapper.insert(outbox);
+        outboxMapper.insert(new RecordingAnalysisOutbox(
+                null, UUID.randomUUID().toString(), EVENT_TYPE, jobId, caseId, Instant.now(), 0));
     }
 
     public void publishPending() {
@@ -119,11 +76,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             try {
                 RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
-                        outbox.getCaseId(), outbox.getRecordingId(), outbox.getCameraId(),
-                        outbox.getCameraCode(), outbox.getCameraName(), outbox.getRecordingObjectKey(),
-                        outbox.getPrompt(), outbox.getExclusionPrompt(), outbox.getSimilarityThreshold(),
-                        outbox.getSearchStart(), outbox.getSearchEnd(), outbox.getSearchArea(),
-                        outbox.getAttempt(), outbox.getOccurredAt());
+                        outbox.getCaseId(), outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());
                 ensureLeaseOwned(leaseOwned);
                 rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {
