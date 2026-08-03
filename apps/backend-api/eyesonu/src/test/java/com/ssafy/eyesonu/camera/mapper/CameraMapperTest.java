@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import java.math.BigDecimal;
 import java.util.List;
@@ -46,9 +47,12 @@ class CameraMapperTest {
 
     @Test
     void findsStreamUrlWithoutLoadingTheFullCameraProjection() {
-        assertThat(cameraMapper.findStreamUrlById(153001L))
-                .contains("rtsp://recording-fixture/153001/stream");
-        assertThat(cameraMapper.findStreamUrlById(999999L)).isEmpty();
+        CameraStreamUrlRow row = cameraMapper.findStreamUrlById(153001L);
+
+        assertThat(row).isNotNull();
+        assertThat(row.id()).isEqualTo(153001L);
+        assertThat(row.streamUrl()).isEqualTo("rtsp://recording-fixture/153001/stream");
+        assertThat(cameraMapper.findStreamUrlById(999999L)).isNull();
     }
 
     @Test
