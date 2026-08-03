@@ -97,6 +97,7 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/device/search-targets'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/device/candidate-event-upload-urls'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings/{recordingId}'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/cameras'].get").exists())
@@ -141,6 +142,21 @@ class SwaggerDocumentationTests {
 								+ ".content['application/json'].schema['$ref']").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/auth/csrf'].get.responses['204'].content")
 						.doesNotExist());
+	}
+
+	@Test
+	void candidateImageUploadContractUsesDeviceAuthentication() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/candidate-event-upload-urls'].post.security[0].%s"
+								.formatted(SwaggerConfig.DEVICE_KEY_SCHEME)).isArray())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/candidate-event-upload-urls'].post.responses['201']").exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/candidate-event-upload-urls'].post.responses['503']").exists())
+				.andExpect(jsonPath("$.components.schemas.CandidateEventUploadUrlCreateRequest").exists())
+				.andExpect(jsonPath("$.components.schemas.CandidateEventUploadUrlCreateResponse").exists());
 	}
 
 	@Test
