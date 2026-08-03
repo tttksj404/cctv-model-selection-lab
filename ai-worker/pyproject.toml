@@ -62,9 +62,11 @@ torchvision = { index = "pytorch-cu128" }
 dev = [
   "basedpyright>=1.28,<2",
   "httpx>=0.28,<1",
+  "joblib>=1.4,<2",
   "pillow>=11,<12",
   "pytest>=8.3,<9",
   "ruff>=0.9,<1",
+  "scikit-learn>=1.5,<2",
 ]
 [tool.uv]
 default-groups = ["dev"]

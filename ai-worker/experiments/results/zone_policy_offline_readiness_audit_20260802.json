@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "eyesonu-offline-readiness-audit-v1",
+  "status": "passed",
+  "auditedAt": "2026-08-01T12:25:36.1083776+09:00",
+  "scope": "AI Worker policy and mock dashboard only; no central backend or Jetson integration",
+  "runtime": {
+    "python": "3.14.6",
+    "node": "24.18.1",
+    "browser": "Google Chrome via Playwright",
+    "viewports": [
+      "1280x900",
+      "768x1024",
+      "375x812"
+    ]
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "claim": "The mock dashboard can contact a host outside its local Vite origin.",
+      "result": "refuted",
+      "evidence": {
+        "externalRequestCount": 0,
+        "browserConsoleErrorCount": 0,
+        "viewportsChecked": 3
+      },
+      "guard": "runtimeConfig requires mock data and rejects network or Jetson flags."
+    },
+    {
+      "id": "H2",
+      "claim": "An operator decision can enable or trigger Jetson dispatch before integration.",
+      "result": "refuted",
+      "evidence": {
+        "scenarioTransitionsChecked": 3,
+        "zoneSelectionChecked": true,
+        "localDecisionTransitionChecked": true,
+        "dispatchDisabledAtAllViewports": true
+      },
+      "guard": "The dispatch control is disabled and operator decisions change browser-local state only."
+    },
+    {
+      "id": "H3",
+      "claim": "Hybrid EIG 25 percent materially improves the deployed camera policy.",
+      "result": "refuted",
+      "evidence": {
+        "sealedPairedEpisodes": 6000,
+        "resolvedRateDelta": 0.000167,
+        "resolvedRateDelta95Lower": -0.000698,
+        "resolvedRateDelta95Upper": 0.001031,
+        "falseZoneActivationDelta": 0.000333,
+        "allPrimaryDifferenceIntervalsIncludeZero": true
+      },
+      "decision": "Keep deployed_runtime; do not promote a point-estimate-only winner."
+    }
+  ],
+  "verification": {
+    "pythonTests": "282 passed, 5 deselected",
+    "dashboardTests": "10 passed",
+    "dashboardBuild": "vite build passed",
+    "dashboardDependencyAudit": "0 vulnerabilities",
+    "browserManualQa": "passed",
+    "liveApiManualQa": {
+      "health": 200,
+      "missingAuthentication": 401,
+      "firstSignedProbabilityRequest": 200,
+      "exactReplay": 409
+    },
+    "hybridReplayArtifact": "experiments/results/zone_policy_hybrid_replay_large_20260802.json",
+    "hybridReplaySha256": "5ddd4fe55dbb1c24ca2c9374881d8131ee0d28199f461c4a2066f1d3734e8728",
+    "missionValidation": "experiments/results/zone_policy_mission_validation_20260802.json"
+  },
+  "claimBoundary": {
+    "projectCctvEvidence": false,
+    "synchronizedSixteenCameraEvidence": false,
+    "projectCctvGeneralization85Confirmed": false,
+    "automaticIdentityMatchAllowed": false
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": "solider-ft-sonnet-comparison-v1",
+  "generated_at": "2026-07-24",
+  "scope": "same-run PA-100K and CCTV proxy attribute ablation; not project CCTV promotion evidence",
+  "runtime": {
+    "host": "Jupyter GPU server 70.12.130.105",
+    "python": "/home/j-i15a204/.conda/envs/qwen3vl/bin/python",
+    "torch": "2.6.0+cu124",
+    "transformers": "5.14.1",
+    "gpu": "NVIDIA L40S",
+    "visible_gpu": "0",
+    "seed": 20260724
+  },
+  "inputs": {
+    "pa100k": {
+      "train_rows": 80000,
+      "validation_rows": 10000,
+      "test_rows": 10000,
+      "image_mode": "original_full_frame_no_person_crop"
+    },
+    "sonnet_teacher": {
+      "result": "/home/j-i15a204/clip_vitl14_server/experiments/results/sonnet_cli_pilot.json",
+      "label_mode": "response_level_structured_attribute_labels",
+      "logit_kd": false,
+      "output_ground_truth": false
+    }
+  },
+  "arms": {
+    "standalone_full_finetune": {
+      "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/gpu_arm_040/experiments/results/solider_ft_20260724.json",
+      "epochs": 30,
+      "test_mA": 0.7733317017555237,
+      "test_instance_accuracy": 0.77588833885193,
+      "test_instance_f1": 0.8667089343070984,
+      "test_label_macro_f1": 0.6346375929334989,
+      "metric_contract": "standalone run metrics"
+    },
+    "same_run_sonnet_ablation": {
+      "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/gpu_arm_040/experiments/results/solider_ft_sonnet_20260724.json",
+      "pa_epochs": 30,
+      "sonnet_epochs": 40,
+      "sonnet_weight": 0.1,
+      "pa100k_test": {
+        "baseline_masked_attribute_accuracy": 0.9412961602210999,
+        "sonnet_masked_attribute_accuracy": 0.944430768498376,
+        "delta": 0.003134608277276076,
+        "baseline_masked_field_macro_accuracy": 0.9412961579286135,
+        "sonnet_masked_field_macro_accuracy": 0.944430768498376,
+        "field_delta": 0.003134610561224105
+      },
+      "cctv_proxy_group_heldout": {
+        "group_count": 4,
+        "baseline_mean_masked_attribute_accuracy": 0.846153853237915,
+        "sonnet_mean_masked_attribute_accuracy": 0.8307692408561707,
+        "delta": -0.01538461446762085,
+        "folds": [
+          {"heldout_group": "ped_1", "test_count": 5, "baseline": 0.846153853237915, "sonnet": 0.8769230842590332, "delta": 0.030769231021118164},
+          {"heldout_group": "ped_2", "test_count": 5, "baseline": 0.9230769276618958, "sonnet": 0.8461538553237915, "delta": -0.07692307233810425},
+          {"heldout_group": "ped_3", "test_count": 5, "baseline": 0.9230769276618958, "sonnet": 0.8461538553237915, "delta": -0.07692307233810425},
+          {"heldout_group": "ped_4", "test_count": 5, "baseline": 0.7692307829856873, "sonnet": 0.7692307829856873, "delta": 0.0}
+        ]
+      },
+      "cctv_proxy_all_samples": {
+        "baseline_masked_attribute_accuracy": 0.846153853237915,
+        "sonnet_masked_attribute_accuracy": 0.9435897469520569,
+        "interpretation": "in-sample/proxy-only; not a promotion metric"
+      },
+      "requested_79_checkpoint_replay": {
+        "base_checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/models/solider_sonnet_baseline_head.pt",
+        "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w010_e40_20260724.json",
+        "pa_epochs": 30,
+        "sonnet_epochs": 40,
+        "sonnet_weight": 0.1,
+        "initialization": "saved_pa_head_checkpoint",
+        "pa100k_test_masked_attribute_accuracy": {
+          "baseline": 0.9326692223548889,
+          "sonnet": 0.9431615471839905,
+          "delta": 0.0104923248291016
+        },
+        "cctv_proxy_group_heldout_mean": {
+          "baseline": 0.8564102649688721,
+          "sonnet": 0.8307692408561707,
+          "delta": -0.025641024112701416,
+          "fold_count": 3,
+          "folds": [
+            {"heldout_group": "ped_2", "baseline": 0.8769230842590332, "sonnet": 0.8769230842590332, "delta": 0.0},
+            {"heldout_group": "ped_3", "baseline": 0.9230769276618958, "sonnet": 0.8461538553237915, "delta": -0.07692307233810425},
+            {"heldout_group": "ped_4", "baseline": 0.7692307829856873, "sonnet": 0.7692307829856873, "delta": 0.0}
+          ]
+        },
+        "promotion_85_passed": false,
+        "interpretation": "Starting from the saved 79% baseline checkpoint raises PA-100K masked accuracy but Sonnet still lowers group-heldout proxy generalization below 85%."
+      }
+    }
+  },
+  "weight_sweep": [
+    {"sonnet_weight": 0.01, "pa100k_masked_attribute_accuracy": 0.943142, "group_heldout_baseline": 0.856410, "group_heldout_sonnet": 0.856410, "group_delta": 0.0, "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w001_20260724.json"},
+    {"sonnet_weight": 0.05, "pa100k_masked_attribute_accuracy": 0.943138, "group_heldout_baseline": 0.856410, "group_heldout_sonnet": 0.835897, "group_delta": -0.020513, "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w005_20260724.json"},
+    {"sonnet_weight": 0.10, "pa100k_masked_attribute_accuracy": 0.943162, "group_heldout_baseline": 0.856410, "group_heldout_sonnet": 0.830769, "group_delta": -0.025641, "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w010_e40_20260724.json"},
+    {"sonnet_weight": 0.20, "pa100k_masked_attribute_accuracy": 0.943135, "group_heldout_baseline": 0.856410, "group_heldout_sonnet": 0.830769, "group_delta": -0.025641, "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w020_20260724.json"}
+  ],
+  "recommended_proxy_weight": {
+    "sonnet_weight": 0.01,
+    "reason": "It preserves the saved-checkpoint group-heldout proxy at 85.64%; larger weights reduce generalization.",
+    "project_promotion": "blocked_until_real_identity_track_heldout_labels"
+  },
+  "promotion_gate": {
+    "target": 0.85,
+    "controlling_metric": "CCTV proxy group-heldout mean masked attribute accuracy",
+    "passed": false,
+    "observed": 0.8307692408561707,
+    "reason": "Sonnet response-level labels improved the in-sample proxy but reduced group-heldout mean below 85%; project CCTV identity/track-heldout labels are still absent."
+  },
+  "project_cctv_gate": {
+    "passed": false,
+    "status": "blocked_project_cctv_ground_truth_missing",
+    "reason": "The three supplied MOVs have no adjudicated identity, track, attribute, camera/time held-out labels; PA-100K and teacher labels cannot substitute for project ground truth."
+  },
+  "checkpoint": {
+    "remote": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/gpu_arm_040/experiments/models/solider_sonnet_head_pilot.pt",
+    "promotion": "not_promoted"
+  }
+}

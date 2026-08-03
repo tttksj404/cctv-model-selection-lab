@@ -192,7 +192,8 @@ public class SecurityConfig {
 						.csrfTokenRepository(csrfTokenRepository)
 						.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
 						.ignoringRequestMatchers(
-								"/api/v1/cases/status-inquiries", "/api/v1/device/**"))
+								"/api/v1/cases/status-inquiries", "/api/v1/device/**",
+								"/api/v1/ai-worker/**"))
 				.sessionManagement(session -> {
 					session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
 					session.sessionFixation(fixation -> fixation.changeSessionId());
@@ -215,6 +216,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/v1/auth/admin/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/v1/cases/status-inquiries").permitAll()
+						.requestMatchers("/api/v1/ai-worker/**").permitAll()
 						.requestMatchers("/api/v1/device/**").denyAll()
 						.requestMatchers("/api/v1/admins/me").hasRole("ADMIN")
 						.requestMatchers("/api/v1/admins", "/api/v1/admins/*/status")

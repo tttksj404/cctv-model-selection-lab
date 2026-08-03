@@ -30,6 +30,12 @@ server:
         secure: false
 
 eyesonu:
+  ai-worker:
+    api-key: ${AI_WORKER_API_KEY:}
+    lease-duration: ${AI_WORKER_LEASE_DURATION:90s}
+    max-retry-count: ${AI_WORKER_MAX_RETRY_COUNT:3}
+    max-result-bytes: ${AI_WORKER_MAX_RESULT_BYTES:8388608}
+    empty-poll-after-ms: ${AI_WORKER_EMPTY_POLL_AFTER_MS:1000}
   auth:
     rate-limit-key-secret: ${AUTH_RATE_LIMIT_KEY_SECRET:eyesonu-local-rate-limit-key-change-me}
     bootstrap:

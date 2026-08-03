@@ -1,0 +1,2 @@
+{"caseId":"case-01","videoId":"video-gallery","cameraId":"camera-01","conditionGroupId":"landscape-wide","trackId":"gallery-a","split":"gallery","targetRole":"target","identityGroupId":"person-a","framePath":"gallery-a.jpg"}
+{"caseId":"case-01","videoId":"video-test","cameraId":"camera-02","conditionGroupId":"landscape-wide","trackId":"query-a","split":"test_landscape","targetRole":"target","identityGroupId":"person-a","framePath":"query-a.jpg"}

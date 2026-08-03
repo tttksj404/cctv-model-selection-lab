@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "cctv-promotion-metrics-v1",
+  "status": "valid",
+  "manifestPath": "manifest.jsonl",
+  "manifestSha256": "40c33678be0d8ea8f88dc79d781dafc178975a1c2bfa90b7037114760eb9506e",
+  "evaluationEvidencePath": "evaluation.json",
+  "evaluationEvidenceSha256": "a5c0831c637508d578e5b2e28c1bff5ed511e8fe3b2162ca70d9543a8105236a",
+  "reviewedIdentityTracks": 12,
+  "reviewedIdentityCount": 12,
+  "trackHeldoutMetricsEligible": true,
+  "attributeMacroF1Overall": 0.90,
+  "attributeMacroF1PerCondition": {
+    "landscape_room": 0.86,
+    "portrait_fisheye": 0.87
+  },
+  "identityRank1": 0.90,
+  "identityRecallAt5": 0.97,
+  "falseMatchRate": 0.02,
+  "attributeInsF1": 0.92,
+  "falseRejectRate": 0.05,
+  "reviewRate": 0.20,
+  "ciLowerBounds": {
+    "attributeMacroF1Overall": 0.88,
+    "attributeInsF1": 0.91,
+    "identityRank1": 0.88,
+    "identityRecallAt5": 0.96
+  }
+}

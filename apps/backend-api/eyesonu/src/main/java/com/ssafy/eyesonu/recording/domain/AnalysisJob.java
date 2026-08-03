@@ -30,4 +30,8 @@ public class AnalysisJob {
     private String claimedBy;
     private Instant claimExpiresAt;
     private Instant completedAt;
+    private String leaseTokenHash;
+    private String resultModelKey;
+    private String resultPayload;
+    private String resultDigest;
 }

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "eyesonu-runtime-audit-v2",
+  "status": "passed",
+  "auditedAt": "2026-08-01T09:10:00+09:00",
+  "runtime": {
+    "entry": "uv run uvicorn qwen_backend.main:app --host 127.0.0.1 --port 8765",
+    "python": "3.14.6",
+    "surface": "live HTTP API invoked through curl.exe",
+    "openApiStatus": 200,
+    "serviceStoppedAfterAudit": true,
+    "remainingPortListeners": 0
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "claim": "Cross-camera fragments from one physical track can multiply confidence, while camera-local ID collisions can suppress different people.",
+      "result": "confirmed_and_fixed",
+      "evidence": {
+        "sameCorrelationGroupAssessmentCount": 1,
+        "sameCorrelationGroupSuppressedEventIds": ["event-demo-2"],
+        "differentCorrelationGroupAssessmentCount": 2,
+        "differentCorrelationGroupSuppressedEventIds": []
+      },
+      "fix": "Require correlationGroupId and deduplicate by that upstream multi-camera association key."
+    },
+    {
+      "id": "H2",
+      "claim": "A stale routing revision or malformed prior can reach the probability calculator.",
+      "result": "confirmed_and_fixed",
+      "evidence": {
+        "staleRevisionHttpStatus": 422,
+        "staleRevisionResponseCode": "validation_error",
+        "normalizedHappyPathPosteriorTotal": 0.999999999999
+      },
+      "fix": "Reject routingRevision not newer than activeRoutingRevision, duplicate zone IDs, and invalid outside/unknown prior totals before dict conversion."
+    },
+    {
+      "id": "H3",
+      "claim": "Well-formed but fabricated SHA-256 provenance can be accepted.",
+      "result": "confirmed_and_fixed",
+      "evidence": {
+        "httpStatus": 422,
+        "responseCode": "untrusted_probability_provenance",
+        "tamperedSensitivity": 0.999999,
+        "tamperedFalsePositiveRate": 0.000001,
+        "operatingPointHashOtherwiseTrusted": true
+      },
+      "fix": "Match the complete signal tuple plus camera sensitivity, FPR, operating-point hash, sample count, and environment against the trust registry."
+    },
+    {
+      "id": "H4",
+      "claim": "Motion prediction ignores elapsed time.",
+      "result": "confirmed_and_fixed",
+      "evidence": {
+        "oneSecondZone1Posterior": 0.985027568642,
+        "oneHourZone1Posterior": 0.854807785155,
+        "bothHttpStatus": 200
+      },
+      "fix": "Apply full and fractional HMM transition steps from motionElapsedSeconds and motionStepSeconds."
+    },
+    {
+      "id": "H5",
+      "claim": "A NO_MATCH observation can force a zone probability to zero.",
+      "result": "refuted",
+      "evidence": {
+        "httpStatus": 200,
+        "zone1Posterior": 0.54042052568,
+        "remainedNonzero": true
+      }
+    }
+  ],
+  "safetyObservations": {
+    "operatorReviewRequired": true,
+    "autoMatchAllowed": false,
+    "liveNextCameraId": "1-1"
+  },
+  "gpuReplay": {
+    "host": "jupyter05",
+    "gpuCount": 4,
+    "gpuModel": "NVIDIA L40S",
+    "pairedEpisodeCount": 3000,
+    "selectionAndSealedSeedOffsetsSeparated": true,
+    "selectedPolicy": "deployed_runtime"
+  }
+}
