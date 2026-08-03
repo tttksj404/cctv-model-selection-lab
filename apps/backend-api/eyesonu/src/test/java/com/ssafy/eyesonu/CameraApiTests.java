@@ -25,6 +25,7 @@ import com.ssafy.eyesonu.camera.dto.CameraCreateRequest;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.camera.service.CameraPageResult;
 import com.ssafy.eyesonu.camera.service.CameraService;
 import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
@@ -102,6 +103,17 @@ class CameraApiTests {
                 .andExpect(jsonPath("$.data.rtspUrl").doesNotExist());
 
         verify(cameraService).findAdminById(10L);
+    }
+
+    @Test
+    void cameraStreamUrlReturnsOnlyStreamUrl() throws Exception {
+        when(cameraService.findStreamUrlById(10L))
+                .thenReturn(new CameraStreamUrlResponse("rtsp://secret.example/stream"));
+
+        mockMvc.perform(get("/api/v1/admin/cameras/10/streamUrl").with(adminAuthentication()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.streamUrl").value("rtsp://secret.example/stream"))
+                .andExpect(jsonPath("$.data.cameraCode").doesNotExist());
     }
 
     @Test

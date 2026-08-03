@@ -3,6 +3,7 @@ package com.ssafy.eyesonu.camera.mapper;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
+import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,8 @@ public interface CameraMapper {
             @Param("offset") long offset);
 
     CameraManagementRow findAdminById(@Param("cameraId") Long cameraId);
+
+    CameraStreamUrlRow findStreamUrlById(@Param("cameraId") Long cameraId);
 
     CameraManagementRow findAdminByIdForUpdate(@Param("cameraId") Long cameraId);
 

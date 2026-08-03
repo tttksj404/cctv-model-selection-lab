@@ -5,6 +5,7 @@ import com.ssafy.eyesonu.camera.dto.CameraDetailResponse;
 import com.ssafy.eyesonu.camera.dto.CameraListResponse;
 import com.ssafy.eyesonu.camera.dto.CameraNamePatchRequest;
 import com.ssafy.eyesonu.camera.dto.CameraPutRequest;
+import com.ssafy.eyesonu.camera.dto.CameraStreamUrlResponse;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
 import com.ssafy.eyesonu.common.api.ApiErrorResponse;
 import com.ssafy.eyesonu.common.api.ApiResponse;
@@ -177,4 +178,21 @@ public interface CameraControllerDocs {
                     required = true,
                     content = @Content(schema = @Schema(implementation = CameraPutRequest.class)))
             @Valid CameraPutRequest request);
+
+    @Operation(
+            summary = "카메라 스트리밍 URL 조회",
+            description = "카메라에 저장된 stream_url을 반환합니다. 관리자 권한이 필요합니다.",
+            security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", description = "스트리밍 URL 조회 성공", useReturnTypeSchema = true),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "401", description = "관리자 인증 세션이 없거나 만료됨",
+                content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404", description = "카메라를 찾을 수 없거나 스트리밍 URL이 설정되지 않음",
+                content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    ResponseEntity<ApiResponse<CameraStreamUrlResponse>> findStreamUrlById(
+            @Parameter(description = "조회할 카메라 ID", example = "10") @Positive Long cameraId);
 }
