@@ -31,7 +31,7 @@ class AdminCandidateControllerTests {
                 new AdminCandidatePageResult(List.of(), 0, 20, 0, 0, "lastDetectedAt,desc"));
         AdminCandidateController controller = new AdminCandidateController(queryService, reviewService);
 
-        ResponseEntity<?> response = controller.findAll(null, null, null, null, null,
+        ResponseEntity<?> response = controller.findAll(null, null, null, null, null, null,
                 0, 20, "lastDetectedAt,desc");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
