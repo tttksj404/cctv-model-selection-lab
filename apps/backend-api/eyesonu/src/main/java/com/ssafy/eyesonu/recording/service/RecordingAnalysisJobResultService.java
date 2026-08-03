@@ -65,8 +65,8 @@ public class RecordingAnalysisJobResultService {
         Long recordingCameraId = validated.cameraId();
         validateAnalysisObjectKeys(job, request);
 
-        CandidateEventCreateResponse candidateResult = candidateEventCommandService.create(
-                principal, request, recordingCameraId);
+        CandidateEventCreateResponse candidateResult = candidateEventCommandService.createRecordingAnalysis(
+                principal, request, recordingCameraId, jobId, job.getRecordingId());
         if (analysisJobMapper.markSucceeded(job.getCaseId(), jobId) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job was changed before its result was completed.");
