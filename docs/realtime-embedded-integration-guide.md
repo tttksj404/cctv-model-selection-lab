@@ -6,7 +6,7 @@
 
 이미지·영상·manifest 같은 대용량 파일은 MinIO/S3에 먼저 업로드합니다. RabbitMQ 작업과 REST 요청에는 object key, checksum, content type, 크기처럼 저장된 파일을 검증하는 정보만 포함합니다.
 
-> 현재 구현에는 `search.target.exchange` 기반 실시간 검색 대상 변경 알림, Jetson의 `/api/v1/device/search-targets` 조회와 `/api/v1/device/candidate-events` 등록, 녹화 분석 DB outbox·publisher와 `search.target.recording.queue`가 있습니다. 이 문서의 장치별 작업 Queue, v2 Jetson API, AI Worker 내부 API와 실행 lease는 목표 계약이며 아직 모두 구현된 상태가 아닙니다.
+> 현재 구현에는 `search.target.exchange` 기반 실시간 검색 대상 변경 알림, Jetson의 `/api/v1/device/search-targets` 조회, `/api/v1/device/candidate-event-upload-urls` 이미지 업로드 URL 발급과 `/api/v1/device/candidate-events` 등록, 녹화 분석 DB outbox·publisher와 `search.target.recording.queue`가 있습니다. 이 문서의 장치별 작업 Queue, v2 Jetson API, AI Worker 내부 API와 실행 lease는 목표 계약이며 아직 모두 구현된 상태가 아닙니다.
 
 ## 1. 최종 결정
 
@@ -496,6 +496,8 @@ Content-Type: application/json
 
 Backend는 후보를 곧바로 공개 `candidate_events`에 넣지 않고 `(jobId, attempt, eventId)`가 UNIQUE인 staging에 저장합니다. 응답은 각 event의 `CREATED`, `DUPLICATE`, `CONFLICT` 결과를 포함합니다. 동일 `eventId`와 같은 canonical payload는 성공한 중복이고, 다른 payload는 `409 EVENT_PAYLOAD_CONFLICT`입니다. 성공 attempt의 후보만 `source=RECORDING_ANALYSIS`로 공개하고, 임계값 이상 후보로 관측 추정 경로와 후속 작업을 갱신합니다.
 
+프레임과 crop의 Object Key는 현재 작업의 `analysis/analysis-{jobId}/attempt-{attempt}/frames/` 또는 `analysis/analysis-{jobId}/attempt-{attempt}/crops/` 하위 경로여야 한다. 다른 작업이나 attempt의 키는 `400 INVALID_UPLOAD_OBJECT_KEY`로 거부한다.
+
 ### 7.5 종단 결과 접수
 
 성공·실패·취소는 하나의 API로 내구 접수합니다.
@@ -699,7 +701,8 @@ Backend
  → search.target.exchange / search.target.updated
  → search.target.realtime.queue
  → Jetson이 GET /api/v1/device/search-targets
- → Jetson이 Object Storage 업로드
+ → Jetson이 POST /api/v1/device/candidate-event-upload-urls
+ → 응답의 presigned PUT URL로 프레임·crop 이미지 업로드
  → POST /api/v1/device/candidate-events
 ```
 
