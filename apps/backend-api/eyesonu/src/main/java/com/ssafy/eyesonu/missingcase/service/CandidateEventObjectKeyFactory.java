@@ -19,6 +19,18 @@ public class CandidateEventObjectKeyFactory {
                 + "/crops/" + digest(trackId) + "." + extension(contentType);
     }
 
+    public boolean matchesFrameKey(Long mediaServerId, Long cameraId, Long caseId,
+                                   String eventId, String objectKey) {
+        return frameKey(mediaServerId, cameraId, caseId, eventId, "image/jpeg").equals(objectKey)
+                || frameKey(mediaServerId, cameraId, caseId, eventId, "image/png").equals(objectKey);
+    }
+
+    public boolean matchesCropKey(Long mediaServerId, Long cameraId, Long caseId,
+                                  String eventId, String trackId, String objectKey) {
+        return cropKey(mediaServerId, cameraId, caseId, eventId, trackId, "image/jpeg").equals(objectKey)
+                || cropKey(mediaServerId, cameraId, caseId, eventId, trackId, "image/png").equals(objectKey);
+    }
+
     private String eventPrefix(Long mediaServerId, Long cameraId, Long caseId, String eventId) {
         return "realtime/%d/%d/%d/%s".formatted(mediaServerId, cameraId, caseId, digest(eventId));
     }
