@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class RecordingAnalysisBatchResultService {
@@ -40,6 +41,7 @@ public class RecordingAnalysisBatchResultService {
     private final CandidateEventCommandService candidateService;
     private final AuditService auditService;
     private final RecordingAnalysisResultStorageValidator resultStorageValidator;
+    private final TransactionTemplate transactionTemplate;
 
     public RecordingAnalysisBatchResultService(
             AnalysisJobMapper jobMapper,
@@ -48,7 +50,21 @@ public class RecordingAnalysisBatchResultService {
             CameraMapper cameraMapper,
             CandidateEventCommandService candidateService,
             AuditService auditService,
-            RecordingAnalysisResultStorageValidator resultStorageValidator) {
+            RecordingAnalysisResultStorageValidator resultStorageValidator,
+            PlatformTransactionManager transactionManager) {
+        this(jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService,
+                auditService, resultStorageValidator, new TransactionTemplate(transactionManager));
+    }
+
+    RecordingAnalysisBatchResultService(
+            AnalysisJobMapper jobMapper,
+            RecordingAnalysisResultMapper resultMapper,
+            RecordingMapper recordingMapper,
+            CameraMapper cameraMapper,
+            CandidateEventCommandService candidateService,
+            AuditService auditService,
+            RecordingAnalysisResultStorageValidator resultStorageValidator,
+            TransactionTemplate transactionTemplate) {
         this.jobMapper = jobMapper;
         this.resultMapper = resultMapper;
         this.recordingMapper = recordingMapper;
@@ -56,14 +72,15 @@ public class RecordingAnalysisBatchResultService {
         this.candidateService = candidateService;
         this.auditService = auditService;
         this.resultStorageValidator = resultStorageValidator;
+        this.transactionTemplate = transactionTemplate;
     }
 
-    @Transactional
     public RecordingAnalysisBatchResultResponse complete(
             Long jobId, RecordingAnalysisBatchResultRequest request, String workerId) {
         validateUniqueTracks(request);
         String payloadHash = payloadHash(request);
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
+        // External storage calls must not run while the database row is locked.
+        AnalysisJob job = jobMapper.findRecordingAnalysisById(jobId);
         if (job == null) {
             throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
                     "Recording analysis job was not found.");
@@ -86,6 +103,38 @@ public class RecordingAnalysisBatchResultService {
                     "Only running recording analysis jobs can submit results.");
         }
         resultStorageValidator.verify(job, request);
+
+        RecordingAnalysisBatchResultResponse response = transactionTemplate.execute(status ->
+                completeInTransaction(jobId, request, workerId, payloadHash));
+        if (response == null) {
+            throw new IllegalStateException("Recording analysis completion transaction returned no result");
+        }
+        return response;
+    }
+
+    private RecordingAnalysisBatchResultResponse completeInTransaction(
+            Long jobId, RecordingAnalysisBatchResultRequest request, String workerId, String payloadHash) {
+        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
+        if (job == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
+                    "Recording analysis job was not found.");
+        }
+        int attempt = job.getRetryCount() + 1;
+        RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
+        if (existing != null) {
+            if (existing.getResultId().equals(request.resultId())
+                    && existing.getPayloadHash().equals(payloadHash)) {
+                return new RecordingAnalysisBatchResultResponse(
+                        jobId, existing.getResultId(), job.getStatus(), existing.getCandidateCount(),
+                        List.of(), true, job.getCompletedAt());
+            }
+            throw new ApiException(HttpStatus.CONFLICT, "RESULT_ID_CONFLICT",
+                    "A different result was already submitted for this job.");
+        }
+        if (!"RUNNING".equals(job.getStatus())) {
+            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
+                    "Only running recording analysis jobs can submit results.");
+        }
 
         Recording recording = recordingMapper.findById(job.getRecordingId());
         if (recording == null) {

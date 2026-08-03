@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class RecordingAnalysisBatchResultServiceTests {
@@ -42,6 +44,7 @@ class RecordingAnalysisBatchResultServiceTests {
     @Mock private CandidateEventCommandService candidateService;
     @Mock private AuditService auditService;
     @Mock private RecordingAnalysisResultStorageValidator resultStorageValidator;
+    @Mock private TransactionTemplate transactionTemplate;
 
     private RecordingAnalysisBatchResultService service;
 
@@ -49,7 +52,9 @@ class RecordingAnalysisBatchResultServiceTests {
     void setUp() {
         service = new RecordingAnalysisBatchResultService(
                 jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService,
-                auditService, resultStorageValidator);
+                auditService, resultStorageValidator, transactionTemplate);
+        when(transactionTemplate.execute(any(TransactionCallback.class))).thenAnswer(invocation ->
+                ((TransactionCallback<?>) invocation.getArgument(0)).doInTransaction(null));
     }
 
     @Test
@@ -85,6 +90,7 @@ class RecordingAnalysisBatchResultServiceTests {
     @Test
     void acceptsIdenticalResultRetryWithoutSavingCandidatesAgain() {
         AnalysisJob succeeded = job("SUCCEEDED");
+        when(jobMapper.findRecordingAnalysisById(5001L)).thenReturn(succeeded);
         when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(succeeded);
         RecordingAnalysisBatchResultRequest request = new RecordingAnalysisBatchResultRequest(
                 "result-1", List.of());
@@ -104,7 +110,9 @@ class RecordingAnalysisBatchResultServiceTests {
     }
 
     private void prepareRunningJob() {
-        when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(job("RUNNING"));
+        AnalysisJob running = job("RUNNING");
+        when(jobMapper.findRecordingAnalysisById(5001L)).thenReturn(running);
+        when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(running);
         when(resultMapper.findByJobIdAndAttempt(5001L, 1)).thenReturn(null);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(
                 3001L, 11L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
