@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
+import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
+import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,10 @@ class RecordingAnalysisJobPublisherTests {
     @Mock
     private RecordingAnalysisOutboxClaimer outboxClaimer;
 
+    @Mock
+    private AnalysisJobMapper analysisJobMapper;
+
+    @Mock
     private final List<RecordingAnalysisJobPublisher> publishers = new ArrayList<>();
 
     @AfterEach
@@ -49,6 +55,18 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
         RecordingAnalysisJobPublisher publisher = publisher(300);
+        RecordingAnalysisPublishSnapshot snapshot = new RecordingAnalysisPublishSnapshot();
+        snapshot.setJobId(5001L);
+        snapshot.setCaseId(101L);
+        snapshot.setRecordingId(3001L);
+        snapshot.setCameraId(11L);
+        snapshot.setCameraCode("CAM-001");
+        snapshot.setCameraName("Front");
+        snapshot.setRecordingObjectKey("recordings/CAM-001/video.mp4");
+        snapshot.setPrompt("person in red");
+        snapshot.setAttempt(1);
+        when(analysisJobMapper.findRecordingAnalysisPublishSnapshot(5001L, 101L))
+                .thenReturn(snapshot);
 
         publisher.enqueue(5001L, 101L);
 
@@ -175,14 +193,27 @@ class RecordingAnalysisJobPublisherTests {
     }
 
     private RecordingAnalysisOutbox readyOutbox() {
-        return new RecordingAnalysisOutbox(
-                1L, "cmd-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
-                5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"), 0);
+        RecordingAnalysisOutbox outbox = new RecordingAnalysisOutbox();
+        outbox.setId(1L);
+        outbox.setCommandId("cmd-1");
+        outbox.setEventType(RecordingAnalysisJobPublisher.EVENT_TYPE);
+        outbox.setJobId(5001L);
+        outbox.setCaseId(101L);
+        outbox.setRecordingId(3001L);
+        outbox.setCameraId(11L);
+        outbox.setCameraCode("CAM-001");
+        outbox.setCameraName("Front");
+        outbox.setRecordingObjectKey("recordings/CAM-001/video.mp4");
+        outbox.setPrompt("person in red");
+        outbox.setAttempt(1);
+        outbox.setOccurredAt(Instant.parse("2026-07-31T04:00:00Z"));
+        return outbox;
     }
 
     private RecordingAnalysisJobPublisher publisher(long claimLeaseSeconds) {
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
-                rabbitTemplate, outboxMapper, outboxClaimer, claimLeaseSeconds);
+                rabbitTemplate, outboxMapper, outboxClaimer,
+                analysisJobMapper, claimLeaseSeconds);
         publishers.add(publisher);
         return publisher;
     }

@@ -1,0 +1,15 @@
+ALTER TABLE `recording_analysis_outbox`
+    ADD COLUMN `recording_id` BIGINT NULL AFTER `case_id`,
+    ADD COLUMN `camera_id` BIGINT NULL AFTER `recording_id`,
+    ADD COLUMN `camera_code` VARCHAR(100) NULL AFTER `camera_id`,
+    ADD COLUMN `camera_name` VARCHAR(255) NULL AFTER `camera_code`,
+    ADD COLUMN `recording_object_key` VARCHAR(500) COLLATE utf8mb4_bin NULL AFTER `camera_name`,
+    ADD COLUMN `prompt` TEXT NULL AFTER `recording_object_key`,
+    ADD COLUMN `exclusion_prompt` TEXT NULL AFTER `prompt`,
+    ADD COLUMN `similarity_threshold` DECIMAL(5, 4) NULL AFTER `exclusion_prompt`,
+    ADD COLUMN `search_start` DATETIME(6) NULL AFTER `similarity_threshold`,
+    ADD COLUMN `search_end` DATETIME(6) NULL AFTER `search_start`,
+    ADD COLUMN `search_area` VARCHAR(255) NULL AFTER `search_end`,
+    ADD COLUMN `attempt` INT NOT NULL DEFAULT 1 AFTER `search_area`,
+    ADD KEY `ix_recording_analysis_outbox_recording` (`recording_id`),
+    ADD CONSTRAINT `ck_recording_analysis_outbox_attempt` CHECK (`attempt` > 0);
