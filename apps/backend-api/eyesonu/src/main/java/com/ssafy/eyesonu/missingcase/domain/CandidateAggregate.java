@@ -11,6 +11,10 @@ public class CandidateAggregate {
     private Long id;
     private Long caseId;
     private Long cameraId;
+    private CandidateSourceType sourceType;
+    private Long analysisJobId;
+    private Long recordingId;
+    private String dedupeScope;
     private String trackId;
     private Instant firstDetectedAt;
     private Instant lastDetectedAt;

@@ -8,6 +8,9 @@
         <result property="eventId" column="event_id"/>
         <result property="caseId" column="case_id"/>
         <result property="cameraId" column="camera_id"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="analysisJobId" column="analysis_job_id"/>
+        <result property="recordingId" column="recording_id"/>
         <result property="detectedAt" column="detected_at"/>
         <result property="frameObjectKey" column="frame_object_key"/>
         <result property="createdAt" column="created_at"/>
@@ -26,6 +29,10 @@
         <id property="id" column="id"/>
         <result property="caseId" column="case_id"/>
         <result property="cameraId" column="camera_id"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="analysisJobId" column="analysis_job_id"/>
+        <result property="recordingId" column="recording_id"/>
+        <result property="dedupeScope" column="dedupe_scope"/>
         <result property="trackId" column="track_id"/>
         <result property="firstDetectedAt" column="first_detected_at"/>
         <result property="lastDetectedAt" column="last_detected_at"/>
@@ -41,7 +48,8 @@
     </resultMap>
 
     <select id="findEventByEventId" resultMap="eventMap">
-        SELECT id, event_id, case_id, camera_id, detected_at, frame_object_key, created_at
+        SELECT id, event_id, case_id, camera_id, source_type, analysis_job_id, recording_id,
+               detected_at, frame_object_key, created_at
         FROM candidate_events WHERE event_id = #{eventId}
     </select>
     <select id="findDetectionsByEventId" resultMap="detectionMap">
@@ -59,12 +67,17 @@
         )
     </select>
     <insert id="insertEvent" useGeneratedKeys="true" keyProperty="event.id">
-        INSERT INTO candidate_events (event_id, case_id, camera_id, detected_at, frame_object_key)
-        VALUES (#{event.eventId}, #{event.caseId}, #{event.cameraId}, #{event.detectedAt}, #{event.frameObjectKey})
+        INSERT INTO candidate_events
+            (event_id, case_id, camera_id, source_type, analysis_job_id, recording_id,
+             detected_at, frame_object_key)
+        VALUES (#{event.eventId}, #{event.caseId}, #{event.cameraId},
+                COALESCE(#{event.sourceType}, 'REALTIME'), #{event.analysisJobId}, #{event.recordingId},
+                #{event.detectedAt}, #{event.frameObjectKey})
         ON DUPLICATE KEY UPDATE id = id
     </insert>
     <select id="findCandidateForUpdate" resultMap="candidateMap">
-        SELECT id, case_id, camera_id, track_id, first_detected_at, last_detected_at,
+        SELECT id, case_id, camera_id, source_type, analysis_job_id, recording_id, dedupe_scope,
+               track_id, first_detected_at, last_detected_at,
                best_similarity, average_similarity, detection_count, similarity,
                crop_object_key, frame_object_key, CAST(bounding_box AS CHAR) AS bounding_box,
                version, created_at
@@ -74,11 +87,13 @@
     </select>
     <insert id="insertCandidate" useGeneratedKeys="true" keyProperty="candidate.id">
         INSERT INTO candidates
-            (case_id, camera_id, track_id, detected_time, first_detected_at, last_detected_at,
+            (case_id, camera_id, source_type, analysis_job_id, recording_id,
+             track_id, detected_time, first_detected_at, last_detected_at,
              similarity, best_similarity, average_similarity, detection_count,
              crop_object_key, frame_object_key, bounding_box, review_status, version)
         VALUES
-            (#{candidate.caseId}, #{candidate.cameraId}, #{candidate.trackId},
+            (#{candidate.caseId}, #{candidate.cameraId}, COALESCE(#{candidate.sourceType}, 'REALTIME'),
+             #{candidate.analysisJobId}, #{candidate.recordingId}, #{candidate.trackId},
              #{candidate.firstDetectedAt}, #{candidate.firstDetectedAt}, #{candidate.lastDetectedAt},
              #{candidate.similarity}, #{candidate.bestSimilarity}, #{candidate.averageSimilarity},
              #{candidate.detectionCount}, #{candidate.cropObjectKey}, #{candidate.frameObjectKey},
