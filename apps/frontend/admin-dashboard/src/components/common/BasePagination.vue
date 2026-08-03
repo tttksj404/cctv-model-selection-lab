@@ -1,13 +1,13 @@
 <script setup>
-defineProps({ page: Number, totalPages: Number, totalCount: Number });
+defineProps({ page: Number, totalPages: Number, totalCount: Number, disabled: Boolean });
 defineEmits(["update:page"]);
 </script>
 
 <template>
-  <div class="pagination">
+  <nav class="pagination" aria-label="페이지 탐색">
     <span>전체 {{ totalCount }}건</span>
-    <button :disabled="page <= 1" @click="$emit('update:page', page - 1)">이전</button>
-    <strong>{{ page }} / {{ totalPages }}</strong>
-    <button :disabled="page >= totalPages" @click="$emit('update:page', page + 1)">다음</button>
-  </div>
+    <button type="button" :disabled="disabled || page <= 1" @click="$emit('update:page', page - 1)">이전</button>
+    <strong aria-live="polite">{{ page }} / {{ totalPages }}</strong>
+    <button type="button" :disabled="disabled || page >= totalPages" @click="$emit('update:page', page + 1)">다음</button>
+  </nav>
 </template>

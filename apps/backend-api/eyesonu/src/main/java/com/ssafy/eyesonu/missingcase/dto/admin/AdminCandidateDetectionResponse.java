@@ -7,14 +7,13 @@ import java.time.Instant;
 public record AdminCandidateDetectionResponse(
         String eventId,
         Instant detectedAt,
-        String frameObjectKey,
         String trackId,
-        String cropObjectKey,
+        String cropUrl,
         BigDecimal similarity,
         String boundingBox) {
 
-    public static AdminCandidateDetectionResponse from(AdminCandidateDetectionRow row) {
-        return new AdminCandidateDetectionResponse(row.getEventId(), row.getDetectedAt(), row.getFrameObjectKey(),
-                row.getTrackId(), row.getCropObjectKey(), row.getSimilarity(), row.getBoundingBox());
+    public static AdminCandidateDetectionResponse from(AdminCandidateDetectionRow row, String cropUrl) {
+        return new AdminCandidateDetectionResponse(row.getEventId(), row.getDetectedAt(),
+                row.getTrackId(), cropUrl, row.getSimilarity(), row.getBoundingBox());
     }
 }

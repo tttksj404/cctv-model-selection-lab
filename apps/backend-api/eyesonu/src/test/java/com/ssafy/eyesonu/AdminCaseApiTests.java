@@ -3,6 +3,7 @@ package com.ssafy.eyesonu;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -25,7 +27,10 @@ import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.Gender;
 import com.ssafy.eyesonu.missingcase.controller.AdminCaseController;
+import com.ssafy.eyesonu.missingcase.dto.admin.AppearanceRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.AppearanceResponse;
+import com.ssafy.eyesonu.missingcase.dto.admin.CaseCreateRequest;
+import com.ssafy.eyesonu.missingcase.dto.admin.CaseCreateResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseDetailResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseListResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.CasePhotoResponse;
@@ -34,6 +39,7 @@ import com.ssafy.eyesonu.missingcase.dto.admin.CaseCloseRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseStatusUpdateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseUpdateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.ReporterResponse;
+import com.ssafy.eyesonu.missingcase.dto.admin.ReporterRequest;
 import com.ssafy.eyesonu.missingcase.service.CaseCommandService;
 import com.ssafy.eyesonu.missingcase.service.CasePageResult;
 import com.ssafy.eyesonu.missingcase.service.CasePhotoService;
@@ -90,6 +96,93 @@ class AdminCaseApiTests {
 	void activeAdmin() {
 		when(adminMapper.findById(ADMIN_ID))
 				.thenReturn(Optional.of(new Admin(ADMIN_ID, "admin", "hash", "Admin")));
+	}
+
+	@Test
+	void createMapsFrontendPayloadAndReturnsCreatedEnvelope() throws Exception {
+		CaseCreateRequest expectedRequest = new CaseCreateRequest(
+				new ReporterRequest("박신고", "010-1234-5678", null, "보호자"),
+				"산책 후 귀가하지 않았습니다.",
+				"테스트 실종자",
+				Gender.FEMALE,
+				1950,
+				new AppearanceRequest("짧은 검은 머리", null, null, null, null, null, null, null),
+				OffsetDateTime.parse("2026-07-30T05:30:00Z"),
+				null,
+				null,
+				"서울특별시 강남구");
+		CaseCreateResponse created = new CaseCreateResponse(
+				31L,
+				"EFU-NEW-31",
+				CaseStatus.RECEIVED,
+				Instant.parse("2026-07-30T05:30:00Z"));
+		when(commandService.create(eq(expectedRequest), eq(ADMIN_ID))).thenReturn(created);
+
+		mockMvc.perform(post("/api/v1/admin/cases")
+					.with(adminAuthentication())
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("""
+							{
+							  "reporter": {
+							    "name": "박신고",
+							    "phone": "010-1234-5678",
+							    "relation": "보호자"
+							  },
+							  "reportContent": "산책 후 귀가하지 않았습니다.",
+							  "missingName": "테스트 실종자",
+							  "gender": "FEMALE",
+							  "birthYear": 1950,
+							  "appearance": {
+							    "hair": "짧은 검은 머리",
+							    "face": null,
+							    "upperClothing": null,
+							    "lowerClothing": null,
+							    "shoes": null,
+							    "belongings": null,
+							    "bodyType": null,
+							    "distinctiveFeatures": null
+							  },
+							  "lastSeenTime": "2026-07-30T14:30:00+09:00",
+							  "lastSeenLat": null,
+							  "lastSeenLng": null,
+							  "lastSeenAddress": "서울특별시 강남구"
+							}
+							"""))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("Location", "/api/v1/admin/cases/31"))
+				.andExpect(jsonPath("$.timestamp").exists())
+				.andExpect(jsonPath("$.data.id").value(31))
+				.andExpect(jsonPath("$.data.caseNumber").value("EFU-NEW-31"))
+				.andExpect(jsonPath("$.data.status").value("RECEIVED"))
+				.andExpect(jsonPath("$.data.reportedAt").value("2026-07-30T05:30:00Z"))
+				.andExpect(jsonPath("$.data.photoUrl").doesNotExist());
+
+		verify(commandService).create(expectedRequest, ADMIN_ID);
+	}
+
+	@Test
+	void createRequiresAuthentication() throws Exception {
+		mockMvc.perform(post("/api/v1/admin/cases")
+					.with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{}"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+
+		verifyNoInteractions(commandService);
+	}
+
+	@Test
+	void createRequiresCsrf() throws Exception {
+		mockMvc.perform(post("/api/v1/admin/cases")
+					.with(adminAuthentication())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{}"))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+
+		verifyNoInteractions(commandService);
 	}
 
 	@Test

@@ -25,6 +25,10 @@ export async function getCurrentAdmin() {
   return unwrapData(await apiClient.get("/admins/me"));
 }
 
+export async function updateCurrentAdmin(payload) {
+  return unwrapData(await apiClient.patch("/admins/me", payload));
+}
+
 export async function logout() {
   await apiClient.post("/auth/admin/logout");
   await refreshCsrfTokenBestEffort();

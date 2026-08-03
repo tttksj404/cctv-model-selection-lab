@@ -42,6 +42,7 @@ describe("AdminLayout", () => {
     app.mount(root);
     await Promise.resolve();
     await nextTick();
+    return auth;
   };
 
   afterEach(() => {
@@ -57,5 +58,14 @@ describe("AdminLayout", () => {
   it("최고 관리자의 사이드바에 관리자 계정 메뉴를 표시한다", async () => {
     await mount("SUPER_ADMIN");
     expect(root.querySelector(".sidebar-submenu").textContent).toContain("관리자 계정");
+  });
+
+  it("인증 store의 이름이 바뀌면 헤더 관리자 이름을 즉시 갱신한다", async () => {
+    const auth = await mount("ADMIN");
+
+    auth.user = { ...auth.user, name: "변경된 관리자" };
+    await nextTick();
+
+    expect(root.querySelector(".operator-name").textContent).toContain("변경된 관리자");
   });
 });

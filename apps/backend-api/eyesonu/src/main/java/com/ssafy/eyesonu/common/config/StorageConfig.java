@@ -31,10 +31,24 @@ public class StorageConfig {
 	public MinioClient minioClient(
 			S3Properties properties,
 			@Qualifier("storageHttpClient") OkHttpClient httpClient) {
-		String endpoint = properties.getEndpoint() == null
+		String endpoint = resolveInternalEndpoint(properties);
+		return buildClient(endpoint, properties, httpClient);
+	}
+
+	@Bean
+	public MinioClient publicMinioClient(
+			S3Properties properties,
+			@Qualifier("storageHttpClient") OkHttpClient httpClient) {
+		return buildClient(properties.getPublicEndpoint().toString(), properties, httpClient);
+	}
+
+	private String resolveInternalEndpoint(S3Properties properties) {
+		return properties.getEndpoint() == null
 				? "https://s3.%s.amazonaws.com".formatted(properties.getRegion())
 				: properties.getEndpoint().toString();
+	}
 
+	private MinioClient buildClient(String endpoint, S3Properties properties, OkHttpClient httpClient) {
 		MinioClient.Builder builder = MinioClient.builder()
 				.endpoint(endpoint)
 				.region(properties.getRegion())

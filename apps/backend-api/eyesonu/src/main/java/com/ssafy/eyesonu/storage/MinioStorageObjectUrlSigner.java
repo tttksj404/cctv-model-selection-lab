@@ -7,6 +7,7 @@ import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.http.Method;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +16,9 @@ public class MinioStorageObjectUrlSigner implements StorageObjectUrlSigner {
 	private final MinioClient client;
 	private final S3Properties properties;
 
-	public MinioStorageObjectUrlSigner(MinioClient client, S3Properties properties) {
+	public MinioStorageObjectUrlSigner(
+			@Qualifier("publicMinioClient") MinioClient client,
+			S3Properties properties) {
 		this.client = client;
 		this.properties = properties;
 	}

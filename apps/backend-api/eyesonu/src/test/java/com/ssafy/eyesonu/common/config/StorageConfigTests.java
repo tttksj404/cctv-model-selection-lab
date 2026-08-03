@@ -66,6 +66,27 @@ class StorageConfigTests {
 	}
 
 	@Test
+	void createsPresignedUrlsWithPublicEndpoint() throws Exception {
+		S3Properties properties = properties();
+		properties.setEndpoint(URI.create("http://minio:9000"));
+		properties.setPublicEndpoint(URI.create("https://storage.example.test"));
+		properties.setAccessKey("access-key");
+		properties.setSecretKey("secret-key");
+		properties.setPathStyleAccess(true);
+
+		MinioClient client = config.publicMinioClient(properties, config.storageHttpClient(properties));
+		String url = client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+				.method(Method.GET)
+				.bucket(properties.getBucket())
+				.object("recordings/CAM-001/video.mp4")
+				.expiry(15 * 60)
+				.build());
+
+		assertTrue(url.startsWith("https://storage.example.test/eyesonu-media/"));
+		assertTrue(!url.contains("minio:9000"));
+	}
+
+	@Test
 	void createsRegionalVirtualStyleClientWhenEndpointIsOmitted() throws Exception {
 		S3Properties properties = properties();
 		properties.setEndpoint(null);
@@ -89,6 +110,7 @@ class StorageConfigTests {
 		S3Properties properties = new S3Properties();
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
+		properties.setPublicEndpoint(URI.create("http://localhost:9000"));
 		properties.setMaxFileSizeBytes(5_368_709_120L);
 		return properties;
 	}
