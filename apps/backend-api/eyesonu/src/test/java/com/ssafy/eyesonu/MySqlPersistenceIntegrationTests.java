@@ -210,7 +210,7 @@ class MySqlPersistenceIntegrationTests {
 				 track_id, detected_time, first_detected_at, last_detected_at,
 				 similarity, best_similarity, average_similarity, detection_count,
 				 crop_object_key, frame_object_key, bounding_box, review_status, version)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.8000, 0.8000, 0.8000, 1,
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.7200, 0.7200, 0.7200, 1,
 				        'crops/candidate.jpg', 'frames/candidate.jpg',
 				        JSON_OBJECT('x', 1, 'y', 2, 'width', 30, 'height', 40), 'PENDING', 0)
 				""", caseId, cameraId, sourceType, jobId, recordingId,
