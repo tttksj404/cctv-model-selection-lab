@@ -29,6 +29,16 @@ public interface CameraMapper {
            camera_code AS cameraCode,
            camera_name AS cameraName
     FROM cameras
+    WHERE id = #{cameraId}
+    """)
+    Optional<Camera> findById(@Param("cameraId") Long cameraId);
+
+    @Select("""
+    SELECT id,
+           media_server_id AS mediaServerId,
+           camera_code AS cameraCode,
+           camera_name AS cameraName
+    FROM cameras
     WHERE camera_code = #{cameraCode}
     FOR UPDATE
     """)
