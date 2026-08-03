@@ -15,6 +15,10 @@ public class AdminCandidateRow {
     private Long cameraId;
     private String cameraCode;
     private String cameraName;
+    private CandidateSourceType sourceType;
+    private Long analysisJobId;
+    private Long recordingId;
+    private String dedupeScope;
     private String trackId;
     private Instant firstDetectedAt;
     private Instant lastDetectedAt;

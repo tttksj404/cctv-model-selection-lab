@@ -207,4 +207,55 @@ class MySqlPersistenceIntegrationTests {
 		assertThrows(DataAccessException.class, () -> jdbcTemplate.update(
 				sql, reporterId, "EFU-V123456789ABCDEFGHJKMNPQRS", " ", 2000, "coat", null, null));
 	}
+
+	@Test
+	void candidateSourceMigrationKeepsLegacyRealtimeInsertsCompatible() {
+		jdbcTemplate.update(
+				"INSERT INTO reporters (name, phone) VALUES ('Migration Reporter', '01033334444')");
+		Long reporterId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM reporters", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cases
+				(reporter_id, case_number, status, report_content, missing_name, gender,
+				 distinctive_features, last_seen_time, last_seen_address)
+				VALUES (?, 'EFU-SOURCE-MIGRATION-000001', 'SEARCHING', 'content',
+				        'Missing', 'UNKNOWN', 'coat', UTC_TIMESTAMP(6), 'address')
+				""", reporterId);
+		Long caseId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cases", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO media_servers
+				(server_code, name, device_key_id, device_key_hash, status)
+				VALUES ('source-migration-server', 'Source Migration Server',
+				        'sourcemigrate001', 'hash', 'ACTIVE')
+				""");
+		Long mediaServerId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM media_servers", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cameras
+				(media_server_id, camera_name, camera_code, latitude, longitude, address, stream_url)
+				VALUES (?, 'Migration Camera', 'source-migration-camera', 37.5, 127.0,
+				        'address', 'rtsp://source-migration')
+				""", mediaServerId);
+		Long cameraId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cameras", Long.class);
+
+		jdbcTemplate.update("""
+				INSERT INTO candidate_events
+				(event_id, case_id, camera_id, detected_at, frame_object_key)
+				VALUES ('legacy-event', ?, ?, UTC_TIMESTAMP(6), 'frames/legacy.jpg')
+				""", caseId, cameraId);
+		jdbcTemplate.update("""
+				INSERT INTO candidates
+				(case_id, camera_id, track_id, detected_time, first_detected_at, last_detected_at,
+				 similarity, best_similarity, average_similarity, detection_count,
+				 crop_object_key, frame_object_key, bounding_box, review_status, version)
+				VALUES (?, ?, 'legacy-track', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6), UTC_TIMESTAMP(6),
+				        0.8, 0.8, 0.8, 1, 'crops/legacy.jpg', 'frames/legacy.jpg',
+				        JSON_OBJECT('x', 1, 'y', 2, 'width', 30, 'height', 40), 'PENDING', 0)
+				""", caseId, cameraId);
+
+		assertEquals("REALTIME", jdbcTemplate.queryForObject(
+				"SELECT source_type FROM candidates WHERE track_id = 'legacy-track'", String.class));
+		assertEquals("realtime:" + caseId + ":" + cameraId, jdbcTemplate.queryForObject(
+				"SELECT dedupe_scope FROM candidates WHERE track_id = 'legacy-track'", String.class));
+		assertEquals("REALTIME", jdbcTemplate.queryForObject(
+				"SELECT source_type FROM candidate_events WHERE event_id = 'legacy-event'", String.class));
+	}
 }
