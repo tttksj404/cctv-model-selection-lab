@@ -178,6 +178,8 @@ services:
     profiles: ["dev"]
     image: rabbitmq:4.3.2-management
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5672:5672"
     environment:
       RABBITMQ_DEFAULT_USER: ${DEV_RABBITMQ_USER:?Set DEV_RABBITMQ_USER in infra/.env.deploy}
       RABBITMQ_DEFAULT_PASS: ${DEV_RABBITMQ_PASSWORD:?Set DEV_RABBITMQ_PASSWORD in infra/.env.deploy}
