@@ -9,20 +9,6 @@
         <result property="eventType" column="event_type"/>
         <result property="jobId" column="job_id"/>
         <result property="caseId" column="case_id"/>
-        <result property="recordingId" column="recording_id"/>
-        <result property="cameraId" column="camera_id"/>
-        <result property="cameraCode" column="camera_code"/>
-        <result property="cameraName" column="camera_name"/>
-        <result property="recordingObjectKey" column="recording_object_key"/>
-        <result property="prompt" column="prompt"/>
-        <result property="exclusionPrompt" column="exclusion_prompt"/>
-        <result property="similarityThreshold" column="similarity_threshold"/>
-        <result property="searchStart" column="search_start"
-                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
-        <result property="searchEnd" column="search_end"
-                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
-        <result property="searchArea" column="search_area"/>
-        <result property="attempt" column="attempt"/>
         <result property="occurredAt" column="occurred_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="retryCount" column="retry_count"/>
@@ -30,27 +16,17 @@
 
     <insert id="insert" parameterType="com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox">
         INSERT INTO recording_analysis_outbox (
-            command_id, event_type, job_id, case_id, recording_id, camera_id,
-            camera_code, camera_name, recording_object_key, prompt, exclusion_prompt,
-            similarity_threshold, search_start, search_end, search_area, attempt, occurred_at,
+            command_id, event_type, job_id, case_id, occurred_at,
             status, retry_count, next_attempt_at
         ) VALUES (
-            #{commandId}, #{eventType}, #{jobId}, #{caseId}, #{recordingId}, #{cameraId},
-            #{cameraCode}, #{cameraName}, #{recordingObjectKey}, #{prompt}, #{exclusionPrompt},
-            #{similarityThreshold},
-            #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
-            #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
-            #{searchArea}, #{attempt},
+            #{commandId}, #{eventType}, #{jobId}, #{caseId},
             #{occurredAt,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             'PENDING', 0, UTC_TIMESTAMP(6)
         )
     </insert>
 
     <select id="findReady" resultMap="outboxResultMap">
-        SELECT id, command_id, event_type, job_id, case_id, recording_id, camera_id,
-               camera_code, camera_name, recording_object_key, prompt, exclusion_prompt,
-               similarity_threshold, search_start, search_end, search_area, attempt,
-               occurred_at, retry_count
+        SELECT id, command_id, event_type, job_id, case_id, occurred_at, retry_count
         FROM recording_analysis_outbox
         WHERE status IN ('PENDING', 'PROCESSING')
           AND next_attempt_at &lt;= UTC_TIMESTAMP(6)
