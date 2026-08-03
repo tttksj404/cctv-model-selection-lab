@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.missingcase.service;
 
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
+import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateResponse;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,8 @@ public class CandidateEventSubmissionService {
     public CandidateEventCreateResponse create(
             MediaServerPrincipal principal,
             CandidateEventCreateRequest request) {
-        accessValidator.validateRealtimeAccess(principal, request);
+        Camera camera = accessValidator.validateRealtimeAccess(principal, request);
         storageValidator.verify(request);
-        return commandService.create(principal, request);
+        return commandService.createValidatedRealtime(principal, request, camera);
     }
 }
