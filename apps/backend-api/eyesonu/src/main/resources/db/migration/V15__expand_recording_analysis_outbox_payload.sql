@@ -12,8 +12,4 @@ ALTER TABLE `recording_analysis_outbox`
     ADD COLUMN `search_area` VARCHAR(255) NULL AFTER `search_end`,
     ADD COLUMN `attempt` INT NOT NULL DEFAULT 1 AFTER `search_area`,
     ADD KEY `ix_recording_analysis_outbox_recording` (`recording_id`),
-    ADD CONSTRAINT `fk_recording_analysis_outbox_recording`
-        FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`id`)
-        ON DELETE RESTRICT
-        ON UPDATE RESTRICT,
     ADD CONSTRAINT `ck_recording_analysis_outbox_attempt` CHECK (`attempt` > 0);

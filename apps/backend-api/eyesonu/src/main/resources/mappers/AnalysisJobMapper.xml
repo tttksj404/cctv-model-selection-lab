@@ -28,6 +28,26 @@
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
     </resultMap>
 
+    <resultMap id="recordingAnalysisPublishSnapshotResultMap"
+               type="com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot">
+        <result property="jobId" column="job_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="recordingId" column="recording_id"/>
+        <result property="cameraId" column="camera_id"/>
+        <result property="cameraCode" column="camera_code"/>
+        <result property="cameraName" column="camera_name"/>
+        <result property="recordingObjectKey" column="recording_object_key"/>
+        <result property="prompt" column="prompt"/>
+        <result property="exclusionPrompt" column="exclusion_prompt"/>
+        <result property="similarityThreshold" column="similarity_threshold"/>
+        <result property="searchStart" column="search_start"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchEnd" column="search_end"
+                typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="searchArea" column="search_area"/>
+        <result property="attempt" column="attempt"/>
+    </resultMap>
+
     <insert id="insert" parameterType="com.ssafy.eyesonu.recording.domain.AnalysisJob"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO analysis_jobs (
@@ -106,6 +126,30 @@
         FROM analysis_jobs
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
+    </select>
+
+    <select id="findRecordingAnalysisPublishSnapshot"
+            resultMap="recordingAnalysisPublishSnapshotResultMap">
+        SELECT aj.id AS job_id,
+               aj.case_id,
+               aj.recording_id,
+               r.camera_id,
+               c.camera_code,
+               c.camera_name,
+               r.s3_key AS recording_object_key,
+               aj.prompt_snapshot AS prompt,
+               aj.exclusion_prompt_snapshot AS exclusion_prompt,
+               aj.similarity_threshold_snapshot AS similarity_threshold,
+               aj.search_start_snapshot AS search_start,
+               aj.search_end_snapshot AS search_end,
+               aj.search_area_snapshot AS search_area,
+               aj.retry_count + 1 AS attempt
+        FROM analysis_jobs aj
+        INNER JOIN recordings r ON r.id = aj.recording_id
+        INNER JOIN cameras c ON c.id = r.camera_id
+        WHERE aj.id = #{jobId}
+          AND aj.case_id = #{caseId}
+          AND aj.job_type = 'RECORDING_ANALYSIS'
     </select>
 
     <update id="cancelActive">
