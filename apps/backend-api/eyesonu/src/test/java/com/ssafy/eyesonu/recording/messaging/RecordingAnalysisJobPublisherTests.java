@@ -11,13 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
-import com.ssafy.eyesonu.recording.domain.AnalysisJob;
-import com.ssafy.eyesonu.recording.domain.Recording;
+import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
-import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
-import com.ssafy.eyesonu.camera.domain.Camera;
-import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +45,6 @@ class RecordingAnalysisJobPublisherTests {
     private AnalysisJobMapper analysisJobMapper;
 
     @Mock
-    private RecordingMapper recordingMapper;
-
-    @Mock
-    private CameraMapper cameraMapper;
-
     private final List<RecordingAnalysisJobPublisher> publishers = new ArrayList<>();
 
     @AfterEach
@@ -64,17 +55,18 @@ class RecordingAnalysisJobPublisherTests {
     @Test
     void storesOutboxWithStableCommandIdBeforePublishing() {
         RecordingAnalysisJobPublisher publisher = publisher(300);
-        AnalysisJob job = new AnalysisJob();
-        job.setId(5001L);
-        job.setCaseId(101L);
-        job.setRecordingId(3001L);
-        job.setPromptSnapshot("person in red");
-        job.setRetryCount(0);
-        when(analysisJobMapper.findRecordingAnalysisById(5001L)).thenReturn(job);
-        when(recordingMapper.findById(3001L)).thenReturn(new Recording(
-                3001L, 11L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
-        when(cameraMapper.findById(11L)).thenReturn(Optional.of(
-                new Camera(11L, 2L, "CAM-001", "Front")));
+        RecordingAnalysisPublishSnapshot snapshot = new RecordingAnalysisPublishSnapshot();
+        snapshot.setJobId(5001L);
+        snapshot.setCaseId(101L);
+        snapshot.setRecordingId(3001L);
+        snapshot.setCameraId(11L);
+        snapshot.setCameraCode("CAM-001");
+        snapshot.setCameraName("Front");
+        snapshot.setRecordingObjectKey("recordings/CAM-001/video.mp4");
+        snapshot.setPrompt("person in red");
+        snapshot.setAttempt(1);
+        when(analysisJobMapper.findRecordingAnalysisPublishSnapshot(5001L, 101L))
+                .thenReturn(snapshot);
 
         publisher.enqueue(5001L, 101L);
 
@@ -221,7 +213,7 @@ class RecordingAnalysisJobPublisherTests {
     private RecordingAnalysisJobPublisher publisher(long claimLeaseSeconds) {
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
                 rabbitTemplate, outboxMapper, outboxClaimer,
-                analysisJobMapper, recordingMapper, cameraMapper, claimLeaseSeconds);
+                analysisJobMapper, claimLeaseSeconds);
         publishers.add(publisher);
         return publisher;
     }
