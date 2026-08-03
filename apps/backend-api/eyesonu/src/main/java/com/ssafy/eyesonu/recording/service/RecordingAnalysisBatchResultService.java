@@ -66,7 +66,8 @@ public class RecordingAnalysisBatchResultService {
                     "Recording analysis job was not found.");
         }
 
-        RecordingAnalysisResult existing = resultMapper.findByJobId(jobId);
+        int attempt = job.getRetryCount() + 1;
+        RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
         if (existing != null) {
             if (existing.getResultId().equals(request.resultId())
                     && existing.getPayloadHash().equals(payloadHash)) {
@@ -94,7 +95,6 @@ public class RecordingAnalysisBatchResultService {
                 camera.mediaServerId(), camera.cameraCode());
 
         List<Long> candidateIds = new ArrayList<>();
-        int attempt = job.getRetryCount() + 1;
         for (int index = 0; index < request.candidates().size(); index++) {
             RecordingAnalysisBatchResultRequest.Candidate candidate = request.candidates().get(index);
             CandidateEventCreateRequest event = toEvent(job, camera, candidate, attempt, index);
@@ -105,8 +105,10 @@ public class RecordingAnalysisBatchResultService {
 
         RecordingAnalysisResult result = new RecordingAnalysisResult();
         result.setJobId(jobId);
+        result.setAttempt(attempt);
         result.setResultId(request.resultId());
         result.setPayloadHash(payloadHash);
+        result.setStatus("SUCCEEDED");
         result.setCandidateCount(request.candidates().size());
         resultMapper.insert(result);
         if (jobMapper.markSucceeded(job.getCaseId(), jobId) != 1) {

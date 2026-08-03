@@ -88,10 +88,12 @@ class RecordingAnalysisBatchResultServiceTests {
                 "result-1", List.of());
         RecordingAnalysisResult existing = new RecordingAnalysisResult();
         existing.setJobId(5001L);
+        existing.setAttempt(1);
         existing.setResultId("result-1");
         existing.setPayloadHash(hash(request));
+        existing.setStatus("SUCCEEDED");
         existing.setCandidateCount(0);
-        when(resultMapper.findByJobId(5001L)).thenReturn(existing);
+        when(resultMapper.findByJobIdAndAttempt(5001L, 1)).thenReturn(existing);
 
         var response = service.complete(5001L, request, "worker-1");
 
@@ -101,7 +103,7 @@ class RecordingAnalysisBatchResultServiceTests {
 
     private void prepareRunningJob() {
         when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(job("RUNNING"));
-        when(resultMapper.findByJobId(5001L)).thenReturn(null);
+        when(resultMapper.findByJobIdAndAttempt(5001L, 1)).thenReturn(null);
         when(recordingMapper.findById(3001L)).thenReturn(new Recording(
                 3001L, 11L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
         when(cameraMapper.findById(11L)).thenReturn(Optional.of(

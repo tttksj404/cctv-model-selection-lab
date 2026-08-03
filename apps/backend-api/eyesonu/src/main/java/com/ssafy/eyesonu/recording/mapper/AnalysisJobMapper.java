@@ -40,4 +40,7 @@ public interface AnalysisJobMapper {
     int retryFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
 
     int markSucceeded(@Param("caseId") Long caseId, @Param("jobId") Long jobId);
+
+    int markFailed(@Param("caseId") Long caseId, @Param("jobId") Long jobId,
+                   @Param("errorMessage") String errorMessage);
 }

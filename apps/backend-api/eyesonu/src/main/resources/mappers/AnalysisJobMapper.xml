@@ -197,4 +197,11 @@
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
     </update>
+
+    <update id="markFailed">
+        UPDATE analysis_jobs
+        SET status = 'FAILED', completed_at = UTC_TIMESTAMP(6), error_message = #{errorMessage}
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
+    </update>
 </mapper>
