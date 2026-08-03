@@ -12,13 +12,10 @@ import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
 import com.ssafy.eyesonu.common.exception.ApiException;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.CandidateEventMapper;
-import com.ssafy.eyesonu.storage.StorageObject;
-import com.ssafy.eyesonu.storage.StorageObjectVerifier;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -39,19 +36,15 @@ class CandidateEventCommandServiceTests {
     @Mock private CameraMapper cameraMapper;
     @Mock private CandidateEventMapper mapper;
     @Mock private CaseQueryService caseQueryService;
-    @Mock private StorageObjectVerifier storageObjectVerifier;
 
     private CandidateEventCommandService service;
     private CandidateEventObjectKeyFactory objectKeyFactory;
-    private S3Properties s3Properties;
 
     @BeforeEach
     void setUp() {
         objectKeyFactory = new CandidateEventObjectKeyFactory();
-        s3Properties = new S3Properties();
-        s3Properties.setCandidateImageMaxFileSizeBytes(10 * 1024 * 1024);
         service = new CandidateEventCommandService(
-                cameraMapper, mapper, caseQueryService, storageObjectVerifier, objectKeyFactory, s3Properties);
+                cameraMapper, mapper, caseQueryService, objectKeyFactory);
     }
 
     @Test
@@ -90,7 +83,7 @@ class CandidateEventCommandServiceTests {
         var response = service.create(principal(), realtimeRequest());
 
         assertEquals("event-1", response.eventId());
-        verify(storageObjectVerifier).stat(realtimeRequest().frameObjectKey());
+        verify(mapper).insertEvent(any());
     }
 
     @Test
@@ -100,25 +93,12 @@ class CandidateEventCommandServiceTests {
         ApiException exception = assertThrows(ApiException.class, () -> service.create(principal(), request()));
 
         assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
-        verify(storageObjectVerifier, never()).stat(anyString());
-    }
-
-    @Test
-    void rejectsCandidateImageLargerThanConfiguredLimit() {
-        prepareValidContext();
-        when(storageObjectVerifier.stat(anyString()))
-                .thenReturn(new StorageObject(10 * 1024 * 1024 + 1L, "image/jpeg"));
-
-        ApiException exception = assertThrows(ApiException.class, () ->
-                service.create(principal(), request(), CAMERA_ID));
-
-        assertEquals("STORAGE_OBJECT_TOO_LARGE", exception.getCode());
+        verify(mapper, never()).insertEvent(any());
     }
 
     private void prepareValidRequest() {
         prepareValidContext();
         when(mapper.findEventByEventId(anyString())).thenReturn(null);
-        when(storageObjectVerifier.stat(anyString())).thenReturn(new StorageObject(100L, "image/jpeg"));
     }
 
     private void prepareValidContext() {
