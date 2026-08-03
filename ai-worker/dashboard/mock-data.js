@@ -68,6 +68,26 @@ const scenarioDefinitions = Object.freeze({
     candidateZone: 4,
     candidateProbability: 0.43,
   },
+  outside_zero: {
+    label: "관할 완전 이탈 · 구역 질량 0",
+    description: "관할 밖 존재 확률이 1.0으로 관할 내 구역 질량이 0인 상태",
+    probabilities: [0, 0, 0, 0],
+    outside: 1,
+    unknown: 0,
+    status: "review_required",
+    candidateZone: null,
+    candidateProbability: null,
+  },
+  unknown_zero: {
+    label: "정보 부족 우세 · 구역 질량 0",
+    description: "카메라 장애와 관측 공백으로 정보 부족 확률이 1.0인 상태",
+    probabilities: [0, 0, 0, 0],
+    outside: 0,
+    unknown: 1,
+    status: "review_required",
+    candidateZone: null,
+    candidateProbability: null,
+  },
 });
 
 function entropy(probabilities) {
