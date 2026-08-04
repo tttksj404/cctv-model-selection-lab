@@ -29,7 +29,9 @@ class RecordingQueryServiceTests {
     private final RecordingMapper recordingMapper = mock(RecordingMapper.class);
     private final StorageObjectUrlSigner signer = mock(StorageObjectUrlSigner.class);
     private final RecordingQueryService service = new RecordingQueryService(
-            recordingMapper, new RecordingRequestValidator(), signer);
+            recordingMapper,
+            new RecordingRequestValidator(new RecordingObjectKeyFactory()),
+            signer);
 
     @Test
     void appliesNormalizedOverlapFilterPaginationAndSafeSortWithoutSigning() {

@@ -22,7 +22,7 @@
 | 신고자 | 인증 없음 | 관리자가 전달한 사건조회번호와 신고 전화번호를 이용한 진행 상황 조회 |
 | 관리자 | `EYESONU_SESSION` 세션 쿠키 (`ADMIN`) | 사건, 탐색 조건, 미디어 서버, 카메라, 후보, 작업 및 감사 로그 관리 |
 | 최고 관리자 | `EYESONU_SESSION` 세션 쿠키 (`SUPER_ADMIN`) | 모든 관리자 권한과 관리자 계정 생성·조회·활성화·비활성화 |
-| 미디어 서버 | `X-Device-Key: {deviceKey}` (`ROLE_MEDIA_SERVER`) | Heartbeat, 녹화 메타데이터와 Jetson 후보 이벤트 전송 |
+| 미디어 서버 | `X-Device-Key: {deviceKey}` (`ROLE_MEDIA_SERVER`) | Heartbeat, 녹화 업로드 URL 발급·완료 등록과 Jetson 후보 이벤트 전송 |
 
 > v1 사건 등록은 ADMIN 세션을 가진 관리자만 수행한다. 신고자 진행 상황 조회에는 별도 로그인이나 전화번호 인증을 요구하지 않는다.
 > 신고자 정보는 회원 계정이 아니라 신고 당시 입력값을 보존하는 사건별 스냅샷으로 취급한다.
@@ -86,6 +86,7 @@
 | `GET` | `/admin/cameras/{cameraId}` | 카메라 상세 | `cameraId` | `200`, `404` |
 | `PATCH` | `/admin/cameras/{cameraId}` | 카메라 정보·소속 수정 | 미디어 서버, 이름, 좌표, 주소, RTSP URL | `200`, `400`, `404`, `409` |
 | `POST` | `/device/cameras/{cameraCode}/heartbeat` | 카메라 Heartbeat·상태 갱신 | `X-Device-Key`, `occurredAt`, `status`, `detail` | `204`, `400`, `401`, `403`, `404`, `429` |
+| `POST` | `/device/cameras/{cameraCode}/recording-upload-urls` | 녹화본 단일 PUT URL 발급 | `X-Device-Key`, `Idempotency-Key`, 촬영 시간 | `201`, `400`, `401`, `403`, `404`, `409`, `415`, `503` |
 | `POST` | `/device/cameras/{cameraCode}/recordings` | 업로드 완료 녹화 메타데이터 등록 | `X-Device-Key`, `Idempotency-Key`, 촬영 시간, Object Key | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `503` |
 | `GET` | `/device/search-targets` | 임베디드·실시간 처리기용 활성 검색 대상 조회 | `X-Device-Key`, `If-None-Match` | `200`, `304`, `401`, `403` |
 | `POST` | `/device/candidate-event-upload-urls` | 후보 프레임·crop 이미지의 임시 업로드 URL 발급 | `X-Device-Key`, 사건, 카메라, eventId, 이미지 형식 | `201`, `400`, `401`, `403`, `404`, `422`, `503` |
@@ -116,7 +117,7 @@
 | `X-XSRF-TOKEN: {csrfToken}` | 조건부 | 로그인과 관리자 상태 변경 API 호출 시 `XSRF-TOKEN` 쿠키와 같은 값을 전송 |
 | `X-Device-Key: msk_{deviceKeyId}.{randomSecret}` | 조건부 | 모든 `/device/**` API 호출 시 필수. `deviceKeyId`는 16자리, `randomSecret`은 64자리 소문자 16진수 |
 | `Content-Type` | 필수 | `application/json` 또는 `multipart/form-data` |
-| `Idempotency-Key` | 조건부 | 녹화 메타데이터 등록에서 사용하는 중복 요청 키. 후보 이벤트 등록은 payload의 `eventId`로 중복을 제어한다. |
+| `Idempotency-Key` | 조건부 | 녹화 업로드 URL 발급과 메타데이터 등록에서 함께 사용하는 canonical UUID. 후보 이벤트 등록은 payload의 `eventId`로 중복을 제어한다. |
 | `X-Request-Id` | 선택 | 호출 추적용 ID. 없으면 서버에서 생성 |
 
 관리자 세션·CSRF 규칙:
@@ -127,7 +128,7 @@
 - 로그인 성공 또는 로그아웃 후에는 `GET /api/v1/auth/csrf`를 다시 호출해 새로운 CSRF 토큰을 사용한다.
 - `GET` 관리자 API는 세션만 필요하고, `POST`·`PATCH`·`DELETE` 관리자 API는 세션과 CSRF 토큰이 모두 필요하다.
 - 인증 API, `/admins/**`, 사건 진행 조회 API의 성공·오류 응답에는 `Cache-Control: no-store`를 적용한다.
-- Device Key 원문을 반환하는 미디어 서버 등록·키 교체 응답에도 `Cache-Control: no-store`를 적용한다.
+- Device Key 원문을 반환하는 미디어 서버 등록·키 교체 응답과 presigned 녹화 업로드 URL 응답에도 `Cache-Control: no-store`를 적용한다.
 
 ### 3.2 미디어 서버 Device Key 인증
 
@@ -205,7 +206,7 @@
 | `401 Unauthorized` | `AUTHENTICATION_REQUIRED`, `SESSION_EXPIRED`, `INVALID_CREDENTIALS`, `INVALID_DEVICE_KEY` | 관리자 세션 누락·만료, 로그인 정보 불일치 또는 장치 인증 실패 |
 | `403 Forbidden` | `ACCESS_DENIED` | 역할 또는 장치 권한 부족 |
 | `404 Not Found` | `RESOURCE_NOT_FOUND`, `INQUIRY_NOT_FOUND`, `ADMIN_NOT_FOUND` | 리소스 없음 또는 사건조회번호·전화번호 불일치 |
-| `409 Conflict` | `DUPLICATE_RESOURCE`, `ADMIN_LOGIN_ID_CONFLICT`, `SELF_DEACTIVATION_FORBIDDEN`, `LAST_SUPER_ADMIN_REQUIRED`, `IDEMPOTENCY_KEY_CONFLICT`, `RESOURCE_STATE_CONFLICT`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 관리자 상태 충돌, 멱등 키 충돌, 리소스 상태 충돌, 버전 충돌, 종료 조건 불충족 |
+| `409 Conflict` | `DUPLICATE_RESOURCE`, `ADMIN_LOGIN_ID_CONFLICT`, `SELF_DEACTIVATION_FORBIDDEN`, `LAST_SUPER_ADMIN_REQUIRED`, `IDEMPOTENCY_KEY_CONFLICT`, `RECORDING_ALREADY_REGISTERED`, `RESOURCE_STATE_CONFLICT`, `OPTIMISTIC_LOCK_CONFLICT`, `CASE_CLOSE_CONFLICT` | 중복 생성, 관리자 상태 충돌, 멱등 키 충돌, 완료 녹화 URL 재발급, 리소스 상태 충돌, 버전 충돌, 종료 조건 불충족 |
 | `413 Payload Too Large` | `FILE_TOO_LARGE` | 허용 용량을 초과한 파일 |
 | `415 Unsupported Media Type` | `UNSUPPORTED_MEDIA_TYPE` | 지원하지 않는 요청 Content-Type 또는 이미지·영상 형식 |
 | `422 Unprocessable Entity` | `BUSINESS_RULE_VIOLATION`, `STORAGE_OBJECT_NOT_FOUND`, `STORAGE_OBJECT_INVALID` | 업무 규칙 위반, 녹화 객체 미존재 또는 사용할 수 없는 저장소 객체 |
@@ -229,9 +230,9 @@
 - Device Key 원문은 미디어 서버 등록·키 교체 응답에서만 한 번 반환하며 이후 다시 조회할 수 없다.
 - 사진·후보 이미지·클립은 만료 시간이 있는 `photoUrl`, `imageUrl`, `clipUrl`로 반환한다. 녹화 `videoUrl`은 관리자 상세 응답에만 포함한다.
 - URL 만료 시 리소스를 다시 조회해 새로운 URL을 발급받는다.
-- 지원 이미지 형식은 JPEG·PNG·WebP, 녹화 생성 주체가 업로드하는 영상 형식은 MP4(H.264)를 기본으로 한다. 녹화 등록 API는 `.mp4` 객체 키와 저장소 메타데이터만 검증하며 파일 본문을 내려받거나 H.264 코덱을 검사하지 않는다.
+- 지원 이미지 형식은 JPEG·PNG·WebP, 녹화 생성 주체가 업로드하는 영상 형식은 MP4(H.264)를 기본으로 한다. 녹화 등록 API는 서버 생성 `.mp4` 객체 키, 저장소 메타데이터와 앞 12바이트의 ISO BMFF `ftyp` 시그니처를 검증하며 H.264 코덱은 검사하지 않는다.
 - 사건 사진은 최대 10 MiB이며 선언된 Content-Type과 실제 JPEG·PNG·WebP 파일 시그니처가 일치해야 한다.
-- 파일 크기 제한은 배포 환경 설정값을 따른다. 녹화는 local/test에서 5 GiB를 사용하고 prod에서는 `RECORDING_MAX_FILE_SIZE_BYTES`를 필수로 지정하며, HEAD/stat에서 확인한 실제 크기가 제한을 초과하면 `413 FILE_TOO_LARGE`를 반환한다.
+- 녹화 파일 제한은 모든 환경에서 `104857600`바이트(100 MiB)다. 배포 storage Nginx가 초과 PUT을 차단하고, 완료 등록 시 HEAD/stat에서 확인한 실제 크기가 제한을 초과하면 `413 FILE_TOO_LARGE`를 반환한다.
 
 ### 3.7 주요 검증 규칙
 
@@ -243,7 +244,7 @@
 - 후보 탐지 결과의 `similarity`는 `0.0000`~`1.0000` 범위여야 한다.
 - `similarityThreshold`는 관리자·Device·녹화 분석 API 계약에 포함하지 않는다. 후보 선별 임계값은 Jetson 또는 AI Worker가 모델 버전에 맞춰 관리하는 실행 주체 내부 정책이다.
 - 탐색 종료 시각은 탐색 시작 시각보다 빠를 수 없다.
-- 관리자·브라우저 클라이언트는 내부 S3 Key, 생성·수정 시각, 검토 관리자 ID를 직접 지정할 수 없다. 예외적으로 인증된 미디어 서버는 녹화 등록 시 정해진 규칙의 `objectKey`를 제공한다.
+- 관리자·브라우저 클라이언트는 내부 저장소 object key, 생성·수정 시각, 검토 관리자 ID를 직접 지정할 수 없다. 인증된 미디어 서버도 녹화 등록에는 URL 발급 응답에서 받은 서버 생성 `objectKey`만 제공할 수 있다.
 
 로그인과 사건 진행 조회의 현행 Rate Limit은 실패 기준 10분 동안 동일 IP·식별자 조합 5회, 동일 IP 전체 30회다. 성공하면 해당 IP·식별자 조합의 실패 횟수는 초기화된다.
 
@@ -909,17 +910,76 @@ Content-Type: application/json
 - `detail`은 카메라 테이블에 저장하지 않는다. `ERROR`로 실제 전이될 때만 줄바꿈 등 제어 문자를 정제한 진단 로그에 제한적으로 남기며, Heartbeat마다 감사 로그를 생성하지 않는다.
 - 기본 운영값은 미디어 서버 Heartbeat 발신 주기 10초, 백엔드의 미수신 30초 후 `OFFLINE` 판정, 백엔드 상태 확인 주기 10초다. Heartbeat 발신 주기는 미디어 서버가 소유하며 미디어 서버의 `CAMERA_HEARTBEAT_INTERVAL` 설정(기본 `10s`)으로 조정한다. 중앙 서버는 Heartbeat를 생성하지 않는다. 백엔드는 `CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS`와 `CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS` 환경 변수로 `OFFLINE` 판정 기준과 상태 확인 주기를 조정할 수 있다.
 
-### 7.4 녹화 메타데이터 API
+### 7.4 녹화 업로드·메타데이터 API
 
-미디어 서버는 녹화 파일을 객체 저장소에 성공적으로 업로드한 뒤 메타데이터 등록 API를 호출한다. 이 API는 파일을 업로드하거나 업로드 진행 상태를 관리하지 않는다.
+미디어 서버는 먼저 서버가 생성한 object key의 presigned PUT URL을 발급받아 객체 저장소에 업로드하고, 성공한 뒤 메타데이터 등록 API로 완료를 알린다. 미디어 서버에는 MinIO 장기 자격증명을 배포하지 않는다.
 
 | 메서드 | 경로 | 인증 | 설명 | 주요 응답 |
 | --- | --- | --- | --- | --- |
+| `POST` | `/device/cameras/{cameraCode}/recording-upload-urls` | `X-Device-Key` | 녹화본 단일 PUT URL 발급 | `201`, `400`, `401`, `403`, `404`, `409`, `415`, `503` |
 | `POST` | `/device/cameras/{cameraCode}/recordings` | `X-Device-Key` | 업로드 완료 녹화 메타데이터 등록 | `201`, `200`, `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422`, `503` |
 | `GET` | `/admin/recordings` | ADMIN 세션 | 녹화 목록 조회 | `200`, `400` |
 | `GET` | `/admin/recordings/{recordingId}` | ADMIN 세션 | 녹화 상세와 재생 URL 조회 | `200`, `404`, `503` |
 
-#### 7.4.1 녹화 등록
+#### 7.4.1 녹화 업로드 URL 발급
+
+URL 발급 요청:
+
+```http
+POST /api/v1/device/cameras/camera-01/recording-upload-urls
+X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+```
+
+```json
+{
+  "startTime": "2026-08-04T03:15:30.123456Z",
+  "endTime": "2026-08-04T03:16:00.123456Z"
+}
+```
+
+| 필드 | 타입 | 필수 | 검증 규칙 |
+| --- | --- | --- | --- |
+| `startTime` | RFC 3339 datetime | 예 | UTC offset 필수, 소수점 최대 6자리. 서버는 같은 instant의 UTC `Z`로 정규화 |
+| `endTime` | RFC 3339 datetime | 예 | UTC offset 필수, 소수점 최대 6자리이며 `startTime`보다 커야 함 |
+
+응답 `201 Created`:
+
+```json
+{
+  "timestamp": "2026-08-04T03:16:01Z",
+  "data": {
+    "objectKey": "recordings/camera-01/2026/08/04/20260804T031530123456Z_550e8400-e29b-41d4-a716-446655440000.mp4",
+    "uploadUrl": "https://storage-dev.example.com/eyesonu-media/recordings/camera-01/2026/08/04/20260804T031530123456Z_550e8400-e29b-41d4-a716-446655440000.mp4?...",
+    "contentType": "video/mp4",
+    "expiresInSeconds": 900,
+    "maxFileSizeBytes": 104857600
+  }
+}
+```
+
+- `Idempotency-Key`는 canonical UUID 형식이며 서버가 소문자로 정규화한다. object key는 UTC 시작 시각의 6자리 마이크로초와 이 UUID로 결정한다.
+- URL 발급 내역은 DB에 저장하지 않는다. 갱신할 때는 최초 요청과 동일한 UUID, `startTime`, `endTime`을 반드시 재사용해야 같은 object key와 새 15분 URL을 얻는다. 이미 해당 UUID의 완료 등록이 존재하면 `409 RECORDING_ALREADY_REGISTERED`를 반환한다.
+- URL 응답에는 `Cache-Control: no-store`를 적용한다. 서버와 미디어 서버는 query string을 포함한 `uploadUrl` 및 `X-Device-Key`를 로그에 기록하지 않는다.
+- 미디어 서버는 PUT 전에 파일이 `1..104857600`바이트인지 확인하고, `uploadUrl`에 원본 바이트를 `Content-Type: video/mp4`로 전송한다. presigned PUT 요청에는 `X-Device-Key`를 보내지 않는다.
+- presigned PUT 자체는 파일 크기를 제한하지 않는다. 배포 storage Nginx가 100 MiB 초과 요청을 `413`으로 차단하고, 완료 등록에서도 실제 객체 크기를 다시 확인한다.
+- URL 만료 또는 전송 실패 시 최초 요청과 동일한 UUID, `startTime`, `endTime`으로 URL을 재발급받아 파일 전체를 다시 PUT한다. multipart upload는 사용하지 않는다.
+- 완료 등록이 성공하면 미디어 서버는 보관 중인 URL을 즉시 폐기하고 해당 object key에 다시 PUT하지 않는다. 완료 전에 발급된 URL은 완료 등록으로 취소되지 않고 원래 만료 시각까지 유효하므로, 업로더가 이 불변식을 지켜야 한다.
+
+오류:
+
+| 조건 | 응답 |
+| --- | --- |
+| `X-Device-Key` 누락 | `401 AUTHENTICATION_REQUIRED` |
+| Device Key 형식 오류·미등록 ID·secret 불일치·비활성 또는 폐기 서버 | `401 INVALID_DEVICE_KEY` |
+| 존재하지 않는 `cameraCode` | `404 RESOURCE_NOT_FOUND` |
+| 다른 미디어 서버 소속 `cameraCode` | `403 ACCESS_DENIED` |
+| 필수 필드·RFC 3339 offset·시간 범위·canonical UUID 형식 오류 | `400 VALIDATION_ERROR` |
+| 같은 UUID의 완료 등록이 이미 존재함 | `409 RECORDING_ALREADY_REGISTERED` |
+| presigned URL 서명 또는 저장소 연결 실패 | `503 STORAGE_UNAVAILABLE` |
+
+#### 7.4.2 녹화 등록
 
 등록 요청:
 
@@ -932,9 +992,9 @@ Content-Type: application/json
 
 ```json
 {
-  "startTime": "2026-07-20T01:50:00Z",
-  "endTime": "2026-07-20T02:00:00Z",
-  "objectKey": "recordings/camera-01/2026/07/20/015000.mp4"
+  "startTime": "2026-08-04T03:15:30.123456Z",
+  "endTime": "2026-08-04T03:16:00.123456Z",
+  "objectKey": "recordings/camera-01/2026/08/04/20260804T031530123456Z_550e8400-e29b-41d4-a716-446655440000.mp4"
 }
 ```
 
@@ -942,9 +1002,9 @@ Content-Type: application/json
 | --- | --- | --- | --- |
 | `startTime` | RFC 3339 datetime | 예 | UTC offset 필수, 소수점 최대 6자리. 서버는 같은 instant의 UTC `Z`로 정규화 |
 | `endTime` | RFC 3339 datetime | 예 | UTC offset 필수, 소수점 최대 6자리이며 `startTime`보다 커야 함 |
-| `objectKey` | string | 예 | 대소문자를 구분하는 최대 500자 키. 선행 `/` 없이 `recordings/{cameraCode}/`로 시작하고 소문자 `.mp4`로 끝나야 함 |
+| `objectKey` | string | 예 | URL 발급 단계에서 서버가 반환한 최대 500자 키. 촬영 시작 instant와 `Idempotency-Key`로 다시 계산한 예상 키와 정확히 일치해야 함 |
 
-- `objectKey`의 `{cameraCode}`는 Path Variable과 정확히 일치해야 한다. 빈 경로 구간, `.`·`..` 경로 구간, 역슬래시, 제어 문자, 파일명이 없는 `.mp4`는 허용하지 않는다.
+- 클라이언트가 임의로 만든 기존 키나 다른 UUID·시각으로 발급된 키는 허용하지 않는다. 불일치하면 `400 VALIDATION_ERROR`를 반환한다.
 - 요청의 `fileSize`와 업로드 상태 필드는 받지 않는다. 서버가 저장소에서 확인한 실제 크기를 사용하며 등록된 녹화는 곧 사용 가능한 완료본이다.
 - `Idempotency-Key`는 UUID 형식이며 이 API 안에서 인증된 `mediaServerId` 단위로 해석한다.
 - 멱등 비교 대상은 소유권 확인이 끝난 `cameraCode`, UTC instant로 정규화한 `startTime`·`endTime`, 대소문자를 보존한 `objectKey`다. JSON 공백과 필드 순서는 비교 결과에 영향을 주지 않는다.
@@ -952,30 +1012,31 @@ Content-Type: application/json
 처리 순서:
 
 1. `X-Device-Key`를 인증하고 `MediaServerPrincipal`을 생성한다.
-2. 촬영 구간, `objectKey`, `Idempotency-Key` 형식을 검증하고 촬영 시각을 UTC instant로 정규화한다.
+2. 촬영 구간과 `Idempotency-Key` 형식을 검증하고 촬영 시각을 UTC instant로 정규화한 뒤 예상 `objectKey`를 다시 계산해 요청 값과 비교한다.
 3. `cameraCode`의 존재 여부와 인증된 미디어 서버 소속 여부를 검증한다.
 4. 동일 멱등 요청이 이미 성공했다면 저장소를 다시 조회하지 않고 기존 결과를 `200 OK`로 반환한다.
 5. 최초 요청이면 설정된 버킷과 `objectKey`로 HEAD/stat을 실행한다.
-6. 객체가 존재하고 실제 크기가 0보다 크며 환경별 제한 이하인지 확인한다.
-7. 별도 DB 트랜잭션에서 카메라 소유권을 잠금 재확인하고 녹화와 성공 멱등 요청을 원자적으로 생성한 뒤, 생성 행을 재조회한다.
+6. 객체가 존재하고 실제 크기가 `1..104857600`바이트이며 저장된 Content-Type이 정확히 `video/mp4`인지 확인한다.
+7. Range GET으로 앞 12바이트를 읽고 bytes 4–7이 ISO BMFF의 `ftyp`인지 확인한다.
+8. 별도 DB 트랜잭션에서 카메라 소유권을 잠금 재확인하고 녹화와 성공 멱등 요청을 원자적으로 생성한 뒤, 생성 행을 재조회한다.
 
-- 성공한 MinIO PUT 이후 `statObject`는 강한 일관성을 가지므로 객체 미발견을 전파 지연으로 처리하지 않는다. 저장소 응답을 기준으로 즉시 성공·실패를 판정한다.
-- [MinIO statObject](https://docs.min.io/aistor/developers/sdk/java/api/)로 메타데이터만 조회하며 파일 본문을 다운로드하거나 H.264 코덱을 검사하지 않는다.
+- 성공한 MinIO PUT 이후 `statObject`와 Range GET은 강한 일관성을 가지므로 객체 미발견을 전파 지연으로 처리하지 않는다. 저장소 응답을 기준으로 즉시 성공·실패를 판정한다.
+- [MinIO statObject](https://docs.min.io/aistor/developers/sdk/java/api/)로 크기와 Content-Type을 조회하고 앞 12바이트만 Range GET한다. MP4 컨테이너 시그니처 외 H.264 코덱은 검사하지 않는다.
 - 전송 무결성이 필요하면 업로드 과정에서 MinIO 객체 저장소의 체크섬 기능을 사용한다. multipart ETag를 전체 파일 MD5로 간주하지 않는다.
 
 신규 등록 응답 `201 Created`:
 
 ```json
 {
-  "timestamp": "2026-07-20T02:00:01Z",
+  "timestamp": "2026-08-04T03:16:01Z",
   "data": {
     "id": 501,
     "cameraId": 1,
-    "startTime": "2026-07-20T01:50:00Z",
-    "endTime": "2026-07-20T02:00:00Z",
-    "fileSize": 104857600,
+    "startTime": "2026-08-04T03:15:30.123456Z",
+    "endTime": "2026-08-04T03:16:00.123456Z",
+    "fileSize": 52428800,
     "duplicate": false,
-    "createdAt": "2026-07-20T02:00:01Z"
+    "createdAt": "2026-08-04T03:16:01Z"
   }
 }
 ```
@@ -984,15 +1045,15 @@ Content-Type: application/json
 
 ```json
 {
-  "timestamp": "2026-07-20T02:00:03Z",
+  "timestamp": "2026-08-04T03:16:03Z",
   "data": {
     "id": 501,
     "cameraId": 1,
-    "startTime": "2026-07-20T01:50:00Z",
-    "endTime": "2026-07-20T02:00:00Z",
-    "fileSize": 104857600,
+    "startTime": "2026-08-04T03:15:30.123456Z",
+    "endTime": "2026-08-04T03:16:00.123456Z",
+    "fileSize": 52428800,
     "duplicate": true,
-    "createdAt": "2026-07-20T02:00:01Z"
+    "createdAt": "2026-08-04T03:16:01Z"
   }
 }
 ```
@@ -1016,12 +1077,14 @@ Content-Type: application/json
 | 다른 Idempotency-Key로 같은 `objectKey` 등록 | `409 DUPLICATE_RESOURCE` |
 | 저장소에 객체가 없음 | `422 STORAGE_OBJECT_NOT_FOUND` |
 | 객체 크기가 0 | `422 STORAGE_OBJECT_INVALID` |
-| 객체가 환경별 용량 제한을 초과함 | `413 FILE_TOO_LARGE` |
+| 객체 크기가 100 MiB를 초과함 | `413 FILE_TOO_LARGE` |
+| 객체 Content-Type이 `video/mp4`가 아님 | `422 STORAGE_OBJECT_INVALID` |
+| 객체가 12바이트보다 짧거나 bytes 4–7이 `ftyp`가 아님 | `422 STORAGE_OBJECT_INVALID` |
 | 저장소 권한·타임아웃·연결 또는 서비스 장애 | `503 STORAGE_UNAVAILABLE` |
 
 Device 공통 rate limit은 허용량 정책이 확정된 뒤 별도 작업으로 정의하며, 이 녹화 등록 API와 OpenAPI에는 아직 `429`를 명세하지 않는다.
 
-#### 7.4.2 관리자 녹화 조회
+#### 7.4.3 관리자 녹화 조회
 
 목록 요청:
 
@@ -1140,7 +1203,7 @@ X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abc
       "cameras": [
         {
           "cameraId": 2,
-          "cameraCode": "CAM-001"
+          "cameraCode": "camera-01"
         }
       ],
       "updatedAt": "2026-07-30T04:00:00Z"
@@ -1287,8 +1350,8 @@ Content-Type: application/json
 ```json
 {
   "caseId": 101,
-  "cameraCode": "CAM-001",
-  "eventId": "CAM-001-20260731-000001",
+  "cameraCode": "camera-01",
+  "eventId": "camera-01-20260731-000001",
   "frame": {
     "contentType": "image/jpeg"
   },
@@ -1347,8 +1410,8 @@ Content-Type: application/json
 ```json
 {
   "caseId": 101,
-  "cameraCode": "CAM-001",
-  "eventId": "CAM-001-20260731-000001",
+  "cameraCode": "camera-01",
+  "eventId": "camera-01-20260731-000001",
   "detectedAt": "2026-07-31T01:20:10.123Z",
   "frameObjectKey": "realtime/2/11/101/abc123.../frame.jpg",
   "detections": [
@@ -1381,7 +1444,7 @@ Content-Type: application/json
 {
   "timestamp": "2026-07-31T01:20:10.500Z",
   "data": {
-    "eventId": "CAM-001-20260731-000001",
+    "eventId": "camera-01-20260731-000001",
     "caseId": 101,
     "cameraId": 2,
     "detectionCount": 1,
@@ -1398,7 +1461,7 @@ Content-Type: application/json
 {
   "timestamp": "2026-07-31T01:20:11.000Z",
   "data": {
-    "eventId": "CAM-001-20260731-000001",
+    "eventId": "camera-01-20260731-000001",
     "caseId": 101,
     "cameraId": 2,
     "detectionCount": 1,
@@ -1543,11 +1606,13 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | 다른 미디어 서버 소속 `cameraCode` 사용 | `403 ACCESS_DENIED` |
 | 동일 녹화·후보 요청 재전송 | 최초 생성 결과를 `200`과 `duplicate=true`로 반환 |
 | 같은 Idempotency-Key에 다른 요청 내용 사용 | `409 IDEMPOTENCY_KEY_CONFLICT` |
+| 완료 등록된 Idempotency-Key로 업로드 URL 재발급 | `409 RECORDING_ALREADY_REGISTERED` |
 | 다른 Idempotency-Key로 같은 `objectKey` 등록 | `409 DUPLICATE_RESOURCE` |
 | 녹화 객체가 저장소에 없음 | `422 STORAGE_OBJECT_NOT_FOUND`, 녹화 리소스 미생성 |
 | 녹화 객체 크기가 0 | `422 STORAGE_OBJECT_INVALID`, 녹화 리소스 미생성 |
-| 녹화 객체가 환경별 제한을 초과함 | `413 FILE_TOO_LARGE`, 녹화 리소스 미생성 |
-| 녹화 객체 HEAD/stat 중 저장소 일시 장애 | `503 STORAGE_UNAVAILABLE`, 같은 멱등 요청으로 재시도 가능 |
+| 녹화 객체가 100 MiB를 초과함 | `413 FILE_TOO_LARGE`, 녹화 리소스 미생성 |
+| 녹화 객체의 Content-Type 또는 `ftyp` 시그니처가 잘못됨 | `422 STORAGE_OBJECT_INVALID`, 녹화 리소스 미생성 |
+| 녹화 URL 서명 또는 객체 HEAD/stat·Range GET 중 저장소 일시 장애 | `503 STORAGE_UNAVAILABLE`, 같은 멱등 요청으로 재시도 가능 |
 | Device 요청 허용 횟수 초과 | `429 RATE_LIMIT_EXCEEDED` |
 | 후보 판정 `version` 불일치 | `409 OPTIMISTIC_LOCK_CONFLICT`와 최신 후보 정보 반환 |
 | 존재하지 않는 사건·카메라·후보 요청 | `404 RESOURCE_NOT_FOUND` |
@@ -1565,12 +1630,12 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 - 관리자 비밀번호 검증은 단방향 해시를 사용하며 평문 비밀번호를 저장하거나 로그에 남기지 않는다.
 - 관리자 API는 Stateful 세션 인증을, Device API는 Stateless Device Key 인증을 사용한다. Device API는 세션을 생성하지 않으며 CSRF 검사에서 제외한다.
 - Device Key 인증 필터 또는 AuthenticationProvider는 헤더 파싱, 미디어 서버 조회, 상태·secret 검증과 `MediaServerPrincipal` 생성을 담당한다.
-- 서비스 계층은 카메라 소유권, 녹화 `objectKey` 접두사와 업무 규칙을 검증한다. 인증 로직과 리소스 소유권 검사를 한 계층에 혼합하지 않는다.
+- 서비스 계층은 카메라 소유권, 서버 생성 녹화 `objectKey`와 업무 규칙을 검증한다. 인증 로직과 리소스 소유권 검사를 한 계층에 혼합하지 않는다.
 - Device API는 HTTPS로만 제공하며 Device Key 원문은 최초 발급·교체 시 한 번만 전달하고 DB·소스 코드·Git·요청 및 오류 로그에 저장하지 않는다.
 - 미디어 서버에서는 Device Key를 환경 변수, 실행 계정만 읽을 수 있는 설정 파일 또는 systemd credential로 관리한다.
 - 미디어 서버당 활성 Device Key 하나만 지원하며 키 교체 즉시 이전 키를 무효화한다. 무중단 교체나 키 이력이 필요하면 별도 credentials 테이블을 도입한다.
 - 후보 판정은 `CANDIDATES.version`을 이용한 낙관적 락으로 동시 수정을 방지한다.
-- 후보 이미지·클립처럼 중앙 서버가 저장을 제어하는 파일은 실패 시 DB와 객체 저장소 사이의 보상 처리를 수행한다. 녹화는 미디어 서버가 먼저 업로드하며 중앙 서버의 HEAD/stat 검증에 실패하면 객체를 변경하거나 DB 행을 생성하지 않는다.
+- 후보 이미지·클립과 녹화는 중앙 서버가 발급한 presigned PUT URL로 업로드한다. 녹화 완료 검증에 실패하면 객체를 변경하거나 DB 행을 생성하지 않는다.
 - 관리자 세션 만료 시간은 현재 30분이며 애플리케이션 설정으로 관리한다.
 - 로그인·사건 진행 조회 Rate Limit은 현재 애플리케이션 상수로 적용한다. 장치 Heartbeat의 `OFFLINE` 판정 시간, 임시 미디어 URL 만료 시간과 파일 용량은 환경 설정으로 관리한다.
 - REST 조회 API는 WebSocket 연결이 끊긴 동안 발생한 후보와 상태 변경을 복구 조회하는 기준 데이터로 사용한다.

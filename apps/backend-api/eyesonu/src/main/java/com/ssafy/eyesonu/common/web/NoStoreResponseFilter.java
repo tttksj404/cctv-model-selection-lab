@@ -19,6 +19,8 @@ public class NoStoreResponseFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 		if (uri.startsWith("/api/v1/auth/")
 				|| uri.startsWith("/api/v1/admins")
+				|| (uri.startsWith("/api/v1/device/cameras/")
+						&& uri.endsWith("/recording-upload-urls"))
 				|| uri.equals("/api/v1/cases/status-inquiries")) {
 			response.setHeader("Cache-Control", "no-store");
 		}

@@ -214,6 +214,9 @@ Jenkins 이미지 내부의 고정된 `docker` 그룹만 사용하는 것보다 
 - AWS 보안 그룹에는 `80`, `443`, 제한된 관리자용 `22`만 허용한다.
 - MySQL, RabbitMQ, MinIO, Docker API 포트는 외부에 열지 않는다.
 - MinIO API는 `storage` 전용 HTTPS 도메인을 통해서만 프록시하며 Console 포트는 공개하지 않는다.
-- MinIO 초기화 시 버킷의 익명 정책을 `private`으로 재설정한다. 외부 객체 조회는 유효한 presigned URL로만 허용한다.
+- MinIO 초기화 시 버킷의 익명 정책을 `private`으로 재설정한다. 외부 객체 조회와 미디어 서버 녹화 PUT은 유효한 presigned URL로만 허용한다.
+- dev·master storage Nginx는 HTTPS 요청 본문을 100 MiB로 제한한다. HTTP redirect와 HTTPS storage 가상 호스트 모두 access log를 비활성화하고, 전체 presigned 요청이 남지 않도록 error log도 `/dev/null`로 보낸다. storage 요청 단위 관측성을 의도적으로 포기하는 대신 Nginx 상태, 백엔드와 MinIO 컨테이너 로그·메트릭으로 장애를 확인한다.
+- presigned query string은 애플리케이션·프록시·장치 로그에도 기록하지 않는다.
+- 미디어 서버에는 `MINIO_APP_ACCESS_KEY`·`MINIO_APP_SECRET_KEY`를 배포하지 않는다. 녹화 업로드는 공용 HTTPS Device API에서 URL을 발급받아 공용 HTTPS storage 도메인으로 수행한다.
 - master 볼륨은 배포 전 백업 정책을 별도로 둔다.
 - 현재 레거시 정리 스크립트는 컨테이너만 삭제하며 데이터 볼륨은 삭제하지 않는다.
