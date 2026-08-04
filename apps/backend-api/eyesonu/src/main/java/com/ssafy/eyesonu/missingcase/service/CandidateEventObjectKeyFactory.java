@@ -39,6 +39,18 @@ public class CandidateEventObjectKeyFactory {
         return validAnalysisDescendant(jobId, attempt, "crops", objectKey);
     }
 
+    public boolean matchesIssuedAnalysisFrameKey(
+            Long jobId, int attempt, String trackId, String objectKey) {
+        return analysisFrameKey(jobId, attempt, trackId, "image/jpeg").equals(objectKey)
+                || analysisFrameKey(jobId, attempt, trackId, "image/png").equals(objectKey);
+    }
+
+    public boolean matchesIssuedAnalysisCropKey(
+            Long jobId, int attempt, String trackId, String objectKey) {
+        return analysisCropKey(jobId, attempt, trackId, "image/jpeg").equals(objectKey)
+                || analysisCropKey(jobId, attempt, trackId, "image/png").equals(objectKey);
+    }
+
     public String analysisFrameKey(Long jobId, int attempt, String trackId, String contentType) {
         return analysisKey(jobId, attempt, "frames", trackId, contentType);
     }
