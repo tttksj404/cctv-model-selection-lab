@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
@@ -23,7 +25,6 @@ import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 import com.ssafy.eyesonu.storage.StorageObject;
 import com.ssafy.eyesonu.storage.StorageObjectVerifier;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,6 +104,9 @@ class RecordingAnalysisJobServiceTests {
 
         assertEquals(5001L, response.jobId());
         assertEquals("RECORDING_ANALYSIS", response.jobType());
+        assertFalse(new ObjectMapper().findAndRegisterModules()
+                .valueToTree(response)
+                .has("similarityThreshold"));
     }
 
     @Test
@@ -173,7 +177,6 @@ class RecordingAnalysisJobServiceTests {
         row.setId(CONDITION_ID);
         row.setCaseId(CASE_ID);
         row.setPrompt("black shirt and blue pants");
-        row.setSimilarityThreshold(new BigDecimal("0.72"));
         return row;
     }
 

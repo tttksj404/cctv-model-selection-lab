@@ -211,7 +211,6 @@
         <result property="searchEnd" column="search_end"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchArea" column="search_area"/>
-        <result property="similarityThreshold" column="similarity_threshold"/>
         <result property="createdAt" column="created_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="updatedAt" column="updated_at"
@@ -220,7 +219,7 @@
 
     <select id="findSearchConditions" resultMap="searchConditionResultMap">
         SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
-               search_area, similarity_threshold, created_at, updated_at
+               search_area, created_at, updated_at
         FROM search_conditions
         WHERE case_id = #{caseId} AND deleted_at IS NULL
         ORDER BY created_at DESC, id DESC
@@ -228,7 +227,7 @@
 
     <select id="findSearchCondition" resultMap="searchConditionResultMap">
         SELECT id, case_id, prompt, exclusion_prompt, search_start, search_end,
-               search_area, similarity_threshold, created_at, updated_at
+               search_area, created_at, updated_at
         FROM search_conditions
         WHERE case_id = #{caseId} AND id = #{conditionId} AND deleted_at IS NULL
     </select>
@@ -236,12 +235,12 @@
     <insert id="insertSearchCondition" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO search_conditions (
             case_id, prompt, exclusion_prompt, search_start, search_end, search_area,
-            similarity_threshold, created_at, updated_at
+            created_at, updated_at
         ) VALUES (
             #{caseId}, #{prompt}, #{exclusionPrompt},
             #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
-            #{searchArea}, #{similarityThreshold}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+            #{searchArea}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
         )
     </insert>
 
@@ -252,7 +251,6 @@
             search_start = #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             search_end = #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             search_area = #{searchArea},
-            similarity_threshold = #{similarityThreshold},
             updated_at = UTC_TIMESTAMP(6)
         WHERE case_id = #{caseId} AND id = #{id}
     </update>
@@ -343,7 +341,6 @@
         <result property="searchEnd" column="search_end"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchArea" column="search_area"/>
-        <result property="similarityThreshold" column="similarity_threshold"/>
         <result property="cameraId" column="camera_id"/>
         <result property="cameraCode" column="camera_code"/>
         <result property="updatedAt" column="target_updated_at"
@@ -386,7 +383,6 @@
                sc.search_start,
                sc.search_end,
                sc.search_area,
-               sc.similarity_threshold,
                c.updated_at AS target_updated_at
         FROM cases c
         INNER JOIN search_conditions sc

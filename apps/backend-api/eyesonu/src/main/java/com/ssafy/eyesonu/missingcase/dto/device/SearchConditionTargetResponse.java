@@ -1,6 +1,5 @@
 package com.ssafy.eyesonu.missingcase.dto.device;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 public record SearchConditionTargetResponse(
@@ -9,6 +8,5 @@ public record SearchConditionTargetResponse(
 		String exclusionPrompt,
 		Instant searchStart,
 		Instant searchEnd,
-		String searchArea,
-		BigDecimal similarityThreshold) {
+		String searchArea) {
 }

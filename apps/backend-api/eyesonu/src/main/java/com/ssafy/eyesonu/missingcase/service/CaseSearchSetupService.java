@@ -13,11 +13,11 @@ import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionResponse;
 import com.ssafy.eyesonu.missingcase.dto.admin.SearchConditionUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,25 +30,28 @@ public class CaseSearchSetupService {
 	private final CaseQueryService caseQueryService;
 	private final AuditService auditService;
 	private final SearchTargetEventPublisher searchTargetEventPublisher;
+	private final RealtimePromptNormalizer promptNormalizer;
 
 	public CaseSearchSetupService(
 			MissingCaseMapper mapper, CaseQueryService caseQueryService, AuditService auditService,
-			SearchTargetEventPublisher searchTargetEventPublisher) {
+			SearchTargetEventPublisher searchTargetEventPublisher,
+			RealtimePromptNormalizer promptNormalizer) {
 		this.mapper = mapper;
 		this.caseQueryService = caseQueryService;
 		this.auditService = auditService;
 		this.searchTargetEventPublisher = searchTargetEventPublisher;
+		this.promptNormalizer = promptNormalizer;
 	}
 
 	public List<SearchConditionResponse> findConditions(Long caseId) {
 		requireCase(caseId);
-		return mapper.findSearchConditions(caseId).stream().map(SearchConditionResponse::from).toList();
+		return mapper.findSearchConditions(caseId).stream().map(this::toResponse).toList();
 	}
 
 	@Transactional
 	public SearchConditionResponse createCondition(
 			Long caseId, SearchConditionCreateRequest request, Long adminId) {
-		requireOpenCase(caseId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
 		SearchConditionRow row = new SearchConditionRow();
 		row.setCaseId(caseId);
 		row.setPrompt(normalizeRequired(request.prompt(), "prompt"));
@@ -56,24 +59,24 @@ public class CaseSearchSetupService {
 		row.setSearchStart(toInstant(request.searchStart()));
 		row.setSearchEnd(toInstant(request.searchEnd()));
 		row.setSearchArea(normalizeOptional(request.searchArea()));
-		row.setSimilarityThreshold(requireThreshold(request.similarityThreshold()));
 		validateTimeRange(row.getSearchStart(), row.getSearchEnd());
+		validateRealtimePrompts(row.getPrompt(), row.getExclusionPrompt());
 		mapper.insertSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_CREATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", row.getId()));
-		publishIfSearching(caseId);
-		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, row.getId()));
+		publishIfSearching(missingCase);
+		return toResponse(mapper.findSearchCondition(caseId, row.getId()));
 	}
 
 	public SearchConditionResponse findCondition(Long caseId, Long conditionId) {
 		SearchConditionRow row = requireCondition(caseId, conditionId);
-		return SearchConditionResponse.from(row);
+		return toResponse(row);
 	}
 
 	@Transactional
 	public SearchConditionResponse updateCondition(
 			Long caseId, Long conditionId, SearchConditionUpdateRequest request, Long adminId) {
-		requireOpenCase(caseId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
 		SearchConditionRow row = requireCondition(caseId, conditionId);
 		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
 			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
@@ -84,23 +87,19 @@ public class CaseSearchSetupService {
 		if (request.searchStart() != null) row.setSearchStart(request.searchStart().toInstant());
 		if (request.searchEnd() != null) row.setSearchEnd(request.searchEnd().toInstant());
 		if (request.searchArea() != null) row.setSearchArea(normalizeOptional(request.searchArea()));
-		if (request.similarityThreshold() != null) row.setSimilarityThreshold(request.similarityThreshold());
 		validateTimeRange(row.getSearchStart(), row.getSearchEnd());
-		if (row.getSimilarityThreshold().compareTo(BigDecimal.ZERO) < 0
-				|| row.getSimilarityThreshold().compareTo(BigDecimal.ONE) > 0) {
-			throw validation("similarityThreshold must be between 0 and 1.");
-		}
+		validateRealtimePrompts(row.getPrompt(), row.getExclusionPrompt());
 		mapper.updateSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
-		publishIfSearching(caseId);
-		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, conditionId));
+		publishIfSearching(missingCase);
+		return toResponse(mapper.findSearchCondition(caseId, conditionId));
 	}
 
 	@Transactional
 	public SearchConditionResponse replaceCondition(
 			Long caseId, Long conditionId, SearchConditionCreateRequest request, Long adminId) {
-		requireOpenCase(caseId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
 		SearchConditionRow row = requireCondition(caseId, conditionId);
 		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
 			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
@@ -111,27 +110,35 @@ public class CaseSearchSetupService {
 		row.setSearchStart(toInstant(request.searchStart()));
 		row.setSearchEnd(toInstant(request.searchEnd()));
 		row.setSearchArea(normalizeOptional(request.searchArea()));
-		row.setSimilarityThreshold(requireThreshold(request.similarityThreshold()));
 		validateTimeRange(row.getSearchStart(), row.getSearchEnd());
+		validateRealtimePrompts(row.getPrompt(), row.getExclusionPrompt());
 		mapper.updateSearchCondition(row);
 		auditService.recordRequired("SEARCH_CONDITION_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
-		publishIfSearching(caseId);
-		return SearchConditionResponse.from(mapper.findSearchCondition(caseId, conditionId));
+		publishIfSearching(missingCase);
+		return toResponse(mapper.findSearchCondition(caseId, conditionId));
 	}
 
 	@Transactional
 	public void deleteCondition(Long caseId, Long conditionId, Long adminId) {
-		requireOpenCase(caseId);
-		requireCondition(caseId, conditionId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
+		SearchConditionRow condition = requireCondition(caseId, conditionId);
 		if (mapper.countActiveJobsByCondition(caseId, conditionId) > 0) {
 			throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
 					"A search condition used by an active job cannot be deleted.");
 		}
+		if (missingCase.getStatus() == CaseStatus.SEARCHING && isRealtimeUsable(condition)) {
+			boolean hasUsableRemainder = mapper.findSearchConditions(caseId).stream()
+					.filter(row -> !Objects.equals(row.getId(), conditionId))
+					.anyMatch(this::isRealtimeUsable);
+			if (!hasUsableRemainder) {
+				throw business("A searching case must keep at least one realtime-usable search condition.");
+			}
+		}
 		mapper.deleteSearchCondition(caseId, conditionId);
 		auditService.recordRequired("SEARCH_CONDITION_DELETED", adminId, caseId, "CASE", caseId,
 				Map.of("conditionId", conditionId));
-		publishIfSearching(caseId);
+		publishIfSearching(missingCase);
 	}
 
 	public List<CaseCameraResponse> findCameras(Long caseId) {
@@ -142,7 +149,7 @@ public class CaseSearchSetupService {
 	@Transactional
 	public List<CaseCameraResponse> addCameras(
 			Long caseId, CaseCameraRequest request, Long adminId) {
-		requireOpenCase(caseId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
 		Set<Long> requested = new HashSet<>(request.cameraIds());
 		if (requested.size() != request.cameraIds().size()) {
 			throw validation("cameraIds must not contain duplicates.");
@@ -155,20 +162,28 @@ public class CaseSearchSetupService {
 		mapper.upsertCaseCameras(caseId, requested);
 		auditService.recordRequired("CASE_CAMERAS_UPDATED", adminId, caseId, "CASE", caseId,
 				Map.of("cameraIds", requested));
-		publishIfSearching(caseId);
-		return findCameras(caseId);
+		publishIfSearching(missingCase);
+		return mapper.findCaseCameras(caseId).stream().map(CaseCameraResponse::from).toList();
 	}
 
 	@Transactional
 	public void removeCamera(Long caseId, Long cameraId, Long adminId) {
-		requireOpenCase(caseId);
+		MissingCaseRow missingCase = requireOpenCaseForUpdate(caseId);
+		if (!mapper.existsActiveCaseCamera(caseId, cameraId)) {
+			throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
+					"The camera is not assigned to this case.");
+		}
+		if (missingCase.getStatus() == CaseStatus.SEARCHING
+				&& mapper.countActiveCameras(caseId) <= 1) {
+			throw business("A searching case must keep at least one active camera.");
+		}
 		if (mapper.disableCaseCamera(caseId, cameraId) == 0) {
 			throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
 					"The camera is not assigned to this case.");
 		}
 		auditService.recordRequired("CASE_CAMERA_REMOVED", adminId, caseId, "CASE", caseId,
 				Map.of("cameraId", cameraId));
-		publishIfSearching(caseId);
+		publishIfSearching(missingCase);
 	}
 
 	private SearchConditionRow requireCondition(Long caseId, Long conditionId) {
@@ -183,18 +198,45 @@ public class CaseSearchSetupService {
 		caseQueryService.require(caseId);
 	}
 
-	private void requireOpenCase(Long caseId) {
-		if (caseQueryService.require(caseId).getStatus() == CaseStatus.CLOSED) {
+	private MissingCaseRow requireOpenCaseForUpdate(Long caseId) {
+		MissingCaseRow row = mapper.findByIdForUpdate(caseId);
+		if (row == null) {
+			throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "Case was not found.");
+		}
+		if (row.getStatus() == CaseStatus.CLOSED) {
 			throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
 					"A closed case cannot change search settings.");
 		}
+		return row;
 	}
 
-	private void publishIfSearching(Long caseId) {
-		MissingCaseRow row = caseQueryService.require(caseId);
+	private void publishIfSearching(MissingCaseRow row) {
 		if (row.getStatus() == CaseStatus.SEARCHING) {
 			searchTargetEventPublisher.publishAfterCommit(
-					SearchTargetEventPublisher.TARGET_UPDATED, caseId, Instant.now());
+					SearchTargetEventPublisher.TARGET_UPDATED, row.getId(), Instant.now());
+		}
+	}
+
+	private SearchConditionResponse toResponse(SearchConditionRow row) {
+		String normalizedPrompt = promptNormalizer.normalizeOrNull(row.getPrompt());
+		String normalizedExclusionPrompt = promptNormalizer.normalizeOrNull(row.getExclusionPrompt());
+		return SearchConditionResponse.from(
+				row,
+				normalizedPrompt,
+				normalizedExclusionPrompt,
+				isRealtimeUsable(row));
+	}
+
+	private boolean isRealtimeUsable(SearchConditionRow row) {
+		return promptNormalizer.isUsable(row.getPrompt(), row.getExclusionPrompt());
+	}
+
+	private void validateRealtimePrompts(String prompt, String exclusionPrompt) {
+		if (!promptNormalizer.isUsable(prompt, exclusionPrompt)) {
+			throw new ApiException(
+					HttpStatus.BAD_REQUEST,
+					"REALTIME_PROMPT_INVALID",
+					"The search prompt and optional exclusion prompt must use the realtime prompt format.");
 		}
 	}
 
@@ -214,13 +256,6 @@ public class CaseSearchSetupService {
 		return value == null ? null : value.toInstant();
 	}
 
-	private BigDecimal requireThreshold(BigDecimal value) {
-		if (value == null || value.compareTo(BigDecimal.ZERO) < 0 || value.compareTo(BigDecimal.ONE) > 0) {
-			throw validation("similarityThreshold must be between 0 and 1.");
-		}
-		return value;
-	}
-
 	private void validateTimeRange(Instant start, Instant end) {
 		if ((start == null) != (end == null)) throw validation("searchStart and searchEnd must be provided together.");
 		if (start != null && end.isBefore(start)) throw validation("searchEnd must not be before searchStart.");
@@ -228,5 +263,9 @@ public class CaseSearchSetupService {
 
 	private ApiException validation(String message) {
 		return new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", message);
+	}
+
+	private ApiException business(String message) {
+		return new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION", message);
 	}
 }
