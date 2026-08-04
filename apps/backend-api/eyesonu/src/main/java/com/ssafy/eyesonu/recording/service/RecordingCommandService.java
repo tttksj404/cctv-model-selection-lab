@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class RecordingCommandService {
 
+    private static final String RECORDING_CONTENT_TYPE = "video/mp4";
+    private static final int MP4_SIGNATURE_LENGTH = 12;
+
     private final CameraMapper cameraMapper;
     private final RecordingMapper recordingMapper;
     private final RecordingRequestValidator requestValidator;
@@ -106,7 +109,38 @@ public class RecordingCommandService {
             throw new ApiException(HttpStatus.CONTENT_TOO_LARGE, "FILE_TOO_LARGE",
                     "Storage object exceeds the configured size limit");
         }
+        if (!RECORDING_CONTENT_TYPE.equals(storageObject.contentType())) {
+            throw invalidStorageObject();
+        }
+
+        byte[] prefix;
+        try {
+            prefix = storageObjectVerifier.readPrefix(objectKey, MP4_SIGNATURE_LENGTH);
+        } catch (StorageObjectNotFoundException exception) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_NOT_FOUND",
+                    "Storage object was not found");
+        } catch (StorageObjectUnavailableException exception) {
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_UNAVAILABLE",
+                    "Storage object could not be verified");
+        }
+        if (!hasMp4FileTypeBox(prefix)) {
+            throw invalidStorageObject();
+        }
         return storageObject.size();
+    }
+
+    private boolean hasMp4FileTypeBox(byte[] prefix) {
+        return prefix != null
+                && prefix.length >= MP4_SIGNATURE_LENGTH
+                && prefix[4] == 'f'
+                && prefix[5] == 't'
+                && prefix[6] == 'y'
+                && prefix[7] == 'p';
+    }
+
+    private ApiException invalidStorageObject() {
+        return new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "STORAGE_OBJECT_INVALID",
+                "Storage object is not a valid MP4 recording");
     }
 
     private RecordingCreateResult resolveConcurrentDuplicate(

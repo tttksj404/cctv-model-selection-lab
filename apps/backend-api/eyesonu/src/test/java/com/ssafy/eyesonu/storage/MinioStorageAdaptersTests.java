@@ -157,7 +157,7 @@ class MinioStorageAdaptersTests {
 		MinioProperties properties = new MinioProperties();
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
-		properties.setMaxFileSizeBytes(5_368_709_120L);
+		properties.setMaxFileSizeBytes(104_857_600L);
 		properties.setPresignedUrlExpiry(Duration.ofMinutes(15));
 		return properties;
 	}
