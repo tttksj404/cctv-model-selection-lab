@@ -1,6 +1,6 @@
 package com.ssafy.eyesonu.missingcase.service;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.storage.StorageObject;
@@ -20,13 +20,13 @@ public class CandidateEventStorageValidator {
     };
 
     private final StorageObjectVerifier storageObjectVerifier;
-    private final S3Properties s3Properties;
+    private final MinioProperties minioProperties;
 
     public CandidateEventStorageValidator(
             StorageObjectVerifier storageObjectVerifier,
-            S3Properties s3Properties) {
+            MinioProperties minioProperties) {
         this.storageObjectVerifier = storageObjectVerifier;
-        this.s3Properties = s3Properties;
+        this.minioProperties = minioProperties;
     }
 
     public void verify(CandidateEventCreateRequest request) {
@@ -41,7 +41,7 @@ public class CandidateEventStorageValidator {
                 throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT,
                         "STORAGE_OBJECT_INVALID", "Storage object is empty");
             }
-            if (object.size() > s3Properties.getCandidateImageMaxFileSizeBytes()) {
+            if (object.size() > minioProperties.getCandidateImageMaxFileSizeBytes()) {
                 throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT,
                         "STORAGE_OBJECT_TOO_LARGE", "Storage object is too large");
             }

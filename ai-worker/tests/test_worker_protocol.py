@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import anyio
@@ -27,7 +27,9 @@ from qwen_backend.worker_protocol import (
 )
 
 
-def _target() -> RecordingAnalysisTarget:
+def _target(
+    *, recording_duration_seconds: int = 3_600, search_to_ms: int = 5_000
+) -> RecordingAnalysisTarget:
     return RecordingAnalysisTarget(
         jobId=71,
         caseId=11,
@@ -39,12 +41,31 @@ def _target() -> RecordingAnalysisTarget:
         recordingObjectKey="recordings/CAM-001/video.mp4",
         recordingDownloadUrl="https://storage.example/video.mp4",
         recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
-        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
+        recordingEnd=datetime(2026, 7, 30, tzinfo=UTC)
+        + timedelta(seconds=recording_duration_seconds),
         prompt="red jacket",
         searchFromMs=0,
-        searchToMs=5_000,
+        searchToMs=search_to_ms,
         attempt=1,
     )
+
+
+@pytest.mark.parametrize(
+    ("recording_duration_seconds", "search_to_ms"),
+    ((30, 30_000), (60, 60_000)),
+)
+def test_target_accepts_closed_30_or_60_second_recording_windows(
+    recording_duration_seconds: int, search_to_ms: int
+) -> None:
+    target = _target(
+        recording_duration_seconds=recording_duration_seconds,
+        search_to_ms=search_to_ms,
+    )
+
+    assert target.recording_end - target.recording_start == timedelta(
+        seconds=recording_duration_seconds
+    )
+    assert target.search_to_ms == search_to_ms
 
 
 def _envelope(data: dict[str, object]) -> dict[str, object]:

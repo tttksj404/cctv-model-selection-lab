@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventCreateRequest;
 import com.ssafy.eyesonu.storage.StorageObject;
@@ -35,7 +35,7 @@ class CandidateEventStorageValidatorTests {
 
     @BeforeEach
     void setUp() {
-        S3Properties properties = new S3Properties();
+        MinioProperties properties = new MinioProperties();
         properties.setCandidateImageMaxFileSizeBytes(10 * 1024 * 1024);
         validator = new CandidateEventStorageValidator(storageObjectVerifier, properties);
     }

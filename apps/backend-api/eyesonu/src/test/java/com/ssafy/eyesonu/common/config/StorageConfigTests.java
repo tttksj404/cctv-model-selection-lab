@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.time.Duration;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.http.Method;
@@ -20,7 +20,7 @@ class StorageConfigTests {
 
 	@Test
 	void configuresSharedHttpClientTimeouts() {
-		S3Properties properties = properties();
+		MinioProperties properties = properties();
 		properties.setConnectTimeout(Duration.ofSeconds(2));
 		properties.setReadTimeout(Duration.ofSeconds(4));
 		properties.setCallTimeout(Duration.ofSeconds(8));
@@ -33,12 +33,8 @@ class StorageConfigTests {
 	}
 
 	@Test
-	void buildsIamClientWithoutEndpointOrStaticCredentials() {
-		S3Properties properties = properties();
-		properties.setEndpoint(null);
-		properties.setAccessKey(" ");
-		properties.setSecretKey("");
-		properties.setPathStyleAccess(false);
+	void buildsMinioClientWithRequiredEndpointAndStaticCredentials() {
+		MinioProperties properties = properties();
 		OkHttpClient httpClient = config.storageHttpClient(properties);
 
 		MinioClient client = config.minioClient(properties, httpClient);
@@ -48,11 +44,10 @@ class StorageConfigTests {
 
 	@Test
 	void createsPathStyleClientWithStaticCredentials() throws Exception {
-		S3Properties properties = properties();
+		MinioProperties properties = properties();
 		properties.setEndpoint(URI.create("http://storage.example.test:9000"));
 		properties.setAccessKey("access-key");
 		properties.setSecretKey("secret-key");
-		properties.setPathStyleAccess(true);
 		MinioClient client = config.minioClient(properties, config.storageHttpClient(properties));
 
 		String url = client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
@@ -67,12 +62,11 @@ class StorageConfigTests {
 
 	@Test
 	void createsPresignedUrlsWithPublicEndpoint() throws Exception {
-		S3Properties properties = properties();
+		MinioProperties properties = properties();
 		properties.setEndpoint(URI.create("http://minio:9000"));
 		properties.setPublicEndpoint(URI.create("https://storage.example.test"));
 		properties.setAccessKey("access-key");
 		properties.setSecretKey("secret-key");
-		properties.setPathStyleAccess(true);
 
 		MinioClient client = config.publicMinioClient(properties, config.storageHttpClient(properties));
 		String url = client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
@@ -86,31 +80,14 @@ class StorageConfigTests {
 		assertTrue(!url.contains("minio:9000"));
 	}
 
-	@Test
-	void createsRegionalVirtualStyleClientWhenEndpointIsOmitted() throws Exception {
-		S3Properties properties = properties();
-		properties.setEndpoint(null);
-		properties.setAccessKey("access-key");
-		properties.setSecretKey("secret-key");
-		properties.setPathStyleAccess(false);
-		MinioClient client = config.minioClient(properties, config.storageHttpClient(properties));
-
-		String url = client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-				.method(Method.GET)
-				.bucket(properties.getBucket())
-				.object("recordings/CAM-001/video.mp4")
-				.expiry(15 * 60)
-				.build());
-
-		assertTrue(url.startsWith(
-				"https://eyesonu-media.s3.ap-northeast-2.amazonaws.com/recordings/CAM-001/video.mp4"));
-	}
-
-	private S3Properties properties() {
-		S3Properties properties = new S3Properties();
+	private MinioProperties properties() {
+		MinioProperties properties = new MinioProperties();
+		properties.setEndpoint(URI.create("http://minio:9000"));
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
 		properties.setPublicEndpoint(URI.create("http://localhost:9000"));
+		properties.setAccessKey("eyesonu-app");
+		properties.setSecretKey("eyesonu-app-secret");
 		properties.setMaxFileSizeBytes(5_368_709_120L);
 		return properties;
 	}
