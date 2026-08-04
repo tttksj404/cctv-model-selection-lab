@@ -39,6 +39,26 @@ public class CandidateEventObjectKeyFactory {
         return validAnalysisDescendant(jobId, attempt, "crops", objectKey);
     }
 
+    public boolean matchesIssuedAnalysisFrameKey(
+            Long jobId, int attempt, String trackId, String objectKey) {
+        return analysisFrameKey(jobId, attempt, trackId, "image/jpeg").equals(objectKey)
+                || analysisFrameKey(jobId, attempt, trackId, "image/png").equals(objectKey);
+    }
+
+    public boolean matchesIssuedAnalysisCropKey(
+            Long jobId, int attempt, String trackId, String objectKey) {
+        return analysisCropKey(jobId, attempt, trackId, "image/jpeg").equals(objectKey)
+                || analysisCropKey(jobId, attempt, trackId, "image/png").equals(objectKey);
+    }
+
+    public String analysisFrameKey(Long jobId, int attempt, String trackId, String contentType) {
+        return analysisKey(jobId, attempt, "frames", trackId, contentType);
+    }
+
+    public String analysisCropKey(Long jobId, int attempt, String trackId, String contentType) {
+        return analysisKey(jobId, attempt, "crops", trackId, contentType);
+    }
+
     private String eventPrefix(Long mediaServerId, Long cameraId, Long caseId, String eventId) {
         return "realtime/%d/%d/%d/%s".formatted(mediaServerId, cameraId, caseId, digest(eventId));
     }
@@ -53,6 +73,14 @@ public class CandidateEventObjectKeyFactory {
                 && !objectKey.contains("\\")
                 && !objectKey.contains("..")
                 && objectKey.chars().noneMatch(Character::isISOControl);
+    }
+
+    private String analysisKey(Long jobId, int attempt, String directory, String name, String contentType) {
+        if (jobId == null || attempt < 1 || name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Analysis object key inputs are invalid");
+        }
+        return "analysis/analysis-%d/attempt-%d/%s/%s.%s".formatted(
+                jobId, attempt, directory, digest(name), extension(contentType));
     }
 
     private String extension(String contentType) {
