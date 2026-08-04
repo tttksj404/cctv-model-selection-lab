@@ -72,7 +72,7 @@ class MinioPropertiesValidationTests {
 		properties.setPublicEndpoint(URI.create("https://storage.example.test"));
 		properties.setAccessKey("eyesonu-app");
 		properties.setSecretKey("eyesonu-app-secret");
-		properties.setMaxFileSizeBytes(5_368_709_120L);
+		properties.setMaxFileSizeBytes(104_857_600L);
 		return properties;
 	}
 }

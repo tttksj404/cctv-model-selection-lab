@@ -57,7 +57,7 @@ eyesonu:
       connect-timeout: ${TEST_MINIO_CONNECT_TIMEOUT:3s}
       read-timeout: ${TEST_MINIO_READ_TIMEOUT:5s}
       call-timeout: ${TEST_MINIO_CALL_TIMEOUT:10s}
-      max-file-size-bytes: ${TEST_RECORDING_MAX_FILE_SIZE_BYTES:5368709120}
+      max-file-size-bytes: ${TEST_RECORDING_MAX_FILE_SIZE_BYTES:104857600}
       case-photo-max-file-size-bytes: ${TEST_CASE_PHOTO_MAX_FILE_SIZE_BYTES:10485760}
       candidate-image-max-file-size-bytes: ${TEST_CANDIDATE_IMAGE_MAX_FILE_SIZE_BYTES:10485760}
       presigned-url-expiry: ${TEST_MINIO_PRESIGNED_URL_EXPIRY:15m}
