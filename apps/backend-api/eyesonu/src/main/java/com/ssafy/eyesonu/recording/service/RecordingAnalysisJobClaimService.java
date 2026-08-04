@@ -18,8 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
  * Claims recording-analysis jobs for a worker.
  *
  * <p>The status predicate is part of the UPDATE so concurrent workers cannot
- * claim the same queued job. A second delivery of the same RabbitMQ message
- * therefore returns an empty result and can be acknowledged safely.</p>
+ * claim the same queued job. A second delivery returns an explicit disposition:
+ * the worker must defer while its own or another worker's active lease is held, retry shortly if a
+ * concurrent administrative retry made the job queued again, and acknowledge a
+ * terminal job as stale.</p>
  */
 @Service
 public class RecordingAnalysisJobClaimService {
@@ -62,7 +64,8 @@ public class RecordingAnalysisJobClaimService {
         if (analysisJobMapper.claimQueued(
                 jobId, workerId, hashClaimToken(leaseToken), claimLeaseSeconds) == 1) {
             AnalysisJob claimed = requireJob(jobId);
-            return new RecordingAnalysisJobClaimResult(claimed, false, leaseToken);
+            return new RecordingAnalysisJobClaimResult(
+                    claimed, RecordingAnalysisClaimDisposition.CLAIMED, leaseToken);
         }
 
         AnalysisJob current = analysisJobMapper.findRecordingAnalysisById(jobId);
@@ -71,10 +74,19 @@ public class RecordingAnalysisJobClaimService {
                     "Recording analysis job was not found.");
         }
         if (RUNNING.equals(current.getStatus())) {
-            return new RecordingAnalysisJobClaimResult(current, true, null);
+            populateLegacyLeaseExpiry(current);
+            RecordingAnalysisClaimDisposition disposition = workerId.equals(current.getClaimedBy())
+                    ? RecordingAnalysisClaimDisposition.LEASE_HELD_BY_SELF
+                    : RecordingAnalysisClaimDisposition.LEASE_HELD_BY_OTHER;
+            return new RecordingAnalysisJobClaimResult(
+                    current, disposition, null);
         }
-        throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
-                "Recording analysis job cannot be claimed from status " + current.getStatus() + ".");
+        if ("QUEUED".equals(current.getStatus())) {
+            return new RecordingAnalysisJobClaimResult(
+                    current, RecordingAnalysisClaimDisposition.RETRY_PENDING, null);
+        }
+        return new RecordingAnalysisJobClaimResult(
+                current, RecordingAnalysisClaimDisposition.TERMINAL, null);
     }
 
     public AnalysisJob requireActiveWorkerJob(Long jobId, String workerId, String claimToken) {
@@ -140,6 +152,12 @@ public class RecordingAnalysisJobClaimService {
     private ApiException leaseConflict() {
         return new ApiException(HttpStatus.CONFLICT, "WORKER_LEASE_CONFLICT",
                 "Worker lease is missing, expired, or owned by another worker.");
+    }
+
+    private void populateLegacyLeaseExpiry(AnalysisJob job) {
+        if (job.getClaimExpiresAt() == null && job.getStartedAt() != null) {
+            job.setClaimExpiresAt(job.getStartedAt().plusSeconds(claimLeaseSeconds));
+        }
     }
 
     private AnalysisJob requireJob(Long jobId) {

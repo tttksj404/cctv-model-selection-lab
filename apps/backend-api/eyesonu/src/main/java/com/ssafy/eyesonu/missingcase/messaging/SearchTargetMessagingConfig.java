@@ -72,6 +72,71 @@ public class SearchTargetMessagingConfig {
 	}
 
 	@Bean
+	TopicExchange recordingAnalysisRetryExchange() {
+		return new TopicExchange(RecordingAnalysisJobPublisher.RETRY_EXCHANGE, true, false);
+	}
+
+	@Bean
+	Queue recordingAnalysisRetry5SecondsQueue() {
+		return retryQueue(5);
+	}
+
+	@Bean
+	Queue recordingAnalysisRetry15SecondsQueue() {
+		return retryQueue(15);
+	}
+
+	@Bean
+	Queue recordingAnalysisRetry30SecondsQueue() {
+		return retryQueue(30);
+	}
+
+	@Bean
+	Queue recordingAnalysisRetry60SecondsQueue() {
+		return retryQueue(60);
+	}
+
+	@Bean
+	Queue recordingAnalysisRetry300SecondsQueue() {
+		return retryQueue(300);
+	}
+
+	@Bean
+	Binding recordingAnalysisRetry5SecondsBinding(
+			@Qualifier("recordingAnalysisRetry5SecondsQueue") Queue retryQueue,
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
+		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 5);
+	}
+
+	@Bean
+	Binding recordingAnalysisRetry15SecondsBinding(
+			@Qualifier("recordingAnalysisRetry15SecondsQueue") Queue retryQueue,
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
+		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 15);
+	}
+
+	@Bean
+	Binding recordingAnalysisRetry30SecondsBinding(
+			@Qualifier("recordingAnalysisRetry30SecondsQueue") Queue retryQueue,
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
+		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 30);
+	}
+
+	@Bean
+	Binding recordingAnalysisRetry60SecondsBinding(
+			@Qualifier("recordingAnalysisRetry60SecondsQueue") Queue retryQueue,
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
+		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 60);
+	}
+
+	@Bean
+	Binding recordingAnalysisRetry300SecondsBinding(
+			@Qualifier("recordingAnalysisRetry300SecondsQueue") Queue retryQueue,
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
+		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 300);
+	}
+
+	@Bean
 	TopicExchange recordingAnalysisDeadLetterExchange() {
 		return new TopicExchange(RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE, true, false);
 	}
@@ -108,5 +173,19 @@ public class SearchTargetMessagingConfig {
 								RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY))
 						.build()));
 		return factory;
+	}
+
+	private Queue retryQueue(int delaySeconds) {
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.retryQueueName(delaySeconds))
+				.withArgument("x-message-ttl", delaySeconds * 1_000)
+				.withArgument("x-dead-letter-exchange", RecordingAnalysisJobPublisher.EXCHANGE)
+				.withArgument("x-dead-letter-routing-key", RecordingAnalysisJobPublisher.ROUTING_KEY)
+				.build();
+	}
+
+	private Binding retryBinding(Queue retryQueue, TopicExchange retryExchange, int delaySeconds) {
+		return BindingBuilder.bind(retryQueue)
+				.to(retryExchange)
+				.with(RecordingAnalysisJobPublisher.retryRoutingKey(delaySeconds));
 	}
 }

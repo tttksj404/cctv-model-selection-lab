@@ -1,8 +1,8 @@
 # RabbitMQ 기반 노트북 AI Worker 전송 계약
 
-이 문서는 중앙 서버가 녹화본 분석 작업을 RabbitMQ로 알리고, 노트북의 `ai-worker`가
-로컬 추론·증거 업로드·결과 반납을 하는 현재 운영 계약을 설명한다. REST 요청과 payload의
-정본은 [녹화본 분석 AI Worker 계약](../../docs/recording-analysis-worker-api.md)이다.
+이 문서는 중앙 서버가 녹화본 분석 작업을 RabbitMQ로 발행하고, 노트북의 `ai-worker`가
+로컬 추론·증거 업로드·결과 반납을 수행하는 전송 계약을 정의한다. 상세 REST 요청과 payload는
+[녹화본 분석 AI Worker 계약](../../docs/recording-analysis-worker-api.md)을 따른다.
 
 ```mermaid
 sequenceDiagram
@@ -11,52 +11,76 @@ sequenceDiagram
     participant W as 노트북 AI Worker
     participant S as MinIO/S3
 
-    C->>R: RECORDING_ANALYSIS_JOB_CREATED
+    C->>R: routing-only event(jobId)
     R->>W: delivery (prefetch=1)
     W->>C: POST /{jobId}/claim
-    C-->>W: leaseToken
-    W->>C: GET /{jobId}/target
-    C-->>W: prompt + signed recording GET URL
-    par 추론 중 lease 유지
-        W->>C: POST /{jobId}/heartbeat
-    and 원본 녹화 수신
+    alt CLAIMED
+        C-->>W: leaseToken + lease expiry
+        W->>C: GET /{jobId}/target
         W->>S: signed GET recording
+        W->>C: heartbeat / upload-urls / result or fail
+        W->>R: ACK after terminal callback
+    else LEASE_HELD_BY_SELF, LEASE_HELD_BY_OTHER, or RETRY_PENDING
+        W->>R: publish confirmed delayed copy
+        W->>R: ACK original delivery
+        R-->>R: fixed TTL queue expires to main queue
+    else TERMINAL
+        W->>R: ACK stale delivery
     end
-    W->>C: POST /{jobId}/upload-urls
-    C-->>W: frame/crop signed PUT URLs
-    W->>S: PUT frame/crop bytes
-    W->>C: POST /{jobId}/result 또는 /fail
-    W->>R: ACK
 ```
 
-## RabbitMQ 이벤트
+## RabbitMQ 토폴로지
 
-- exchange: `search.target.exchange`
-- routing key: `search.target.recording.created`
-- queue: `search.target.recording.queue`
-- event type: `RECORDING_ANALYSIS_JOB_CREATED`
+- main exchange: `search.target.exchange`
+- main routing key: `search.target.recording.created`
+- main queue: `search.target.recording.queue`
+- retry exchange: `search.target.recording.retry.exchange`
+- retry routing-key prefix: `search.target.recording.retry`
+- retry queues: `search.target.recording.queue.retry.5s`, `.15s`, `.30s`, `.60s`, `.300s`
+- DLQ exchange/queue: `search.target.dlx` / `search.target.recording.dlq`
 
-이벤트에는 `commandId`, `eventType`, `jobId`, `caseId`, `recordingId`, `cameraId`,
-`cameraCode`, `cameraName`, `recordingObjectKey`, `attempt`, `occurredAt`만 들어간다.
-인상착의 prompt, exclusion prompt, presigned URL, MinIO/S3 자격 증명은 이벤트에 넣지
-않고 Worker가 lease를 획득한 뒤 `/target`에서만 받는다.
+각 retry queue는 자체 `x-message-ttl` 후 main exchange/routing key로 dead-letter한다. Worker는
+요청한 지연 시간보다 같거나 큰 가장 작은 버킷을 고른다. 따라서 서로 다른 지연의 메시지가
+한 큐에서 FIFO로 막히지 않는다.
 
-## 처리·ACK 규칙
+## 이벤트 최소화
 
-1. Worker는 메시지의 `jobId`로만 `POST /api/v1/internal/recording-analysis-jobs/{jobId}/claim`을 호출한다.
-2. `duplicate: true`이면 이미 다른 delivery가 처리 중이므로 로컬 추론 없이 ACK한다.
-3. `duplicate: false`이면 응답의 `leaseToken`을 `X-Worker-Claim-Token`으로 사용한다.
-4. 원본 영상은 `/target`의 `recordingDownloadUrl`로만 받으며, 만료된 서명 URL의 `401/403`은
-   동일 job·attempt·case·recording인지 검증한 후 `/target`을 한 번 다시 조회해 재시도한다.
-5. frame/crop은 중앙 서버가 발급한 URL에 직접 PUT한다. 이 PUT에는 `X-Worker-Key`나 lease
-   token을 붙이지 않는다.
-6. 중앙 서버가 `/result` 또는 `/fail`을 수락한 뒤에만 ACK한다. claim·heartbeat·terminal callback이
-   확정되지 않거나 `WORKER_LEASE_CONFLICT`이면 ACK하지 않고 requeue한다.
-7. 형식이 깨진 RabbitMQ 메시지만 `requeue=false`로 거절한다. 정상 메시지의 일시적 네트워크 오류는
-   데이터 유실보다 재처리를 우선한다.
+발행 메시지는 아래 네 필드만 가진다. `caseId`, 카메라 정보, 녹화 object key, prompt,
+presigned URL, 저장소 자격 증명은 RabbitMQ에 싣지 않는다.
 
-후보는 runtime track 단위로 집계한다. 같은 tracker ID에서 연속 프레임이 잡혀도 프레임마다
-후보를 등록하지 않으며, 한 track의 대표 frame/crop과 시간·bounding box를 결과에 보낸다.
+```json
+{
+  "commandId": "01K1...",
+  "eventType": "RECORDING_ANALYSIS_JOB_CREATED",
+  "jobId": 42,
+  "occurredAt": "2026-08-04T00:31:00Z"
+}
+```
+
+Worker는 성공한 claim의 lease token으로만 `/target`을 호출해 인상착의, 검색 구간,
+signed recording URL을 받는다. 이전 배포에서 남은 확장 메시지는 호환을 위해 읽되 무시한다.
+
+## Claim disposition과 ACK 규칙
+
+| Claim disposition / 오류 | Worker 동작 |
+| --- | --- |
+| `CLAIMED` | `leaseToken`으로 분석을 수행하고 `/result` 또는 `/fail` 수락 뒤 ACK |
+| `LEASE_HELD_BY_SELF` | 같은 Worker의 stale delivery이므로 `claimExpiresAt + 1초`까지 지연 버킷에 재발행한 뒤 원본 ACK |
+| `LEASE_HELD_BY_OTHER` | 다른 Worker가 active lease를 소유하므로 `claimExpiresAt + 1초`까지 지연 버킷에 재발행한 뒤 원본 ACK |
+| `RETRY_PENDING` | 짧은 지연 버킷에 재발행한 뒤 원본 ACK |
+| `TERMINAL`, `JOB_NOT_RUNNABLE` | stale 메시지이므로 재발행 없이 ACK |
+| HTTP 4xx (위 terminal 제외) | 설정·권한·요청 오류이므로 `reject(requeue=false)`로 DLQ |
+| 네트워크 오류 또는 HTTP 5xx | 지연 재발행이 broker confirm되면 원본 ACK |
+
+지연 메시지 publish가 confirm되지 않으면 원본 delivery를 ACK하지 않고 `reject(requeue=true)`한다.
+`x-eyesonu-retry-count` 상한(기본 20회)은 네트워크·HTTP 5xx 같은 **실패 재시도**에만 적용한다.
+`LEASE_HELD_BY_SELF`, `LEASE_HELD_BY_OTHER`, `RETRY_PENDING`은 실패가 아니라 소유권/경쟁 상태이므로 같은 카운터를 보존한 채
+지연 재발행한다. 따라서 오래 실행 중인 정상 Worker가 있어도 stale delivery가 상한 때문에 사라지지
+않는다. 구형 `RUNNING` job의 lease 만료 시각이 비어 있으면 중앙 서버는 응답에
+`startedAt + worker claim lease`를 다음 claim 가능 시각으로 채운다. `startedAt`까지 비어 있는
+깨진 구형 행은 즉시 회수 가능하다. retry 상한으로 delivery가 DLQ에 들어가거나 broker publish가
+유실된 뒤에도 중앙 서버의 lease-recovery scheduler가 만료 `RUNNING` job을 `QUEUED`로 원자적으로
+되돌리고 transactional outbox를 새로 만들어 작업 이벤트를 복구한다.
 
 ## 노트북 설정과 실행
 
@@ -65,16 +89,10 @@ CENTRAL_API_BASE_URL=https://central.example
 CENTRAL_API_WORKER_KEY=<secret>
 RABBITMQ_URL=amqps://<user>:<password>@<host>/<vhost>
 RABBITMQ_QUEUE=search.target.recording.queue
+EYESONU_AI_WORKER_RABBITMQ_RETRY_EXCHANGE=search.target.recording.retry.exchange
+EYESONU_AI_WORKER_RABBITMQ_RETRY_ROUTING_KEY_PREFIX=search.target.recording.retry
 EYESONU_AI_WORKER_HEARTBEAT_INTERVAL_SECONDS=20
 ```
-
-`EYESONU_AI_WORKER_CENTRAL_API_URL`, `EYESONU_AI_WORKER_API_KEY`,
-`EYESONU_AI_WORKER_RABBITMQ_URL`, `EYESONU_AI_WORKER_RABBITMQ_QUEUE`도 같은 값의
-지원 이름이다. 중앙 백엔드에는 같은 키를 `WORKER_AUTHENTICATION_KEY` 또는 호환 변수
-`AI_WORKER_API_KEY`로 주입해야 한다.
-
-기존 `ai.env.txt`를 그대로 쓰려면 파일 내용을 출력하거나 저장소에 복사하지 말고 경로만
-전달한다.
 
 ```powershell
 cd ai-worker
@@ -84,16 +102,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-Notebook
   -Once
 ```
 
-`--once`는 한 delivery만 처리하고 종료한다. RabbitMQ URL이 없으면 Worker는 예전 폴링 호환
-경로로 전환하지 않고 시작 단계에서 명확하게 실패한다.
+`prefetch=1`은 한 GPU 프로세스가 여러 lease를 동시에 잡지 않게 강제한다. RabbitMQ는 VPN,
+AMQPS 또는 SSH tunnel로만 접근하고, public AMQP port를 열지 않는다.
 
-## 운영 전 확인
+## 롤아웃과 운영 검증
 
-1. 중앙 백엔드의 `recording.analysis.backend-consumer.auto-start`가 `false`인지 확인한다.
-   이 consumer가 켜져 있으면 백엔드가 노트북 Worker보다 먼저 lease를 선점할 수 있다.
-2. 노트북에서 RabbitMQ endpoint를 VPN, AMQPS 또는 SSH tunnel로 접근하고 queue를 passive declare할
-   수 있는지 확인한다. 공인 평문 AMQP 포트를 새로 열지 않는다.
-3. 중앙 서버의 Worker Key와 노트북의 `CENTRAL_API_WORKER_KEY`가 같은 secret인지 secret store에서
-   확인한다. `INVALID_WORKER_KEY`를 코드에서 우회하지 않는다.
-4. 별도 테스트 사건으로 `claim → target → signed GET → 추론 → signed PUT → result` trace를
-   한 번 끝까지 남긴다. 코드 단위 테스트 통과는 실제 broker·MinIO·배포 key 성공을 대신하지 않는다.
+1. 작업 발행/소비를 잠시 멈춘다. 이 구간에는 retry exchange가 아직 없을 수 있다.
+2. Worker 코드를 먼저 배포한다. 확장된 구 메시지는 무시하므로 기존 publisher와 공존할 수 있다.
+3. backend를 배포해 retry exchange/queue와 routing-only publisher를 선언한 뒤 작업 발행/소비를 재개한다.
+4. 기존 backend Rabbit consumer는 `recording.analysis.backend-consumer.auto-start=false`로 유지한다.
+5. 테스트 사건 하나로 `claim → target → signed GET → inference → signed PUT → result`와
+   `LEASE_HELD_BY_SELF`/`LEASE_HELD_BY_OTHER → delayed retry → reclaim`을 broker·MinIO/S3까지 실제 왕복으로 확인한다.
+
+코드 단위 테스트는 race, stale ACK, 4xx DLQ, publisher-confirm 이전 ACK 금지, fixed TTL bucket
+binding을 검증한다. 실제 broker/MinIO/S3 endpoint와 worker key를 이용한 end-to-end trace는
+배포 환경에서 별도로 수행해야 한다.

@@ -121,39 +121,68 @@ def test_result_uses_absolute_detection_time_and_never_serializes_local_paths() 
     }
 
 
-def test_non_duplicate_claim_requires_lease_token() -> None:
-    with pytest.raises(ValidationError, match="leaseToken"):
+def test_claimed_response_requires_lease_token() -> None:
+    with pytest.raises(ValidationError, match="CLAIMED"):
         RecordingAnalysisClaim(
             jobId=71,
             status="RUNNING",
             attempt=1,
-            duplicate=False,
+            disposition="CLAIMED",
             startedAt=datetime(2026, 7, 30, tzinfo=UTC),
             claimedBy="recording-ai-worker",
             claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
         )
 
 
-def test_rabbit_event_matches_current_dev_payload_without_person_data() -> None:
+def test_rabbit_event_is_routing_only_without_case_or_recording_metadata() -> None:
     event = RabbitWorkerJobEvent(
         commandId="command-71",
         eventType="RECORDING_ANALYSIS_JOB_CREATED",
         jobId=71,
-        caseId=11,
-        recordingId=31,
-        cameraId=41,
-        cameraCode="CAM-001",
-        cameraName="Gate A",
-        recordingObjectKey="recordings/CAM-001/video.mp4",
-        attempt=1,
         occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
     )
 
     assert event.job_id == 71
-    assert (
-        event.model_dump(mode="json", by_alias=True)["eventType"]
-        == "RECORDING_ANALYSIS_JOB_CREATED"
+    assert event.model_dump(mode="json", by_alias=True) == {
+        "commandId": "command-71",
+        "eventType": "RECORDING_ANALYSIS_JOB_CREATED",
+        "jobId": 71,
+        "occurredAt": "2026-07-30T00:00:00Z",
+    }
+
+
+def test_legacy_duplicate_claim_maps_to_lease_held_for_safe_rollout() -> None:
+    claim = RecordingAnalysisClaim(
+        jobId=71,
+        status="RUNNING",
+        attempt=1,
+        duplicate=True,
+        startedAt=datetime(2026, 7, 30, tzinfo=UTC),
+        claimedBy="other-worker",
+        claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
     )
+
+    assert claim.disposition == "LEASE_HELD"
+    assert claim.lease_token is None
+
+
+def test_explicit_lease_owner_dispositions_are_supported() -> None:
+    for disposition, claimed_by in (
+        ("LEASE_HELD_BY_SELF", "notebook-worker"),
+        ("LEASE_HELD_BY_OTHER", "other-worker"),
+    ):
+        claim = RecordingAnalysisClaim(
+            jobId=71,
+            status="RUNNING",
+            attempt=1,
+            disposition=disposition,
+            startedAt=datetime(2026, 7, 30, tzinfo=UTC),
+            claimedBy=claimed_by,
+            claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
+        )
+
+        assert claim.disposition == disposition
+        assert claim.lease_token is None
 
 
 def test_central_client_does_not_retry_mutating_requests_by_default() -> None:

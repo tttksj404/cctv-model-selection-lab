@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import anyio
 
-from qwen_backend.central_client import CentralWorkerError
 from qwen_backend.notebook_worker import NotebookWorker, NotebookWorkerSettings
 from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRecordingWorker
 from qwen_backend.worker_protocol import RabbitWorkerJobEvent, RecordingAnalysisClaim
@@ -14,6 +13,7 @@ from qwen_backend.worker_protocol import RabbitWorkerJobEvent, RecordingAnalysis
 class FakeDelivery:
     def __init__(self, body: bytes, events: list[str] | None = None) -> None:
         self.body = body
+        self.headers: dict[str, object] = {}
         self.acked = 0
         self.rejected: list[bool] = []
         self.events = events if events is not None else []
@@ -53,6 +53,11 @@ class FakeWorker:
         return self.processed_result
 
 
+class FakeRetryScheduler:
+    async def schedule(self, body: bytes, *, retry_count: int, delay_seconds: float) -> None:
+        raise AssertionError("this test must not schedule a retry")
+
+
 class EmptyCentralClient:
     def __init__(self, *args: object, **kwargs: object) -> None:
         pass
@@ -90,7 +95,8 @@ class QosConnection:
         self._channel = channel
         self.closed = False
 
-    async def channel(self) -> QosChannel:
+    async def channel(self, **kwargs: object) -> QosChannel:
+        assert kwargs == {"publisher_confirms": True, "on_return_raises": True}
         return self._channel
 
     async def close(self) -> None:
@@ -103,13 +109,6 @@ def _event_body() -> bytes:
             commandId="command-71",
             eventType="RECORDING_ANALYSIS_JOB_CREATED",
             jobId=71,
-            caseId=11,
-            recordingId=31,
-            cameraId=41,
-            cameraCode="CAM-001",
-            cameraName="Gate A",
-            recordingObjectKey="recordings/CAM-001/video.mp4",
-            attempt=1,
             occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
         )
         .model_dump_json(by_alias=True)
@@ -117,16 +116,25 @@ def _event_body() -> bytes:
     )
 
 
-def _claimed_response(*, duplicate: bool = False) -> RecordingAnalysisClaim:
+def _claimed_response() -> RecordingAnalysisClaim:
     return RecordingAnalysisClaim(
         jobId=71,
         status="RUNNING",
         attempt=1,
-        duplicate=duplicate,
+        disposition="CLAIMED",
         startedAt=datetime(2026, 7, 30, tzinfo=UTC),
         claimedBy="recording-ai-worker",
         claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
-        leaseToken=None if duplicate else "lease-71",
+        leaseToken="lease-71",
+    )
+
+
+def _processor(worker: FakeWorker) -> RabbitJobProcessor:
+    return RabbitJobProcessor(
+        worker,  # type: ignore[arg-type]
+        retry_scheduler=FakeRetryScheduler(),
+        retry_delay_seconds=5.0,
+        max_retry_attempts=3,
     )
 
 
@@ -137,7 +145,7 @@ def test_rabbit_processor_acks_only_after_terminal_processing() -> None:
         delivery = FakeDelivery(_event_body(), events)
         client = FakeClient(_claimed_response())
 
-        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
+        handled = await _processor(worker).handle(delivery, client)  # type: ignore[arg-type]
 
         assert handled is True
         assert client.claims == [71]
@@ -149,60 +157,13 @@ def test_rabbit_processor_acks_only_after_terminal_processing() -> None:
     anyio.run(scenario)
 
 
-def test_rabbit_processor_requeues_when_central_claim_is_unavailable() -> None:
-    async def scenario() -> None:
-        worker = FakeWorker()
-        delivery = FakeDelivery(_event_body())
-        client = FakeClient(CentralWorkerError("central unavailable"))
-
-        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
-
-        assert handled is False
-        assert delivery.acked == 0
-        assert delivery.rejected == [True]
-        assert worker.processed == []
-
-    anyio.run(scenario)
-
-
-def test_rabbit_processor_requeues_when_terminal_callback_is_not_confirmed() -> None:
-    async def scenario() -> None:
-        worker = FakeWorker(processed_result=False)
-        delivery = FakeDelivery(_event_body())
-        client = FakeClient(_claimed_response())
-
-        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
-
-        assert handled is False
-        assert delivery.acked == 0
-        assert delivery.rejected == [True]
-
-    anyio.run(scenario)
-
-
-def test_rabbit_processor_acks_duplicate_claim_without_local_inference() -> None:
-    async def scenario() -> None:
-        worker = FakeWorker()
-        delivery = FakeDelivery(_event_body())
-        client = FakeClient(_claimed_response(duplicate=True))
-
-        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
-
-        assert handled is False
-        assert delivery.acked == 1
-        assert delivery.rejected == []
-        assert worker.processed == []
-
-    anyio.run(scenario)
-
-
 def test_rabbit_processor_dead_letters_malformed_message() -> None:
     async def scenario() -> None:
         worker = FakeWorker()
         delivery = FakeDelivery(b'{"jobId":"not-a-number"}')
         client = FakeClient(_claimed_response())
 
-        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
+        handled = await _processor(worker).handle(delivery, client)  # type: ignore[arg-type]
 
         assert handled is False
         assert client.claims == []

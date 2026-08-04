@@ -86,10 +86,10 @@ RABBITMQ_QUEUE=search.target.recording.queue
   frame offset에서 계산한 절대 시각, bounding box, similarity, attribute summary만 보낸다.
 - signed 녹화 GET URL이 `401/403`으로 만료되면 동일 job·attempt·case·recording인지 검증한
   target을 한 번 다시 받아 재시도한다. 임의 URL·다른 recording으로 바꾸지 않는다.
-- heartbeat 또는 terminal callback이 확정되지 않으면 ACK하지 않는다. delivery를 requeue하여
-  중앙의 lease·멱등 result 정책으로 안전하게 재처리한다.
+- heartbeat 또는 terminal callback이 확정되지 않으면 ACK하지 않는다. delivery는 broker confirm 뒤
+  fixed-TTL retry queue에 지연 재발행하여 중앙의 lease·멱등 result 정책으로 안전하게 재처리한다.
 - `WORKER_LEASE_CONFLICT`는 다른 Worker가 소유권을 얻었거나 lease가 끝났다는 뜻이다. 이 경우
-  result/fail을 더 보내지 않고 requeue한다.
+  result/fail을 더 보내지 않고 즉시 재큐잉 대신 확인된 지연 재발행으로 새 claim을 기다린다.
 
 상세 JSON schema, RabbitMQ event, object-store PUT 규칙은 각각
 [중앙 Worker API 계약](../../docs/recording-analysis-worker-api.md),
@@ -112,3 +112,13 @@ target signing, upload URL, 결과·실패 멱등성과 DB migration을 검증�
 
 실제 중앙 서버·RabbitMQ·MinIO/S3의 전체 왕복은 코드 테스트와 별도다. broker endpoint·동일
 Worker Key·테스트 사건이 모두 준비된 뒤 한 건의 실제 trace로 검증해야 한다.
+
+## 재처리 규칙 (현재 계약)
+
+이 문서의 과거 `requeue` 표현은 즉시 재큐잉이 아니라
+[RabbitMQ 전송 계약](RABBITMQ_NOTEBOOK_WORKER_TRANSPORT.md)의 **확인된 지연 재발행**을 뜻한다.
+`LEASE_HELD_BY_SELF`/`LEASE_HELD_BY_OTHER`와 `WORKER_LEASE_CONFLICT`는 lease 만료 후 새 claim이 가능하도록 fixed TTL retry
+queue에 넣고, `JOB_NOT_RUNNABLE`은 stale delivery로 ACK한다. HTTP 4xx는 DLQ, 네트워크 오류와
+HTTP 5xx만 지연 재시도한다. `LEASE_HELD_BY_SELF`/`LEASE_HELD_BY_OTHER`/`RETRY_PENDING`은 retry budget을 소비하지 않으며,
+중앙 서버 lease-recovery scheduler가 만료 `RUNNING` job을 새 outbox로 복구하므로 delivery가
+사라져도 작업이 영구 정지하지 않는다.

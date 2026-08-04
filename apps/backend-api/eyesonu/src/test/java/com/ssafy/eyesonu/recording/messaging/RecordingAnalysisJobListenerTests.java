@@ -29,7 +29,7 @@ class RecordingAnalysisJobListenerTests {
                     RecordingAnalysisJobConsumer consumer =
                             context.getBean(RecordingAnalysisJobConsumer.class);
                     RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                            "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, 101L, Instant.now());
+                            "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, Instant.now());
 
                     context.getBean(RecordingAnalysisJobListener.class).consume(event);
 

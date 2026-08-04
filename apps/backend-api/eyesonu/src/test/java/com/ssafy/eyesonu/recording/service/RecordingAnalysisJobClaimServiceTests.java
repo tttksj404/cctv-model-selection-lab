@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -71,7 +72,7 @@ class RecordingAnalysisJobClaimServiceTests {
     }
 
     @Test
-    void returnsDuplicateWhenWorkerClaimsRunningJobAgain() {
+    void returnsLeaseHeldByOtherWhenAnotherWorkerHasAnActiveLease() {
         AnalysisJob job = runningJob();
         when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
                 .thenReturn(0);
@@ -79,23 +80,68 @@ class RecordingAnalysisJobClaimServiceTests {
 
         RecordingAnalysisJobClaimResult result = service.claimForWorker(JOB_ID, "worker-1");
 
-        assertTrue(result.duplicate());
+        assertEquals(RecordingAnalysisClaimDisposition.LEASE_HELD_BY_OTHER, result.disposition());
         assertEquals("RUNNING", result.job().getStatus());
         assertEquals(null, result.leaseToken());
     }
 
     @Test
-    void rejectsCompletedJobClaim() {
+    void returnsLeaseHeldBySelfForAStaleDeliveryToTheSameWorker() {
+        AnalysisJob job = runningJob();
+        job.setClaimedBy("worker-1");
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
+                .thenReturn(0);
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
+
+        RecordingAnalysisJobClaimResult result = service.claimForWorker(JOB_ID, "worker-1");
+
+        assertEquals(RecordingAnalysisClaimDisposition.LEASE_HELD_BY_SELF, result.disposition());
+        assertEquals(null, result.leaseToken());
+    }
+
+    @Test
+    void returnsTheNextClaimableTimeForLegacyRunningJobWithoutLeaseExpiry() {
+        Instant startedAt = Instant.now().minusSeconds(20);
+        AnalysisJob job = runningJob();
+        job.setStartedAt(startedAt);
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
+                .thenReturn(0);
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
+
+        RecordingAnalysisJobClaimResult result = service.claimForWorker(JOB_ID, "worker-1");
+
+        assertEquals(RecordingAnalysisClaimDisposition.LEASE_HELD_BY_OTHER, result.disposition());
+        assertEquals(startedAt.plusSeconds(300), result.job().getClaimExpiresAt());
+    }
+
+    @Test
+    void returnsTerminalDispositionForCompletedJobClaim() {
         AnalysisJob job = runningJob();
         job.setStatus("SUCCEEDED");
         when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
                 .thenReturn(0);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
 
-        ApiException exception = assertThrows(ApiException.class,
-                () -> service.claimForWorker(JOB_ID, "worker-1"));
+        RecordingAnalysisJobClaimResult result = service.claimForWorker(JOB_ID, "worker-1");
 
-        assertEquals("JOB_NOT_RUNNABLE", exception.getCode());
+        assertEquals(RecordingAnalysisClaimDisposition.TERMINAL, result.disposition());
+        assertEquals("SUCCEEDED", result.job().getStatus());
+        assertEquals(null, result.leaseToken());
+    }
+
+    @Test
+    void returnsRetryPendingWhenTheJobBecomesQueuedDuringAClaimRace() {
+        AnalysisJob job = runningJob();
+        job.setStatus("QUEUED");
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
+                .thenReturn(0);
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
+
+        RecordingAnalysisJobClaimResult result = service.claimForWorker(JOB_ID, "worker-1");
+
+        assertEquals(RecordingAnalysisClaimDisposition.RETRY_PENDING, result.disposition());
+        assertEquals("QUEUED", result.job().getStatus());
+        assertEquals(null, result.leaseToken());
     }
 
     @Test
@@ -110,7 +156,7 @@ class RecordingAnalysisJobClaimServiceTests {
 
         assertEquals("RUNNING", result.job().getStatus());
         assertEquals("worker-2", result.job().getClaimedBy());
-        assertTrue(!result.duplicate());
+        assertEquals(RecordingAnalysisClaimDisposition.CLAIMED, result.disposition());
         assertNotNull(result.leaseToken());
     }
 

@@ -29,6 +29,9 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
     public static final String DEAD_LETTER_EXCHANGE = "search.target.dlx";
     public static final String DEAD_LETTER_QUEUE = QUEUE + ".dlq";
     public static final String DEAD_LETTER_ROUTING_KEY = ROUTING_KEY + ".dlq";
+    public static final String RETRY_EXCHANGE = "search.target.recording.retry.exchange";
+    public static final String RETRY_QUEUE_PREFIX = QUEUE + ".retry.";
+    public static final String RETRY_ROUTING_KEY_PREFIX = "search.target.recording.retry.";
     private static final long CONFIRM_TIMEOUT_SECONDS = 5L;
 
     private final RabbitTemplate rabbitTemplate;
@@ -90,6 +93,14 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
         outboxMapper.insert(outbox);
     }
 
+    public static String retryQueueName(int delaySeconds) {
+        return RETRY_QUEUE_PREFIX + delaySeconds + "s";
+    }
+
+    public static String retryRoutingKey(int delaySeconds) {
+        return RETRY_ROUTING_KEY_PREFIX + delaySeconds + "s";
+    }
+
     public void publishPending() {
         for (int published = 0; published < 50; published++) {
             ClaimedRecordingAnalysisOutbox claimed = outboxClaimer.claimNext().orElse(null);
@@ -103,9 +114,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             try {
                 RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
-                        outbox.getCaseId(), outbox.getRecordingId(), outbox.getCameraId(),
-                        outbox.getCameraCode(), outbox.getCameraName(), outbox.getRecordingObjectKey(),
-                        outbox.getAttempt(), outbox.getOccurredAt());
+                        outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());
                 ensureLeaseOwned(leaseOwned);
                 rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {

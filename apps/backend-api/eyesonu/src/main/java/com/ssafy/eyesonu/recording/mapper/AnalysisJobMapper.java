@@ -18,6 +18,12 @@ public interface AnalysisJobMapper {
             @Param("leaseTokenHash") String leaseTokenHash,
             @Param("leaseSeconds") long leaseSeconds);
 
+    List<AnalysisJob> findExpiredRecordingAnalysisJobsForRecovery(
+            @Param("limit") int limit, @Param("leaseSeconds") long leaseSeconds);
+
+    int requeueExpiredRecordingAnalysisJob(
+            @Param("jobId") Long jobId, @Param("leaseSeconds") long leaseSeconds);
+
     AnalysisJob findRecordingAnalysisById(@Param("jobId") Long jobId);
 
     AnalysisJob findRecordingAnalysisByIdForUpdate(

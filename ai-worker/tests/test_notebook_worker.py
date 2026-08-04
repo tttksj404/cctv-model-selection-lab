@@ -319,6 +319,100 @@ def test_notebook_worker_reports_failure_when_target_lookup_fails(tmp_path: Path
     ]
 
 
+def test_notebook_worker_propagates_nonretryable_failure_callback_error(tmp_path: Path) -> None:
+    async def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path.endswith("/claim"):
+            return httpx2.Response(200, json=_envelope(_claim_data()), request=request)
+        if request.url.path.endswith("/target"):
+            return httpx2.Response(
+                403,
+                json={"code": "INVALID_WORKER_KEY", "message": "worker key is invalid"},
+                request=request,
+            )
+        if request.url.path.endswith("/fail"):
+            return httpx2.Response(
+                403,
+                json={"code": "INVALID_WORKER_KEY", "message": "worker key is invalid"},
+                request=request,
+            )
+        return httpx2.Response(404, request=request)
+
+    async def scenario() -> None:
+        async with httpx2.AsyncClient(
+            transport=httpx2.MockTransport(handler), base_url="https://central.example"
+        ) as http_client:
+            client = CentralWorkerClient(
+                base_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                client=http_client,
+            )
+            worker = NotebookWorker(
+                NotebookWorkerSettings(
+                    central_api_url="https://central.example",
+                    api_key="test-key",
+                    worker_id="notebook-test",
+                    cache_dir=tmp_path / "cache",
+                    output_dir=tmp_path / "output",
+                ),
+                engine_factory=FixtureEngine,
+            )
+            claim = await client.claim_job(71)
+            with pytest.raises(CentralWorkerError) as raised:
+                await worker.process_claim(client, claim)
+
+        assert raised.value.status_code == 403
+        assert raised.value.code == "INVALID_WORKER_KEY"
+
+    anyio.run(scenario)
+
+
+def test_heartbeat_marks_nonretryable_central_error_as_fatal(tmp_path: Path) -> None:
+    class InvalidHeartbeatClient:
+        async def heartbeat(self, job_id: int, claim_token: str) -> None:
+            assert (job_id, claim_token) == (71, "lease-71")
+            raise CentralWorkerError(
+                "worker key is invalid",
+                status_code=403,
+                code="INVALID_WORKER_KEY",
+            )
+
+    async def scenario() -> None:
+        worker = NotebookWorker(
+            NotebookWorkerSettings(
+                central_api_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                heartbeat_interval_seconds=0.51,
+                cache_dir=tmp_path / "cache",
+                output_dir=tmp_path / "output",
+            ),
+            engine_factory=FixtureEngine,
+        )
+        lease_lost = anyio.Event()
+        fatal_errors: list[CentralWorkerError] = []
+
+        await worker._heartbeat_loop(  # pyright: ignore[reportPrivateUsage]
+            InvalidHeartbeatClient(),  # type: ignore[arg-type]
+            71,
+            "lease-71",
+            anyio.Event(),
+            lease_lost,
+            fatal_errors,
+        )
+
+        assert lease_lost.is_set()
+        assert fatal_errors[0].code == "INVALID_WORKER_KEY"
+        with pytest.raises(CentralWorkerError, match="worker key is invalid"):
+            worker._raise_if_lease_lost(  # pyright: ignore[reportPrivateUsage]
+                lease_lost,
+                71,
+                fatal_errors,
+            )
+
+    anyio.run(scenario)
+
+
 def test_notebook_worker_refreshes_an_expired_signed_recording_url_once(tmp_path: Path) -> None:
     async def scenario() -> None:
         initial_data = _target_data()

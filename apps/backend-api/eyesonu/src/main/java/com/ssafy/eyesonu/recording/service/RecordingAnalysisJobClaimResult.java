@@ -4,6 +4,6 @@ import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 
 public record RecordingAnalysisJobClaimResult(
         AnalysisJob job,
-        boolean duplicate,
+        RecordingAnalysisClaimDisposition disposition,
         String leaseToken) {
 }
