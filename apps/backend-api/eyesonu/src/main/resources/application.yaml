@@ -52,3 +52,8 @@ recording:
         initial-interval-ms: 1000
         multiplier: 2.0
         max-interval-ms: 10000
+
+camera:
+  heartbeat:
+    offline-timeout-ms: ${CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS:30000}
+    status-check-interval-ms: ${CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS:10000}

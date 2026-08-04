@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ssafy.eyesonu.auth.device.DeviceKeyAuthenticationFilter;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.auth.security.AdminPrincipal;
+import com.ssafy.eyesonu.camera.dto.device.CameraHeartbeatRequest;
+import com.ssafy.eyesonu.camera.service.CameraHeartbeatService;
 import com.ssafy.eyesonu.mediaserver.domain.MediaServer;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
 import com.ssafy.eyesonu.recording.domain.Recording;
@@ -63,6 +65,9 @@ class DeviceKeyAuthenticationApiTests {
 
 	@MockitoBean
 	private RecordingCommandService recordingCommandService;
+
+	@MockitoBean
+	private CameraHeartbeatService cameraHeartbeatService;
 
 	private MediaServer activeServer;
 
@@ -205,6 +210,45 @@ class DeviceKeyAuthenticationApiTests {
 		org.junit.jupiter.api.Assertions.assertTrue(principalCaptor.getAllValues().stream()
 				.allMatch(principal -> principal.mediaServerId().equals(7L)
 						&& principal.serverCode().equals("rpi5-media-01")));
+	}
+
+	@Test
+	void heartbeatPostPassesAuthenticatedPrincipalAndReturnsNoContent() throws Exception {
+		String path = "/api/v1/device/cameras/CAM-001/heartbeat";
+		String body = """
+				{"occurredAt":"2026-07-20T02:00:00Z","status":"ONLINE","detail":null}
+				""";
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(body))
+				.andExpect(status().isNoContent())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(""));
+
+		var principalCaptor = org.mockito.ArgumentCaptor.forClass(MediaServerPrincipal.class);
+		var requestCaptor = org.mockito.ArgumentCaptor.forClass(CameraHeartbeatRequest.class);
+		verify(cameraHeartbeatService).receive(
+				principalCaptor.capture(), org.mockito.ArgumentMatchers.eq("CAM-001"), requestCaptor.capture());
+		org.junit.jupiter.api.Assertions.assertEquals(7L, principalCaptor.getValue().mediaServerId());
+		org.junit.jupiter.api.Assertions.assertEquals("ONLINE", requestCaptor.getValue().status());
+		org.junit.jupiter.api.Assertions.assertEquals(
+				Instant.parse("2026-07-20T02:00:00Z"), requestCaptor.getValue().occurredAt().toInstant());
+	}
+
+	@Test
+	void heartbeatPostValidatesRequiredFieldsAndDateSyntax() throws Exception {
+		String path = "/api/v1/device/cameras/CAM-001/heartbeat";
+
+		mockMvc.perform(post(path)
+					.header(DeviceKeyAuthenticationFilter.HEADER_NAME, DEVICE_KEY)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{\"occurredAt\":\"2026-07-20T02:00:00\",\"status\":\"ONLINE\"}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		verify(cameraHeartbeatService, never()).receive(
+				any(MediaServerPrincipal.class), any(String.class), any(CameraHeartbeatRequest.class));
 	}
 
 	@Test

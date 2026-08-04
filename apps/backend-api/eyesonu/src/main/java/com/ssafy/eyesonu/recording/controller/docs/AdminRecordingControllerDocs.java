@@ -20,30 +20,30 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "Admin recordings", description = "Search recording metadata and issue playback URLs")
+@Tag(name = "관리자 녹화", description = "녹화 메타데이터 조회 및 재생 URL 발급 API")
 public interface AdminRecordingControllerDocs {
 
     @Operation(
-            summary = "Search recordings",
-            description = "Returns a stable, database-paginated list. The time filter uses interval overlap.",
+            summary = "녹화 목록 조회",
+            description = "일관된 정렬 기준으로 데이터베이스 페이지네이션 목록을 반환합니다. 시간 필터는 구간 겹침을 기준으로 적용합니다.",
             security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "200", description = "Recordings returned", useReturnTypeSchema = true),
+                responseCode = "200", description = "녹화 목록 조회 성공", useReturnTypeSchema = true),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "400", description = "Invalid filter, page, size, or sort",
+                responseCode = "400", description = "필터, 페이지, 크기 또는 정렬 조건이 올바르지 않음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     ResponseEntity<PagedApiResponse<List<AdminRecordingListResponse>>> findAll(
-            @Parameter(description = "Camera id") @Positive Long cameraId,
-            @Parameter(description = "Open interval start, with RFC 3339 offset and at most 6 fractional digits")
+            @Parameter(description = "카메라 ID") @Positive Long cameraId,
+            @Parameter(description = "구간 시작 시각. RFC 3339 오프셋 형식이며 소수점 이하 최대 6자리")
                     OffsetDateTime startFrom,
-            @Parameter(description = "Open interval end, with RFC 3339 offset and at most 6 fractional digits")
+            @Parameter(description = "구간 종료 시각. RFC 3339 오프셋 형식이며 소수점 이하 최대 6자리")
                     OffsetDateTime startTo,
-            @Parameter(description = "Zero-based page", example = "0") @Min(0) int page,
-            @Parameter(description = "Page size from 1 through 100", example = "20") @Min(1) @Max(100) int size,
+            @Parameter(description = "0부터 시작하는 페이지 번호", example = "0") @Min(0) int page,
+            @Parameter(description = "페이지 크기. 1 이상 100 이하", example = "20") @Min(1) @Max(100) int size,
             @Parameter(
-                    description = "Allowed field and direction pair",
+                    description = "허용된 필드·방향 조합",
                     example = "startTime,desc",
                     schema = @Schema(allowableValues = {
                             "startTime,asc", "startTime,desc", "createdAt,asc", "createdAt,desc"
@@ -51,19 +51,19 @@ public interface AdminRecordingControllerDocs {
                     String sort);
 
     @Operation(
-            summary = "Get recording detail",
-            description = "Returns recording metadata and a short-lived playback URL.",
+            summary = "녹화 상세 조회",
+            description = "녹화 메타데이터와 짧은 유효기간의 재생 URL을 반환합니다.",
             security = @SecurityRequirement(name = SwaggerConfig.SESSION_SCHEME))
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "200", description = "Recording returned", useReturnTypeSchema = true),
+                responseCode = "200", description = "녹화 상세 조회 성공", useReturnTypeSchema = true),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404", description = "Recording not found",
+                responseCode = "404", description = "녹화를 찾을 수 없음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "503", description = "Playback URL could not be issued",
+                responseCode = "503", description = "재생 URL을 발급할 수 없음",
                 content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<AdminRecordingDetailResponse>> findById(
-            @Parameter(description = "Recording id", required = true) @Positive Long recordingId);
+            @Parameter(description = "녹화 ID", required = true) @Positive Long recordingId);
 }

@@ -4,6 +4,7 @@ import { Grid2X2, Minimize2 } from "lucide-vue-next";
 import { listCameras } from "../api/cameraApi";
 import LiveStreamPlayer from "../components/LiveStreamPlayer.vue";
 import { buildCameraPlaybackUrl, mapCamera } from "../domain/cameraMapper";
+import { CAMERA_POLL_INTERVAL_MS } from "../config/cameraPolling";
 
 const createEmptySlots = () => Array.from({ length: 4 }, (_, index) => ({
   id: `empty-${index + 1}`,
@@ -18,29 +19,62 @@ const openedInfoId = ref(null);
 const gridRef = ref(null);
 const isQuadFullscreen = ref(false);
 let latestRequestId = 0;
+let activeRequestCount = 0;
+let refreshTimer = null;
 
-const load = async () => {
+const reconcileStreams = (cameras) => {
+  const existingById = new Map(streams.value.map((stream) => [stream.id, stream]));
+  const nextCameras = cameras.map((camera) => ({
+    ...camera,
+    protocol: "HLS",
+    url: buildCameraPlaybackUrl(camera.cameraCode),
+    empty: false
+  }));
+  const nextStreams = [...nextCameras, ...createEmptySlots()].slice(0, 4).map((candidate) => {
+    const existing = existingById.get(candidate.id);
+    if (!existing) return candidate;
+    Object.assign(existing, candidate);
+    return existing;
+  });
+
+  streams.value.splice(0, streams.value.length, ...nextStreams);
+
+  const activeIds = new Set(cameras.map((camera) => String(camera.id)));
+  Object.keys(playbackStates.value).forEach((streamId) => {
+    if (!activeIds.has(String(streamId))) delete playbackStates.value[streamId];
+  });
+  cameras.forEach((camera) => {
+    if (!playbackStates.value[camera.id]) playbackStates.value[camera.id] = "loading";
+  });
+  if (openedInfoId.value !== null && !activeIds.has(String(openedInfoId.value))) {
+    openedInfoId.value = null;
+  }
+};
+
+const load = async ({ silent = false } = {}) => {
+  if (silent && activeRequestCount > 0) return;
   const requestId = ++latestRequestId;
-  loading.value = true;
-  error.value = "";
-  openedInfoId.value = null;
+  activeRequestCount += 1;
+  if (!silent) {
+    loading.value = true;
+    error.value = "";
+    openedInfoId.value = null;
+  }
 
   try {
     const result = await listCameras({ page: 0, size: 4, sort: "cameraCode,asc" });
     if (requestId !== latestRequestId) return;
-    const cameras = (result.data || []).map(mapCamera).map((camera) => ({
-      ...camera,
-      protocol: "HLS",
-      url: buildCameraPlaybackUrl(camera.cameraCode),
-      empty: false
-    }));
-    streams.value = [...cameras, ...createEmptySlots()].slice(0, 4);
-    playbackStates.value = Object.fromEntries(cameras.map((camera) => [camera.id, "loading"]));
+    error.value = "";
+    const cameras = (result.data || []).map(mapCamera);
+    reconcileStreams(cameras);
   } catch (cause) {
     if (requestId !== latestRequestId) return;
-    streams.value = createEmptySlots();
-    error.value = cause?.message || "실시간 CCTV 목록을 불러오지 못했습니다.";
+    if (!silent) {
+      streams.value.splice(0, streams.value.length, ...createEmptySlots());
+      error.value = cause?.message || "실시간 CCTV 목록을 불러오지 못했습니다.";
+    }
   } finally {
+    activeRequestCount -= 1;
     if (requestId === latestRequestId) loading.value = false;
   }
 };
@@ -71,12 +105,14 @@ const toggleQuadFullscreen = async () => {
 
 onMounted(() => {
   load();
+  refreshTimer = window.setInterval(() => load({ silent: true }), CAMERA_POLL_INTERVAL_MS);
   document.addEventListener("fullscreenchange", updateQuadFullscreenState);
   window.addEventListener("toggle-live-quad", toggleQuadFullscreen);
 });
 
 onBeforeUnmount(() => {
   latestRequestId += 1;
+  if (refreshTimer) window.clearInterval(refreshTimer);
   document.removeEventListener("fullscreenchange", updateQuadFullscreenState);
   window.removeEventListener("toggle-live-quad", toggleQuadFullscreen);
 });
