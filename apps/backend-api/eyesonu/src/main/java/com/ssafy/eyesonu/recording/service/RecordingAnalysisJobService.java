@@ -98,7 +98,6 @@ public class RecordingAnalysisJobService {
         job.setSearchStartSnapshot(condition.getSearchStart());
         job.setSearchEndSnapshot(condition.getSearchEnd());
         job.setSearchAreaSnapshot(condition.getSearchArea());
-        job.setSimilarityThresholdSnapshot(condition.getSimilarityThreshold());
         try {
             analysisJobMapper.insert(job);
         } catch (DuplicateKeyException exception) {

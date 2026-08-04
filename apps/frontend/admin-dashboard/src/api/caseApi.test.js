@@ -1,11 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  addCaseCameras,
   closeCase,
   createCase,
+  createSearchCondition,
   deleteCasePhoto,
+  deleteSearchCondition,
   getCase,
+  listCaseCameras,
   listCases,
+  listSearchConditions,
   putCasePhoto,
+  removeCaseCamera,
+  replaceSearchCondition,
   updateCase,
   updateCaseStatus
 } from "./caseApi";
@@ -151,5 +158,68 @@ describe("caseApi", () => {
       reason: "발견",
       force: false
     });
+  });
+
+  it("탐색 조건을 조회·생성·전체 수정·삭제하고 임계값 없는 payload를 보낸다", async () => {
+    const condition = {
+      id: 3,
+      prompt: "a person wearing a blue short sleeve top and black pants",
+      normalizedPrompt: "a person wearing a blue short sleeve top and black pants",
+      realtimeUsable: true
+    };
+    const adapter = vi.fn(async (config) => response(
+      config,
+      config.method === "delete" ? "" : {
+        timestamp: "2026-08-03T00:00:00Z",
+        data: config.method === "get" ? [condition] : condition
+      },
+      config.method === "delete" ? 204 : 200
+    ));
+    apiClient.defaults.adapter = adapter;
+    const payload = {
+      prompt: condition.prompt,
+      exclusionPrompt: null,
+      searchStart: null,
+      searchEnd: null,
+      searchArea: null
+    };
+
+    await expect(listSearchConditions(17)).resolves.toEqual([condition]);
+    await expect(createSearchCondition(17, payload)).resolves.toEqual(condition);
+    await expect(replaceSearchCondition(17, 3, payload)).resolves.toEqual(condition);
+    await expect(deleteSearchCondition(17, 3)).resolves.toBeUndefined();
+
+    expect(adapter.mock.calls.map(([config]) => `${config.method} ${config.url}`)).toEqual([
+      "get /admin/cases/17/search-conditions",
+      "post /admin/cases/17/search-conditions",
+      "put /admin/cases/17/search-conditions/3",
+      "delete /admin/cases/17/search-conditions/3"
+    ]);
+    expect(JSON.parse(adapter.mock.calls[1][0].data)).not.toHaveProperty("similarityThreshold");
+    expect(JSON.parse(adapter.mock.calls[2][0].data)).toEqual(payload);
+  });
+
+  it("사건 카메라를 조회·복수 추가·제외하고 204를 처리한다", async () => {
+    const cameras = [{ id: 8, cameraId: 11, cameraCode: "CAM-011", searchEnabled: true }];
+    const adapter = vi.fn(async (config) => response(
+      config,
+      config.method === "delete" ? "" : {
+        timestamp: "2026-08-03T00:00:00Z",
+        data: cameras
+      },
+      config.method === "delete" ? 204 : 200
+    ));
+    apiClient.defaults.adapter = adapter;
+
+    await expect(listCaseCameras(17)).resolves.toEqual(cameras);
+    await expect(addCaseCameras(17, [11, 12])).resolves.toEqual(cameras);
+    await expect(removeCaseCamera(17, 11)).resolves.toBeUndefined();
+
+    expect(adapter.mock.calls.map(([config]) => `${config.method} ${config.url}`)).toEqual([
+      "get /admin/cases/17/cameras",
+      "post /admin/cases/17/cameras",
+      "delete /admin/cases/17/cameras/11"
+    ]);
+    expect(JSON.parse(adapter.mock.calls[1][0].data)).toEqual({ cameraIds: [11, 12] });
   });
 });

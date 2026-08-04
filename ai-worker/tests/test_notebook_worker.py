@@ -21,7 +21,11 @@ from qwen_backend.notebook_worker import NotebookWorker, NotebookWorkerSettings
 class FixtureEngine:
     model_key = "fixture-hybrid-v1"
 
+    def __init__(self) -> None:
+        self.similarity_threshold: float | None = -1.0
+
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
+        self.similarity_threshold = request.similarity_threshold
         time.sleep(0.7)
         frame_path = request.output_dir / "frame-1250.jpg"
         crop_path = request.output_dir / "track-3.jpg"
@@ -73,7 +77,6 @@ def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -
                             "recordingStart": "2026-07-30T00:00:00Z",
                             "recordingEnd": "2026-07-30T01:00:00Z",
                             "prompt": "red jacket",
-                            "similarityThreshold": 0.8,
                             "searchFromMs": 0,
                             "searchToMs": 5_000,
                             "leaseExpiresAt": "2026-07-30T00:01:00Z",
@@ -176,8 +179,10 @@ def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -
                 cache_dir=tmp_path / "cache",
                 output_dir=tmp_path / "output",
             )
-            worker = NotebookWorker(settings, engine_factory=lambda: FixtureEngine())
+            engine = FixtureEngine()
+            worker = NotebookWorker(settings, engine_factory=lambda: engine)
             assert await worker._run_once(client) is True
+            assert engine.similarity_threshold is None
 
     anyio.run(scenario)
 
@@ -210,6 +215,15 @@ def test_notebook_worker_settings_rejects_placeholder_api_key() -> None:
         NotebookWorkerSettings(
             central_api_url="https://central.example",
             api_key="inject-from-local-secret-store",
+        )
+
+
+def test_notebook_worker_settings_require_single_rabbitmq_prefetch() -> None:
+    with pytest.raises(ValueError, match="less than or equal to 1"):
+        NotebookWorkerSettings(
+            central_api_url="https://central.example",
+            api_key="test-key",
+            rabbitmq_prefetch_count=2,
         )
 
 

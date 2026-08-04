@@ -17,8 +17,10 @@ import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.common.exception.GlobalExceptionHandler;
 import com.ssafy.eyesonu.recording.controller.aiworker.AiWorkerJobController;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerClaimResponse;
+import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerJobResponse;
 import com.ssafy.eyesonu.recording.service.AiWorkerAuthenticationService;
 import com.ssafy.eyesonu.recording.service.AiWorkerJobService;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -105,6 +107,31 @@ class AiWorkerJobApiTests {
 
         verify(jobService).claimJob(71L, new com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerClaimRequest(
                 "notebook-1", "fixture-v1"));
+    }
+
+    @Test
+    void workerClaimUsesDevContractWithoutSimilarityThreshold() throws Exception {
+        Instant leaseExpiresAt = Instant.parse("2026-08-04T01:00:00Z");
+        when(jobService.claimJob(any(), any())).thenReturn(new AiWorkerClaimResponse(
+                "eyesonu-ai-worker-v1",
+                new AiWorkerJobResponse(
+                        "eyesonu-ai-worker-v1", 71L, 11L, 21L, 31L,
+                        "fixture-v1", 41L, "Gate A", "CAM-001",
+                        "https://storage.example/video.mp4", null,
+                        Instant.parse("2026-08-04T00:00:00Z"),
+                        Instant.parse("2026-08-04T00:30:00Z"),
+                        "red jacket", null, 0L, 30_000L, leaseExpiresAt),
+                "lease-1", leaseExpiresAt, 0));
+
+        mockMvc.perform(post("/api/v1/ai-worker/jobs/71/claim")
+                        .header("X-AI-Worker-Key", "worker-key")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"workerId":"notebook-1","modelKey":"fixture-v1"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.job.prompt").value("red jacket"))
+                .andExpect(jsonPath("$.data.job.similarityThreshold").doesNotExist());
     }
 
     @Test

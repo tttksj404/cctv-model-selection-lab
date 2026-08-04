@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu.recording.messaging;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
@@ -75,6 +77,17 @@ class RecordingAnalysisJobPublisherTests {
         verify(outboxMapper).insert(any(RecordingAnalysisOutbox.class));
         verify(rabbitTemplate, never()).convertAndSend(
                 anyString(), anyString(), any(), any(MessagePostProcessor.class), any(CorrelationData.class));
+    }
+
+    @Test
+    void recordingAnalysisEventDoesNotExposeSimilarityThreshold() {
+        RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
+                "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
+                5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"));
+
+        assertFalse(new ObjectMapper().findAndRegisterModules()
+                .valueToTree(event)
+                .has("similarityThreshold"));
     }
 
     @Test

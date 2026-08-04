@@ -49,6 +49,12 @@ sequenceDiagram
 
 RabbitMQ 메시지에는 인상착의·S3 URL·카메라 정보가 들어가지 않는다. 워커는 메시지의 jobId로 중앙 서버에 정확히 claim한 뒤에만 민감한 작업 정보를 받는다. 메시지를 ACK하기 전에는 중앙 lease가 이미 저장되어 있으며, stale 메시지는 빈 claim 응답으로 ACK한다.
 
+### `origin/dev` 임계값 호환
+
+중앙 서버의 현재 `origin/dev` 계약은 `similarityThreshold`를 작업 메시지와 claim 응답에 보내지 않는다. 노트북 Worker는 해당 필드가 없어도 `None`으로 해석하여 정상적으로 SOLIDER+CLIP 후보를 순위화하고 Top-K를 반환한다. 향후 중앙 서버가 유효한 `0.0~1.0` 값을 다시 보내는 경우에는 그 값보다 낮은 track 후보만 추가로 제외한다. 즉, 필드 부재로 인한 스키마 오류는 없고, 현재 배포 계약에서는 중앙 서버 임계값에 의존하지 않는다.
+
+RabbitMQ consumer는 `prefetch=1`을 강제한다. GPU 추론이 끝나기 전 두 개 이상의 job lease를 잡는 상황을 차단하기 위한 설정이며, 환경 변수에 1 이외의 값이 들어가면 Worker가 시작 시 검증 오류로 중단된다.
+
 완료 payload에는 노트북의 절대 경로를 넣지 않는다. 후보마다 프레임 시점, 바운딩 박스, 유사도, 속성 요약과 중앙이 발급한 crop/frame object key를 보낸다. 중앙 서버는 object key가 **해당 job·재시도·candidateKey** 조합으로 발급된 JPEG/PNG 키와 정확히 일치하는지 및 저장소에 실제로 존재하는지를 확인한 뒤 후보 이벤트와 `analysis_jobs.result_payload`를 함께 저장한다.
 
 ## 노트북 설정

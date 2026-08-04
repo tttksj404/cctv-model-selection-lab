@@ -1,6 +1,5 @@
 package com.ssafy.eyesonu.recording.dto.aiworker;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 public record AiWorkerJobResponse(
@@ -19,7 +18,6 @@ public record AiWorkerJobResponse(
         Instant recordingEnd,
         String prompt,
         String exclusionPrompt,
-        BigDecimal similarityThreshold,
         long searchFromMs,
         Long searchToMs,
         Instant leaseExpiresAt) {

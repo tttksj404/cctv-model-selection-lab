@@ -82,6 +82,28 @@ def test_claim_response_requires_lease_with_job() -> None:
     assert response.lease_token == "lease-1"
 
 
+def test_claim_job_accepts_server_contract_without_similarity_threshold() -> None:
+    job = WorkerJob(
+        jobId=71,
+        caseId=11,
+        searchConditionId=21,
+        recordingId=31,
+        modelKey="fixture-hybrid-v1",
+        cameraId=41,
+        cameraName="Gate A",
+        cameraAddress="CAM-001",
+        videoUrl="https://storage.example/video.mp4",
+        recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
+        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
+        prompt="red jacket",
+        searchFromMs=0,
+        searchToMs=5_000,
+        leaseExpiresAt=datetime(2026, 7, 30, 0, 1, tzinfo=UTC),
+    )
+
+    assert job.similarity_threshold is None
+
+
 def test_rabbit_worker_event_contains_only_routing_metadata() -> None:
     event = RabbitWorkerJobEvent(
         eventId="command-71",

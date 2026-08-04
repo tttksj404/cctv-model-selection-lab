@@ -1,6 +1,5 @@
 package com.ssafy.eyesonu.recording.domain;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,6 @@ public class RecordingAnalysisPublishSnapshot {
     private String recordingObjectKey;
     private String prompt;
     private String exclusionPrompt;
-    private BigDecimal similarityThreshold;
     private Instant searchStart;
     private Instant searchEnd;
     private String searchArea;
