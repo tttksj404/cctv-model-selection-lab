@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
@@ -267,9 +268,11 @@ class RecordingAnalysisJobPublisherTests {
     }
 
     private RecordingAnalysisJobPublisher publisher(long claimLeaseSeconds) {
+        RecordingAnalysisProperties properties = new RecordingAnalysisProperties();
+        properties.getOutbox().setClaimLeaseSeconds(claimLeaseSeconds);
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
                 rabbitTemplate, outboxMapper, outboxClaimer,
-                analysisJobMapper, claimLeaseSeconds);
+                analysisJobMapper, properties);
         publishers.add(publisher);
         return publisher;
     }

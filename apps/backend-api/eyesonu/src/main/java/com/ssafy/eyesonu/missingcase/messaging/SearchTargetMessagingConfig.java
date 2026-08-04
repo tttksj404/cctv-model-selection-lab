@@ -1,7 +1,10 @@
 package com.ssafy.eyesonu.missingcase.messaging;
 
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarable;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -16,6 +19,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class SearchTargetMessagingConfig {
@@ -77,63 +82,16 @@ public class SearchTargetMessagingConfig {
 	}
 
 	@Bean
-	Queue recordingAnalysisRetry5SecondsQueue() {
-		return retryQueue(5);
-	}
-
-	@Bean
-	Queue recordingAnalysisRetry15SecondsQueue() {
-		return retryQueue(15);
-	}
-
-	@Bean
-	Queue recordingAnalysisRetry30SecondsQueue() {
-		return retryQueue(30);
-	}
-
-	@Bean
-	Queue recordingAnalysisRetry60SecondsQueue() {
-		return retryQueue(60);
-	}
-
-	@Bean
-	Queue recordingAnalysisRetry300SecondsQueue() {
-		return retryQueue(300);
-	}
-
-	@Bean
-	Binding recordingAnalysisRetry5SecondsBinding(
-			@Qualifier("recordingAnalysisRetry5SecondsQueue") Queue retryQueue,
-			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
-		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 5);
-	}
-
-	@Bean
-	Binding recordingAnalysisRetry15SecondsBinding(
-			@Qualifier("recordingAnalysisRetry15SecondsQueue") Queue retryQueue,
-			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
-		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 15);
-	}
-
-	@Bean
-	Binding recordingAnalysisRetry30SecondsBinding(
-			@Qualifier("recordingAnalysisRetry30SecondsQueue") Queue retryQueue,
-			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
-		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 30);
-	}
-
-	@Bean
-	Binding recordingAnalysisRetry60SecondsBinding(
-			@Qualifier("recordingAnalysisRetry60SecondsQueue") Queue retryQueue,
-			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
-		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 60);
-	}
-
-	@Bean
-	Binding recordingAnalysisRetry300SecondsBinding(
-			@Qualifier("recordingAnalysisRetry300SecondsQueue") Queue retryQueue,
-			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange) {
-		return retryBinding(retryQueue, recordingAnalysisRetryExchange, 300);
+	Declarables recordingAnalysisRetryTopology(
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange,
+			RecordingAnalysisProperties properties) {
+		List<Declarable> declarations = new ArrayList<>();
+		for (Integer delaySeconds : properties.getRetryDelayBucketsSeconds()) {
+			Queue retryQueue = retryQueue(delaySeconds);
+			declarations.add(retryQueue);
+			declarations.add(retryBinding(retryQueue, recordingAnalysisRetryExchange, delaySeconds));
+		}
+		return new Declarables(declarations);
 	}
 
 	@Bean
@@ -159,14 +117,20 @@ public class SearchTargetMessagingConfig {
 	SimpleRabbitListenerContainerFactory recordingAnalysisJobListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			JacksonJsonMessageConverter rabbitMessageConverter,
-			RabbitTemplate rabbitTemplate) {
+			RabbitTemplate rabbitTemplate,
+			RecordingAnalysisProperties properties) {
+		RecordingAnalysisProperties.BackendConsumer.Retry retry =
+				properties.getBackendConsumer().getRetry();
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setConnectionFactory(connectionFactory);
 		factory.setMessageConverter(rabbitMessageConverter);
 		factory.setContainerCustomizer(container -> container.setAdviceChain(
 				RetryInterceptorBuilder.stateless()
-						.maxRetries(2)
-						.backOffOptions(1_000L, 2.0, 10_000L)
+						.maxRetries(retry.getMaxAttempts())
+						.backOffOptions(
+								retry.getInitialIntervalMs(),
+								retry.getMultiplier(),
+								retry.getMaxIntervalMs())
 						.recoverer(new RepublishMessageRecoverer(
 								rabbitTemplate,
 								RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE,

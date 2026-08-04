@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.service;
 
 import com.ssafy.eyesonu.common.exception.ApiException;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +35,9 @@ public class RecordingAnalysisJobClaimService {
 
     public RecordingAnalysisJobClaimService(
             AnalysisJobMapper analysisJobMapper,
-            @Value("${recording.analysis.worker-claim-lease-seconds:300}") long claimLeaseSeconds) {
+            RecordingAnalysisProperties properties) {
         this.analysisJobMapper = analysisJobMapper;
-        this.claimLeaseSeconds = claimLeaseSeconds;
+        this.claimLeaseSeconds = properties.getWorkerClaimLeaseSeconds();
     }
 
     @Transactional

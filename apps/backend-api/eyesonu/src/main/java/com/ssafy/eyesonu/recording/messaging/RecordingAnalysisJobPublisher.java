@@ -1,5 +1,6 @@
 package com.ssafy.eyesonu.recording.messaging;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -8,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
@@ -16,7 +18,6 @@ import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
 import jakarta.annotation.PreDestroy;
 
 @Component
@@ -32,13 +33,14 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
     public static final String RETRY_EXCHANGE = "search.target.recording.retry.exchange";
     public static final String RETRY_QUEUE_PREFIX = QUEUE + ".retry.";
     public static final String RETRY_ROUTING_KEY_PREFIX = "search.target.recording.retry.";
-    private static final long CONFIRM_TIMEOUT_SECONDS = 5L;
-
     private final RabbitTemplate rabbitTemplate;
     private final RecordingAnalysisOutboxMapper outboxMapper;
     private final RecordingAnalysisOutboxClaimer outboxClaimer;
     private final AnalysisJobMapper analysisJobMapper;
     private final long claimLeaseSeconds;
+    private final int publishBatchSize;
+    private final Duration confirmTimeout;
+    private final Duration confirmPollInterval;
     private final Object heartbeatExecutorMonitor = new Object();
     private ScheduledExecutorService heartbeatExecutor;
 
@@ -47,12 +49,15 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             RecordingAnalysisOutboxMapper outboxMapper,
             RecordingAnalysisOutboxClaimer outboxClaimer,
             AnalysisJobMapper analysisJobMapper,
-            @Value("${recording.analysis.outbox.claim-lease-seconds:300}") long claimLeaseSeconds) {
+            RecordingAnalysisProperties properties) {
         this.rabbitTemplate = rabbitTemplate;
         this.outboxMapper = outboxMapper;
         this.outboxClaimer = outboxClaimer;
         this.analysisJobMapper = analysisJobMapper;
-        this.claimLeaseSeconds = claimLeaseSeconds;
+        this.claimLeaseSeconds = properties.getOutbox().getClaimLeaseSeconds();
+        this.publishBatchSize = properties.getOutbox().getPublishBatchSize();
+        this.confirmTimeout = properties.getOutbox().getConfirmTimeout();
+        this.confirmPollInterval = properties.getOutbox().getConfirmPollInterval();
     }
 
     @PreDestroy
@@ -102,7 +107,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
     }
 
     public void publishPending() {
-        for (int published = 0; published < 50; published++) {
+        for (int published = 0; published < publishBatchSize; published++) {
             ClaimedRecordingAnalysisOutbox claimed = outboxClaimer.claimNext().orElse(null);
             if (claimed == null) {
                 return;
@@ -188,7 +193,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             CorrelationData correlationData,
             AtomicBoolean leaseOwned) throws Exception {
         long deadline = System.nanoTime()
-                + TimeUnit.SECONDS.toNanos(CONFIRM_TIMEOUT_SECONDS);
+                + confirmTimeout.toNanos();
         CorrelationData.Confirm confirm;
         while (true) {
             ensureLeaseOwned(leaseOwned);
@@ -198,8 +203,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
             }
             try {
                 confirm = correlationData.getFuture().get(
-                        Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos), 200L),
-                        TimeUnit.MILLISECONDS);
+                        confirmationPollWaitMillis(remainingNanos), TimeUnit.MILLISECONDS);
                 break;
             } catch (java.util.concurrent.TimeoutException ignored) {
                 // Re-check ownership while waiting for the broker.
@@ -213,6 +217,12 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
         if (returned != null) {
             throw new IllegalStateException("RabbitMQ message was returned: " + returned.getReplyText());
         }
+    }
+
+    private long confirmationPollWaitMillis(long remainingNanos) {
+        long remainingMillis = Math.max(1L, TimeUnit.NANOSECONDS.toMillis(remainingNanos));
+        long configuredPollMillis = Math.max(1L, confirmPollInterval.toMillis());
+        return Math.min(remainingMillis, configuredPollMillis);
     }
 
     private void ensureLeaseOwned(AtomicBoolean leaseOwned) {

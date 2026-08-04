@@ -21,7 +21,13 @@ from qwen_backend.notebook_worker import (
     NotebookWorkerSettings,
     _load_worker_env_file,
 )
+from qwen_backend.worker_lease import (
+    LeaseHeartbeatContext,
+    maintain_lease,
+    raise_if_lease_lost,
+)
 from qwen_backend.worker_protocol import RecordingAnalysisTarget
+from qwen_backend.worker_transfer import RecordingEvidenceTransfer
 
 
 class FixtureEngine:
@@ -367,7 +373,7 @@ def test_notebook_worker_propagates_nonretryable_failure_callback_error(tmp_path
     anyio.run(scenario)
 
 
-def test_heartbeat_marks_nonretryable_central_error_as_fatal(tmp_path: Path) -> None:
+def test_heartbeat_marks_nonretryable_central_error_as_fatal() -> None:
     class InvalidHeartbeatClient:
         async def heartbeat(self, job_id: int, claim_token: str) -> None:
             assert (job_id, claim_token) == (71, "lease-71")
@@ -378,37 +384,25 @@ def test_heartbeat_marks_nonretryable_central_error_as_fatal(tmp_path: Path) -> 
             )
 
     async def scenario() -> None:
-        worker = NotebookWorker(
-            NotebookWorkerSettings(
-                central_api_url="https://central.example",
-                api_key="test-key",
-                worker_id="notebook-test",
-                heartbeat_interval_seconds=0.51,
-                cache_dir=tmp_path / "cache",
-                output_dir=tmp_path / "output",
-            ),
-            engine_factory=FixtureEngine,
-        )
         lease_lost = anyio.Event()
         fatal_errors: list[CentralWorkerError] = []
 
-        await worker._heartbeat_loop(  # pyright: ignore[reportPrivateUsage]
-            InvalidHeartbeatClient(),  # type: ignore[arg-type]
-            71,
-            "lease-71",
-            anyio.Event(),
-            lease_lost,
-            fatal_errors,
+        await maintain_lease(
+            LeaseHeartbeatContext(
+                client=InvalidHeartbeatClient(),
+                job_id=71,
+                lease_token="lease-71",
+                interval_seconds=0.51,
+                stop=anyio.Event(),
+                lease_lost=lease_lost,
+                fatal_errors=fatal_errors,
+            )
         )
 
         assert lease_lost.is_set()
         assert fatal_errors[0].code == "INVALID_WORKER_KEY"
         with pytest.raises(CentralWorkerError, match="worker key is invalid"):
-            worker._raise_if_lease_lost(  # pyright: ignore[reportPrivateUsage]
-                lease_lost,
-                71,
-                fatal_errors,
-            )
+            raise_if_lease_lost(lease_lost, 71, fatal_errors)
 
     anyio.run(scenario)
 
@@ -421,19 +415,16 @@ def test_notebook_worker_refreshes_an_expired_signed_recording_url_once(tmp_path
         initial_target = RecordingAnalysisTarget.model_validate(initial_data)
         refreshed_target = RecordingAnalysisTarget.model_validate(refreshed_data)
         client = RefreshingDownloadClient(refreshed_target)
-        worker = NotebookWorker(
-            NotebookWorkerSettings(
-                central_api_url="https://central.example",
-                api_key="test-key",
-                worker_id="notebook-test",
-                cache_dir=tmp_path / "cache",
-                output_dir=tmp_path / "output",
-            ),
-            engine_factory=FixtureEngine,
+        settings = NotebookWorkerSettings(
+            central_api_url="https://central.example",
+            api_key="test-key",
+            worker_id="notebook-test",
+            cache_dir=tmp_path / "cache",
+            output_dir=tmp_path / "output",
         )
-        worker.settings.cache_dir.mkdir(parents=True)
+        settings.cache_dir.mkdir(parents=True)
 
-        target, video_path = await worker._download_target_recording(  # type: ignore[arg-type]
+        target, video_path = await RecordingEvidenceTransfer(settings).download_target_recording(
             client,
             initial_target,
             "lease-1",

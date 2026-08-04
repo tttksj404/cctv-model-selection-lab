@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.common.exception.ApiException;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import java.util.Optional;
 import java.time.Instant;
@@ -36,7 +37,7 @@ class RecordingAnalysisJobClaimServiceTests {
 
     @BeforeEach
     void setUp() {
-        service = new RecordingAnalysisJobClaimService(analysisJobMapper, 300);
+        service = new RecordingAnalysisJobClaimService(analysisJobMapper, properties(300));
     }
 
     @Test
@@ -203,5 +204,11 @@ class RecordingAnalysisJobClaimServiceTests {
         job.setJobType("RECORDING_ANALYSIS");
         job.setStatus("RUNNING");
         return job;
+    }
+
+    private RecordingAnalysisProperties properties(long workerClaimLeaseSeconds) {
+        RecordingAnalysisProperties properties = new RecordingAnalysisProperties();
+        properties.setWorkerClaimLeaseSeconds(workerClaimLeaseSeconds);
+        return properties;
     }
 }

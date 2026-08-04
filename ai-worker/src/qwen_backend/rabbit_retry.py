@@ -11,8 +11,33 @@ from qwen_backend.central_client import CentralWorkerError
 
 RETRY_COUNT_HEADER = "x-eyesonu-retry-count"
 ClaimErrorAction = Literal["ACK", "DEAD_LETTER", "RETRY"]
-_RETRY_DELAY_BUCKET_SECONDS: Final[tuple[int, ...]] = (5, 15, 30, 60, 300)
-MAX_RETRY_DELAY_SECONDS: Final[float] = float(_RETRY_DELAY_BUCKET_SECONDS[-1])
+
+
+@dataclass(frozen=True, slots=True)
+class RabbitRetrySchedule:
+    """Ordered RabbitMQ TTL buckets shared by the worker retry policy and publisher."""
+
+    delay_buckets_seconds: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        buckets = self.delay_buckets_seconds
+        if not buckets or any(bucket <= 0 for bucket in buckets):
+            raise ValueError("retry delay buckets must contain positive seconds")
+        if tuple(sorted(set(buckets))) != buckets:
+            raise ValueError("retry delay buckets must be unique and ascending")
+
+    @property
+    def max_delay_seconds(self) -> float:
+        return float(self.delay_buckets_seconds[-1])
+
+    def bucket_for(self, delay_seconds: float) -> int:
+        for bucket_seconds in self.delay_buckets_seconds:
+            if delay_seconds <= bucket_seconds:
+                return bucket_seconds
+        return self.delay_buckets_seconds[-1]
+
+
+DEFAULT_RABBIT_RETRY_SCHEDULE: Final = RabbitRetrySchedule((5, 15, 30, 60, 300))
 
 
 class RetryScheduler(Protocol):
@@ -28,10 +53,12 @@ class AioPikaRetryScheduler:
         *,
         exchange_name: str,
         routing_key_prefix: str,
+        retry_schedule: RabbitRetrySchedule = DEFAULT_RABBIT_RETRY_SCHEDULE,
     ) -> None:
         self._channel = channel
         self._exchange_name = exchange_name
         self._routing_key_prefix = routing_key_prefix
+        self._retry_schedule = retry_schedule
 
     async def schedule(self, body: bytes, *, retry_count: int, delay_seconds: float) -> None:
         if retry_count < 0:
@@ -39,7 +66,7 @@ class AioPikaRetryScheduler:
         if delay_seconds <= 0:
             raise ValueError("delay_seconds must be positive")
         exchange = await self._channel.get_exchange(self._exchange_name, ensure=False)
-        bucket_seconds = retry_delay_bucket_seconds(delay_seconds)
+        bucket_seconds = self._retry_schedule.bucket_for(delay_seconds)
         message = aio_pika.Message(
             body,
             headers={RETRY_COUNT_HEADER: retry_count},
@@ -53,12 +80,11 @@ class AioPikaRetryScheduler:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RabbitRetryPolicy:
     retry_delay_seconds: float
     max_retry_attempts: int
-    max_transient_delay_seconds: float = 300.0
-    max_lease_delay_seconds: float = MAX_RETRY_DELAY_SECONDS
+    retry_schedule: RabbitRetrySchedule = DEFAULT_RABBIT_RETRY_SCHEDULE
 
     def __post_init__(self) -> None:
         if self.retry_delay_seconds <= 0:
@@ -81,7 +107,7 @@ class RabbitRetryPolicy:
         exponent = min(max(retry_count - 1, 0), 6)
         return min(
             self.retry_delay_seconds * (2**exponent),
-            self.max_transient_delay_seconds,
+            self.retry_schedule.max_delay_seconds,
         )
 
     def active_lease_delay(self, claim_expires_at: datetime | None) -> float:
@@ -90,7 +116,7 @@ class RabbitRetryPolicy:
         remaining = (claim_expires_at.astimezone(UTC) - datetime.now(UTC)).total_seconds() + 1.0
         return min(
             max(self.retry_delay_seconds, remaining),
-            self.max_lease_delay_seconds,
+            self.retry_schedule.max_delay_seconds,
         )
 
 
@@ -102,13 +128,6 @@ def classify_central_error(error: CentralWorkerError) -> ClaimErrorAction:
     if error.status_code is not None and 400 <= error.status_code < 500:
         return "DEAD_LETTER"
     return "RETRY"
-
-
-def retry_delay_bucket_seconds(delay_seconds: float) -> int:
-    for bucket_seconds in _RETRY_DELAY_BUCKET_SECONDS:
-        if delay_seconds <= bucket_seconds:
-            return bucket_seconds
-    return _RETRY_DELAY_BUCKET_SECONDS[-1]
 
 
 def _retry_count(headers: Mapping[str, object]) -> int:

@@ -12,6 +12,7 @@ class RecordingAnalysisJobLeaseRecoverySchedulerTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(RecordingAnalysisJobLeaseRecoveryScheduler.class)
+            .withPropertyValues("recording.analysis.lease-recovery.poll-delay-ms=60000")
             .withBean(RecordingAnalysisJobLeaseRecoveryService.class,
                     () -> mock(RecordingAnalysisJobLeaseRecoveryService.class));
 
