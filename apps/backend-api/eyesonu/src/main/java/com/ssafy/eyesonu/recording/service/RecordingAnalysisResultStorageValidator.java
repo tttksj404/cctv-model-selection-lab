@@ -26,8 +26,10 @@ public class RecordingAnalysisResultStorageValidator {
     public void verify(AnalysisJob job, RecordingAnalysisBatchResultRequest request) {
         int attempt = job.getRetryCount() + 1;
         for (RecordingAnalysisBatchResultRequest.Candidate candidate : request.candidates()) {
-            if (!objectKeyFactory.matchesAnalysisFrameKey(job.getId(), attempt, candidate.frameObjectKey())
-                    || !objectKeyFactory.matchesAnalysisCropKey(job.getId(), attempt, candidate.cropObjectKey())) {
+            if (!objectKeyFactory.matchesIssuedAnalysisFrameKey(
+                        job.getId(), attempt, candidate.trackId(), candidate.frameObjectKey())
+                    || !objectKeyFactory.matchesIssuedAnalysisCropKey(
+                        job.getId(), attempt, candidate.trackId(), candidate.cropObjectKey())) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD_OBJECT_KEY",
                         "Image object key does not belong to this recording analysis attempt.");
             }
