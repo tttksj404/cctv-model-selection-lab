@@ -8,10 +8,15 @@ source_materializer_script="$repo_root/infra/scripts/materialize-verified-releas
 host_security_validator_script="$repo_root/infra/scripts/verify-deployment-host-security.sh"
 jenkinsfile="$repo_root/infra/Jenkinsfile"
 compose_file="$repo_root/infra/compose.deploy.yml"
+ingress_compose_file="$repo_root/infra/compose.ingress.yml"
 example_env_file="$repo_root/infra/.env.deploy.example"
 backend_dockerfile="$repo_root/apps/backend-api/eyesonu/Dockerfile"
 backend_dockerignore="$repo_root/apps/backend-api/eyesonu/.dockerignore"
 certificate_bootstrap_script="$repo_root/infra/scripts/bootstrap-certificates.sh"
+ingress_bootstrap_script="$repo_root/infra/scripts/bootstrap-shared-ingress.sh"
+forced_command_script="$repo_root/infra/scripts/eyesonu-deploy-forced-command.sh"
+deployment_broker_script="$repo_root/infra/scripts/eyesonu-run-deployment.sh"
+release_policy_file="$repo_root/infra/release-policy.env"
 deployment_documentation="$repo_root/infra/DEPLOYMENT.md"
 
 # The production SSH command starts the runner with env -i, so this opt-in
@@ -32,7 +37,8 @@ git check-ignore -q --no-index 'infra/certbot/conf/accounts/acme-v02.api.letsenc
 [[ -f "$source_materializer_script" ]] || fail "verified Jenkins source materializer script is missing"
 [[ -f "$host_security_validator_script" ]] || fail "deployment host security validator script is missing"
 [[ -f "$backend_dockerfile" && -f "$backend_dockerignore" ]] || fail "backend Docker build files are missing"
-[[ -f "$certificate_bootstrap_script" && -f "$deployment_documentation" ]] || fail "deployment bootstrap files are missing"
+[[ -f "$certificate_bootstrap_script" && -f "$ingress_bootstrap_script" && -f "$forced_command_script" && -f "$deployment_broker_script" && -f "$release_policy_file" && -f "$deployment_documentation" ]] \
+    || fail "deployment bootstrap files are missing"
 grep -Fq 'FROM maven:3.9.11-eclipse-temurin-21-alpine AS build' "$backend_dockerfile" \
     || fail "backend image must build from tracked Maven source"
 grep -Fq 'COPY pom.xml ./' "$backend_dockerfile" \
@@ -53,16 +59,37 @@ grep -Fq '!src/**' "$backend_dockerignore" \
 backend_jenkins_stage="$(sed -n "/stage('Backend build and test')/,/stage('Frontend build and test')/p" "$jenkinsfile")"
 printf '%s\n' "$backend_jenkins_stage" | grep -Fq 'docker build --tag "$IMAGE" .' \
     || fail "Jenkins must build the backend image from the checked-out source"
-grep -Fq 'env -u COMPOSE_PROJECT_NAME "${compose_profile_unsets[@]}" "DEPLOY_RUNTIME_ROOT=$runtime_root" "${inactive_profile_overrides[@]}" docker compose' "$deploy_script" \
+grep -Fq 'env -u COMPOSE_PROJECT_NAME "${compose_profile_unsets[@]}" "DEPLOY_RUNTIME_ROOT=$runtime_root" "IMAGE_TAG=$deploy_image_tag" "${inactive_profile_overrides[@]}" docker compose' "$deploy_script" \
     || fail "profile environment isolation must be scoped to the Docker Compose process"
-grep -Fq '${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/conf.d:/etc/nginx/conf.d:ro' "$compose_file" \
-    || fail "shared Nginx configuration must be mounted from the stable host runtime"
+grep -Fq -- '--project-name eyesonu-deploy' "$deploy_script" \
+    || fail "profile deployment must pin the Compose project name instead of trusting an env file override"
+grep -Fq '${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/conf.d:/etc/nginx/conf.d:ro' "$ingress_compose_file" \
+    || fail "root-managed shared Nginx configuration must be mounted from the stable host runtime"
+if grep -Eq '^  nginx:' "$compose_file"; then
+    fail "profile deployment Compose file must not own the shared ingress service"
+fi
+grep -Fq 'name: eyesonu-ingress' "$ingress_compose_file" \
+    || fail "shared ingress must use its own root-managed Compose stack"
+grep -Fq 'external: true' "$ingress_compose_file" \
+    || fail "shared ingress must attach to pre-created profile networks"
 grep -Fq 'ensure_shared_nginx()' "$deploy_script" \
     || fail "profile deployment must coordinate the shared Nginx service explicitly"
 grep -Fq 'shared Nginx must be running and healthy' "$deploy_script" \
     || fail "profile deployment must reject an unhealthy shared Nginx"
 grep -Fq 'verify_shared_nginx_mount "$nginx_container_id"' "$deploy_script" \
     || fail "profile deployment must verify shared Nginx runtime mounts"
+grep -Fq 'root-managed shared Nginx is not running; profile deployment must not create ingress' "$deploy_script" \
+    || fail "profile deployment must refuse to create shared ingress"
+grep -Fq 'verify_shared_nginx_networks' "$deploy_script" \
+    || fail "profile deployment must verify shared ingress network attachment"
+grep -Fq 'verify_shared_nginx_ports' "$deploy_script" \
+    || fail "profile deployment must verify shared ingress port bindings"
+grep -Fq 'verify_shared_nginx_upstreams' "$deploy_script" \
+    || fail "profile deployment must verify selected profile upstream reachability"
+grep -Fq 'up -d --no-build --pull never --wait --wait-timeout 180' "$deploy_script" \
+    || fail "profile deployment must use already verified local image artifacts without rebuilding"
+grep -Fq 'load_release_image_manifest' "$deploy_script" \
+    || fail "profile deployment must load the immutable release image manifest"
 grep -Fq 'DEPLOY_STOP_ONLY' "$deploy_script" \
     || fail "deployment must support stopping an unmarked first-release candidate"
 grep -Fq 'profile_service_list="$(compose --profile "$profile" config --services)"' "$deploy_script" \
@@ -78,6 +105,13 @@ grep -Fq '/var/lib/eyesonu-deploy/runtime/nginx/conf.d/default.conf' "$deploymen
     || fail "deployment documentation must provision the stable shared Nginx configuration"
 grep -Fq 'expand/contract' "$deployment_documentation" \
     || fail "deployment documentation must require compatible database migration rollback policy"
+grep -Fq 'AUTO_ROLLBACK_SCHEMA_COMPATIBLE=0' "$deployment_documentation" \
+    || fail "deployment documentation must explain the fail-closed default for schema-incompatible rollback"
+grep -Fq 'root-owned broker' "$deployment_documentation" \
+    || fail "deployment documentation must describe the restricted SSH broker boundary"
+if grep -Fq 'SSH 표준입력으로 한 번만 전달' "$deployment_documentation" || grep -Fq '공유 Nginx는 없을 때만 시작' "$deployment_documentation"; then
+    fail "deployment documentation must not retain stale streamed-runner or profile-managed ingress instructions"
+fi
 if grep -Fq 'Resolve branch' "$deployment_documentation"; then
     fail "deployment documentation must describe the pre-agent authorization gate by its current name"
 fi
@@ -87,14 +121,26 @@ grep -Fq 'require_secure_deploy_env_file "$deploy_env_file"' "$deploy_script" \
     || fail "deployment must validate the protected env file contract before Compose interpolation"
 grep -Fq 'deployment env file must not be a symlink' "$deploy_script" \
     || fail "deployment must reject a symlinked env file"
-grep -Fq 'root:eyesonu-deploy with mode 0640' "$deploy_script" \
-    || fail "deployment must require root-owned group-readable env secrets outside the test fixture"
-grep -Fq 'show "$GIT_COMMIT:infra/scripts/run-verified-deployment.sh" > "$trusted_runner"' "$jenkinsfile" \
-    || fail "Jenkins must source the verified deployment runner from the trusted build commit"
-grep -Fq '"/usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/home/eyesonu-deploy LC_ALL=C /bin/bash --noprofile --norc -s --' "$jenkinsfile" \
-    || fail "Jenkins must execute the trusted deployment runner in an empty remote environment"
-grep -Fq '< "$trusted_runner"' "$jenkinsfile" \
-    || fail "Jenkins must send the trusted deployment runner to the deployment host"
+grep -Fq 'root:root with mode 0600' "$deploy_script" \
+    || fail "deployment must keep env secrets readable only by the root deployment broker outside the test fixture"
+grep -Fq 'env.gitlabBranch' "$jenkinsfile" \
+    || fail "Jenkins must read the GitLab push branch before checkout"
+grep -Fq "eventType != 'PUSH'" "$jenkinsfile" \
+    || fail "Jenkins must reject non-push deployment events"
+grep -Fq 'GitLab PUSH event commit must be a full lowercase object ID' "$jenkinsfile" \
+    || fail "Jenkins must require a full push event commit"
+grep -Fq "stage('Build immutable deployment images')" "$jenkinsfile" \
+    || fail "Jenkins must build immutable deployment image artifacts"
+grep -Fq 'docker tag "eyesonu/backend-dev:$release_tag" "eyesonu/backend-master:$release_tag"' "$jenkinsfile" \
+    || fail "Jenkins must retain profile-specific immutable backend image tags"
+grep -Fq '"eyesonu-deploy '\''$DEPLOY_PROFILE'\'' '\''$GIT_COMMIT'\''"' "$jenkinsfile" \
+    || fail "Jenkins must invoke only the restricted deployment SSH protocol"
+if grep -Fq 'trusted_runner=' "$jenkinsfile" || grep -Fq '< "$trusted_runner"' "$jenkinsfile"; then
+    fail "Jenkins must not stream executable shell source through the deployment SSH key"
+fi
+if grep -Fq 'DEPLOY_HOST_ROOT' "$jenkinsfile" || grep -Fq 'DEPLOY_HOST_ENV_FILE' "$jenkinsfile"; then
+    fail "Jenkins must not expose host filesystem paths as deploy-time parameters"
+fi
 if grep -Fq "tokenize('/').last()" "$jenkinsfile" \
     || grep -Fq 'resolve-deployment-profile.sh' "$jenkinsfile"; then
     fail "Jenkins must not authorize deployment through a checked-out branch resolver or suffix"
@@ -200,6 +246,8 @@ grep -Fq 'preflight_active_marker_write' "$verified_runner_script" \
     || fail "verified deployment runner must verify marker writability before service mutation"
 grep -Fq 'publish_active_release' "$verified_runner_script" \
     || fail "verified deployment runner must advance the active release marker only after deployment succeeds"
+grep -Fq 'chmod 0640 "$active_release_temp"' "$verified_runner_script" \
+    || fail "active release markers must not be group-writable after the root broker took ownership"
 grep -Fq 'release_tree_digest()' "$verified_runner_script" \
     || fail "verified deployment runner must verify retained release content before rollback"
 grep -Fq 'active release content digest no longer matches its verified marker' "$verified_runner_script" \
@@ -233,25 +281,35 @@ grep -Fq 'runtime_root="/var/lib/eyesonu-deploy/runtime"' "$verified_runner_scri
 grep -Fq 'DEPLOY_COMPOSE="$deployment_tree/infra/compose.deploy.yml"' "$verified_runner_script" \
     || fail "verified deployment runner must not inherit an arbitrary Compose path"
 grep -Fq 'GIT_CONFIG_COUNT=0' "$jenkinsfile" \
-    || fail "Jenkins must isolate the trusted runner extraction from inherited Git configuration"
+    || fail "Jenkins must isolate protected materializer extraction from inherited Git configuration"
 grep -Fq 'GIT_NO_REPLACE_OBJECTS=1' "$jenkinsfile" \
     || fail "Jenkins must ignore replace refs while extracting the protected materializer"
 grep -Fq 'core.attributesFile=/dev/null' "$jenkinsfile" \
     || fail "Jenkins must ignore checkout attributes while extracting the protected materializer"
 grep -Fq 'GIT_COMMIT must be a full lowercase object ID' "$jenkinsfile" \
-    || fail "Jenkins must validate the commit before it becomes part of the remote command"
+    || fail "Jenkins must validate the commit before it becomes part of the restricted remote protocol"
 grep -Fq 'DEPLOY_PROFILE must be dev or master' "$jenkinsfile" \
     || fail "Jenkins must validate the deployment profile before it becomes part of the remote command"
-grep -Fq 'deployment host paths must be absolute' "$jenkinsfile" \
-    || fail "Jenkins must validate remote deployment paths before they become part of the remote command"
-grep -Fq 'trusted_git=/usr/bin/git' "$jenkinsfile" \
-    || fail "Jenkins must use the fixed trusted Git executable for runner extraction"
-grep -Fq 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' "$jenkinsfile" \
-    || fail "Jenkins must use a fixed system PATH while extracting the trusted runner"
-grep -Fq '"$trusted_git" --no-replace-objects' "$jenkinsfile" \
-    || fail "Jenkins must ignore replace refs while extracting the trusted runner"
-grep -Fq '/usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/home/eyesonu-deploy LC_ALL=C /bin/bash --noprofile --norc -s --' "$jenkinsfile" \
-    || fail "Jenkins must clear the remote environment before the trusted runner starts"
+grep -Fq 'eyesonu-deploy' "$forced_command_script" \
+    || fail "deployment forced command must accept only the deployment protocol"
+grep -Fq 'SSH_ORIGINAL_COMMAND' "$forced_command_script" \
+    || fail "deployment forced command must validate the original SSH command"
+grep -Fq '/usr/bin/sudo -n /usr/local/libexec/eyesonu-run-deployment' "$forced_command_script" \
+    || fail "deployment forced command must enter the root-owned deployment broker only"
+grep -Fq 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' "$forced_command_script" \
+    || fail "deployment forced command must pin a trusted executable path"
+grep -Fq 'umask 077' "$forced_command_script" \
+    || fail "deployment forced command must not create permissive transient files"
+grep -Fq 'canonical_ref="refs/remotes/origin/$profile"' "$deployment_broker_script" \
+    || fail "deployment broker must bind a requested commit to the canonical protected profile ref"
+grep -Fq '"$canonical_commit" == "$expected_commit"' "$deployment_broker_script" \
+    || fail "deployment broker must reject commits outside the current protected profile ref"
+grep -Fq 'show "$expected_commit:infra/scripts/run-verified-deployment.sh" > "$runner"' "$deployment_broker_script" \
+    || fail "deployment broker must extract the runner from the canonical immutable commit"
+grep -Fq 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' "$deployment_broker_script" \
+    || fail "deployment broker must pin a trusted executable path"
+grep -Fq 'umask 077' "$deployment_broker_script" \
+    || fail "deployment broker must not create permissive transient files"
 if grep -Fq 'EYESONU_DEPLOY_TEST_LOCAL_FIXTURE' "$jenkinsfile"; then
     fail "Jenkins must never pass the local regression opt-in across SSH"
 fi
@@ -261,8 +319,10 @@ grep -Fq 'DEPLOY_SSH_USER must be the dedicated eyesonu-deploy account' "$jenkin
     || fail "Jenkins must reject a non-dedicated deployment SSH account"
 grep -Fq 'security_validator="/usr/local/sbin/eyesonu-verify-deployment-host-security"' "$verified_runner_script" \
     || fail "verified runner must use the root-owned host security validator"
-grep -Fq '/usr/bin/sudo -n "$security_validator" "$deploy_user" "$deploy_env_file"' "$verified_runner_script" \
-    || fail "verified runner must fail closed when the host security validator cannot validate the env file"
+grep -Fq 'verified deployment runner must be root through the deployment broker' "$verified_runner_script" \
+    || fail "verified runner must refuse a direct non-root host invocation"
+grep -Fq '"$security_validator" "$deploy_user" "$deploy_env_file"' "$verified_runner_script" \
+    || fail "verified runner must invoke the host validator directly after entering the root broker"
 if grep -Fq '[[ -n "$msystem_value" ]] && return' "$verified_runner_script"; then
     fail "host security gate must not be bypassable through an inherited MSYSTEM value"
 fi
@@ -294,8 +354,16 @@ grep -Fq '/usr/bin/find -P "$root" -xdev -print0' "$host_security_validator_scri
     || fail "host security validator must enumerate runtime trees without following links"
 grep -Fq 'require_root_managed_runtime_tree "$runtime_root/certbot/www"' "$host_security_validator_script" \
     || fail "host security validator must validate the mounted certificate webroot tree"
-grep -Fq 'require_root_managed_runtime_tree "$runtime_root/certbot/conf"' "$host_security_validator_script" \
-    || fail "host security validator must validate the mounted certificate configuration tree"
+grep -Fq 'require_root_managed_certbot_configuration_tree "$runtime_root/certbot/conf"' "$host_security_validator_script" \
+    || fail "host security validator must validate the mounted certificate configuration tree with Certbot live-link rules"
+grep -Fq 'require_root_managed_certbot_live_link' "$host_security_validator_script" \
+    || fail "host security validator must permit only safely resolved Certbot lineage links"
+grep -Fq 'certificate live symlink escapes its lineage archive' "$host_security_validator_script" \
+    || fail "host security validator must reject Certbot live links that escape the matching archive"
+grep -Fq 'deployment account must not have direct Docker Engine group access' "$host_security_validator_script" \
+    || fail "host security validator must reject direct Docker Engine access for the SSH account"
+grep -Fq 'deployment SSH key must use the restricted forced command' "$host_security_validator_script" \
+    || fail "host security validator must require a restricted forced command"
 grep -Fq 'require_root_managed_runtime_tree "$nginx_runtime_root/conf.d"' "$host_security_validator_script" \
     || fail "host security validator must validate the mounted Nginx configuration tree"
 grep -Fq 'require_root_managed_runtime_tree "$nginx_runtime_root/snippets"' "$host_security_validator_script" \
@@ -306,14 +374,24 @@ grep -Fq 'require_root_managed_runtime_file "$nginx_runtime_root/snippets/ssl-pa
     || fail "host security validator must validate the stable Nginx SSL-parameter file"
 grep -Fq 'lock_file="$release_base/deployment.lock"' "$host_security_validator_script" \
     || fail "host security validator must validate the root-provisioned lock"
-grep -Fq 'release base must be group-owned by the deployment account' "$host_security_validator_script" \
-    || fail "host security validator must allow the deployment account to traverse the release base"
+grep -Fq 'release base must be root-owned with root group and mode 0750' "$host_security_validator_script" \
+    || fail "host security validator must lock the release base to root after introducing the root deployment broker"
+grep -Fq 'release directory must be root-owned with root group and mode 0750' "$host_security_validator_script" \
+    || fail "host security validator must prevent the SSH account from modifying retained releases"
+grep -Fq 'deployment lock must use mode 0640' "$host_security_validator_script" \
+    || fail "host security validator must keep the deployment lock root-managed"
+grep -Fq 'trusted deployment checkout must not be group/world writable' "$host_security_validator_script" \
+    || fail "host security validator must reject a writable deployment checkout"
 grep -Fq 'deployment env file path must be absolute' "$host_security_validator_script" \
     || fail "host security validator must require an absolute deployment env file path"
-grep -Fq 'deployment env directory must use mode 0750' "$host_security_validator_script" \
+grep -Fq 'deployment env directory must use mode 0700' "$host_security_validator_script" \
     || fail "host security validator must validate the deployment env directory permissions"
-grep -Fq 'deployment env file must use mode 0640' "$host_security_validator_script" \
+grep -Fq 'deployment env file must use mode 0600' "$host_security_validator_script" \
     || fail "host security validator must validate the deployment env file permissions"
+grep -Fq 'deployment broker environment file must be root-owned with mode 0600' "$deployment_broker_script" \
+    || fail "deployment broker must independently enforce its root-only env boundary"
+grep -Fq 'deployment broker checkout must not be writable by the deployment account or its groups' "$deployment_broker_script" \
+    || fail "deployment broker must independently enforce its trusted checkout boundary"
 grep -Fq 'run_release "$rollback_root" "$rollback_compose_file" 0' "$deploy_script" \
     || fail "rollback-only mode must restart the previously verified release"
 grep -Fq 'rollback_only="${DEPLOY_ROLLBACK_ONLY:-}"' "$deploy_script" \
@@ -322,8 +400,8 @@ grep -Fq 'stop_release "$deploy_root" "$compose_file"' "$deploy_script" \
     || fail "rollback-only mode must stop every failed-candidate profile service before restoring a previous release"
 grep -Fq '[[ -n "$rollback_root" ]] || return 0' "$deploy_script" \
     || fail "deployment must treat the first release as a valid no-rollback state"
-grep -Fq 'compose --profile "$profile" up -d --build --wait --wait-timeout 180' "$deploy_script" \
-    || fail "deployment must wait for health checks before it can mark a release active"
+grep -Fq 'compose --profile "$profile" up -d --no-build --pull never --wait --wait-timeout 180' "$deploy_script" \
+    || fail "deployment must wait for health checks using immutable local images before it can mark a release active"
 grep -Fq '|| exit $?' "$deploy_script" \
     || fail "rollback flow must propagate a failed Compose action even when called from a conditional"
 
@@ -343,6 +421,7 @@ captured_env_path_file="$temp_root/captured-env-path"
 captured_project_name_file="$temp_root/captured-project-name"
 placeholder_calls_file="$temp_root/placeholder-calls"
 compose_commands_file="$temp_root/compose-commands"
+docker_engine_commands_file="$temp_root/docker-engine-commands"
 docker_config_log_file="$temp_root/docker-compose-config.log"
 missing_master_env_file="$temp_root/missing-master.env"
 missing_master_no_newline_env_file="$temp_root/missing-master-no-newline.env"
@@ -367,6 +446,22 @@ awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' "$missing_master_env_file" > "$
 {
     printf '%s\n' '#!/usr/bin/env bash'
     printf '%s\n' 'set -Eeuo pipefail'
+    printf '%s\n' 'if [[ "${1:-}" != "compose" && -n "${DEPLOY_TEST_DOCKER_ENGINE_COMMANDS:-}" ]]; then'
+    printf '%s\n' '    printf "%s\\n" "$*" >> "$DEPLOY_TEST_DOCKER_ENGINE_COMMANDS"'
+    printf '%s\n' 'fi'
+    printf '%s\n' 'if [[ "${1:-}" == "ps" ]]; then'
+    printf '%s\n' '    [[ "${DEPLOY_TEST_NGINX_MISSING:-}" != "1" ]] && printf "fake-nginx-container-id\\n"'
+    printf '%s\n' '    exit 0'
+    printf '%s\n' 'fi'
+    printf '%s\n' 'if [[ "${1:-}" == "exec" ]]; then'
+    printf '%s\n' '    if [[ "${DEPLOY_TEST_NGINX_UPSTREAM_FAIL:-}" == "1" && " $* " == *" wget "* ]]; then exit 94; fi'
+    printf '%s\n' '    exit 0'
+    printf '%s\n' 'fi'
+    printf '%s\n' 'if [[ "${1:-}" == "image" && "${2:-}" == "inspect" ]]; then'
+    printf '%s\n' '    image_ref="${!#}"'
+    printf '%s\n' '    printf "sha256:%s\\n" "$(printf "%s" "$image_ref" | sha256sum | cut -d " " -f1)"'
+    printf '%s\n' '    exit 0'
+    printf '%s\n' 'fi'
     printf '%s\n' 'if [[ "${1:-}" == "inspect" ]]; then'
     printf '%s\n' '    args=("$@")'
     printf '%s\n' '    format=""'
@@ -379,15 +474,13 @@ awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' "$missing_master_env_file" > "$
     printf '%s\n' '        printf "%s\n" "${DEPLOY_TEST_NGINX_STATE:-running|healthy}"'
     printf '%s\n' '        exit 0'
     printf '%s\n' '    fi'
-    printf '%s\n' '    if [[ "${DEPLOY_TEST_NGINX_MOUNT_MISMATCH:-}" == "1" ]]; then'
-    printf '%s\n' '        printf "%s\n" "$DEPLOY_RUNTIME_ROOT/unexpected"'
-    printf '%s\n' '        exit 0'
-    printf '%s\n' '    fi'
     printf '%s\n' '    case "$format" in'
-    printf '%s\n' '        *"/etc/nginx/conf.d"*) printf "%s\n" "$DEPLOY_RUNTIME_ROOT/nginx/conf.d" ;;'
-    printf '%s\n' '        *"/etc/nginx/snippets"*) printf "%s\n" "$DEPLOY_RUNTIME_ROOT/nginx/snippets" ;;'
-    printf '%s\n' '        *"/var/www/certbot"*) printf "%s\n" "$DEPLOY_RUNTIME_ROOT/certbot/www" ;;'
-    printf '%s\n' '        *"/etc/letsencrypt"*) printf "%s\n" "$DEPLOY_RUNTIME_ROOT/certbot/conf" ;;'
+    printf '%s\n' '        *".NetworkSettings.Networks"*) printf "eyesonu-dev eyesonu-prod \\n" ;;'
+    printf '%s\n' '        *".HostConfig.PortBindings"*) printf "{\\\"80/tcp\\\":[{\\\"HostIp\\\":\\\"\\\",\\\"HostPort\\\":\\\"80\\\"}],\\\"443/tcp\\\":[{\\\"HostIp\\\":\\\"\\\",\\\"HostPort\\\":\\\"443\\\"}]}\\n" ;;'
+    printf '%s\n' '        *"/etc/nginx/conf.d"*) source="$DEPLOY_RUNTIME_ROOT/nginx/conf.d"; [[ "${DEPLOY_TEST_NGINX_MOUNT_MISMATCH:-}" == "1" ]] && source="$DEPLOY_RUNTIME_ROOT/unexpected"; printf "bind|false|%s|/etc/nginx/conf.d\\n" "$source" ;;'
+    printf '%s\n' '        *"/etc/nginx/snippets"*) source="$DEPLOY_RUNTIME_ROOT/nginx/snippets"; printf "bind|false|%s|/etc/nginx/snippets\\n" "$source" ;;'
+    printf '%s\n' '        *"/var/www/certbot"*) source="$DEPLOY_RUNTIME_ROOT/certbot/www"; printf "bind|false|%s|/var/www/certbot\\n" "$source" ;;'
+    printf '%s\n' '        *"/etc/letsencrypt"*) source="$DEPLOY_RUNTIME_ROOT/certbot/conf"; printf "bind|false|%s|/etc/letsencrypt\\n" "$source" ;;'
     printf '%s\n' '        *) printf "fake docker inspect format unsupported: %s\n" "$format" >&2; exit 92 ;;'
     printf '%s\n' '    esac'
     printf '%s\n' '    exit 0'
@@ -404,7 +497,11 @@ awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' "$missing_master_env_file" > "$
     printf '%s\n' 'fi'
     printf '%s\n' 'env_file=""'
     printf '%s\n' 'compose_file=""'
+    printf '%s\n' 'project_name=""'
     printf '%s\n' 'for ((index = 0; index < ${#args[@]}; index++)); do'
+    printf '%s\n' '    if [[ "${args[$index]}" == "--project-name" ]]; then'
+    printf '%s\n' '        project_name="${args[$((index + 1))]}"'
+    printf '%s\n' '    fi'
     printf '%s\n' '    if [[ "${args[$index]}" == "--env-file" ]]; then'
     printf '%s\n' '        env_file="${args[$((index + 1))]}"'
     printf '%s\n' '    fi'
@@ -412,6 +509,7 @@ awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' "$missing_master_env_file" > "$
     printf '%s\n' '        compose_file="${args[$((index + 1))]}"'
     printf '%s\n' '    fi'
     printf '%s\n' 'done'
+    printf '%s\n' '[[ "$project_name" == "eyesonu-deploy" ]] || { printf "fake docker project-name mismatch: %s\\n" "$project_name" >&2; exit 91; }'
     printf '%s\n' '[[ -n "$env_file" && "$env_file" == "$DEPLOY_TEST_EXPECTED_ENV_FILE" ]] || { printf "fake docker env-file mismatch: expected=%s actual=%s\\n" "$DEPLOY_TEST_EXPECTED_ENV_FILE" "$env_file" >&2; exit 91; }'
     printf '%s\n' 'printf "%s\n" "$env_file" >> "$DEPLOY_TEST_CAPTURED_ENV_PATH"'
     printf '%s\n' 'printf "%q " "${args[@]}" >> "$DEPLOY_TEST_COMPOSE_COMMANDS"'
@@ -445,14 +543,6 @@ awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' "$missing_master_env_file" > "$
     printf '%s\n' '    fi'
     printf '%s\n' '    config_name="$(sed -n "1p" "$config_log")"'
     printf '%s\n' '    [[ "$config_name" == "name: eyesonu-deploy" ]] || { printf "fake docker config name mismatch: %s\\n" "$config_name" >&2; exit 93; }'
-    printf '%s\n' '    exit 0'
-    printf '%s\n' 'fi'
-    printf '%s\n' 'if [[ " ${args[*]} " == *" ps -q nginx "* ]]; then'
-    printf '%s\n' '    printf "fake-nginx-container-id\n"'
-    printf '%s\n' '    exit 0'
-    printf '%s\n' 'fi'
-    printf '%s\n' 'if [[ "${DEPLOY_TEST_NGINX_RUNNING:-}" == "1" && " ${args[*]} " == *" ps --status running --services "* ]]; then'
-    printf '%s\n' '    printf "nginx\\n"'
     printf '%s\n' '    exit 0'
     printf '%s\n' 'fi'
     printf '%s\n' 'if [[ -n "${DEPLOY_TEST_FAIL_COMPOSE_FILE:-}" && "$compose_file" == "$DEPLOY_TEST_FAIL_COMPOSE_FILE" && " ${args[*]} " == *" up "* ]]; then'
@@ -528,6 +618,22 @@ chmod +x "$fake_bin/evil-smudge"
     printf 'exec %q "$@"\n' "$real_tar"
 } > "$fake_bin/tar"
 chmod +x "$fake_bin/tar"
+
+write_test_image_manifest() {
+    local manifest="$1"
+    local target_profile="$2"
+    local image_tag="${3:-0123456789abcdef0123456789abcdef01234567}"
+    local service
+    local image_id
+
+    {
+        printf 'IMAGE_TAG=%s\n' "$image_tag"
+        for service in backend admin reporter; do
+            image_id="$(printf 'eyesonu/%s-%s:%s' "$service" "$target_profile" "$image_tag" | sha256sum | awk '{print $1}')"
+            printf '%s_IMAGE_ID=sha256:%s\n' "${service^^}" "$image_id"
+        done
+    } > "$manifest"
+}
 
 active_release_path() {
     sed -n '1p' "$1"
@@ -606,9 +712,10 @@ test_immutable_release_runner() {
         printf '%s\n' 'printf "%s|%s|%s|%s\\n" "$DEPLOY_ROOT" "$DEPLOY_RUNTIME_ROOT" "$DEPLOY_COMPOSE" "$1" > "$DEPLOY_TEST_RUNNER_OUTPUT"'
     } > "$runner_repo/infra/scripts/deploy-on-host.sh"
     printf 'name: test\n' > "$runner_repo/infra/compose.deploy.yml"
+    printf 'AUTO_ROLLBACK_SCHEMA_COMPATIBLE=1\n' > "$runner_repo/infra/release-policy.env"
     printf 'baseline\n' > "$runner_repo/tracked.txt"
     : > "$runner_repo/deploy.env"
-    git -C "$runner_repo" add .gitignore infra/scripts infra/compose.deploy.yml tracked.txt deploy.env
+    git -C "$runner_repo" add .gitignore infra/scripts infra/compose.deploy.yml infra/release-policy.env tracked.txt deploy.env
     git -C "$runner_repo" commit -qm "immutable runner fixture"
     runner_commit="$(git -C "$runner_repo" rev-parse HEAD)"
 
@@ -982,6 +1089,7 @@ write_rollback_fixture_release() {
         '  nginx:' \
         '    image: nginx:1.27-alpine' \
         > "$release_dir/infra/compose.deploy.yml"
+    write_test_image_manifest "$release_dir/infra/.verified-release-images" dev
 }
 
 test_deploy_script_defers_rollback_to_verified_runner() {
@@ -1068,10 +1176,12 @@ test_rollback_only_stops_candidate_before_restoring_previous_release() {
 
 test_stop_only_stops_the_full_profile_without_nginx() {
     local output_file="$temp_root/stop-only.log"
+    local image_manifest="$temp_root/verified-images-stop-only.env"
     local stop_command
     local service_name
 
     reset_captures
+    write_test_image_manifest "$image_manifest" dev
     if ! env \
         "PATH=$fake_bin:$PATH" \
         "REAL_DOCKER=$real_docker" \
@@ -1086,6 +1196,7 @@ test_stop_only_stops_the_full_profile_without_nginx() {
         "DEPLOY_RUNTIME_ROOT=$runtime_root" \
         "DEPLOY_COMPOSE=$compose_file" \
         "DEPLOY_ENV_FILE=$example_env_file" \
+        "DEPLOY_IMAGE_MANIFEST=$image_manifest" \
         DEPLOY_STOP_ONLY=1 \
         bash "$deploy_script" dev > "$output_file" 2>&1; then
         tail -n 50 "$output_file" >&2
@@ -1102,12 +1213,31 @@ test_stop_only_stops_the_full_profile_without_nginx() {
         || fail "stop-only deployment must not stop the shared Nginx service"
 }
 
+test_forced_command_rejects_untrusted_input() {
+    local output_file="$temp_root/forced-command-reject.log"
+    local exit_status
+
+    set +e
+    env -i \
+        "PATH=$PATH" \
+        'SSH_ORIGINAL_COMMAND=eyesonu-deploy dev 0123456789012345678901234567890123456789 extra' \
+        bash "$forced_command_script" > "$output_file" 2>&1
+    exit_status=$?
+    set -e
+
+    [[ $exit_status -eq 126 ]] \
+        || fail "deployment forced command must reject extra SSH command arguments"
+    grep -Fq 'only accepts: eyesonu-deploy <dev|master> <full-commit>' "$output_file" \
+        || fail "deployment forced command rejection must explain the restricted protocol"
+}
+
 reset_captures() {
     rm -f -- \
         "$captured_env_path_file" \
         "$captured_project_name_file" \
         "$placeholder_calls_file" \
         "$compose_commands_file" \
+        "$docker_engine_commands_file" \
         "$docker_config_log_file"
 }
 
@@ -1119,6 +1249,8 @@ run_deploy() {
     local inherited_variable_name="${5:-}"
     local inherited_variable_value="${6:-}"
     local shared_nginx_running="${7:-}"
+    local image_manifest="$temp_root/verified-images-$target_profile.env"
+    write_test_image_manifest "$image_manifest" "$target_profile"
     local -a command_env=(
         "PATH=$fake_bin:$PATH"
         "REAL_DOCKER=$real_docker"
@@ -1126,6 +1258,7 @@ run_deploy() {
         "DEPLOY_TEST_CAPTURED_PROJECT_NAME=$captured_project_name_file"
         "DEPLOY_TEST_PLACEHOLDER_CALLS=$placeholder_calls_file"
         "DEPLOY_TEST_COMPOSE_COMMANDS=$compose_commands_file"
+        "DEPLOY_TEST_DOCKER_ENGINE_COMMANDS=$docker_engine_commands_file"
         "DEPLOY_TEST_DOCKER_CONFIG_LOG=$docker_config_log_file"
         "DEPLOY_TEST_EXPECTED_ENV_FILE=$env_file"
         "DEPLOY_TEST_EXPECTED_PLACEHOLDER=$expected_placeholder"
@@ -1134,6 +1267,7 @@ run_deploy() {
         "DEPLOY_RUNTIME_ROOT=$runtime_root"
         "DEPLOY_COMPOSE=$compose_file"
         "DEPLOY_ENV_FILE=$env_file"
+        "DEPLOY_IMAGE_MANIFEST=$image_manifest"
         "DEPLOY_TEST_NGINX_RUNNING=$shared_nginx_running"
     )
 
@@ -1164,8 +1298,11 @@ assert_successful_scope() {
     if ! awk -v expected="$expected_placeholder" '$0 != expected { exit 1 }' "$placeholder_calls_file"; then
         fail "$label did not override the inactive profile variable for every Compose call"
     fi
-    [[ "$(grep -c '^yes$' "$placeholder_calls_file")" -ge 6 ]] \
-        || fail "$label did not preserve the inactive override through config, up, exec, and ps"
+    # Nginx is now a root-managed ingress stack, so profile deployment invokes
+    # Compose only for config, app up, and app ps. Those calls must all retain
+    # the inactive-profile interpolation override.
+    [[ "$(grep -c '^yes$' "$placeholder_calls_file")" -ge 3 ]] \
+        || fail "$label did not preserve the inactive override through every profile Compose call"
     grep -Fq -- "--profile $expected_profile" "$compose_commands_file" \
         || fail "$label did not select the $expected_profile Compose profile"
     if ! grep -Fq -- "backend-$expected_profile" "$compose_commands_file"; then
@@ -1182,6 +1319,7 @@ test_missing_shared_nginx_ssl_parameters
 test_deploy_script_defers_rollback_to_verified_runner
 test_rollback_only_stops_candidate_before_restoring_previous_release
 test_stop_only_stops_the_full_profile_without_nginx
+test_forced_command_rejects_untrusted_input
 
 reset_captures
 run_deploy dev "$missing_master_no_newline_env_file" "MASTER_AI_WORKER_API_KEY" \
@@ -1215,7 +1353,7 @@ assert_successful_scope "master deployment with every dev variable absent" "yes"
 reset_captures
 run_deploy dev "$missing_master_no_newline_env_file" "MASTER_AI_WORKER_API_KEY" \
     "" "" "" "1"
-grep -Fq -- 'ps --status running --services' "$compose_commands_file" \
+grep -Fq -- 'ps -aq --filter name=^/eyesonu-nginx$' "$docker_engine_commands_file" \
     || fail "profile deployment must check whether the shared Nginx is already running"
 if grep -Fq -- '--no-deps --wait --wait-timeout 180 nginx' "$compose_commands_file"; then
     fail "profile deployment must not recreate a shared running Nginx container"

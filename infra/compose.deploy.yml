@@ -48,37 +48,11 @@ x-minio-init-entrypoint: &minio-init-entrypoint
     mc ls "app/$${MINIO_BUCKET}" >/dev/null
 
 services:
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: eyesonu-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      # Nginx is shared by dev and master. Its configuration and certificate
-      # state are host-runtime inputs, never profile-release bind mounts.
-      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/snippets:/etc/nginx/snippets:ro
-      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/www:/var/www/certbot:ro
-      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/conf:/etc/letsencrypt:ro
-    networks:
-      - dev
-      - prod
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/nginx-health | grep -q ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 10s
-
   reporter-dev:
     profiles: ["dev"]
     build:
       context: ../apps/frontend/reporter-webapp
-    image: eyesonu/reporter-dev:${IMAGE_TAG:-latest}
+    image: eyesonu/reporter-dev:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "80"
@@ -96,7 +70,7 @@ services:
       context: ../apps/frontend/admin-dashboard
       args:
         VITE_MEDIA_STREAM_BASE_URL: /media-stream
-    image: eyesonu/admin-dev:${IMAGE_TAG:-latest}
+    image: eyesonu/admin-dev:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "80"
@@ -112,7 +86,7 @@ services:
     profiles: ["dev"]
     build:
       context: ../apps/backend-api/eyesonu
-    image: eyesonu/backend-dev:${IMAGE_TAG:-latest}
+    image: eyesonu/backend-dev:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "8080"
@@ -238,7 +212,7 @@ services:
     profiles: ["master"]
     build:
       context: ../apps/frontend/reporter-webapp
-    image: eyesonu/reporter-master:${IMAGE_TAG:-latest}
+    image: eyesonu/reporter-master:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "80"
@@ -254,7 +228,7 @@ services:
     profiles: ["master"]
     build:
       context: ../apps/frontend/admin-dashboard
-    image: eyesonu/admin-master:${IMAGE_TAG:-latest}
+    image: eyesonu/admin-master:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "80"
@@ -270,7 +244,7 @@ services:
     profiles: ["master"]
     build:
       context: ../apps/backend-api/eyesonu
-    image: eyesonu/backend-master:${IMAGE_TAG:-latest}
+    image: eyesonu/backend-master:${IMAGE_TAG:?Set IMAGE_TAG through the verified deployment manifest}
     restart: unless-stopped
     expose:
       - "8080"

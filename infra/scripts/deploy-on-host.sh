@@ -13,6 +13,11 @@ stop_only="${DEPLOY_STOP_ONLY:-}"
 compose_profile_unsets=()
 inactive_profile_overrides=()
 test_local_fixture="${EYESONU_DEPLOY_TEST_LOCAL_FIXTURE:-}"
+deploy_image_tag=""
+verified_backend_image_id=""
+verified_admin_image_id=""
+verified_reporter_image_id=""
+shared_nginx_container_id=""
 
 case "$profile" in
     dev|master) ;;
@@ -52,7 +57,8 @@ esac
 }
 
 compose() {
-    env -u COMPOSE_PROJECT_NAME "${compose_profile_unsets[@]}" "DEPLOY_RUNTIME_ROOT=$runtime_root" "${inactive_profile_overrides[@]}" docker compose \
+    env -u COMPOSE_PROJECT_NAME "${compose_profile_unsets[@]}" "DEPLOY_RUNTIME_ROOT=$runtime_root" "IMAGE_TAG=$deploy_image_tag" "${inactive_profile_overrides[@]}" docker compose \
+        --project-name eyesonu-deploy \
         --env-file "$deploy_env_file" \
         -f "$compose_file" \
         "$@"
@@ -90,8 +96,8 @@ require_secure_deploy_env_file() {
     owner="$(stat -c '%U' "$path")"
     group="$(stat -c '%G' "$path")"
     permissions="$(stat -c '%a' "$path")"
-    [[ "$owner" == root && "$group" == eyesonu-deploy && "$permissions" == 640 ]] || {
-        echo "ERROR: deployment env file must be root:eyesonu-deploy with mode 0640: $path" >&2
+    [[ "$owner" == root && "$group" == root && "$permissions" == 600 ]] || {
+        echo "ERROR: deployment env file must be root:root with mode 0600: $path" >&2
         exit 1
     }
 }
@@ -184,16 +190,123 @@ validate_rollback_release() {
     }
 }
 
+load_release_image_manifest() {
+    local target_root="$1"
+    local manifest_override="${DEPLOY_IMAGE_MANIFEST:-}"
+    local manifest="$target_root/infra/.verified-release-images"
+    local line
+    local key
+    local value
+    local -a manifest_lines=()
+
+    if [[ -n "$manifest_override" ]]; then
+        [[ "$test_local_fixture" == 1 ]] || {
+            echo "ERROR: verified release image manifest override is only available to the local regression fixture." >&2
+            exit 1
+        }
+        manifest="$manifest_override"
+    fi
+    [[ -f "$manifest" && ! -L "$manifest" ]] || {
+        echo "ERROR: verified release image manifest is missing or unsafe: $manifest" >&2
+        exit 1
+    }
+    mapfile -t manifest_lines < "$manifest"
+    [[ "${#manifest_lines[@]}" -eq 4 ]] || {
+        echo "ERROR: verified release image manifest must contain exactly four entries: $manifest" >&2
+        exit 1
+    }
+
+    deploy_image_tag=""
+    verified_backend_image_id=""
+    verified_admin_image_id=""
+    verified_reporter_image_id=""
+    for line in "${manifest_lines[@]}"; do
+        IFS='=' read -r key value <<< "$line"
+        [[ -n "$key" && -n "$value" && "$line" == "$key=$value" ]] || {
+            echo "ERROR: verified release image manifest contains an invalid entry: $manifest" >&2
+            exit 1
+        }
+        case "$key" in
+            IMAGE_TAG)
+                [[ -z "$deploy_image_tag" ]] || {
+                    echo "ERROR: verified release image manifest repeats IMAGE_TAG: $manifest" >&2
+                    exit 1
+                }
+                deploy_image_tag="$value"
+                ;;
+            BACKEND_IMAGE_ID)
+                [[ -z "$verified_backend_image_id" ]] || {
+                    echo "ERROR: verified release image manifest repeats BACKEND_IMAGE_ID: $manifest" >&2
+                    exit 1
+                }
+                verified_backend_image_id="$value"
+                ;;
+            ADMIN_IMAGE_ID)
+                [[ -z "$verified_admin_image_id" ]] || {
+                    echo "ERROR: verified release image manifest repeats ADMIN_IMAGE_ID: $manifest" >&2
+                    exit 1
+                }
+                verified_admin_image_id="$value"
+                ;;
+            REPORTER_IMAGE_ID)
+                [[ -z "$verified_reporter_image_id" ]] || {
+                    echo "ERROR: verified release image manifest repeats REPORTER_IMAGE_ID: $manifest" >&2
+                    exit 1
+                }
+                verified_reporter_image_id="$value"
+                ;;
+            *)
+                echo "ERROR: verified release image manifest contains an unsupported key: $manifest" >&2
+                exit 1
+                ;;
+        esac
+    done
+
+    [[ "$deploy_image_tag" =~ ^[0-9a-f]{40}([0-9a-f]{24})?$ ]] || {
+        echo "ERROR: verified release image tag must be a full lowercase commit ID: $manifest" >&2
+        exit 1
+    }
+    for value in "$verified_backend_image_id" "$verified_admin_image_id" "$verified_reporter_image_id"; do
+        [[ "$value" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+            echo "ERROR: verified release image manifest contains an invalid image ID: $manifest" >&2
+            exit 1
+        }
+    done
+}
+
+verify_release_image_artifact() {
+    local service="$1"
+    local expected_image_id="$2"
+    local image_reference="eyesonu/$service-$profile:$deploy_image_tag"
+    local actual_image_id
+
+    actual_image_id="$(docker_engine image inspect --format '{{.Id}}' "$image_reference")" || {
+        echo "ERROR: verified release image is unavailable locally: $image_reference" >&2
+        exit 1
+    }
+    [[ "$actual_image_id" == "$expected_image_id" ]] || {
+        echo "ERROR: verified release image ID mismatch for $image_reference; expected $expected_image_id, got ${actual_image_id:-<missing>}." >&2
+        exit 1
+    }
+}
+
+verify_release_image_artifacts() {
+    verify_release_image_artifact backend "$verified_backend_image_id"
+    verify_release_image_artifact admin "$verified_admin_image_id"
+    verify_release_image_artifact reporter "$verified_reporter_image_id"
+}
+
 ensure_shared_nginx() {
     local nginx_container_id
     local nginx_state
 
-    if ! compose ps --status running --services | grep -Fxq nginx; then
-        compose up -d --no-deps --wait --wait-timeout 180 nginx || exit $?
-    fi
-    nginx_container_id="$(compose ps -q nginx)" || exit $?
+    nginx_container_id="$(docker_engine ps -aq --filter 'name=^/eyesonu-nginx$')" || exit $?
     [[ -n "$nginx_container_id" ]] || {
-        echo "ERROR: shared Nginx has no Compose-managed container ID." >&2
+        echo "ERROR: root-managed shared Nginx is not running; profile deployment must not create ingress." >&2
+        exit 1
+    }
+    [[ "$(printf '%s\n' "$nginx_container_id" | sed '/^$/d' | wc -l)" -eq 1 ]] || {
+        echo "ERROR: shared Nginx container selection is ambiguous." >&2
         exit 1
     }
     nginx_state="$(docker_engine inspect --format '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' "$nginx_container_id")" || {
@@ -208,7 +321,10 @@ ensure_shared_nginx() {
     verify_shared_nginx_mount "$nginx_container_id" "/etc/nginx/snippets" "$runtime_root/nginx/snippets"
     verify_shared_nginx_mount "$nginx_container_id" "/var/www/certbot" "$runtime_root/certbot/www"
     verify_shared_nginx_mount "$nginx_container_id" "/etc/letsencrypt" "$runtime_root/certbot/conf"
-    compose exec -T nginx nginx -t || exit $?
+    verify_shared_nginx_networks "$nginx_container_id"
+    verify_shared_nginx_ports "$nginx_container_id"
+    docker_engine exec "$nginx_container_id" nginx -t || exit $?
+    shared_nginx_container_id="$nginx_container_id"
 }
 
 verify_shared_nginx_mount() {
@@ -216,17 +332,69 @@ verify_shared_nginx_mount() {
     local destination="$2"
     local expected_source="$3"
     local format
-    local actual_source
+    local mount_contract
+    local expected_contract
 
-    format="{{range .Mounts}}{{if eq .Destination \"$destination\"}}{{.Source}}{{end}}{{end}}"
-    actual_source="$(docker_engine inspect --format "$format" "$nginx_container_id")" || {
+    format="{{range .Mounts}}{{if eq .Destination \"$destination\"}}{{.Type}}|{{.RW}}|{{.Source}}|{{.Destination}}{{end}}{{end}}"
+    mount_contract="$(docker_engine inspect --format "$format" "$nginx_container_id")" || {
         echo "ERROR: could not inspect shared Nginx mount: $destination" >&2
         exit 1
     }
-    [[ "$actual_source" == "$expected_source" ]] || {
-        echo "ERROR: shared Nginx mount mismatch for $destination; expected $expected_source, got ${actual_source:-<missing>}." >&2
+    expected_contract="bind|false|$expected_source|$destination"
+    [[ "$mount_contract" == "$expected_contract" ]] || {
+        echo "ERROR: shared Nginx mount mismatch for $destination; expected $expected_contract, got ${mount_contract:-<missing>}." >&2
         exit 1
     }
+}
+
+verify_shared_nginx_networks() {
+    local nginx_container_id="$1"
+    local networks
+    local expected_network
+
+    networks="$(docker_engine inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' "$nginx_container_id")" || {
+        echo "ERROR: could not inspect shared Nginx networks." >&2
+        exit 1
+    }
+    for expected_network in eyesonu-dev eyesonu-prod; do
+        [[ " $networks " == *" $expected_network "* ]] || {
+            echo "ERROR: shared Nginx is missing required network: $expected_network" >&2
+            exit 1
+        }
+    done
+}
+
+verify_shared_nginx_ports() {
+    local nginx_container_id="$1"
+    local port_bindings
+
+    port_bindings="$(docker_engine inspect --format '{{json .HostConfig.PortBindings}}' "$nginx_container_id")" || {
+        echo "ERROR: could not inspect shared Nginx port bindings." >&2
+        exit 1
+    }
+    grep -Eq '"80/tcp":\[[^]]*"HostPort":"80"' <<< "$port_bindings" || {
+        echo "ERROR: shared Nginx must publish host port 80." >&2
+        exit 1
+    }
+    grep -Eq '"443/tcp":\[[^]]*"HostPort":"443"' <<< "$port_bindings" || {
+        echo "ERROR: shared Nginx must publish host port 443." >&2
+        exit 1
+    }
+}
+
+verify_shared_nginx_upstreams() {
+    local nginx_container_id="$1"
+    local upstream
+
+    for upstream in \
+        "backend-$profile:8080/actuator/health" \
+        "admin-$profile:80/" \
+        "reporter-$profile:80/"; do
+        docker_engine exec "$nginx_container_id" wget -q --spider "http://$upstream" || {
+            echo "ERROR: shared Nginx cannot reach the selected profile upstream: $upstream" >&2
+            exit 1
+        }
+    done
 }
 
 run_release() {
@@ -244,15 +412,18 @@ run_release() {
             exit 1
         }
         prepare_compose_environment
+        load_release_image_manifest "$target_root"
+        verify_release_image_artifacts
         compose config >/dev/null || exit $?
+        ensure_shared_nginx
 
         cd "$target_root" || exit $?
         if [[ "$remove_legacy_containers" == 1 ]]; then
             sh infra/scripts/cleanup-legacy-containers.sh || exit $?
         fi
-        compose --profile "$profile" up -d --build --wait --wait-timeout 180 \
+        compose --profile "$profile" up -d --no-build --pull never --wait --wait-timeout 180 \
             "backend-$profile" "admin-$profile" "reporter-$profile" || exit $?
-        ensure_shared_nginx
+        verify_shared_nginx_upstreams "$shared_nginx_container_id"
         compose ps || exit $?
     )
 }
@@ -274,6 +445,7 @@ stop_release() {
             exit 1
         }
         prepare_compose_environment
+        load_release_image_manifest "$target_root"
         compose config >/dev/null || exit $?
         profile_service_list="$(compose --profile "$profile" config --services)" || exit $?
         while IFS= read -r service_name; do

@@ -92,11 +92,15 @@ verify_remote_shell_security() {
         exit 1
     }
     local security_validator="/usr/local/sbin/eyesonu-verify-deployment-host-security"
-    [[ -x "$security_validator" && -x /usr/bin/sudo ]] || {
+    [[ "$(/usr/bin/id -u)" -eq 0 ]] || {
+        echo "ERROR: verified deployment runner must be root through the deployment broker." >&2
+        exit 1
+    }
+    [[ -x "$security_validator" ]] || {
         echo "ERROR: deployment host security validator is not installed." >&2
         exit 1
     }
-    /usr/bin/sudo -n "$security_validator" "$deploy_user" "$deploy_env_file" || {
+    "$security_validator" "$deploy_user" "$deploy_env_file" || {
         echo "ERROR: deployment host security validator rejected the SSH execution boundary." >&2
         exit 1
     }
@@ -138,6 +142,7 @@ fi
 active_release_file="$release_root/.active-release-$profile"
 previous_release=""
 previous_release_digest=""
+auto_rollback_schema_compatible=false
 if ! flock -n 9; then
     echo "ERROR: another verified deployment is already running for this checkout." >&2
     exit 1
@@ -241,9 +246,10 @@ empty_template="$(mktemp -d "$release_root/.git-template.XXXXXX")"
 safe_git_config="$empty_home/gitconfig"
 
 # The deployment checkout is normally owned by the Jenkins service account
-# while this runner executes as eyesonu-deploy. Keep system/global settings
-# disabled, but permit this one canonical checkout through a private global
-# configuration file. No other repository is marked safe.
+# while this runner executes only through the root-owned broker. Keep
+# system/global settings disabled, but permit this one canonical checkout
+# through a private global configuration file. No other repository is marked
+# safe.
 printf '[safe]\n\tdirectory = %s\n' "$checkout_root" > "$safe_git_config"
 
 git_environment=(
@@ -308,6 +314,67 @@ release_tree_digest() {
             | sha256sum \
             | awk '{print $1}'
     )
+}
+
+write_verified_release_image_manifest() {
+    local release_path="$1"
+    local manifest="$release_path/infra/.verified-release-images"
+    local service
+    local image_reference
+    local image_id
+
+    [[ -d "$release_path/infra" && ! -L "$release_path/infra" ]] || {
+        echo "ERROR: verified release is missing a safe infrastructure directory for its image manifest." >&2
+        return 1
+    }
+    [[ ! -e "$manifest" && ! -L "$manifest" ]] || {
+        echo "ERROR: verified release image manifest path already exists or is unsafe: $manifest" >&2
+        return 1
+    }
+    {
+        printf 'IMAGE_TAG=%s\n' "$expected_commit"
+        for service in backend admin reporter; do
+            image_reference="eyesonu/$service-$profile:$expected_commit"
+            image_id="$(docker image inspect --format '{{.Id}}' "$image_reference")" || {
+                echo "ERROR: Jenkins-verified image is unavailable on the deployment Docker Engine: $image_reference" >&2
+                return 1
+            }
+            [[ "$image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+                echo "ERROR: Jenkins-verified image returned an invalid image ID: $image_reference" >&2
+                return 1
+            }
+            printf '%s_IMAGE_ID=%s\n' "${service^^}" "$image_id"
+        done
+    } > "$manifest" || return 1
+    chmod 0640 "$manifest" || return 1
+}
+
+load_auto_rollback_schema_policy() {
+    local release_path="$1"
+    local policy_file="$release_path/infra/release-policy.env"
+    local -a policy_lines=()
+
+    [[ -f "$policy_file" && ! -L "$policy_file" ]] || {
+        echo "ERROR: verified release is missing its DB rollback policy: $policy_file" >&2
+        return 1
+    }
+    mapfile -t policy_lines < "$policy_file"
+    [[ "${#policy_lines[@]}" -eq 1 ]] || {
+        echo "ERROR: DB rollback policy must contain exactly one compatibility declaration: $policy_file" >&2
+        return 1
+    }
+    case "${policy_lines[0]}" in
+        AUTO_ROLLBACK_SCHEMA_COMPATIBLE=1)
+            auto_rollback_schema_compatible=true
+            ;;
+        AUTO_ROLLBACK_SCHEMA_COMPATIBLE=0)
+            auto_rollback_schema_compatible=false
+            ;;
+        *)
+            echo "ERROR: DB rollback policy has an unsupported compatibility declaration: $policy_file" >&2
+            return 1
+            ;;
+    esac
 }
 
 read_active_release() {
@@ -402,7 +469,7 @@ publish_active_release() {
     release_digest="$(release_tree_digest "$deployment_tree")" || return 1
     active_release_temp="$(mktemp "$release_root/.active-release-$profile.XXXXXX")" || return 1
     printf '%s\n%s\n' "$deployment_tree" "$release_digest" > "$active_release_temp" || return 1
-    chmod 0660 "$active_release_temp" || return 1
+    chmod 0640 "$active_release_temp" || return 1
     mv -T -- "$active_release_temp" "$active_release_file" || return 1
     active_release_temp=""
 }
@@ -418,6 +485,17 @@ rollback_after_marker_publication_failure() {
         DEPLOY_RUNTIME_ROOT="$runtime_root" \
         DEPLOY_COMPOSE="$deployment_tree/infra/compose.deploy.yml" \
         bash "$deploy_script" "$profile"
+}
+
+rollback_or_require_forward_recovery() {
+    local failure_context="$1"
+
+    [[ -n "$previous_release" ]] || return 0
+    if [[ "$auto_rollback_schema_compatible" != true ]]; then
+        echo "ERROR: $failure_context; candidate services were stopped, but automatic rollback is forbidden until N-1 application compatibility with the migrated schema is verified. Use a forward corrective migration or an approved manual recovery." >&2
+        return 1
+    fi
+    rollback_after_marker_publication_failure
 }
 
 stop_candidate_profile() {
@@ -470,6 +548,11 @@ pending_repository=""
     echo "ERROR: verified deployment release must not retain Git metadata." >&2
     exit 1
 }
+write_verified_release_image_manifest "$pending_tree" || {
+    echo "ERROR: could not bind the verified release to immutable local image artifacts." >&2
+    exit 1
+}
+load_auto_rollback_schema_policy "$pending_tree" || exit 1
 
 release_name="${pending_tree##*/}"
 deployment_tree="$release_root/release-${release_name#.pending-}"
@@ -498,10 +581,10 @@ if ! deploy_verified_release; then
         exit 1
     fi
     if [[ -n "$previous_release" ]]; then
-        if rollback_after_marker_publication_failure; then
+        if rollback_or_require_forward_recovery "verified release deployment failed"; then
             echo "WARN: rollback completed; the new release was not marked active." >&2
         else
-            echo "ERROR: rollback also failed after candidate cleanup; operator intervention is required." >&2
+            echo "ERROR: automatic rollback was not completed after candidate cleanup; operator intervention is required." >&2
         fi
     else
         echo "WARN: unmarked first-release services were stopped after deployment failed." >&2
@@ -515,10 +598,10 @@ if ! publish_active_release; then
         exit 1
     fi
     if [[ -n "$previous_release" ]]; then
-        if rollback_after_marker_publication_failure; then
+        if rollback_or_require_forward_recovery "active-marker publication failed"; then
             echo "WARN: rollback completed after active-marker publication failed." >&2
         else
-            echo "ERROR: rollback also failed after active-marker publication failure and candidate cleanup; operator intervention is required." >&2
+            echo "ERROR: automatic rollback was not completed after active-marker publication failure and candidate cleanup; operator intervention is required." >&2
         fi
     else
         echo "WARN: unmarked first-release services were stopped after active-marker publication failed." >&2
