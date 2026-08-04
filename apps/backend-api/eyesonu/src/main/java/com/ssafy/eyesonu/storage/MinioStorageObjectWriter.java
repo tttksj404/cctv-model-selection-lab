@@ -1,6 +1,6 @@
 package com.ssafy.eyesonu.storage;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import java.io.ByteArrayInputStream;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 public class MinioStorageObjectWriter implements StorageObjectWriter {
 
 	private final io.minio.MinioClient client;
-	private final S3Properties properties;
+	private final MinioProperties properties;
 
 	public MinioStorageObjectWriter(
 			@Qualifier("minioClient") io.minio.MinioClient client,
-			S3Properties properties) {
+			MinioProperties properties) {
 		this.client = client;
 		this.properties = properties;
 	}

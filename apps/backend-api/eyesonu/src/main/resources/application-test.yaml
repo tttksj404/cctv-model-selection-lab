@@ -39,21 +39,20 @@ eyesonu:
     bootstrap:
       enabled: false
   storage:
-    s3:
-      endpoint: ${TEST_S3_ENDPOINT:http://localhost:9000}
-      public-endpoint: ${TEST_S3_PUBLIC_ENDPOINT:http://localhost:9000}
-      region: ${TEST_S3_REGION:ap-northeast-2}
-      bucket: ${TEST_S3_BUCKET:eyesonu-test}
-      path-style-access: ${TEST_S3_PATH_STYLE_ACCESS:true}
-      access-key: ${TEST_S3_ACCESS_KEY:eyesonu-test}
-      secret-key: ${TEST_S3_SECRET_KEY:eyesonu-test-secret}
-      connect-timeout: ${TEST_S3_CONNECT_TIMEOUT:3s}
-      read-timeout: ${TEST_S3_READ_TIMEOUT:5s}
-      call-timeout: ${TEST_S3_CALL_TIMEOUT:10s}
+    minio:
+      endpoint: ${TEST_MINIO_INTERNAL_ENDPOINT:http://localhost:9000}
+      public-endpoint: ${TEST_MINIO_PUBLIC_ENDPOINT:http://localhost:9000}
+      region: ${TEST_MINIO_REGION:ap-northeast-2}
+      bucket: ${TEST_MINIO_BUCKET:eyesonu-test}
+      access-key: ${TEST_MINIO_APP_ACCESS_KEY:eyesonu-test}
+      secret-key: ${TEST_MINIO_APP_SECRET_KEY:eyesonu-test-secret}
+      connect-timeout: ${TEST_MINIO_CONNECT_TIMEOUT:3s}
+      read-timeout: ${TEST_MINIO_READ_TIMEOUT:5s}
+      call-timeout: ${TEST_MINIO_CALL_TIMEOUT:10s}
       max-file-size-bytes: ${TEST_RECORDING_MAX_FILE_SIZE_BYTES:5368709120}
       case-photo-max-file-size-bytes: ${TEST_CASE_PHOTO_MAX_FILE_SIZE_BYTES:10485760}
       candidate-image-max-file-size-bytes: ${TEST_CANDIDATE_IMAGE_MAX_FILE_SIZE_BYTES:10485760}
-      presigned-url-expiry: ${TEST_S3_PRESIGNED_URL_EXPIRY:15m}
+      presigned-url-expiry: ${TEST_MINIO_PRESIGNED_URL_EXPIRY:15m}
 
 testcontainers:
   enabled: ${TESTCONTAINERS_ENABLED:true}

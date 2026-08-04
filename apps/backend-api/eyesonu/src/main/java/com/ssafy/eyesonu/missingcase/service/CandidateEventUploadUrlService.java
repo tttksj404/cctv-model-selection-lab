@@ -3,7 +3,7 @@ package com.ssafy.eyesonu.missingcase.service;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.dto.device.CandidateEventUploadUrlCreateRequest;
@@ -26,7 +26,7 @@ public class CandidateEventUploadUrlService {
     private final CaseQueryService caseQueryService;
     private final CandidateEventObjectKeyFactory objectKeyFactory;
     private final StorageObjectUrlSigner urlSigner;
-    private final S3Properties s3Properties;
+    private final MinioProperties minioProperties;
 
     public CandidateEventUploadUrlService(
             CameraMapper cameraMapper,
@@ -34,13 +34,13 @@ public class CandidateEventUploadUrlService {
             CaseQueryService caseQueryService,
             CandidateEventObjectKeyFactory objectKeyFactory,
             StorageObjectUrlSigner urlSigner,
-            S3Properties s3Properties) {
+            MinioProperties minioProperties) {
         this.cameraMapper = cameraMapper;
         this.candidateEventMapper = candidateEventMapper;
         this.caseQueryService = caseQueryService;
         this.objectKeyFactory = objectKeyFactory;
         this.urlSigner = urlSigner;
-        this.s3Properties = s3Properties;
+        this.minioProperties = minioProperties;
     }
 
     public CandidateEventUploadUrlCreateResponse create(
@@ -72,7 +72,7 @@ public class CandidateEventUploadUrlService {
                 .map(detection -> detectionUpload(principal, camera, request, detection))
                 .toList();
         return new CandidateEventUploadUrlCreateResponse(
-                frame, detections, s3Properties.getPresignedUrlExpiry().toSeconds());
+                frame, detections, minioProperties.getPresignedUrlExpiry().toSeconds());
     }
 
     private CandidateEventUploadUrlCreateResponse.DetectionUpload detectionUpload(
