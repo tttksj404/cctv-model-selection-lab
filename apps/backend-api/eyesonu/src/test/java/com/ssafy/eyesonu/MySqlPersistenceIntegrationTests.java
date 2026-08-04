@@ -10,6 +10,8 @@ import com.ssafy.eyesonu.admin.mapper.AdminMapper.AdminInsertCommand;
 import com.ssafy.eyesonu.admin.domain.AdminRole;
 import com.ssafy.eyesonu.audit.mapper.AuditLogMapper;
 import com.ssafy.eyesonu.mediaserver.mapper.MediaServerMapper;
+import com.ssafy.eyesonu.recording.domain.AnalysisJob;
+import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatusInquiryRow;
 import com.ssafy.eyesonu.missingcase.domain.CaseSortDirection;
@@ -65,6 +67,9 @@ class MySqlPersistenceIntegrationTests {
 
 	@Autowired
 	private AdminCandidateMapper adminCandidateMapper;
+
+	@Autowired
+	private AnalysisJobMapper analysisJobMapper;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -200,6 +205,75 @@ class MySqlPersistenceIntegrationTests {
 		assertEquals(2, rows.size());
 		assertEquals(CandidateSourceType.REALTIME, rows.getFirst().getSourceType());
 		assertEquals(CandidateSourceType.RECORDING_ANALYSIS, rows.get(1).getSourceType());
+	}
+
+	@Test
+	void legacyRunningRecordingJobsWithoutLeaseFieldsAreReclaimable() {
+		jdbcTemplate.update("INSERT INTO reporters (name, phone) VALUES ('Lease Reporter', '01077778888')");
+		Long reporterId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM reporters", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cases
+				(reporter_id, case_number, status, report_content, missing_name, gender,
+				 distinctive_features, last_seen_time, last_seen_address)
+				VALUES (?, 'EFU-LEASE-RECOVERY-000001', 'SEARCHING', 'content',
+				        'Lease Missing', 'UNKNOWN', 'coat', UTC_TIMESTAMP(6), 'address')
+				""", reporterId);
+		Long caseId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cases", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO media_servers
+				(server_code, name, device_key_id, device_key_hash, status)
+				VALUES ('lease-recovery-server', 'Lease Recovery Server',
+				        'leaserecover001', 'hash', 'ACTIVE')
+				""");
+		Long mediaServerId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM media_servers", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO cameras
+				(media_server_id, camera_name, camera_code, latitude, longitude, address, stream_url)
+				VALUES (?, 'Lease Camera', 'lease-recovery-camera', 37.5, 127.0,
+				        'address', 'rtsp://lease-recovery')
+				""", mediaServerId);
+		Long cameraId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM cameras", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO recordings (camera_id, start_time, end_time, s3_key, file_size)
+				VALUES (?, DATE_SUB(UTC_TIMESTAMP(6), INTERVAL 1 HOUR), UTC_TIMESTAMP(6),
+				        'recordings/lease-recovery/video.mp4', 100)
+				""", cameraId);
+		Long recordingId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM recordings", Long.class);
+		jdbcTemplate.update(
+				"INSERT INTO search_conditions (case_id, prompt, similarity_threshold) VALUES (?, 'person', 0.7000)",
+				caseId);
+		Long conditionId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM search_conditions", Long.class);
+		jdbcTemplate.update("""
+				INSERT INTO analysis_jobs
+				(case_id, search_condition_id, recording_id, job_type, status,
+				 requested_at, started_at, claimed_by, claim_expires_at)
+				VALUES (?, ?, ?, 'RECORDING_ANALYSIS', 'RUNNING',
+				        DATE_SUB(UTC_TIMESTAMP(6), INTERVAL 301 SECOND),
+				        DATE_SUB(UTC_TIMESTAMP(6), INTERVAL 301 SECOND),
+				        'legacy-worker', NULL)
+				""", caseId, conditionId, recordingId);
+		Long jobId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM analysis_jobs", Long.class);
+
+		assertEquals(1, analysisJobMapper.claimQueued(jobId, "recovery-worker", "a".repeat(64), 300));
+		assertEquals("recovery-worker", jdbcTemplate.queryForObject(
+				"SELECT claimed_by FROM analysis_jobs WHERE id = ?", String.class, jobId));
+		assertEquals("a".repeat(64), jdbcTemplate.queryForObject(
+				"SELECT lease_token_hash FROM analysis_jobs WHERE id = ?", String.class, jobId));
+
+		jdbcTemplate.update("""
+				UPDATE analysis_jobs
+				SET started_at = NULL, claim_expires_at = NULL, claimed_by = 'legacy-worker'
+				WHERE id = ?
+				""", jobId);
+
+		assertEquals(List.of(jobId), analysisJobMapper.findExpiredRecordingAnalysisJobsForRecovery(10, 300)
+				.stream().map(AnalysisJob::getId).toList());
+		assertEquals(1, analysisJobMapper.requeueExpiredRecordingAnalysisJob(jobId, 300));
+		assertEquals("QUEUED", jdbcTemplate.queryForObject(
+				"SELECT status FROM analysis_jobs WHERE id = ?", String.class, jobId));
+		assertEquals(1, analysisJobMapper.claimQueued(jobId, "recovery-worker-2", "b".repeat(64), 300));
+		assertEquals("recovery-worker-2", jdbcTemplate.queryForObject(
+				"SELECT claimed_by FROM analysis_jobs WHERE id = ?", String.class, jobId));
 	}
 
 	private void insertCandidate(Long caseId, Long cameraId, Long jobId, Long recordingId,

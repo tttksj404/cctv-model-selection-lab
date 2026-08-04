@@ -29,6 +29,11 @@ server:
       cookie:
         secure: false
 
+worker:
+  authentication:
+    key: ${WORKER_AUTHENTICATION_KEY:${AI_WORKER_API_KEY:}}
+    id: ${WORKER_AUTHENTICATION_ID:recording-ai-worker}
+
 eyesonu:
   auth:
     rate-limit-key-secret: ${AUTH_RATE_LIMIT_KEY_SECRET:eyesonu-local-rate-limit-key-change-me}

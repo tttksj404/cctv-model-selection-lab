@@ -1,7 +1,10 @@
 package com.ssafy.eyesonu.missingcase.messaging;
 
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarable;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -16,6 +19,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class SearchTargetMessagingConfig {
@@ -51,16 +56,42 @@ public class SearchTargetMessagingConfig {
 
 	@Bean
 	Queue recordingAnalysisJobQueue() {
-		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE).build();
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE)
+				.withArgument("x-dead-letter-exchange", RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE)
+				.withArgument("x-dead-letter-routing-key", RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY)
+				.build();
+	}
+
+	@Bean
+	TopicExchange recordingAnalysisJobExchange() {
+		return new TopicExchange(RecordingAnalysisJobPublisher.EXCHANGE, true, false);
 	}
 
 	@Bean
 	Binding recordingAnalysisJobBinding(
 			@Qualifier("recordingAnalysisJobQueue") Queue recordingAnalysisJobQueue,
-			TopicExchange searchTargetExchange) {
+			@Qualifier("recordingAnalysisJobExchange") TopicExchange recordingAnalysisJobExchange) {
 		return BindingBuilder.bind(recordingAnalysisJobQueue)
-				.to(searchTargetExchange)
+				.to(recordingAnalysisJobExchange)
 				.with(RecordingAnalysisJobPublisher.ROUTING_KEY);
+	}
+
+	@Bean
+	TopicExchange recordingAnalysisRetryExchange() {
+		return new TopicExchange(RecordingAnalysisJobPublisher.RETRY_EXCHANGE, true, false);
+	}
+
+	@Bean
+	Declarables recordingAnalysisRetryTopology(
+			@Qualifier("recordingAnalysisRetryExchange") TopicExchange recordingAnalysisRetryExchange,
+			RecordingAnalysisProperties properties) {
+		List<Declarable> declarations = new ArrayList<>();
+		for (Integer delaySeconds : properties.getRetryDelayBucketsSeconds()) {
+			Queue retryQueue = retryQueue(delaySeconds);
+			declarations.add(retryQueue);
+			declarations.add(retryBinding(retryQueue, recordingAnalysisRetryExchange, delaySeconds));
+		}
+		return new Declarables(declarations);
 	}
 
 	@Bean
@@ -86,19 +117,39 @@ public class SearchTargetMessagingConfig {
 	SimpleRabbitListenerContainerFactory recordingAnalysisJobListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			JacksonJsonMessageConverter rabbitMessageConverter,
-			RabbitTemplate rabbitTemplate) {
+			RabbitTemplate rabbitTemplate,
+			RecordingAnalysisProperties properties) {
+		RecordingAnalysisProperties.BackendConsumer.Retry retry =
+				properties.getBackendConsumer().getRetry();
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setConnectionFactory(connectionFactory);
 		factory.setMessageConverter(rabbitMessageConverter);
 		factory.setContainerCustomizer(container -> container.setAdviceChain(
 				RetryInterceptorBuilder.stateless()
-						.maxRetries(2)
-						.backOffOptions(1_000L, 2.0, 10_000L)
+						.maxRetries(retry.getMaxAttempts())
+						.backOffOptions(
+								retry.getInitialIntervalMs(),
+								retry.getMultiplier(),
+								retry.getMaxIntervalMs())
 						.recoverer(new RepublishMessageRecoverer(
 								rabbitTemplate,
 								RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE,
 								RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY))
 						.build()));
 		return factory;
+	}
+
+	private Queue retryQueue(int delaySeconds) {
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.retryQueueName(delaySeconds))
+				.withArgument("x-message-ttl", delaySeconds * 1_000)
+				.withArgument("x-dead-letter-exchange", RecordingAnalysisJobPublisher.EXCHANGE)
+				.withArgument("x-dead-letter-routing-key", RecordingAnalysisJobPublisher.ROUTING_KEY)
+				.build();
+	}
+
+	private Binding retryBinding(Queue retryQueue, TopicExchange retryExchange, int delaySeconds) {
+		return BindingBuilder.bind(retryQueue)
+				.to(retryExchange)
+				.with(RecordingAnalysisJobPublisher.retryRoutingKey(delaySeconds));
 	}
 }

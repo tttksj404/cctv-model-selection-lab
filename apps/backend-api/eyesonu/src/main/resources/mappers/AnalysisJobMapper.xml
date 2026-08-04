@@ -28,6 +28,7 @@
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="completedAt" column="completed_at"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        <result property="leaseTokenHash" column="lease_token_hash"/>
     </resultMap>
 
     <resultMap id="recordingAnalysisPublishSnapshotResultMap"
@@ -70,7 +71,7 @@
         prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
         search_end_snapshot, search_area_snapshot,
         retry_count, error_message, requested_at, started_at, claimed_by,
-        claim_expires_at, completed_at
+        claim_expires_at, completed_at, lease_token_hash
     </sql>
 
     <update id="claimQueued">
@@ -78,6 +79,7 @@
         SET status = 'RUNNING',
             started_at = UTC_TIMESTAMP(6),
             claimed_by = #{workerId},
+            lease_token_hash = #{leaseTokenHash},
             claim_expires_at = DATE_ADD(UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND),
             completed_at = NULL,
             error_message = NULL
@@ -86,8 +88,64 @@
           AND (
               status = 'QUEUED'
               OR (status = 'RUNNING'
-                  AND claim_expires_at IS NOT NULL
-                  AND claim_expires_at &lt;= UTC_TIMESTAMP(6))
+                  AND (
+                      claim_expires_at &lt;= UTC_TIMESTAMP(6)
+                      OR (
+                          claim_expires_at IS NULL
+                          AND (
+                              started_at IS NULL
+                              OR started_at &lt;= DATE_SUB(
+                                  UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                          )
+                      )
+                  ))
+          )
+    </update>
+
+    <select id="findExpiredRecordingAnalysisJobsForRecovery" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND (
+              claim_expires_at &lt;= UTC_TIMESTAMP(6)
+              OR (
+                  claim_expires_at IS NULL
+                  AND (
+                      started_at IS NULL
+                      OR started_at &lt;= DATE_SUB(
+                          UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                  )
+              )
+          )
+        ORDER BY COALESCE(claim_expires_at, started_at, requested_at), id
+        LIMIT #{limit}
+        FOR UPDATE SKIP LOCKED
+    </select>
+
+    <update id="requeueExpiredRecordingAnalysisJob">
+        UPDATE analysis_jobs
+        SET status = 'QUEUED',
+            retry_count = retry_count + 1,
+            started_at = NULL,
+            claimed_by = NULL,
+            claim_expires_at = NULL,
+            lease_token_hash = NULL,
+            completed_at = NULL,
+            error_message = NULL
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND (
+              claim_expires_at &lt;= UTC_TIMESTAMP(6)
+              OR (
+                  claim_expires_at IS NULL
+                  AND (
+                      started_at IS NULL
+                      OR started_at &lt;= DATE_SUB(
+                          UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                  )
+              )
           )
     </update>
 
@@ -143,8 +201,22 @@
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
           AND claimed_by = #{workerId}
+          AND lease_token_hash = #{leaseTokenHash}
+          AND status = 'RUNNING'
+          AND claim_expires_at &gt; UTC_TIMESTAMP(6)
         FOR UPDATE
     </select>
+
+    <update id="renewWorkerLease">
+        UPDATE analysis_jobs
+        SET claim_expires_at = #{leaseExpiresAt,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND claimed_by = #{workerId}
+          AND lease_token_hash = #{leaseTokenHash}
+          AND claim_expires_at &gt; UTC_TIMESTAMP(6)
+    </update>
 
     <select id="findRecordingAnalysisPublishSnapshot"
             resultMap="recordingAnalysisPublishSnapshotResultMap">
@@ -172,7 +244,7 @@
     <update id="cancelActive">
         UPDATE analysis_jobs
         SET status = 'CANCELLED', completed_at = UTC_TIMESTAMP(6),
-            claimed_by = NULL, claim_expires_at = NULL
+            claimed_by = NULL, claim_expires_at = NULL, lease_token_hash = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
           AND status IN ('QUEUED', 'RUNNING')
@@ -183,7 +255,7 @@
         SET status = 'QUEUED', retry_count = retry_count + 1,
             error_message = NULL, started_at = NULL,
             completed_at = NULL, requested_at = UTC_TIMESTAMP(6),
-            claimed_by = NULL, claim_expires_at = NULL
+            claimed_by = NULL, claim_expires_at = NULL, lease_token_hash = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'FAILED'
     </update>
@@ -191,7 +263,7 @@
     <update id="markSucceeded">
         UPDATE analysis_jobs
         SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL,
-            claimed_by = NULL, claim_expires_at = NULL
+            claimed_by = NULL, claim_expires_at = NULL, lease_token_hash = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
     </update>
@@ -199,17 +271,22 @@
     <update id="markSucceededForWorker">
         UPDATE analysis_jobs
         SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL,
-            claimed_by = NULL, claim_expires_at = NULL
+            claimed_by = NULL, claim_expires_at = NULL, lease_token_hash = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
           AND claimed_by = #{workerId}
+          AND lease_token_hash = #{leaseTokenHash}
+          AND claim_expires_at &gt; UTC_TIMESTAMP(6)
     </update>
 
     <update id="markFailed">
         UPDATE analysis_jobs
-        SET status = 'FAILED', completed_at = UTC_TIMESTAMP(6), error_message = #{errorMessage}
+        SET status = 'FAILED', completed_at = UTC_TIMESTAMP(6), error_message = #{errorMessage},
+            claimed_by = NULL, claim_expires_at = NULL, lease_token_hash = NULL
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
           AND claimed_by = #{workerId}
+          AND lease_token_hash = #{leaseTokenHash}
+          AND claim_expires_at &gt; UTC_TIMESTAMP(6)
     </update>
 </mapper>

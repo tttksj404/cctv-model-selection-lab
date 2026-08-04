@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "solider-server-attribute-candidate-v1",
+  "artifactStatus": "candidate_not_production",
+  "role": "server_attribute_only",
+  "modelVersion": "SOLIDER-Swin-B-PA100K-Sonnet-w010-e30",
+  "checkpointPath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010_e40/experiments/models/solider_sonnet_head_pilot.pt",
+  "checkpointSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "backboneCheckpointPath": "/home/j-i15a204/qwen3vl-backend/clip_vitl14_server/experiments/models/solider_swin_base.pth",
+  "backboneCheckpointSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "resultManifestPath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010_e40/experiments/results/solider_full_plus_sonnet_w010_e30_direct_remote.json",
+  "runtime": {
+    "artifactLocation": "remote_only",
+    "completeInferencePackage": false
+  },
+  "evaluation": {
+    "identityLabelsAvailable": false,
+    "trackHeldoutMetricsEligible": false,
+    "proxyMetricsReusedAsIdentity": false,
+    "cctvIdentityGate": "blocked",
+    "pa100kInsF1": 0.87019713375,
+    "syntheticProxyAccuracy": 0.943589746952
+  }
+}

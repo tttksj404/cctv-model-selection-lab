@@ -10,8 +10,10 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
 import com.ssafy.eyesonu.recording.mapper.RecordingAnalysisOutboxMapper;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -81,7 +84,7 @@ class RecordingAnalysisJobPublisherTests {
     void recordingAnalysisEventDoesNotExposeSimilarityThreshold() {
         RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                 "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
-                5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"));
+                5001L, Instant.parse("2026-07-31T04:00:00Z"));
 
         var payload = new ObjectMapper().findAndRegisterModules().valueToTree(event);
 
@@ -91,6 +94,12 @@ class RecordingAnalysisJobPublisherTests {
         assertFalse(payload.has("searchStart"));
         assertFalse(payload.has("searchEnd"));
         assertFalse(payload.has("searchArea"));
+        assertFalse(payload.has("caseId"));
+        assertFalse(payload.has("recordingId"));
+        assertFalse(payload.has("cameraId"));
+        assertFalse(payload.has("cameraCode"));
+        assertFalse(payload.has("cameraName"));
+        assertFalse(payload.has("recordingObjectKey"));
     }
 
     @Test
@@ -110,6 +119,36 @@ class RecordingAnalysisJobPublisherTests {
                 any(CorrelationData.class));
         verify(outboxMapper).markPublished(eq(1L), eq("claim-1"), any(Instant.class));
         verify(outboxMapper, never()).markFailed(any(), anyString(), anyString());
+    }
+
+    @Test
+    void publishesOnlyRoutingMetadataToRabbitMQ() throws Exception {
+        claim(readyOutbox());
+        stubLeaseRenewal(1);
+        completeConfirm(true, null, null);
+
+        publisher(300).publishPending();
+
+        ArgumentCaptor<RecordingAnalysisJobEvent> event =
+                ArgumentCaptor.forClass(RecordingAnalysisJobEvent.class);
+        verify(rabbitTemplate).convertAndSend(
+                eq(RecordingAnalysisJobPublisher.EXCHANGE),
+                eq(RecordingAnalysisJobPublisher.ROUTING_KEY),
+                event.capture(),
+                any(MessagePostProcessor.class),
+                any(CorrelationData.class));
+        String payload = tools.jackson.databind.json.JsonMapper.builder()
+                .findAndAddModules()
+                .build()
+                .writeValueAsString(event.getValue());
+
+        assertThat(payload)
+                .contains(
+                        "commandId", "eventType", "jobId", "occurredAt")
+                .doesNotContain(
+                        "caseId", "recordingId", "cameraId", "cameraCode", "cameraName",
+                        "recordingObjectKey", "attempt", "prompt", "exclusionPrompt",
+                        "similarityThreshold");
     }
 
     @Test
@@ -229,9 +268,11 @@ class RecordingAnalysisJobPublisherTests {
     }
 
     private RecordingAnalysisJobPublisher publisher(long claimLeaseSeconds) {
+        RecordingAnalysisProperties properties = new RecordingAnalysisProperties();
+        properties.getOutbox().setClaimLeaseSeconds(claimLeaseSeconds);
         RecordingAnalysisJobPublisher publisher = new RecordingAnalysisJobPublisher(
                 rabbitTemplate, outboxMapper, outboxClaimer,
-                analysisJobMapper, claimLeaseSeconds);
+                analysisJobMapper, properties);
         publishers.add(publisher);
         return publisher;
     }

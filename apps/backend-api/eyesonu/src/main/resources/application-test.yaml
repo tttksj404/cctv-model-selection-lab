@@ -34,6 +34,14 @@ springdoc:
     enabled: false
 
 eyesonu:
+  ai-worker:
+    api-key: test-ai-worker-key
+    lease-duration: 90s
+    max-retry-count: 3
+    max-result-bytes: 8388608
+    empty-poll-after-ms: 1000
+    lease-recovery:
+      auto-start: false
   auth:
     rate-limit-key-secret: eyesonu-test-rate-limit-key
     bootstrap:
@@ -61,5 +69,5 @@ recording:
   analysis:
     outbox:
       auto-start: ${TEST_RECORDING_ANALYSIS_OUTBOX_AUTO_START:false}
-    consumer:
+    backend-consumer:
       auto-start: false

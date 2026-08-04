@@ -17,19 +17,19 @@ class RecordingAnalysisJobListenerTests {
     @Test
     void doesNotRegisterRabbitListenerWhenConsumerAutoStartIsDisabled() {
         contextRunner
-                .withPropertyValues("recording.analysis.consumer.auto-start=false")
+                .withPropertyValues("recording.analysis.backend-consumer.auto-start=false")
                 .run(context -> assertThat(context).doesNotHaveBean(RecordingAnalysisJobListener.class));
     }
 
     @Test
     void delegatesMessageToConsumerWhenEnabled() {
         contextRunner
-                .withPropertyValues("recording.analysis.consumer.auto-start=true")
+                .withPropertyValues("recording.analysis.backend-consumer.auto-start=true")
                 .run(context -> {
                     RecordingAnalysisJobConsumer consumer =
                             context.getBean(RecordingAnalysisJobConsumer.class);
                     RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                            "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, 101L, Instant.now());
+                            "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, Instant.now());
 
                     context.getBean(RecordingAnalysisJobListener.class).consume(event);
 
