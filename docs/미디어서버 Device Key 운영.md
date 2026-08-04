@@ -63,7 +63,7 @@ Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배�
 
 dev Tailscale 구성이 구현된 뒤 Raspberry Pi 5 업로더는 [dev Tailscale 연동 운영](<./Tailscale 연동 운영.md>)에 정의된 tailnet MinIO endpoint를 장치 업로드 전용으로 사용한다. 현재 `dev` 저장소에는 해당 Tailscale·MinIO 노출 구성이 적용되어 있지 않다. 적용 후에도 이 주소는 브라우저에 반환하지 않으며, 녹화 객체 업로드 후 메타데이터 등록은 기존 공용 HTTPS Device API로 수행한다.
 
-1. 미디어 서버가 `recordings/{cameraCode}/.../*.mp4` 키와 소문자 `.mp4` 확장자로 녹화 파일을 MinIO 또는 S3에 업로드한다.
+1. 미디어 서버가 `recordings/{cameraCode}/.../*.mp4` 키와 소문자 `.mp4` 확장자로 녹화 파일을 MinIO에 업로드한다.
 2. 업로드 성공 응답을 받은 뒤 `POST /api/v1/device/cameras/{cameraCode}/recordings`를 `X-Device-Key`와 `Idempotency-Key` 헤더로 호출한다.
 3. 촬영 시각은 UTC offset을 포함한 RFC 3339 형식과 최대 6자리 소수 초로 전송한다. local/test의 녹화 객체 제한은 5 GiB이며 prod에서는 `RECORDING_MAX_FILE_SIZE_BYTES`를 반드시 지정한다.
 4. 중앙 서버는 같은 버킷의 객체를 HEAD/stat으로 확인하고 실제 파일 크기로 메타데이터를 등록한다.

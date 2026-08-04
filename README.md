@@ -115,6 +115,8 @@ MINIO_PRESIGNED_URL_EXPIRY
 
 운영 전환 기간에는 `compose.deploy.yml`이 기존 `S3_*` 환경변수를 임시로 `MINIO_*` 컨테이너 환경변수로 변환합니다. 모든 배포 대상이 `MINIO_*` 계열로 전환된 뒤 Compose의 레거시 fallback을 제거합니다.
 
+운영 환경변수, 자격증명 교체와 버킷 복구 절차는 [MinIO 운영 및 자격증명 교체](<./docs/MinIO 운영 및 자격증명 교체.md>)를 참고합니다.
+
 Docker 인프라가 실행 중인지 확인한 후 `EyesonuApplication`을 실행합니다.
 
 ## 4. VS Code 설정
