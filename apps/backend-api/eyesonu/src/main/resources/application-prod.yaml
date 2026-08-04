@@ -36,17 +36,16 @@ eyesonu:
       name: ${ADMIN_BOOTSTRAP_NAME:}
   storage:
     minio:
-      # Temporary rollout compatibility: remove S3_* fallbacks after all deployments migrate.
-      endpoint: ${MINIO_INTERNAL_ENDPOINT:${S3_ENDPOINT:}}
-      public-endpoint: ${MINIO_PUBLIC_ENDPOINT:${S3_PUBLIC_ENDPOINT:}}
-      region: ${MINIO_REGION:${S3_REGION:}}
-      bucket: ${MINIO_BUCKET:${S3_BUCKET:}}
-      access-key: ${MINIO_APP_ACCESS_KEY:${S3_ACCESS_KEY:}}
-      secret-key: ${MINIO_APP_SECRET_KEY:${S3_SECRET_KEY:}}
-      connect-timeout: ${MINIO_CONNECT_TIMEOUT:${S3_CONNECT_TIMEOUT:3s}}
-      read-timeout: ${MINIO_READ_TIMEOUT:${S3_READ_TIMEOUT:5s}}
-      call-timeout: ${MINIO_CALL_TIMEOUT:${S3_CALL_TIMEOUT:10s}}
+      endpoint: ${MINIO_INTERNAL_ENDPOINT}
+      public-endpoint: ${MINIO_PUBLIC_ENDPOINT}
+      region: ${MINIO_REGION}
+      bucket: ${MINIO_BUCKET}
+      access-key: ${MINIO_APP_ACCESS_KEY}
+      secret-key: ${MINIO_APP_SECRET_KEY}
+      connect-timeout: ${MINIO_CONNECT_TIMEOUT:3s}
+      read-timeout: ${MINIO_READ_TIMEOUT:5s}
+      call-timeout: ${MINIO_CALL_TIMEOUT:10s}
       max-file-size-bytes: ${RECORDING_MAX_FILE_SIZE_BYTES}
       case-photo-max-file-size-bytes: ${CASE_PHOTO_MAX_FILE_SIZE_BYTES:10485760}
       candidate-image-max-file-size-bytes: ${CANDIDATE_IMAGE_MAX_FILE_SIZE_BYTES:10485760}
-      presigned-url-expiry: ${MINIO_PRESIGNED_URL_EXPIRY:${S3_PRESIGNED_URL_EXPIRY:15m}}
+      presigned-url-expiry: ${MINIO_PRESIGNED_URL_EXPIRY:15m}
