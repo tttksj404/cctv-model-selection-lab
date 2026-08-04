@@ -59,9 +59,8 @@ describe("LiveMonitoringView", () => {
     expect(listCamerasMock).toHaveBeenCalledWith({ page: 0, size: 4, sort: "cameraCode,asc" });
     expect(root.querySelectorAll(".live-stream-card")).toHaveLength(4);
     expect(root.querySelectorAll(".empty-camera-slot")).toHaveLength(2);
-    const iframeSources = [...root.querySelectorAll("iframe")].map((iframe) => iframe.src);
-    expect(iframeSources[0]).toContain("/camera-01?");
-    expect(iframeSources[1]).toContain("/camera-02?");
+    expect(root.querySelectorAll("video")).toHaveLength(2);
+    expect(root.querySelectorAll("iframe")).toHaveLength(0);
   });
 
   it("shows API DB status separately from player state", async () => {
