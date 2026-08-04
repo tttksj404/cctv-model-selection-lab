@@ -42,6 +42,29 @@ export async function listSearchConditions(caseId) {
   return unwrapData(await apiClient.get(casePath(caseId, "/search-conditions")));
 }
 
+export async function createSearchCondition(caseId, payload) {
+  return unwrapData(await apiClient.post(casePath(caseId, "/search-conditions"), payload));
+}
+
+export async function replaceSearchCondition(caseId, conditionId, payload) {
+  const conditionPath = `/search-conditions/${encodeURIComponent(conditionId)}`;
+  return unwrapData(await apiClient.put(casePath(caseId, conditionPath), payload));
+}
+
+export async function deleteSearchCondition(caseId, conditionId) {
+  const conditionPath = `/search-conditions/${encodeURIComponent(conditionId)}`;
+  return unwrapData(await apiClient.delete(casePath(caseId, conditionPath)));
+}
+
 export async function listCaseCameras(caseId) {
   return unwrapData(await apiClient.get(casePath(caseId, "/cameras")));
+}
+
+export async function addCaseCameras(caseId, cameraIds) {
+  return unwrapData(await apiClient.post(casePath(caseId, "/cameras"), { cameraIds }));
+}
+
+export async function removeCaseCamera(caseId, cameraId) {
+  const cameraSuffix = `/cameras/${encodeURIComponent(cameraId)}`;
+  return unwrapData(await apiClient.delete(casePath(caseId, cameraSuffix)));
 }

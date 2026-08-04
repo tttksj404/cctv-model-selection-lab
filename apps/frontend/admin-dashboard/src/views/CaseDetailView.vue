@@ -1,7 +1,14 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { closeCase, getCase, updateCaseStatus } from "../api/caseApi";
+import {
+  closeCase,
+  getCase,
+  listCaseCameras,
+  listSearchConditions,
+  updateCaseStatus
+} from "../api/caseApi";
+import CaseSearchSetupCard from "../components/cases/CaseSearchSetupCard.vue";
 import ConfirmModal from "../components/common/ConfirmModal.vue";
 import { mapCaseDetail, toBackendStatus } from "../domain/caseMapper";
 
@@ -30,6 +37,19 @@ const loading = ref(true);
 const loadError = ref("");
 const notFound = ref(false);
 const actionMessage = ref("");
+const searchSetupRef = ref(null);
+const initialSearchConditions = ref([]);
+const initialCaseCameras = ref([]);
+const searchSetupLoading = ref(true);
+const searchSetupError = ref("");
+const searchReadiness = ref({
+  usableConditionCount: 0,
+  activeCameraCount: 0,
+  ready: false,
+  loading: true,
+  error: ""
+});
+const searchingBlockMessage = ref("");
 
 // Candidate and route APIs are not implemented yet. Keep the real empty state instead of mock data.
 const candidates = ref([]);
@@ -47,6 +67,7 @@ const closeReasonError = ref("");
 const closeLoading = ref(false);
 const forceCloseRequired = ref(false);
 let loadRequestId = 0;
+let searchSetupRequestId = 0;
 let actionRequestId = 0;
 
 const statusLabels = Object.freeze(Object.fromEntries(STATUS_STEPS.map((step) => [step.value, step.label])));
@@ -54,7 +75,12 @@ const statusOptions = computed(() => (
   ALLOWED_TRANSITIONS[item.value?.status] ?? []
 ).map((value) => ({ value, label: statusLabels[value] ?? value })));
 const isClosed = computed(() => item.value?.status === "closed");
-const statusConfirmDisabled = computed(() => !statusReason.value.trim() || !nextStatus.value);
+const isSearchingTarget = computed(() => nextStatus.value === "searching");
+const statusConfirmDisabled = computed(() => (
+  !statusReason.value.trim()
+    || !nextStatus.value
+    || (isSearchingTarget.value && !searchReadiness.value.ready)
+));
 const closeConfirmDisabled = computed(() => !closeReason.value.trim());
 const closeModalTitle = computed(() => forceCloseRequired.value
   ? "사건을 강제로 종료할까요?"
@@ -87,12 +113,49 @@ function readableError(error, fallback) {
   return error?.message || fallback;
 }
 
-async function loadCase({ showLoading = true } = {}) {
+async function loadSearchSetup(caseId) {
+  const requestId = ++searchSetupRequestId;
+  searchSetupLoading.value = true;
+  searchSetupError.value = "";
+  initialSearchConditions.value = [];
+  initialCaseCameras.value = [];
+  searchReadiness.value = {
+    usableConditionCount: 0,
+    activeCameraCount: 0,
+    ready: false,
+    loading: true,
+    error: ""
+  };
+
+  const [conditionsResult, camerasResult] = await Promise.allSettled([
+    listSearchConditions(caseId),
+    listCaseCameras(caseId)
+  ]);
+  if (requestId !== searchSetupRequestId || String(route.params.caseId) !== caseId) return false;
+
+  const setupErrors = [];
+  if (conditionsResult.status === "fulfilled") {
+    initialSearchConditions.value = conditionsResult.value || [];
+  } else {
+    setupErrors.push(readableError(conditionsResult.reason, "탐색 조건을 불러오지 못했습니다."));
+  }
+  if (camerasResult.status === "fulfilled") {
+    initialCaseCameras.value = camerasResult.value || [];
+  } else {
+    setupErrors.push(readableError(camerasResult.reason, "배정 카메라를 불러오지 못했습니다."));
+  }
+  searchSetupError.value = [...new Set(setupErrors)].join(" ");
+  searchSetupLoading.value = false;
+  return setupErrors.length === 0;
+}
+
+async function loadCase({ showLoading = true, loadSetup = true } = {}) {
   const requestId = ++loadRequestId;
   const caseId = String(route.params.caseId);
   if (showLoading) loading.value = true;
   loadError.value = "";
   notFound.value = false;
+  if (loadSetup) void loadSearchSetup(caseId);
 
   try {
     const source = await getCase(caseId);
@@ -116,8 +179,19 @@ async function loadCase({ showLoading = true } = {}) {
   }
 }
 
+function refreshCaseFromSetup() {
+  return loadCase({ showLoading: false, loadSetup: false });
+}
+
 function openStatusModal() {
   if (!nextStatus.value || isClosed.value) return;
+  if (nextStatus.value === "searching" && !searchReadiness.value.ready) {
+    searchingBlockMessage.value = searchReadiness.value.loading
+      ? "실시간 탐색 설정을 확인하는 중입니다. 잠시 후 다시 시도해 주세요."
+      : "탐색을 시작하려면 실시간 사용 가능 조건과 활성 배정 카메라가 각각 하나 이상 필요합니다.";
+    searchSetupRef.value?.focusMissing?.();
+    return;
+  }
   statusReason.value = "";
   statusReasonError.value = "";
   actionMessage.value = "";
@@ -146,14 +220,18 @@ async function changeStatus() {
     statusReasonError.value = "상태 변경 사유를 입력해 주세요.";
     return;
   }
+  if (nextStatus.value === "searching" && !searchReadiness.value.ready) {
+    statusReasonError.value = "탐색 조건과 활성 배정 카메라를 먼저 등록해 주세요.";
+    return;
+  }
 
   const actionId = ++actionRequestId;
   const caseId = String(item.value.id);
+  const previousStatus = item.value.status;
+  const targetStatus = nextStatus.value;
   statusLoading.value = true;
   statusReasonError.value = "";
   try {
-    const previousStatus = item.value.status;
-    const targetStatus = nextStatus.value;
     const state = await updateCaseStatus(caseId, {
       status: toBackendStatus(targetStatus),
       reason
@@ -171,15 +249,20 @@ async function changeStatus() {
         actionId,
         caseId
       );
-    } else if (
-      error?.status === 422
-        && item.value?.status === "received"
-        && nextStatus.value === "searching"
-    ) {
-      statusReasonError.value = readableError(
-        error,
-        "탐색을 시작하려면 탐색 조건과 활성 카메라가 필요합니다."
-      );
+    } else if (error?.status === 422) {
+      const message = readableError(error, "현재 사건 상태에서는 요청한 상태로 변경할 수 없습니다.");
+      const refreshed = await loadCase({ showLoading: false, loadSetup: false });
+      if (actionId !== actionRequestId || String(item.value?.id) !== caseId) return;
+      if (!refreshed) {
+        statusModalOpen.value = false;
+      } else if (item.value.status !== previousStatus) {
+        statusModalOpen.value = false;
+        actionMessage.value = `사건 상태가 '${statusLabels[item.value.status]}' 상태로 변경되어 최신 정보를 불러왔습니다.`;
+      } else {
+        if (targetStatus === "searching") await searchSetupRef.value?.reload?.();
+        if (actionId !== actionRequestId || String(item.value?.id) !== caseId) return;
+        statusReasonError.value = message;
+      }
     } else {
       statusReasonError.value = readableError(error, "사건 상태를 변경하지 못했습니다.");
     }
@@ -259,6 +342,9 @@ async function submitClose() {
 watch(statusReason, () => {
   if (statusReasonError.value === "상태 변경 사유를 입력해 주세요.") statusReasonError.value = "";
 });
+watch(nextStatus, () => {
+  searchingBlockMessage.value = "";
+});
 watch(closeReason, () => {
   if (closeReasonError.value === "종료 사유를 입력해 주세요.") closeReasonError.value = "";
 });
@@ -270,12 +356,14 @@ watch(() => route.params.caseId, () => {
   closeLoading.value = false;
   forceCloseRequired.value = false;
   actionMessage.value = "";
+  searchingBlockMessage.value = "";
   loadCase();
 });
 
 onMounted(() => loadCase());
 onBeforeUnmount(() => {
   loadRequestId += 1;
+  searchSetupRequestId += 1;
   actionRequestId += 1;
 });
 </script>
@@ -344,6 +432,18 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
+        <CaseSearchSetupCard
+          ref="searchSetupRef"
+          :case-id="item.id"
+          :closed="isClosed"
+          :conditions="initialSearchConditions"
+          :cameras="initialCaseCameras"
+          :loading="searchSetupLoading"
+          :error="searchSetupError"
+          @readiness-change="searchReadiness = $event"
+          @case-refresh-requested="refreshCaseFromSetup"
+        />
+
         <div class="section-heading status-change-heading">
           <div>
             <h2>상태 관리</h2>
@@ -364,6 +464,24 @@ onBeforeUnmount(() => {
               @click="openStatusModal"
             >상태 변경</button>
             <button type="button" class="danger-button" @click="openCloseModal">사건 종료</button>
+          </div>
+        </div>
+        <div v-if="!isClosed && isSearchingTarget && !searchReadiness.ready" class="searching-prerequisite" role="note">
+          <div>
+            <strong>{{ searchingBlockMessage || "실시간 탐색 설정이 아직 준비되지 않았습니다." }}</strong>
+            <span>사용 가능 조건 {{ searchReadiness.usableConditionCount }}개 · 활성 카메라 {{ searchReadiness.activeCameraCount }}대</span>
+          </div>
+          <div>
+            <button
+              v-if="searchReadiness.usableConditionCount === 0"
+              type="button"
+              @click="searchSetupRef?.focusConditions?.()"
+            >조건 설정으로 이동</button>
+            <button
+              v-if="searchReadiness.activeCameraCount === 0"
+              type="button"
+              @click="searchSetupRef?.focusCameras?.()"
+            >카메라 설정으로 이동</button>
           </div>
         </div>
       </article>
@@ -443,6 +561,33 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.searching-prerequisite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -4px;
+  border: 1px solid #ead38b;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #fffbeb;
+}
+
+.searching-prerequisite > div:first-child { display: grid; gap: 3px; }
+.searching-prerequisite strong { color: #7a5a18; font-size: 12px; }
+.searching-prerequisite span { color: #8b6b2c; font-size: 11px; }
+.searching-prerequisite > div:last-child { display: inline-flex; gap: 7px; flex-wrap: wrap; }
+.searching-prerequisite button {
+  min-height: 32px;
+  border: 1px solid #d6bd78;
+  border-radius: 6px;
+  padding: 5px 9px;
+  background: #fff;
+  color: #745516;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .danger-button {

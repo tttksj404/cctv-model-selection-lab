@@ -60,13 +60,14 @@
 | `PATCH` | `/admin/cases/{caseId}/status` | 종료 외 사건 상태 변경 | `status`, `reason` | `200`, `400`, `404`, `422` |
 | `POST` | `/admin/cases/{caseId}/close` | 사건 종료 | `reason`, `force` | `200`, `404`, `409` |
 | `GET` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 목록 | `caseId` | `200`, `404` |
-| `POST` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 생성 | 프롬프트, 시간, 구역, 임계값 | `201`, `400`, `404` |
+| `POST` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 생성 | 정규화 가능한 프롬프트, 시간, 구역 | `201`, `400`, `404` |
 | `GET` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 상세 | `caseId`, `conditionId` | `200`, `404` |
 | `PATCH` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 수정 | 변경할 탐색 조건 | `200`, `400`, `404` |
-| `DELETE` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 미사용 탐색 조건 삭제 | `caseId`, `conditionId` | `204`, `404`, `409` |
+| `PUT` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 전체 교체 | 프롬프트와 선택 탐색 조건 전체 | `200`, `400`, `404` |
+| `DELETE` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 미사용 탐색 조건 삭제 | `caseId`, `conditionId` | `204`, `404`, `409`, `422` |
 | `GET` | `/admin/cases/{caseId}/cameras` | 사건의 탐색 카메라 목록 | `caseId` | `200`, `404` |
 | `POST` | `/admin/cases/{caseId}/cameras` | 탐색 카메라 추가·재활성화 | `cameraIds` | `200`, `400`, `404` |
-| `DELETE` | `/admin/cases/{caseId}/cameras/{cameraId}` | 탐색 카메라 제외 | `caseId`, `cameraId` | `204`, `404` |
+| `DELETE` | `/admin/cases/{caseId}/cameras/{cameraId}` | 탐색 카메라 제외 | `caseId`, `cameraId` | `204`, `404`, `422` |
 | `GET` | `/admin/candidates` | 전체 후보 목록 | 선택적 사건·카메라·판정 상태·탐지 기간, 페이지·정렬 조건 | `200`, `304`, `400` |
 | `GET` | `/admin/candidates/{candidateId}` | 후보 상세 | `candidateId` | `200`, `404` |
 | `PATCH` | `/admin/candidates/{candidateId}/review` | 후보 판정 | `reviewStatus`, `reviewComment`, `version` | `200`, `400`, `404`, `409` |
@@ -239,7 +240,8 @@
 - `cameraCode`는 앞뒤 공백을 제거한 후 검증한다. `loginId`는 앞뒤 공백을 제거하고 소문자로 변환한다.
 - 위도는 `-90`~`90`, 경도는 `-180`~`180` 범위여야 한다.
 - `lastSeenLat`와 `lastSeenLng`는 함께 제공하거나 모두 생략한다.
-- `similarity`, `similarityThreshold`는 `0.0000`~`1.0000` 범위여야 한다.
+- 후보 탐지 결과의 `similarity`는 `0.0000`~`1.0000` 범위여야 한다.
+- `similarityThreshold`는 관리자·Device·녹화 분석 API 계약에 포함하지 않는다. 후보 선별 임계값은 Jetson 또는 AI Worker가 모델 버전에 맞춰 관리하는 실행 주체 내부 정책이다.
 - 탐색 종료 시각은 탐색 시작 시각보다 빠를 수 없다.
 - 관리자·브라우저 클라이언트는 내부 S3 Key, 생성·수정 시각, 검토 관리자 ID를 직접 지정할 수 없다. 예외적으로 인증된 미디어 서버는 녹화 등록 시 정해진 규칙의 `objectKey`를 제공한다.
 
@@ -262,6 +264,8 @@
 - `CLOSED` 전이는 사건 종료 API를 통해서만 수행한다.
 - 사건 종료 시 미처리 후보 또는 실행 중인 분석 작업이 있으면 `409 CASE_CLOSE_CONFLICT`를 반환한다.
 - 종료된 사건은 수정·탐색·후보 등록이 불가능하며 다시 열기 API는 v1에서 제공하지 않는다.
+- `RECEIVED`, `CANDIDATE_FOUND`, `FIELD_SEARCH` 중 어느 상태에서든 `SEARCHING`으로 전환하려면 `realtimeUsable=true`인 탐색 조건과 활성 사건 카메라가 각각 하나 이상이어야 한다. 충족하지 않으면 `422 BUSINESS_RULE_VIOLATION`을 반환한다.
+- `SEARCHING` 전환 성공은 트랜잭션 커밋 후 실시간 검색 대상 변경 알림을 발행해 Device가 최신 snapshot을 다시 조회하게 한다. 이 상태 변경 자체는 `analysis_jobs`를 생성하거나 녹화 분석 outbox를 등록하지 않는다.
 
 ### 4.2 기타 상태값
 
@@ -655,7 +659,8 @@
 - `force` 기본값은 `false`이다.
 - 미처리 후보 또는 실행 중인 작업이 있으면 `force=false` 요청은 `409 CASE_CLOSE_CONFLICT`를 반환한다.
 - `force=true`는 관리자 확인 후 미완료 작업을 취소하고 종료하며, 사유와 강제 종료 여부를 감사 로그에 남긴다.
-- `RECEIVED`에서 `SEARCHING`으로 전환하려면 탐색 조건과 활성 사건 카메라가 각각 하나 이상 필요하다.
+- 모든 `SEARCHING` 진입 전이는 `realtimeUsable=true`인 탐색 조건과 활성 사건 카메라를 각각 하나 이상 요구한다. 준비되지 않은 요청은 `422 BUSINESS_RULE_VIOLATION`을 반환한다.
+- `SEARCHING` 진입은 실시간 검색 대상 변경 알림을 발행하지만 녹화 분석 작업을 자동 생성하지 않는다. 녹화 분석은 `POST /admin/cases/{caseId}/recording-analysis-jobs`로 별도 등록한다.
 - 사건 자체의 `DELETE` API는 제공하지 않는다. 종료 후 보관기한 자동 파기는 후속 구현 범위다.
 - 종료 사건은 정보 수정과 사진 등록·교체를 거부하지만 개인정보 제거를 위해 사진 삭제는 허용한다.
 - 사진은 JPEG·PNG·WebP 한 장, 최대 10 MiB이며 Content-Type과 파일 시그니처가 일치해야 한다.
@@ -668,27 +673,56 @@
 | `POST` | `/admin/cases/{caseId}/search-conditions` | 탐색 조건 생성 | `201`, `400`, `404` |
 | `GET` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 상세 | `200`, `404` |
 | `PATCH` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 수정 | `200`, `400`, `404` |
-| `DELETE` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 미사용 탐색 조건 삭제 | `204`, `404`, `409` |
+| `PUT` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 탐색 조건 전체 교체·선택 필드 초기화 | `200`, `400`, `404` |
+| `DELETE` | `/admin/cases/{caseId}/search-conditions/{conditionId}` | 미사용 탐색 조건 삭제 | `204`, `404`, `409`, `422` |
 
 생성 요청:
 
 ```json
 {
-  "prompt": "검은색 셔츠와 청바지를 입고 흰색 운동화를 신은 20대 남성",
-  "exclusionPrompt": "모자 또는 붉은색 상의",
+  "prompt": "a man wearing a black short sleeve top and blue pants",
+  "exclusionPrompt": "a person wearing a red long sleeve top and black pants",
   "searchStart": "2026-07-20T00:00:00Z",
   "searchEnd": "2026-07-20T01:30:00Z",
-  "searchArea": "Zone A, Zone B",
-  "similarityThreshold": 0.7200
+  "searchArea": "Zone A, Zone B"
 }
 ```
 
-필수 필드: `prompt`, `similarityThreshold`
+필수 필드: `prompt`
+
+응답 예시:
+
+```json
+{
+  "timestamp": "2026-07-20T01:40:00Z",
+  "data": {
+    "id": 301,
+    "caseId": 101,
+    "prompt": "a man wearing a black short sleeve top and blue pants",
+    "exclusionPrompt": "a person wearing a red long sleeve top and black pants",
+    "searchStart": "2026-07-20T00:00:00Z",
+    "searchEnd": "2026-07-20T01:30:00Z",
+    "searchArea": "Zone A, Zone B",
+    "normalizedPrompt": "a man wearing a black short sleeve top and blue pants",
+    "normalizedExclusionPrompt": "a person wearing a red long sleeve top and black pants",
+    "realtimeUsable": true,
+    "createdAt": "2026-07-20T01:35:00Z",
+    "updatedAt": "2026-07-20T01:35:00Z"
+  }
+}
+```
 
 추가 규칙:
 
+- 관리자 화면은 성별(`person`, `man`, `woman`), 상의 색, 소매 길이(`short sleeve`, `long sleeve`), 하의 색을 구조화 입력받아 canonical prompt를 만든다. 색상은 `black`, `blue`, `brown`, `green`, `gray`, `orange`, `pink`, `purple`, `red`, `white`, `yellow`만 사용한다.
+- 서버는 `prompt`와 값이 있는 `exclusionPrompt`를 `a {person|man|woman} wearing a {upperColor} {short|long} sleeve top and {lowerColor} pants` 형식으로 정규화한다. 신규·수정 후 최종 값이 정규화되지 않으면 `400 REALTIME_PROMPT_INVALID`를 반환한다.
+- `normalizedPrompt`, `normalizedExclusionPrompt`는 Device에 전달할 canonical 문장이다. 제외 조건이 없으면 `normalizedExclusionPrompt=null`이다. `realtimeUsable`은 주 프롬프트와 값이 있는 제외 조건이 모두 정규화 가능한지를 나타낸다.
+- 기존 레거시 행은 조회 시 정규화할 수 없어도 삭제하지 않는다. 이 경우 정규화 필드는 `null`, `realtimeUsable=false`이며 `SEARCHING` 준비 조건 수에 포함하지 않는다. 구조화 입력으로 다시 저장하면 정상 조건으로 전환된다.
+- `PATCH`는 제공된 필드만 변경하며 선택 필드를 비우는 전체 편집에는 `PUT`을 사용한다. `PUT`의 `prompt`는 필수이고 `exclusionPrompt`, `searchStart`, `searchEnd`, `searchArea`는 누락하거나 `null`로 보내면 초기화한다.
 - `searchStart`와 `searchEnd`는 함께 지정하는 것을 기본으로 하며, 한쪽만 제공하면 `400 VALIDATION_ERROR`이다.
+- 유사도 임계값은 요청·응답에 포함하지 않는다. 중앙 서버는 탐색 조건의 임계값을 정하거나 Device·녹화 분석 작업에 전달하지 않는다.
 - 실행 중인 분석 작업이 참조하는 조건은 삭제할 수 없으며 `409`를 반환한다.
+- 사건이 `SEARCHING`일 때 마지막 `realtimeUsable=true` 조건은 삭제할 수 없으며 `422 BUSINESS_RULE_VIOLATION`을 반환한다.
 - 생성·수정 시 변경 전후 값을 `AUDIT_LOGS`에 기록한다.
 
 ### 6.3 사건별 탐색 카메라
@@ -697,7 +731,7 @@
 | --- | --- | --- | --- |
 | `GET` | `/admin/cases/{caseId}/cameras` | 사건에 지정된 카메라 목록 | `200`, `404` |
 | `POST` | `/admin/cases/{caseId}/cameras` | 탐색 카메라 추가 또는 재활성화 | `200`, `400`, `404` |
-| `DELETE` | `/admin/cases/{caseId}/cameras/{cameraId}` | 탐색 카메라 제외 | `204`, `404` |
+| `DELETE` | `/admin/cases/{caseId}/cameras/{cameraId}` | 탐색 카메라 제외 | `204`, `404`, `422` |
 
 카메라 추가 요청:
 
@@ -710,6 +744,8 @@
 - 추가 시 `searchEnabled=true`, `selectedAt=현재 시각`, `removedAt=null`로 처리한다.
 - 제외 시 연결 데이터를 물리 삭제하지 않고 `searchEnabled=false`, `removedAt=현재 시각`으로 변경한다.
 - 동일 사건·카메라 조합은 하나만 유지한다.
+- 사건이 `SEARCHING`일 때 마지막 활성 사건 카메라는 제외할 수 없으며 `422 BUSINESS_RULE_VIOLATION`을 반환한다.
+- 조건·카메라 변경은 사건 단위 잠금으로 직렬화한다. `SEARCHING` 사건의 변경이 커밋되면 실시간 검색 대상 변경 알림을 발행하고 Device는 최신 전체 snapshot을 다시 조회한다.
 
 ### 6.4 후보 조회 및 판정
 
@@ -1069,7 +1105,7 @@ GET /api/v1/admin/recordings?cameraId=1&startFrom=2026-07-20T01:00:00Z&startTo=2
 
 - 인증: `X-Device-Key: {deviceKey}`
 - 요청 본문과 쿼리 파라미터는 없다.
-- 응답은 인증된 미디어 서버가 소유한 카메라가 등록된 `SEARCHING` 사건 중 활성 검색 조건이 하나 이상 있는 사건만 반환한다.
+- 응답은 인증된 미디어 서버가 소유한 활성 사건 카메라가 등록된 `SEARCHING` 사건 중 실시간 사용 가능한 검색 조건이 하나 이상 있는 사건만 반환한다.
 - 비활성화·삭제된 검색 조건과 카메라는 반환하지 않는다.
 - 응답은 `Cache-Control: private, no-cache, must-revalidate`를 적용한다. 임베디드는 이 API 응답을 최신 기준 데이터로 사용한다.
 
@@ -1090,12 +1126,11 @@ X-Device-Key: msk_0123456789abcdef.0123456789abcdef0123456789abcdef0123456789abc
       "searchConditions": [
         {
           "conditionId": 10,
-          "prompt": "검은색 상의와 청바지를 입은 사람",
-          "exclusionPrompt": "모자를 쓴 사람",
+          "prompt": "a person wearing a black short sleeve top and blue pants",
+          "exclusionPrompt": "a person wearing a red long sleeve top and black pants",
           "searchStart": "2026-07-30T03:00:00Z",
           "searchEnd": "2026-07-30T12:00:00Z",
-          "searchArea": "강남역 일대",
-          "similarityThreshold": 0.72
+          "searchArea": "강남역 일대"
         }
       ],
       "cameras": [
@@ -1124,9 +1159,10 @@ Cache-Control: private, no-cache, must-revalidate
 
 - `updatedAt`은 해당 사건의 검색 조건·검색 카메라 변경 여부를 확인하기 위한 최신 수정 시각이다. 활성 데이터뿐 아니라 비활성화·삭제된 검색 대상의 마지막 수정 시각도 반영될 수 있다.
 - 모든 시간 필드는 JSON에서 UTC `Z`로 반환한다.
-- 실시간 임베디드 응답의 `prompt`, `exclusionPrompt`는 무료 번역 API를 사용하지 않고 고정 정규화한다. 허용 색상은 `black`, `blue`, `brown`, `green`, `gray`, `orange`, `pink`, `purple`, `red`, `white`, `yellow`이며 상의 형태는 `short sleeve` 또는 `long sleeve`만 사용한다. `prompt`는 반드시 `성별 → 상의 색 → 상의 형태 → 하의 색` 순서로 전달한다. 예: `남성, 검은색 반팔 상의와 검은색 청바지` → `a man wearing a black short sleeve top and black pants`. 녹화영상 분석은 기존 번역기를 사용한다.
+- 실시간 임베디드 응답의 `prompt`, `exclusionPrompt`는 무료 번역 API를 사용하지 않고 서버가 검증한 canonical 문장을 반환한다. 허용 색상은 `black`, `blue`, `brown`, `green`, `gray`, `orange`, `pink`, `purple`, `red`, `white`, `yellow`이며 상의 형태는 `short sleeve` 또는 `long sleeve`만 사용한다. 문장은 `성별 → 상의 색 → 상의 형태 → 하의 색` 순서다. 예: `남성, 검은색 반팔 상의와 파란색 하의` → `a man wearing a black short sleeve top and blue pants`.
+- Device 응답에는 `similarityThreshold` 또는 동등한 임계값 필드를 포함하지 않는다. Jetson은 배포된 모델 버전에 대응하는 자체 실행 설정으로 후보 선별 임계값을 관리한다.
 - `caseId`, `caseNumber`, 검색 조건과 카메라 외 신고자 개인정보·관리자 메모·Device Key·내부 저장소 정보는 반환하지 않는다.
-- 사건에 활성 검색 조건이 없으면 해당 사건은 응답에서 제외한다.
+- 사건에 `realtimeUsable=true`인 검색 조건이 없으면 해당 사건은 응답에서 제외한다.
 - 인증된 미디어 서버가 소유하지 않은 카메라는 응답에 포함하지 않는다.
 - 데이터가 없으면 `200 OK`와 빈 배열을 반환한다.
 
@@ -1444,8 +1480,9 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | `status` | AnalysisJobStatus | 작업 상태 |
 | `prompt`, `exclusionPrompt` | string, nullable | 생성 시점 탐색 문구 snapshot |
 | `searchStart`, `searchEnd`, `searchArea` | datetime/string, nullable | 생성 시점 탐색 범위 snapshot |
-| `similarityThreshold` | decimal | 생성 시점 유사도 임계값 snapshot |
 | `requestedAt` | datetime | 요청 시각 |
+
+녹화 분석 작업 요청·응답과 신규 snapshot에는 `similarityThreshold`를 포함하거나 기록하지 않는다. AI Worker는 후보 선별 기준을 자체 모델 실행 설정으로 관리한다.
 
 ---
 
@@ -1493,6 +1530,9 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 | 시나리오 | 처리 |
 | --- | --- |
 | 탐색 종료가 시작보다 빠름 | `400 VALIDATION_ERROR` |
+| 신규·수정 탐색 프롬프트를 canonical 문장으로 정규화할 수 없음 | `400 REALTIME_PROMPT_INVALID` |
+| 준비되지 않은 사건을 `SEARCHING`으로 전환 | `422 BUSINESS_RULE_VIOLATION` |
+| `SEARCHING` 사건의 마지막 실시간 사용 가능 조건 또는 마지막 활성 카메라 제거 | `422 BUSINESS_RULE_VIOLATION` |
 | 탐색 카메라 없이 분석 작업 요청 | `422 BUSINESS_RULE_VIOLATION` |
 | `X-Device-Key` 헤더 누락 | `401 AUTHENTICATION_REQUIRED` |
 | Device Key 형식 오류·미등록 ID·secret 불일치·비활성 또는 폐기 서버 | 상세 원인을 숨기고 `401 INVALID_DEVICE_KEY` 반환 |
@@ -1530,6 +1570,7 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 - 관리자 세션 만료 시간은 현재 30분이며 애플리케이션 설정으로 관리한다.
 - 로그인·사건 진행 조회 Rate Limit은 현재 애플리케이션 상수로 적용한다. 장치 Heartbeat의 `OFFLINE` 판정 시간, 임시 미디어 URL 만료 시간과 파일 용량은 환경 설정으로 관리한다.
 - REST 조회 API는 WebSocket 연결이 끊긴 동안 발생한 후보와 상태 변경을 복구 조회하는 기준 데이터로 사용한다.
+- `SEARCH_CONDITIONS.similarity_threshold`는 기존 데이터 호환을 위해 nullable 컬럼으로 남기되 신규 행에는 `NULL`을 저장하고 런타임에서 읽지 않는다. `ANALYSIS_JOBS.similarity_threshold_snapshot`도 기존 nullable 컬럼과 데이터만 보존하며 신규 작업에는 기록하지 않는다.
 
 ---
 
@@ -1545,13 +1586,13 @@ Jetson은 후보 탐지를 수행하고 해당 카메라를 관리하는 미디�
 - 후보·탐지 미디어는 Object Key를 응답하지 않고 인증된 `/media/{mediaType}` 경로에서 소유 관계를 검증한 뒤 presigned URL로 리다이렉트한다.
 - 이 목표는 후보 provenance·대표 탐지·판정 근거 스키마가 추가된 뒤에만 활성화한다.
 
-### 14.2 자동 녹화 분석과 경로 예측 목표
+### 14.2 자동 녹화 분석과 경로 예측 목표 — 이번 변경 미포함
 
-- 사건 탐색 시작 시 마지막 목격 장소·시각을 기준으로 `LAST_SIGHTING` 분석 작업을 자동 생성한다.
+- 사건 탐색 시작 시 마지막 목격 장소·시각을 기준으로 `LAST_SIGHTING` 분석 작업을 자동 생성하는 것은 후속 목표다. 현재 `SEARCHING` 전이는 실시간 검색 대상 변경 알림만 발행하며 `analysis_jobs` 또는 녹화 분석 outbox를 생성하지 않는다.
 - 녹화본 후보의 관측 추정 경로가 갱신되면 위·경도 기준 다음 카메라를 최대 2대 선정해 `ROUTE_PREDICTION` 작업을 생성한다.
 - 목표 작업 계약에는 `triggerType`, `triggerCandidateIds`, `predictedCameraRank`, `searchFrom`, `searchTo`를 포함한다.
-- 외부 AI Worker 연동에는 claim·lease·heartbeat·취소·멱등 결과 접수와 Worker 전용 인증을 추가한다.
-- 상세 메시지와 REST 목표 계약은 [RabbitMQ 작업 전달과 REST 결과 회신 연동 안내서](./realtime-embedded-integration-guide.md)를 따른다.
+- 외부 AI Worker 연동은 Worker Key 인증, claim lease, 멱등 결과·실패 접수 API를 제공한다. heartbeat와 Worker 취소 API는 후속 범위다.
+- 상세 메시지와 REST 계약은 [녹화 분석 Worker API](./recording-analysis-worker-api.md)와 [녹화 AI Worker 연동 계약](./녹화%20AI%20Worker%20연동%20계약.md)을 따른다.
 
 ### 14.3 확정 동선 조회 목표
 

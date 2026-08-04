@@ -67,15 +67,18 @@ public class DeviceSearchTargetService {
 		}
 
 		private void addCondition(DeviceSearchTargetRow row) {
-			String prompt = promptNormalizer.normalize(row.getPrompt());
-			if (prompt == null || prompt.isBlank()) return;
-			String exclusionPrompt = promptNormalizer.normalize(row.getExclusionPrompt());
+			String prompt = promptNormalizer.normalizeOrNull(row.getPrompt());
+			if (prompt == null) return;
+			String exclusionPrompt = null;
+			if (row.getExclusionPrompt() != null && !row.getExclusionPrompt().isBlank()) {
+				exclusionPrompt = promptNormalizer.normalizeOrNull(row.getExclusionPrompt());
+				if (exclusionPrompt == null) return;
+			}
 			conditions.putIfAbsent(row.getConditionId(), new SearchConditionTargetResponse(
 					row.getConditionId(),
 					prompt,
 					exclusionPrompt,
-					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea(),
-					row.getSimilarityThreshold()));
+					row.getSearchStart(), row.getSearchEnd(), row.getSearchArea()));
 		}
 
 		private void addCamera(DeviceSearchTargetRow row) {

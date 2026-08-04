@@ -82,7 +82,6 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
         outbox.setRecordingObjectKey(snapshot.getRecordingObjectKey());
         outbox.setPrompt(snapshot.getPrompt());
         outbox.setExclusionPrompt(snapshot.getExclusionPrompt());
-        outbox.setSimilarityThreshold(snapshot.getSimilarityThreshold());
         outbox.setSearchStart(snapshot.getSearchStart());
         outbox.setSearchEnd(snapshot.getSearchEnd());
         outbox.setSearchArea(snapshot.getSearchArea());
@@ -106,7 +105,7 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
                         outbox.getCaseId(), outbox.getRecordingId(), outbox.getCameraId(),
                         outbox.getCameraCode(), outbox.getCameraName(), outbox.getRecordingObjectKey(),
-                        outbox.getPrompt(), outbox.getExclusionPrompt(), outbox.getSimilarityThreshold(),
+                        outbox.getPrompt(), outbox.getExclusionPrompt(),
                         outbox.getSearchStart(), outbox.getSearchEnd(), outbox.getSearchArea(),
                         outbox.getAttempt(), outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());

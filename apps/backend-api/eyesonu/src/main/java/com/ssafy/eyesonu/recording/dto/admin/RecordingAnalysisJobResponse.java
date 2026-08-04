@@ -1,7 +1,6 @@
 package com.ssafy.eyesonu.recording.dto.admin;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
-import java.math.BigDecimal;
 import java.time.Instant;
 
 public record RecordingAnalysisJobResponse(
@@ -16,7 +15,6 @@ public record RecordingAnalysisJobResponse(
         Instant searchStart,
         Instant searchEnd,
         String searchArea,
-        BigDecimal similarityThreshold,
         Instant requestedAt) {
 
     public static RecordingAnalysisJobResponse from(AnalysisJob job) {
@@ -25,6 +23,6 @@ public record RecordingAnalysisJobResponse(
                 job.getJobType(), job.getStatus(), job.getPromptSnapshot(),
                 job.getExclusionPromptSnapshot(), job.getSearchStartSnapshot(),
                 job.getSearchEndSnapshot(), job.getSearchAreaSnapshot(),
-                job.getSimilarityThresholdSnapshot(), job.getRequestedAt());
+                job.getRequestedAt());
     }
 }
