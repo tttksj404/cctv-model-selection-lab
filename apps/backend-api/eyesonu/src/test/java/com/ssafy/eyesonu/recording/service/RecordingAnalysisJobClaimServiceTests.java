@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu.recording.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
@@ -8,12 +9,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import java.util.Optional;
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +44,8 @@ class RecordingAnalysisJobClaimServiceTests {
         job.setId(JOB_ID);
         job.setJobType("RECORDING_ANALYSIS");
         job.setStatus("RUNNING");
-        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("backend-rabbit-consumer"), eq(300L)))
+        when(analysisJobMapper.claimQueued(
+                eq(JOB_ID), eq("backend-rabbit-consumer"), anyString(), eq(300L)))
                 .thenReturn(1);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
 
@@ -49,13 +53,15 @@ class RecordingAnalysisJobClaimServiceTests {
 
         assertTrue(result.isPresent());
         assertEquals("RUNNING", result.orElseThrow().getStatus());
-        verify(analysisJobMapper).claimQueued(JOB_ID, "backend-rabbit-consumer", 300L);
+        verify(analysisJobMapper).claimQueued(
+                eq(JOB_ID), eq("backend-rabbit-consumer"), anyString(), eq(300L));
         verify(analysisJobMapper).findRecordingAnalysisById(JOB_ID);
     }
 
     @Test
     void returnsEmptyWhenAnotherWorkerAlreadyClaimedJob() {
-        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("backend-rabbit-consumer"), eq(300L)))
+        when(analysisJobMapper.claimQueued(
+                eq(JOB_ID), eq("backend-rabbit-consumer"), anyString(), eq(300L)))
                 .thenReturn(0);
 
         Optional<AnalysisJob> result = service.claim(JOB_ID);
@@ -67,7 +73,7 @@ class RecordingAnalysisJobClaimServiceTests {
     @Test
     void returnsDuplicateWhenWorkerClaimsRunningJobAgain() {
         AnalysisJob job = runningJob();
-        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), eq(300L)))
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
                 .thenReturn(0);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
 
@@ -75,13 +81,14 @@ class RecordingAnalysisJobClaimServiceTests {
 
         assertTrue(result.duplicate());
         assertEquals("RUNNING", result.job().getStatus());
+        assertEquals(null, result.leaseToken());
     }
 
     @Test
     void rejectsCompletedJobClaim() {
         AnalysisJob job = runningJob();
         job.setStatus("SUCCEEDED");
-        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), eq(300L)))
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
                 .thenReturn(0);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
 
@@ -95,7 +102,7 @@ class RecordingAnalysisJobClaimServiceTests {
     void reclaimsExpiredRunningJobForAnotherWorker() {
         AnalysisJob job = runningJob();
         job.setClaimedBy("worker-2");
-        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), eq(300L)))
+        when(analysisJobMapper.claimQueued(eq(JOB_ID), eq("worker-1"), anyString(), eq(300L)))
                 .thenReturn(1);
         when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
 
@@ -104,6 +111,7 @@ class RecordingAnalysisJobClaimServiceTests {
         assertEquals("RUNNING", result.job().getStatus());
         assertEquals("worker-2", result.job().getClaimedBy());
         assertTrue(!result.duplicate());
+        assertNotNull(result.leaseToken());
     }
 
     @Test
@@ -112,7 +120,35 @@ class RecordingAnalysisJobClaimServiceTests {
                 () -> service.claimForWorker(JOB_ID, " "));
 
         assertEquals("AUTHENTICATION_REQUIRED", exception.getCode());
-        verify(analysisJobMapper, never()).claimQueued(anyLong(), anyString(), anyLong());
+        verify(analysisJobMapper, never()).claimQueued(
+                anyLong(), anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    void rejectsTargetAccessWhenTheClaimTokenDoesNotMatch() {
+        AnalysisJob job = runningJob();
+        job.setClaimedBy("worker-1");
+        job.setLeaseTokenHash("different-token-hash");
+        job.setClaimExpiresAt(Instant.now().plusSeconds(60));
+        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.requireActiveWorkerJob(JOB_ID, "worker-1", "wrong-token"));
+
+        assertEquals("WORKER_LEASE_CONFLICT", exception.getCode());
+    }
+
+    @Test
+    void renewsOnlyTheCurrentWorkerLease() {
+        when(analysisJobMapper.renewWorkerLease(
+                eq(JOB_ID), eq("worker-1"), anyString(), any(Instant.class))).thenReturn(1);
+        Instant before = Instant.now();
+
+        Instant renewedUntil = service.renewLease(JOB_ID, "worker-1", "claim-token-1");
+
+        assertTrue(renewedUntil.isAfter(before.plusSeconds(299)));
+        verify(analysisJobMapper).renewWorkerLease(
+                eq(JOB_ID), eq("worker-1"), anyString(), any(Instant.class));
     }
 
     private AnalysisJob runningJob() {

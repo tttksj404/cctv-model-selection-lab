@@ -24,20 +24,26 @@ public class RecordingAnalysisFailureService {
     private final AnalysisJobMapper jobMapper;
     private final RecordingAnalysisResultMapper resultMapper;
     private final AuditService auditService;
+    private final RecordingAnalysisJobClaimService claimService;
 
     public RecordingAnalysisFailureService(
             AnalysisJobMapper jobMapper,
             RecordingAnalysisResultMapper resultMapper,
-            AuditService auditService) {
+            AuditService auditService,
+            RecordingAnalysisJobClaimService claimService) {
         this.jobMapper = jobMapper;
         this.resultMapper = resultMapper;
         this.auditService = auditService;
+        this.claimService = claimService;
     }
 
     @Transactional
     public RecordingAnalysisFailureResponse fail(
-            Long jobId, RecordingAnalysisFailureRequest request, String workerId) {
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
+            Long jobId,
+            RecordingAnalysisFailureRequest request,
+            String workerId,
+            String claimToken) {
+        AnalysisJob job = jobMapper.findRecordingAnalysisById(jobId);
         if (job == null) {
             throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
                     "Recording analysis job was not found.");
@@ -55,9 +61,12 @@ public class RecordingAnalysisFailureService {
             throw new ApiException(HttpStatus.CONFLICT, "RESULT_ID_CONFLICT",
                     "A different terminal result was already submitted for this attempt.");
         }
-        if (!"RUNNING".equals(job.getStatus())) {
-            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
-                    "Only running recording analysis jobs can report failure.");
+        claimService.requireActiveWorkerJob(jobId, workerId, claimToken);
+        String leaseTokenHash = claimService.hashClaimToken(claimToken);
+        job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId, workerId, leaseTokenHash);
+        if (job == null) {
+            throw new ApiException(HttpStatus.CONFLICT, "WORKER_LEASE_CONFLICT",
+                    "Worker lease is missing, expired, or owned by another worker.");
         }
 
         RecordingAnalysisResult result = new RecordingAnalysisResult();
@@ -72,7 +81,8 @@ public class RecordingAnalysisFailureService {
         resultMapper.insert(result);
         String storedError = request.errorMessage() == null || request.errorMessage().isBlank()
                 ? request.errorCode() : request.errorCode() + ": " + request.errorMessage();
-        if (jobMapper.markFailed(job.getCaseId(), jobId, storedError) != 1) {
+        if (jobMapper.markFailed(
+                job.getCaseId(), jobId, workerId, leaseTokenHash, storedError) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job changed before failure was recorded.");
         }

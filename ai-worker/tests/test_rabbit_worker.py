@@ -8,53 +8,59 @@ import anyio
 from qwen_backend.central_client import CentralWorkerError
 from qwen_backend.notebook_worker import NotebookWorker, NotebookWorkerSettings
 from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRecordingWorker
-from qwen_backend.worker_protocol import RabbitWorkerJobEvent, WorkerClaimResponse, WorkerJob
+from qwen_backend.worker_protocol import RabbitWorkerJobEvent, RecordingAnalysisClaim
 
 
 class FakeDelivery:
-    def __init__(self, body: bytes) -> None:
+    def __init__(self, body: bytes, events: list[str] | None = None) -> None:
         self.body = body
         self.acked = 0
         self.rejected: list[bool] = []
+        self.events = events if events is not None else []
 
     async def ack(self, multiple: bool = False) -> None:
         assert multiple is False
         self.acked += 1
+        self.events.append("ack")
 
     async def reject(self, requeue: bool = False) -> None:
         self.rejected.append(requeue)
+        self.events.append(f"reject:{requeue}")
 
 
 class FakeClient:
-    def __init__(self, response: WorkerClaimResponse | Exception) -> None:
+    def __init__(self, response: RecordingAnalysisClaim | Exception) -> None:
         self.response = response
-        self.claims: list[tuple[int, str]] = []
+        self.claims: list[int] = []
 
-    async def claim_job(self, job_id: int, model_key: str) -> WorkerClaimResponse:
-        self.claims.append((job_id, model_key))
+    async def claim_job(self, job_id: int) -> RecordingAnalysisClaim:
+        self.claims.append(job_id)
         if isinstance(self.response, Exception):
             raise self.response
         return self.response
 
 
 class FakeWorker:
-    def __init__(self) -> None:
-        self.settings = SimpleNamespace(model_key="fixture-hybrid-v1")
-        self.processed: list[WorkerClaimResponse] = []
+    def __init__(self, *, processed_result: bool = True, events: list[str] | None = None) -> None:
+        self.settings = SimpleNamespace()
+        self.processed_result = processed_result
+        self.processed: list[RecordingAnalysisClaim] = []
+        self.events = events if events is not None else []
 
-    async def process_claim(self, client: FakeClient, claim: WorkerClaimResponse) -> bool:
+    async def process_claim(self, client: FakeClient, claim: RecordingAnalysisClaim) -> bool:
         self.processed.append(claim)
-        return True
+        self.events.append("process")
+        return self.processed_result
 
 
 class EmptyCentralClient:
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         pass
 
     async def __aenter__(self) -> EmptyCentralClient:
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args: object) -> None:
         return None
 
 
@@ -92,54 +98,53 @@ class QosConnection:
 
 
 def _event_body() -> bytes:
-    return RabbitWorkerJobEvent(
-        eventId="command-71",
+    return (
+        RabbitWorkerJobEvent(
+            commandId="command-71",
+            eventType="RECORDING_ANALYSIS_JOB_CREATED",
+            jobId=71,
+            caseId=11,
+            recordingId=31,
+            cameraId=41,
+            cameraCode="CAM-001",
+            cameraName="Gate A",
+            recordingObjectKey="recordings/CAM-001/video.mp4",
+            attempt=1,
+            occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
+        )
+        .model_dump_json(by_alias=True)
+        .encode("utf-8")
+    )
+
+
+def _claimed_response(*, duplicate: bool = False) -> RecordingAnalysisClaim:
+    return RecordingAnalysisClaim(
         jobId=71,
-        caseId=11,
+        status="RUNNING",
         attempt=1,
-        occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
-    ).model_dump_json(by_alias=True).encode("utf-8")
-
-
-def _claimed_response() -> WorkerClaimResponse:
-    job = WorkerJob(
-        jobId=71,
-        caseId=11,
-        searchConditionId=21,
-        recordingId=31,
-        modelKey="fixture-hybrid-v1",
-        cameraId=41,
-        cameraName="Gate A",
-        cameraAddress="CAM-001",
-        videoUrl="https://storage.example/video.mp4",
-        recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
-        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
-        prompt="red jacket",
-        similarityThreshold=0.8,
-        searchFromMs=0,
-        searchToMs=5_000,
-        leaseExpiresAt=datetime(2026, 7, 30, 0, 1, tzinfo=UTC),
-    )
-    return WorkerClaimResponse(
-        job=job,
-        leaseToken="lease-71",
-        leaseExpiresAt=job.lease_expires_at,
+        duplicate=duplicate,
+        startedAt=datetime(2026, 7, 30, tzinfo=UTC),
+        claimedBy="recording-ai-worker",
+        claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
+        leaseToken=None if duplicate else "lease-71",
     )
 
 
-def test_rabbit_processor_claims_exact_job_then_acks_and_processes() -> None:
+def test_rabbit_processor_acks_only_after_terminal_processing() -> None:
     async def scenario() -> None:
-        worker = FakeWorker()
-        delivery = FakeDelivery(_event_body())
+        events: list[str] = []
+        worker = FakeWorker(events=events)
+        delivery = FakeDelivery(_event_body(), events)
         client = FakeClient(_claimed_response())
 
         handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
 
         assert handled is True
-        assert client.claims == [(71, "fixture-hybrid-v1")]
+        assert client.claims == [71]
         assert delivery.acked == 1
         assert delivery.rejected == []
         assert len(worker.processed) == 1
+        assert events == ["process", "ack"]
 
     anyio.run(scenario)
 
@@ -160,11 +165,42 @@ def test_rabbit_processor_requeues_when_central_claim_is_unavailable() -> None:
     anyio.run(scenario)
 
 
+def test_rabbit_processor_requeues_when_terminal_callback_is_not_confirmed() -> None:
+    async def scenario() -> None:
+        worker = FakeWorker(processed_result=False)
+        delivery = FakeDelivery(_event_body())
+        client = FakeClient(_claimed_response())
+
+        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
+
+        assert handled is False
+        assert delivery.acked == 0
+        assert delivery.rejected == [True]
+
+    anyio.run(scenario)
+
+
+def test_rabbit_processor_acks_duplicate_claim_without_local_inference() -> None:
+    async def scenario() -> None:
+        worker = FakeWorker()
+        delivery = FakeDelivery(_event_body())
+        client = FakeClient(_claimed_response(duplicate=True))
+
+        handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
+
+        assert handled is False
+        assert delivery.acked == 1
+        assert delivery.rejected == []
+        assert worker.processed == []
+
+    anyio.run(scenario)
+
+
 def test_rabbit_processor_dead_letters_malformed_message() -> None:
     async def scenario() -> None:
         worker = FakeWorker()
         delivery = FakeDelivery(b'{"jobId":"not-a-number"}')
-        client = FakeClient(WorkerClaimResponse())
+        client = FakeClient(_claimed_response())
 
         handled = await RabbitJobProcessor(worker).handle(delivery, client)  # type: ignore[arg-type]
 
@@ -197,5 +233,5 @@ def test_rabbit_worker_configures_single_delivery_prefetch(monkeypatch) -> None:
 
     assert anyio.run(RabbitRecordingWorker(worker).run_once) is False
     assert channel.prefetch_count == 1
-    assert channel.queue_name == "ai.worker.recording-analysis.v1"
+    assert channel.queue_name == "search.target.recording.queue"
     assert connection.closed is True

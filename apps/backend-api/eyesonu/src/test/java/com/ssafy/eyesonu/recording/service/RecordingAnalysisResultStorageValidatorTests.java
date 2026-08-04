@@ -34,9 +34,10 @@ class RecordingAnalysisResultStorageValidatorTests {
     @Test
     void verifiesObjectsUnderCurrentJobAttemptPrefix() {
         AnalysisJob job = job();
+        CandidateEventObjectKeyFactory keyFactory = new CandidateEventObjectKeyFactory();
         RecordingAnalysisBatchResultRequest request = request(
-                "analysis/analysis-5001/attempt-2/frames/track-1.jpg",
-                "analysis/analysis-5001/attempt-2/crops/track-1.jpg");
+                keyFactory.analysisFrameKey(5001L, 2, "track-1", "image/jpeg"),
+                keyFactory.analysisCropKey(5001L, 2, "track-1", "image/jpeg"));
 
         validator.verify(job, request);
 
@@ -45,9 +46,22 @@ class RecordingAnalysisResultStorageValidatorTests {
 
     @Test
     void rejectsObjectsFromAnotherJobBeforeStorageLookup() {
+        CandidateEventObjectKeyFactory keyFactory = new CandidateEventObjectKeyFactory();
         RecordingAnalysisBatchResultRequest request = request(
-                "analysis/analysis-9999/attempt-2/frames/track-1.jpg",
-                "analysis/analysis-9999/attempt-2/crops/track-1.jpg");
+                keyFactory.analysisFrameKey(9999L, 2, "track-1", "image/jpeg"),
+                keyFactory.analysisCropKey(9999L, 2, "track-1", "image/jpeg"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> validator.verify(job(), request));
+
+        assertEquals("INVALID_UPLOAD_OBJECT_KEY", exception.getCode());
+        verify(storageValidator, never()).verify(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void rejectsArbitraryKeyUnderCurrentJobAttemptPrefix() {
+        RecordingAnalysisBatchResultRequest request = request(
+                "analysis/analysis-5001/attempt-2/frames/not-issued.jpg",
+                "analysis/analysis-5001/attempt-2/crops/not-issued.jpg");
 
         ApiException exception = assertThrows(ApiException.class, () -> validator.verify(job(), request));
 
