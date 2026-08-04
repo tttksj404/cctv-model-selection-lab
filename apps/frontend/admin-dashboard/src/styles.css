@@ -373,7 +373,6 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .protocol-badge.hls { color: #166534; background: #dcfce7; }
 .live-stream-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #111827; }
 .stream-player { position: absolute; inset: 0; overflow: hidden; background: #111827; }
-.stream-player-iframe { display: block; width: 100%; height: 100%; border: 0; background: #111827; }
 .stream-player-video { display: block; width: 100%; height: 100%; object-fit: contain; background: #111827; }
 .stream-loading { position: absolute; inset: 0; display: grid; place-items: center; color: #cbd5e1; background: rgba(15, 23, 42, .78); font-size: 13px; pointer-events: none; }
 .stream-error { align-content: center; gap: 10px; pointer-events: auto; }
