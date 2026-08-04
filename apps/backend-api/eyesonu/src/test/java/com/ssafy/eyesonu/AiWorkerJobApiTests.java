@@ -1,6 +1,7 @@
 package com.ssafy.eyesonu;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import java.util.List;
 
 @ActiveProfiles("test")
 @WebMvcTest(controllers = AiWorkerJobController.class)
@@ -85,5 +87,51 @@ class AiWorkerJobApiTests {
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("AI_WORKER_UNAUTHORIZED"));
+    }
+
+    @Test
+    void workerClaimsTheRabbitMessageJobIdWithoutFallingBackToQueueWideClaim() throws Exception {
+        when(jobService.claimJob(any(), any())).thenReturn(
+                AiWorkerClaimResponse.empty("eyesonu-ai-worker-v1", 1000));
+
+        mockMvc.perform(post("/api/v1/ai-worker/jobs/71/claim")
+                        .header("X-AI-Worker-Key", "worker-key")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"workerId":"notebook-1","modelKey":"fixture-v1"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.job").doesNotExist());
+
+        verify(jobService).claimJob(71L, new com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerClaimRequest(
+                "notebook-1", "fixture-v1"));
+    }
+
+    @Test
+    void workerRequestsLeaseBoundEvidenceUploadUrls() throws Exception {
+        when(jobService.createEvidenceUploadUrls(eq(71L), any())).thenReturn(
+                new com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerEvidenceUploadUrlResponse(
+                        "eyesonu-ai-worker-v1", 71L, 1, 900,
+                        List.of(new com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerEvidenceUploadUrlResponse.Upload(
+                                "track-3",
+                                "analysis/analysis-71/attempt-1/frames/frame.jpg",
+                                "https://storage.example/frame",
+                                "analysis/analysis-71/attempt-1/crops/crop.jpg",
+                                "https://storage.example/crop"))));
+
+        mockMvc.perform(post("/api/v1/ai-worker/jobs/71/evidence-upload-urls")
+                        .header("X-AI-Worker-Key", "worker-key")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"workerId":"notebook-1","leaseToken":"lease-1","candidates":[
+                                  {"candidateKey":"track-3","frameContentType":"image/jpeg","cropContentType":"image/jpeg"}
+                                ]}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.jobId").value(71))
+                .andExpect(jsonPath("$.data.uploads[0].candidateKey").value("track-3"));
+
+        verify(authenticationService).requireValidKey("worker-key");
+        verify(jobService).createEvidenceUploadUrls(eq(71L), any());
     }
 }

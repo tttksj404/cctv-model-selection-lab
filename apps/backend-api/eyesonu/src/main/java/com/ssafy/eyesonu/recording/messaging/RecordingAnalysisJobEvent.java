@@ -1,30 +1,24 @@
 package com.ssafy.eyesonu.recording.messaging;
 
 import java.time.Instant;
-import java.math.BigDecimal;
-
 public record RecordingAnalysisJobEvent(
-        String commandId,
-        String eventType,
+        String schemaVersion,
+        String eventId,
         Long jobId,
         Long caseId,
-        Long recordingId,
-        Long cameraId,
-        String cameraCode,
-        String cameraName,
-        String recordingObjectKey,
-        String prompt,
-        String exclusionPrompt,
-        BigDecimal similarityThreshold,
-        Instant searchStart,
-        Instant searchEnd,
-        String searchArea,
         int attempt,
         Instant occurredAt) {
 
+    public static final String SCHEMA_VERSION = "eyesonu-ai-worker-event-v1";
+
+    /**
+     * Compatibility constructor for the previous internal consumer tests. The
+     * event type deliberately does not cross the broker boundary: the worker
+     * receives only the routing identity and loads all sensitive job details
+     * through its authenticated central-server claim request.
+     */
     public RecordingAnalysisJobEvent(
-            String commandId, String eventType, Long jobId, Long caseId, Instant occurredAt) {
-        this(commandId, eventType, jobId, caseId, null, null, null, null, null,
-                null, null, null, null, null, null, 1, occurredAt);
+            String eventId, String ignoredEventType, Long jobId, Long caseId, Instant occurredAt) {
+        this(SCHEMA_VERSION, eventId, jobId, caseId, 1, occurredAt);
     }
 }

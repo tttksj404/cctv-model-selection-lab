@@ -8,9 +8,11 @@ from typing import Any, Final, cast
 from urllib.parse import urlsplit
 
 import httpx2
+from anyio.to_thread import run_sync
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from qwen_backend.candidate_runtime import RuntimeCandidate
 from qwen_backend.worker_protocol import (
     MAX_WORKER_ERROR_MESSAGE_LENGTH,
     WORKER_ID_HEADER,
@@ -18,6 +20,8 @@ from qwen_backend.worker_protocol import (
     WORKER_KEY_HEADER,
     WorkerClaimResponse,
     WorkerCompleteRequest,
+    WorkerEvidenceUpload,
+    WorkerEvidenceUploadResponse,
     WorkerHeartbeatResponse,
     WorkerJobStatusResponse,
     WorkerResult,
@@ -201,6 +205,17 @@ class CentralWorkerClient:
         response = await self._request("POST", f"{WORKER_JOBS_PATH}/claim", json=payload)
         return WorkerClaimResponse.model_validate(self._data(response))
 
+    async def claim_job(self, job_id: int, model_key: str) -> WorkerClaimResponse:
+        if job_id <= 0:
+            raise ValueError("job_id must be positive")
+        payload = {"workerId": self._worker_id, "modelKey": model_key}
+        response = await self._request(
+            "POST",
+            f"{WORKER_JOBS_PATH}/{job_id}/claim",
+            json=payload,
+        )
+        return WorkerClaimResponse.model_validate(self._data(response))
+
     async def heartbeat(self, job_id: int, lease_token: str) -> WorkerHeartbeatResponse:
         payload = {"workerId": self._worker_id, "leaseToken": lease_token}
         response = await self._request(
@@ -209,6 +224,67 @@ class CentralWorkerClient:
             json=payload,
         )
         return WorkerHeartbeatResponse.model_validate(self._data(response))
+
+    async def create_evidence_upload_urls(
+        self,
+        job_id: int,
+        lease_token: str,
+        candidates: tuple[RuntimeCandidate, ...],
+    ) -> dict[str, WorkerEvidenceUpload]:
+        payload = {
+            "workerId": self._worker_id,
+            "leaseToken": lease_token,
+            "candidates": [
+                {
+                    "candidateKey": candidate.candidate_key,
+                    "frameContentType": "image/jpeg",
+                    "cropContentType": "image/jpeg",
+                }
+                for candidate in candidates
+            ],
+        }
+        response = await self._request(
+            "POST",
+            f"{WORKER_JOBS_PATH}/{job_id}/evidence-upload-urls",
+            json=payload,
+        )
+        parsed = WorkerEvidenceUploadResponse.model_validate(self._data(response))
+        if parsed.job_id != job_id:
+            raise CentralWorkerError("central evidence response returned a different job")
+        return {upload.candidate_key: upload for upload in parsed.uploads}
+
+    async def upload_image(
+        self,
+        url: str,
+        source_path: Path,
+        *,
+        content_type: str,
+        max_bytes: int,
+    ) -> None:
+        parts = urlsplit(url)
+        if parts.scheme not in {"http", "https"} or not parts.netloc:
+            raise ValueError("signed upload URL must use http or https")
+        if max_bytes <= 0:
+            raise ValueError("max_bytes must be positive")
+        content = await run_sync(source_path.read_bytes)
+        if not content:
+            raise CentralWorkerError("candidate evidence image is empty")
+        if len(content) > max_bytes:
+            raise CentralWorkerError("candidate evidence image exceeds upload limit")
+        upload_client = self._download_client or self._client
+        try:
+            response = await upload_client.put(
+                url,
+                content=content,
+                headers={"Content-Type": content_type},
+            )
+        except httpx2.HTTPError as exception:
+            raise CentralWorkerError("candidate evidence upload request failed") from exception
+        if response.status_code < 200 or response.status_code >= 300:
+            raise CentralWorkerError(
+                f"candidate evidence upload returned HTTP {response.status_code}",
+                status_code=response.status_code,
+            )
 
     async def complete(
         self,

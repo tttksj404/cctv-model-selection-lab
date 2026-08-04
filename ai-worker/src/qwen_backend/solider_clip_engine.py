@@ -290,6 +290,7 @@ class SoliderClipCandidateEngine:
                     candidateKey=f"track-{track_id}",
                     frameOffsetMs=representative.frame_offset_ms,
                     similarity=round(track_score, 6),
+                    framePath=representative.frame_path,
                     cropPath=representative.crop_path,
                     boundingBox=RuntimeBoundingBox(
                         x=representative.left,

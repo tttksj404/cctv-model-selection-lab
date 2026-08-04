@@ -23,7 +23,9 @@ class FixtureEngine:
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
         time.sleep(0.7)
+        frame_path = request.output_dir / "frame-1250.jpg"
         crop_path = request.output_dir / "track-3.jpg"
+        frame_path.write_bytes(b"frame")
         crop_path.write_bytes(b"crop")
         return CandidateRuntimeResponse(
             modelKey=self.model_key,
@@ -32,6 +34,7 @@ class FixtureEngine:
                     candidateKey="track-3",
                     frameOffsetMs=1_250,
                     similarity=0.91,
+                    framePath=frame_path,
                     cropPath=crop_path,
                     boundingBox=RuntimeBoundingBox(x=10, y=20, width=30, height=40),
                     attributeSummary="fixture",
@@ -41,7 +44,12 @@ class FixtureEngine:
 
 
 def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -> None:
-    state: dict[str, object] = {"completed": None, "heartbeat": False, "failed": False}
+    state: dict[str, object] = {
+        "completed": None,
+        "heartbeat": False,
+        "failed": False,
+        "uploads": [],
+    }
 
     async def handler(request: httpx2.Request) -> httpx2.Response:
         if request.url.path == "/api/v1/ai-worker/jobs/claim":
@@ -81,6 +89,8 @@ def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -
             decoded = request.content.decode("utf-8")
             assert "cropPath" not in decoded
             assert "frameOffsetMs" in decoded
+            assert '"frameObjectKey":"analysis/analysis-71/attempt-1/frames/' in decoded
+            assert '"cropObjectKey":"analysis/analysis-71/attempt-1/crops/' in decoded
             state["completed"] = decoded
             return httpx2.Response(
                 200,
@@ -112,6 +122,34 @@ def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -
                 },
                 request=request,
             )
+        if request.url.path == "/api/v1/ai-worker/jobs/71/evidence-upload-urls":
+            return httpx2.Response(
+                200,
+                json={
+                    "timestamp": "2026-07-30T00:00:01Z",
+                    "data": {
+                        "schemaVersion": "eyesonu-ai-worker-v1",
+                        "jobId": 71,
+                        "attempt": 1,
+                        "expiresInSeconds": 900,
+                        "uploads": [
+                            {
+                                "candidateKey": "track-3",
+                                "frameObjectKey": "analysis/analysis-71/attempt-1/frames/frame.jpg",
+                                "frameUploadUrl": "https://storage.example/upload/frame.jpg",
+                                "cropObjectKey": "analysis/analysis-71/attempt-1/crops/crop.jpg",
+                                "cropUploadUrl": "https://storage.example/upload/crop.jpg",
+                            }
+                        ],
+                    },
+                },
+                request=request,
+            )
+        if request.url.path in {"/upload/frame.jpg", "/upload/crop.jpg"}:
+            uploads = state["uploads"]
+            assert isinstance(uploads, list)
+            uploads.append((request.url.path, request.content))
+            return httpx2.Response(200, request=request)
         if request.url.path == "/video.mp4":
             return httpx2.Response(200, content=b"video", request=request)
         state["failed"] = True
@@ -146,6 +184,7 @@ def test_notebook_worker_claims_downloads_infers_and_completes(tmp_path: Path) -
     assert state["completed"] is not None
     assert state["heartbeat"] is True
     assert state["failed"] is False
+    assert state["uploads"] == [("/upload/frame.jpg", b"frame"), ("/upload/crop.jpg", b"crop")]
 
 
 def test_notebook_worker_loads_candidate_engine_environment_from_dotenv(
@@ -172,6 +211,45 @@ def test_notebook_worker_settings_rejects_placeholder_api_key() -> None:
             central_api_url="https://central.example",
             api_key="inject-from-local-secret-store",
         )
+
+
+def test_central_client_claims_the_rabbit_message_job_id() -> None:
+    requested_paths: list[str] = []
+
+    async def scenario() -> None:
+        async def handler(request: httpx2.Request) -> httpx2.Response:
+            requested_paths.append(request.url.path)
+            return httpx2.Response(
+                200,
+                json={
+                    "timestamp": "2026-07-30T00:00:00Z",
+                    "data": {
+                        "schemaVersion": "eyesonu-ai-worker-v1",
+                        "job": None,
+                        "leaseToken": None,
+                        "leaseExpiresAt": None,
+                        "pollAfterMs": 0,
+                    },
+                },
+                request=request,
+            )
+
+        transport = httpx2.MockTransport(handler)
+        async with httpx2.AsyncClient(
+            transport=transport,
+            base_url="https://central.example",
+        ) as http_client:
+            client = CentralWorkerClient(
+                base_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                client=http_client,
+            )
+            await client.claim_job(71, "fixture-hybrid-v1")
+
+    anyio.run(scenario)
+
+    assert requested_paths == ["/api/v1/ai-worker/jobs/71/claim"]
 
 
 @pytest.mark.parametrize("central_api_url", ["central.example", "file:///tmp/worker"])

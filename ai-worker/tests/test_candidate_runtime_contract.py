@@ -16,7 +16,9 @@ class FixtureEngine:
     model_key = "fixture-hybrid-v1"
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
+        frame_path = request.output_dir / "frame-1250.jpg"
         crop_path = request.output_dir / "track-3.jpg"
+        frame_path.write_bytes(b"frame")
         crop_path.write_bytes(b"crop")
         return CandidateRuntimeResponse(
             modelKey=self.model_key,
@@ -25,6 +27,7 @@ class FixtureEngine:
                     candidateKey="track-3",
                     frameOffsetMs=1_250,
                     similarity=0.91,
+                    framePath=frame_path,
                     cropPath=crop_path,
                     boundingBox=RuntimeBoundingBox(x=10, y=20, width=30, height=40),
                     attributeSummary="reference-image SOLIDER retrieval",
@@ -66,6 +69,7 @@ def test_runtime_serializes_gpu_candidates_for_worker(tmp_path: Path) -> None:
     parsed = CandidateRuntimeResponse.model_validate_json(response)
 
     assert parsed.model_key == "fixture-hybrid-v1"
+    assert parsed.candidates[0].frame_path.read_bytes() == b"frame"
     assert parsed.candidates[0].crop_path.read_bytes() == b"crop"
     assert parsed.candidates[0].bounding_box.height == 40
 

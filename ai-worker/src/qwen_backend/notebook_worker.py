@@ -24,6 +24,7 @@ from qwen_backend.central_client import CentralWorkerClient, CentralWorkerError
 from qwen_backend.solider_clip_engine import create_engine
 from qwen_backend.worker_protocol import (
     WorkerClaimResponse,
+    WorkerEvidenceUpload,
     WorkerJob,
     WorkerResult,
     worker_result_from_runtime,
@@ -50,6 +51,13 @@ class NotebookWorkerSettings(BaseSettings):
     model_key: str = Field(default="hybrid-solider-clip-v1", min_length=1, max_length=100)
     poll_interval_seconds: float = Field(default=2.0, gt=0.1, le=60.0)
     heartbeat_interval_seconds: float = Field(default=20.0, gt=0.5, le=300.0)
+    rabbitmq_url: SecretStr | None = None
+    rabbitmq_queue: str = Field(
+        default="ai.worker.recording-analysis.v1",
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
+    )
+    rabbitmq_prefetch_count: int = Field(default=1, ge=1, le=10)
+    rabbitmq_reconnect_delay_seconds: float = Field(default=5.0, gt=0.1, le=300.0)
     cache_dir: Path = Path("artifacts/ai-worker/cache")
     output_dir: Path = Path("artifacts/ai-worker/jobs")
     max_download_bytes: int = Field(default=5 * 1024 * 1024 * 1024, gt=0, le=50 * 1024**3)
@@ -58,6 +66,7 @@ class NotebookWorkerSettings(BaseSettings):
         gt=0,
         le=1024 * 1024 * 1024,
     )
+    max_evidence_upload_bytes: int = Field(default=10 * 1024 * 1024, gt=0, le=100 * 1024 * 1024)
     once: bool = False
 
     @field_validator("central_api_url")
@@ -81,6 +90,26 @@ class NotebookWorkerSettings(BaseSettings):
         }:
             raise ValueError("AI Worker API key must not be a placeholder")
         return value
+
+    @field_validator("rabbitmq_url")
+    @classmethod
+    def validate_rabbitmq_url(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        normalized = value.get_secret_value().strip()
+        if not normalized:
+            return None
+        parsed = urlsplit(normalized)
+        if parsed.scheme not in {"amqp", "amqps"} or not parsed.hostname:
+            raise ValueError("RabbitMQ URL must use amqp or amqps with a host")
+        if normalized.lower() in {
+            "inject-from-local-secret-store",
+            "change-me",
+            "changeme",
+            "replace-me",
+        }:
+            raise ValueError("RabbitMQ URL must not be a placeholder")
+        return SecretStr(normalized)
 
 
 class LeaseLostError(RuntimeError):
@@ -108,6 +137,11 @@ class NotebookWorker:
         self._engine: CandidateRuntimeEngine | None = None
 
     async def run_forever(self) -> None:
+        if self.settings.rabbitmq_url is not None:
+            from qwen_backend.rabbit_worker import RabbitRecordingWorker
+
+            await RabbitRecordingWorker(self).run_forever()
+            return
         async with CentralWorkerClient(
             base_url=self.settings.central_api_url,
             api_key=self.settings.api_key.get_secret_value(),
@@ -123,6 +157,10 @@ class NotebookWorker:
                     await anyio.sleep(self.settings.poll_interval_seconds)
 
     async def run_once(self) -> bool:
+        if self.settings.rabbitmq_url is not None:
+            from qwen_backend.rabbit_worker import RabbitRecordingWorker
+
+            return await RabbitRecordingWorker(self).run_once()
         async with CentralWorkerClient(
             base_url=self.settings.central_api_url,
             api_key=self.settings.api_key.get_secret_value(),
@@ -132,6 +170,13 @@ class NotebookWorker:
 
     async def _run_once(self, client: CentralWorkerClient) -> bool:
         claim = await client.claim(self.settings.model_key)
+        return await self.process_claim(client, claim)
+
+    async def process_claim(
+        self,
+        client: CentralWorkerClient,
+        claim: WorkerClaimResponse,
+    ) -> bool:
         if claim.job is None:
             return False
         if claim.lease_token is None:
@@ -222,6 +267,8 @@ class NotebookWorker:
         stop_heartbeat = anyio.Event()
         lease_lost = anyio.Event()
         runtime_response: CandidateRuntimeResponse | None = None
+        evidence_by_candidate_key: dict[str, WorkerEvidenceUpload] = {}
+        elapsed_ms = 0
         async with anyio.create_task_group() as task_group:
             task_group.start_soon(
                 self._heartbeat_loop,
@@ -236,14 +283,56 @@ class NotebookWorker:
                 request,
                 abandon_on_cancel=False,
             )
+            elapsed_ms = round((time.perf_counter() - started) * 1_000)
+            evidence_by_candidate_key = await self._upload_candidate_evidence(
+                client,
+                job,
+                lease_token,
+                runtime_response,
+            )
             stop_heartbeat.set()
             task_group.cancel_scope.cancel()
         if lease_lost.is_set():
             raise LeaseLostError(f"lease lost for job {job.job_id}")
         if runtime_response is None:
             raise RuntimeError("local inference did not return a response")
-        elapsed_ms = round((time.perf_counter() - started) * 1_000)
-        return worker_result_from_runtime(runtime_response, elapsed_ms)
+        return worker_result_from_runtime(
+            runtime_response,
+            elapsed_ms,
+            evidence_by_candidate_key,
+        )
+
+    async def _upload_candidate_evidence(
+        self,
+        client: CentralWorkerClient,
+        job: WorkerJob,
+        lease_token: str,
+        runtime_response: CandidateRuntimeResponse,
+    ) -> dict[str, WorkerEvidenceUpload]:
+        if not runtime_response.candidates:
+            return {}
+        uploads = await client.create_evidence_upload_urls(
+            job.job_id,
+            lease_token,
+            runtime_response.candidates,
+        )
+        if set(uploads) != {candidate.candidate_key for candidate in runtime_response.candidates}:
+            raise CentralWorkerError("central evidence response did not match runtime candidates")
+        for candidate in runtime_response.candidates:
+            upload = uploads[candidate.candidate_key]
+            await client.upload_image(
+                upload.frame_upload_url,
+                candidate.frame_path,
+                content_type="image/jpeg",
+                max_bytes=self.settings.max_evidence_upload_bytes,
+            )
+            await client.upload_image(
+                upload.crop_upload_url,
+                candidate.crop_path,
+                content_type="image/jpeg",
+                max_bytes=self.settings.max_evidence_upload_bytes,
+            )
+        return uploads
 
     async def _heartbeat_loop(
         self,

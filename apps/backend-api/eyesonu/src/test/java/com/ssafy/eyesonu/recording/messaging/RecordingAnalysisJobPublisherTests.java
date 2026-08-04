@@ -9,6 +9,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisOutbox;
 import com.ssafy.eyesonu.recording.domain.RecordingAnalysisPublishSnapshot;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -92,6 +94,32 @@ class RecordingAnalysisJobPublisherTests {
                 any(CorrelationData.class));
         verify(outboxMapper).markPublished(eq(1L), eq("claim-1"), any(Instant.class));
         verify(outboxMapper, never()).markFailed(any(), anyString(), anyString());
+    }
+
+    @Test
+    void publishesOnlyRoutingMetadataToRabbitMQ() throws Exception {
+        claim(readyOutbox());
+        stubLeaseRenewal(1);
+        completeConfirm(true, null, null);
+
+        publisher(300).publishPending();
+
+        ArgumentCaptor<RecordingAnalysisJobEvent> event =
+                ArgumentCaptor.forClass(RecordingAnalysisJobEvent.class);
+        verify(rabbitTemplate).convertAndSend(
+                eq(RecordingAnalysisJobPublisher.EXCHANGE),
+                eq(RecordingAnalysisJobPublisher.ROUTING_KEY),
+                event.capture(),
+                any(MessagePostProcessor.class),
+                any(CorrelationData.class));
+        String payload = tools.jackson.databind.json.JsonMapper.builder()
+                .findAndAddModules()
+                .build()
+                .writeValueAsString(event.getValue());
+
+        assertThat(payload)
+                .contains("schemaVersion", "eventId", "jobId", "caseId", "attempt", "occurredAt")
+                .doesNotContain("prompt", "recordingObjectKey", "cameraCode", "similarityThreshold");
     }
 
     @Test

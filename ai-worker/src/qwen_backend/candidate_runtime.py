@@ -62,6 +62,7 @@ class RuntimeCandidate(RuntimeModel):
     candidate_key: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$")
     frame_offset_ms: int = Field(ge=0)
     similarity: float = Field(ge=0.0, le=1.0)
+    frame_path: Path
     crop_path: Path
     bounding_box: RuntimeBoundingBox
     attribute_summary: str | None = Field(default=None, max_length=2_000)
@@ -100,9 +101,10 @@ def run_runtime(raw_request: str, engine: CandidateRuntimeEngine) -> str:
             and candidate.frame_offset_ms >= request.search_to_ms
         ):
             raise ValueError("engine returned a candidate outside the requested search window")
-        crop_path = candidate.crop_path.resolve()
-        if not crop_path.is_relative_to(output_root):
-            raise ValueError("candidate crop escaped the runtime output directory")
-        if not crop_path.is_file():
-            raise FileNotFoundError(crop_path)
+        for label, source_path in (("frame", candidate.frame_path), ("crop", candidate.crop_path)):
+            resolved_path = source_path.resolve()
+            if not resolved_path.is_relative_to(output_root):
+                raise ValueError(f"candidate {label} escaped the runtime output directory")
+            if not resolved_path.is_file():
+                raise FileNotFoundError(resolved_path)
     return response.model_dump_json(by_alias=True)

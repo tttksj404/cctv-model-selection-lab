@@ -200,6 +200,18 @@
           AND job_type = 'RECORDING_ANALYSIS'
     </select>
 
+    <select id="findExpiredRunningForRecovery" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND claim_expires_at IS NOT NULL
+          AND claim_expires_at &lt;= UTC_TIMESTAMP(6)
+        ORDER BY claim_expires_at ASC, id ASC
+        LIMIT #{limit}
+        FOR UPDATE SKIP LOCKED
+    </select>
+
     <update id="claim">
         UPDATE analysis_jobs
         SET status = 'RUNNING',
@@ -254,7 +266,9 @@
     <update id="fail">
         UPDATE analysis_jobs
         SET status = #{nextStatus},
+            retry_count = CASE WHEN #{nextStatus} = 'QUEUED' THEN retry_count + 1 ELSE retry_count END,
             error_message = #{errorMessage},
+            started_at = CASE WHEN #{nextStatus} = 'QUEUED' THEN NULL ELSE started_at END,
             completed_at = CASE
                 WHEN #{nextStatus} = 'FAILED' THEN UTC_TIMESTAMP(6)
                 ELSE NULL
@@ -267,6 +281,23 @@
           AND status = 'RUNNING'
           AND claimed_by = #{workerId}
           AND lease_token_hash = #{leaseTokenHash}
+    </update>
+
+    <update id="recoverExpired">
+        UPDATE analysis_jobs
+        SET status = #{nextStatus},
+            retry_count = retry_count + 1,
+            error_message = #{errorMessage},
+            started_at = CASE WHEN #{nextStatus} = 'QUEUED' THEN NULL ELSE started_at END,
+            completed_at = CASE WHEN #{nextStatus} = 'FAILED' THEN UTC_TIMESTAMP(6) ELSE NULL END,
+            claimed_by = NULL,
+            claim_expires_at = NULL,
+            lease_token_hash = NULL
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND claim_expires_at IS NOT NULL
+          AND claim_expires_at &lt;= UTC_TIMESTAMP(6)
     </update>
 
     <update id="cancelActive">

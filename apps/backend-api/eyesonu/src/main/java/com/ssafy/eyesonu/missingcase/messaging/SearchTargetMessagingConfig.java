@@ -51,15 +51,23 @@ public class SearchTargetMessagingConfig {
 
 	@Bean
 	Queue recordingAnalysisJobQueue() {
-		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE).build();
+		return QueueBuilder.durable(RecordingAnalysisJobPublisher.QUEUE)
+				.withArgument("x-dead-letter-exchange", RecordingAnalysisJobPublisher.DEAD_LETTER_EXCHANGE)
+				.withArgument("x-dead-letter-routing-key", RecordingAnalysisJobPublisher.DEAD_LETTER_ROUTING_KEY)
+				.build();
+	}
+
+	@Bean
+	TopicExchange recordingAnalysisJobExchange() {
+		return new TopicExchange(RecordingAnalysisJobPublisher.EXCHANGE, true, false);
 	}
 
 	@Bean
 	Binding recordingAnalysisJobBinding(
 			@Qualifier("recordingAnalysisJobQueue") Queue recordingAnalysisJobQueue,
-			TopicExchange searchTargetExchange) {
+			@Qualifier("recordingAnalysisJobExchange") TopicExchange recordingAnalysisJobExchange) {
 		return BindingBuilder.bind(recordingAnalysisJobQueue)
-				.to(searchTargetExchange)
+				.to(recordingAnalysisJobExchange)
 				.with(RecordingAnalysisJobPublisher.ROUTING_KEY);
 	}
 

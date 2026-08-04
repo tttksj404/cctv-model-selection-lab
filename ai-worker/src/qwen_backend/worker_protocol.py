@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from typing import ClassVar, Literal
 
@@ -9,6 +10,7 @@ from pydantic.alias_generators import to_camel
 from qwen_backend.candidate_runtime import CandidateRuntimeResponse, RuntimeCandidate
 
 WORKER_PROTOCOL_VERSION = "eyesonu-ai-worker-v1"
+RABBIT_WORKER_EVENT_VERSION = "eyesonu-ai-worker-event-v1"
 WORKER_JOBS_PATH = "/api/v1/ai-worker/jobs"
 WORKER_KEY_HEADER = "X-AI-Worker-Key"
 WORKER_ID_HEADER = "X-AI-Worker-ID"
@@ -23,6 +25,17 @@ class WorkerModel(BaseModel):
         extra="forbid",
         frozen=True,
     )
+
+
+class RabbitWorkerJobEvent(WorkerModel):
+    """Broker payload containing routing metadata only, never person data or URLs."""
+
+    schema_version: Literal["eyesonu-ai-worker-event-v1"] = RABBIT_WORKER_EVENT_VERSION
+    event_id: str = Field(min_length=1, max_length=100)
+    job_id: int = Field(gt=0)
+    case_id: int = Field(gt=0)
+    attempt: int = Field(ge=1, le=100)
+    occurred_at: datetime
 
 
 class WorkerBoundingBox(WorkerModel):
@@ -111,6 +124,36 @@ class WorkerCandidate(WorkerModel):
     frame_object_key: str | None = Field(default=None, max_length=500)
 
 
+class WorkerEvidenceUpload(WorkerModel):
+    candidate_key: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$")
+    frame_object_key: str = Field(min_length=1, max_length=500)
+    frame_upload_url: str = Field(min_length=1, max_length=4_000)
+    crop_object_key: str = Field(min_length=1, max_length=500)
+    crop_upload_url: str = Field(min_length=1, max_length=4_000)
+
+    @field_validator("frame_upload_url", "crop_upload_url")
+    @classmethod
+    def validate_upload_url(cls, value: str) -> str:
+        if not value.startswith(("http://", "https://")):
+            raise ValueError("worker upload URLs must use http or https")
+        return value
+
+
+class WorkerEvidenceUploadResponse(WorkerModel):
+    schema_version: Literal["eyesonu-ai-worker-v1"] = WORKER_PROTOCOL_VERSION
+    job_id: int = Field(gt=0)
+    attempt: int = Field(ge=1)
+    expires_in_seconds: int = Field(ge=1)
+    uploads: tuple[WorkerEvidenceUpload, ...] = Field(max_length=MAX_WORKER_CANDIDATES)
+
+    @model_validator(mode="after")
+    def validate_unique_candidate_keys(self) -> WorkerEvidenceUploadResponse:
+        candidate_keys = {upload.candidate_key for upload in self.uploads}
+        if len(candidate_keys) != len(self.uploads):
+            raise ValueError("evidence upload candidateKey must be unique")
+        return self
+
+
 class WorkerResult(WorkerModel):
     schema_version: Literal["eyesonu-ai-worker-v1"] = WORKER_PROTOCOL_VERSION
     model_key: str = Field(min_length=1, max_length=100)
@@ -141,7 +184,10 @@ class WorkerJobStatusResponse(WorkerModel):
     result_digest: str | None = None
 
 
-def _worker_candidate(candidate: RuntimeCandidate) -> WorkerCandidate:
+def _worker_candidate(
+    candidate: RuntimeCandidate,
+    evidence: WorkerEvidenceUpload | None,
+) -> WorkerCandidate:
     return WorkerCandidate(
         candidate_key=candidate.candidate_key,
         frame_offset_ms=candidate.frame_offset_ms,
@@ -153,15 +199,28 @@ def _worker_candidate(candidate: RuntimeCandidate) -> WorkerCandidate:
             height=candidate.bounding_box.height,
         ),
         attribute_summary=candidate.attribute_summary,
+        crop_object_key=None if evidence is None else evidence.crop_object_key,
+        frame_object_key=None if evidence is None else evidence.frame_object_key,
     )
 
 
 def worker_result_from_runtime(
     response: CandidateRuntimeResponse,
     inference_duration_ms: int,
+    evidence_by_candidate_key: Mapping[str, WorkerEvidenceUpload] | None = None,
 ) -> WorkerResult:
     return WorkerResult(
         model_key=response.model_key,
-        candidates=tuple(_worker_candidate(candidate) for candidate in response.candidates),
+        candidates=tuple(
+            _worker_candidate(
+                candidate,
+                (
+                    None
+                    if evidence_by_candidate_key is None
+                    else evidence_by_candidate_key.get(candidate.candidate_key)
+                ),
+            )
+            for candidate in response.candidates
+        ),
         inference_duration_ms=inference_duration_ms,
     )

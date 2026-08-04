@@ -4,6 +4,8 @@ import com.ssafy.eyesonu.common.api.ApiResponse;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerClaimRequest;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerClaimResponse;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerCompleteRequest;
+import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerEvidenceUploadUrlRequest;
+import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerEvidenceUploadUrlResponse;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerFailRequest;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerHeartbeatRequest;
 import com.ssafy.eyesonu.recording.dto.aiworker.AiWorkerHeartbeatResponse;
@@ -46,6 +48,15 @@ public class AiWorkerJobController {
         return ResponseEntity.ok(ApiResponse.of(service.claim(request)));
     }
 
+    @PostMapping("/{jobId}/claim")
+    public ResponseEntity<ApiResponse<AiWorkerClaimResponse>> claimJob(
+            @PathVariable @Positive Long jobId,
+            @Valid @RequestBody AiWorkerClaimRequest request,
+            @RequestHeader(value = AUTH_HEADER, required = false) String workerKey) {
+        authenticationService.requireValidKey(workerKey);
+        return ResponseEntity.ok(ApiResponse.of(service.claimJob(jobId, request)));
+    }
+
     @PostMapping("/{jobId}/heartbeat")
     public ResponseEntity<ApiResponse<AiWorkerHeartbeatResponse>> heartbeat(
             @PathVariable @Positive Long jobId,
@@ -53,6 +64,15 @@ public class AiWorkerJobController {
             @RequestHeader(value = AUTH_HEADER, required = false) String workerKey) {
         authenticationService.requireValidKey(workerKey);
         return ResponseEntity.ok(ApiResponse.of(service.heartbeat(jobId, request)));
+    }
+
+    @PostMapping("/{jobId}/evidence-upload-urls")
+    public ResponseEntity<ApiResponse<AiWorkerEvidenceUploadUrlResponse>> createEvidenceUploadUrls(
+            @PathVariable @Positive Long jobId,
+            @Valid @RequestBody AiWorkerEvidenceUploadUrlRequest request,
+            @RequestHeader(value = AUTH_HEADER, required = false) String workerKey) {
+        authenticationService.requireValidKey(workerKey);
+        return ResponseEntity.ok(ApiResponse.of(service.createEvidenceUploadUrls(jobId, request)));
     }
 
     @PostMapping("/{jobId}/complete")
