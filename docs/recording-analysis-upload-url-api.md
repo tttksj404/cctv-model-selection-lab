@@ -48,6 +48,12 @@ must use this response instead of receiving appearance prompts through RabbitMQ.
 
 ## 3. Request image upload URLs
 
+The Worker must request upload URLs in chunks of at most 100 candidates. A
+recording analysis result may contain up to 1,000 candidates, so the Worker can
+make multiple requests and combine the responses before submitting the result.
+Each request must contain unique `trackId` values, and the Worker must not
+include the same track in more than one chunk.
+
 ```http
 POST /api/v1/internal/recording-analysis-jobs/{jobId}/upload-urls
 X-Worker-Key: <worker-key>
