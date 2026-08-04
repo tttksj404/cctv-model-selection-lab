@@ -1,18 +1,21 @@
 pipeline {
-    agent any
+    // Do not reserve a privileged executor until the controller-side event
+    // gate has rejected merge-request and unsupported branch events.
+    agent none
 
     options {
         timestamps()
         disableConcurrentBuilds()
+        skipDefaultCheckout(true)
     }
 
     environment {
         DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
         DEPLOY_ENV_FILE = '/run/secrets/eyesonu-deploy.env'
         DEPLOY_SSH_HOST = '127.0.0.1'
-        DEPLOY_SSH_USER = 'ubuntu'
+        DEPLOY_SSH_USER = 'eyesonu-deploy'
         DEPLOY_HOST_ROOT = '/home/ubuntu/jenkins-data/workspace/ssafy-a204-infra'
-        DEPLOY_HOST_ENV_FILE = '/home/ubuntu/S15P11A204/infra/.env.deploy'
+        DEPLOY_HOST_ENV_FILE = '/etc/eyesonu/deploy.env'
         // Let Testcontainers' cleanup sidecar remove orphaned test containers
         // when a build is interrupted or the test JVM exits unexpectedly.
         TESTCONTAINERS_RYUK_DISABLED = 'false'
@@ -20,32 +23,173 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Authorize deployment event') {
+            agent none
             steps {
-                checkout scm
+                script {
+                    def rawBranch = (env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: '').trim()
+                    // This policy is intentionally part of the protected
+                    // deployment job's pipeline definition, not an executable
+                    // from the checked-out release tree.
+                    def deployProfilesByReference = [
+                        'dev': 'dev',
+                        'master': 'master',
+                        'origin/dev': 'dev',
+                        'origin/master': 'master',
+                        'refs/heads/dev': 'dev',
+                        'refs/heads/master': 'master',
+                        'refs/remotes/origin/dev': 'dev',
+                        'refs/remotes/origin/master': 'master'
+                    ]
+                    def deployProfile = deployProfilesByReference[rawBranch] ?: ''
+                    def targetBranch = deployProfile ?: rawBranch
+                    def mergeRequest = env.gitlabMergeRequestIid?.trim()
+                    def eventCommit = env.gitlabAfter?.trim() ?: ''
+                    if (mergeRequest || !deployProfile) {
+                        error("Protected deployment job accepts only non-MR dev/master events; run CI in an isolated job (branch=${rawBranch}, mergeRequest=${mergeRequest ? 'yes' : 'no'}).")
+                    }
+                    if (eventCommit && !(eventCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
+                        error("GitLab event commit is not a full lowercase object ID: ${eventCommit}")
+                    }
+                    env.TARGET_BRANCH = targetBranch
+                    env.DEPLOY_PROFILE = deployProfile
+                    env.DEPLOY_EVENT_COMMIT = eventCommit
+                    env.CAN_DEPLOY = 'true'
+                    env.BUILD_SOURCE_DIR = '.'
+
+                    echo "Authorized protected deployment event: branch=${targetBranch}, merge request=${mergeRequest ? 'yes' : 'no'}"
+                }
             }
         }
 
-        stage('Resolve branch') {
+        stage('Verified build and deployment') {
+            agent {
+                label 'eyesonu-trusted-deploy'
+            }
+            stages {
+                stage('Checkout protected pipeline') {
+                    steps {
+                        deleteDir()
+                        script {
+                            // The deployment job itself is pinned to a protected
+                            // Pipeline SCM definition. Keep the SCM-reported object
+                            // ID before GIT_COMMIT is replaced below.
+                            def checkoutState = checkout scm
+                            def pipelineSourceCommit = (checkoutState?.GIT_COMMIT ?: '').trim()
+                            if (!(pipelineSourceCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
+                                error("Protected pipeline checkout did not return a full lowercase commit ID: ${pipelineSourceCommit}")
+                            }
+                            env.PIPELINE_SOURCE_COMMIT = pipelineSourceCommit
+                        }
+                    }
+                }
+
+                stage('Materialize verified release source') {
+                    steps {
+                        script {
+                            def pipelineSourceCommit = (env.PIPELINE_SOURCE_COMMIT ?: '').trim()
+                            if (!(pipelineSourceCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
+                                error("Protected pipeline source commit is not a full lowercase object ID: ${pipelineSourceCommit}")
+                            }
+
+                            // Do not execute the helper from the mutable Jenkins
+                            // workspace. Extract its blob from the SCM-reported
+                            // protected pipeline commit using an isolated Git
+                            // command, then run that temporary immutable copy.
+                            // The protected job refspec must already have fetched
+                            // both canonical release refs.
+                            sh '''
+                            set -eu
+                            umask 077
+                            trusted_git=/usr/bin/git
+                            test -x "$trusted_git" || {
+                                echo "ERROR: trusted Git executable is unavailable: $trusted_git" >&2
+                                exit 1
+                            }
+                            trusted_home=''
+                            cleanup_trusted_bootstrap() {
+                                status=$?
+                                trap - EXIT
+                                if [ -n "$trusted_home" ]; then
+                                    rm -rf -- "$trusted_home"
+                                fi
+                                exit "$status"
+                            }
+                            trap cleanup_trusted_bootstrap EXIT
+                            trusted_home="$(mktemp -d)"
+                            trusted_materializer="$(mktemp "$trusted_home/materialize.XXXXXX")"
+                            safe_git_config="$trusted_home/gitconfig"
+                            mkdir -p "$trusted_home/hooks"
+                            printf '[safe]\n\tdirectory = %s\n' "$PWD" > "$safe_git_config"
+                            git_safely() {
+                                /usr/bin/env -i \
+                                    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+                                    HOME="$trusted_home" \
+                                    XDG_CONFIG_HOME="$trusted_home" \
+                                    LC_ALL=C \
+                                    GIT_CONFIG_NOSYSTEM=1 \
+                                    GIT_CONFIG_GLOBAL="$safe_git_config" \
+                                    GIT_CONFIG_COUNT=0 \
+                                    GIT_ATTR_NOSYSTEM=1 \
+                                    GIT_NO_REPLACE_OBJECTS=1 \
+                                    GIT_OPTIONAL_LOCKS=0 \
+                                    "$trusted_git" \
+                                    --no-replace-objects \
+                                    -c core.hooksPath="$trusted_home/hooks" \
+                                    -c core.fsmonitor=false \
+                                    -c core.autocrlf=false \
+                                    -c core.attributesFile=/dev/null \
+                                    "$@"
+                            }
+                            pipeline_commit="$(git_safely -C "$PWD" rev-parse --verify "${PIPELINE_SOURCE_COMMIT}^{commit}")" || {
+                                echo "ERROR: protected pipeline commit is unavailable in the Jenkins object database" >&2
+                                exit 1
+                            }
+                            test "$pipeline_commit" = "$PIPELINE_SOURCE_COMMIT" || {
+                                echo "ERROR: protected pipeline commit did not resolve exactly" >&2
+                                exit 1
+                            }
+                            git_safely -C "$PWD" show \
+                                "$pipeline_commit:infra/scripts/materialize-verified-release-source.sh" \
+                                > "$trusted_materializer"
+                            test -s "$trusted_materializer" || {
+                                echo "ERROR: protected source materializer is empty" >&2
+                                exit 1
+                            }
+                            /usr/bin/env -i \
+                                PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+                                HOME="$PWD" \
+                                LC_ALL=C \
+                                /bin/bash --noprofile --norc "$trusted_materializer" \
+                                "$DEPLOY_PROFILE" "$DEPLOY_EVENT_COMMIT"
+                            '''
+                            def releaseCommit = readFile('.verified-release-commit').trim()
+                            sh 'rm -f .verified-release-commit'
+                            if (!(releaseCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
+                                error("Resolved release commit is not a full lowercase object ID: ${releaseCommit}")
+                            }
+                            env.BUILD_SOURCE_DIR = '.verified-release-source'
+                            env.GIT_COMMIT = releaseCommit
+                        }
+                    }
+                }
+                stage('Deployment configuration validation') {
             steps {
-                script {
-                    def rawBranch = env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: ''
-                    def targetBranch = rawBranch.tokenize('/').last()
-                    def mergeRequest = env.gitlabMergeRequestIid?.trim()
-
-                    env.TARGET_BRANCH = targetBranch
-                    env.DEPLOY_PROFILE = targetBranch in ['dev', 'master'] ? targetBranch : ''
-                    env.CAN_DEPLOY = env.DEPLOY_PROFILE && !mergeRequest ? 'true' : 'false'
-
-                    echo "Target branch: ${targetBranch}, merge request: ${mergeRequest ? 'yes' : 'no'}, deploy: ${env.CAN_DEPLOY}"
+                dir(env.BUILD_SOURCE_DIR) {
+                    sh 'bash infra/scripts/test-deploy-on-host.sh'
                 }
             }
         }
 
         stage('Backend build and test') {
             steps {
-                dir('apps/backend-api/eyesonu') {
-                    sh './mvnw -B clean verify'
+                dir("${env.BUILD_SOURCE_DIR}/apps/backend-api/eyesonu") {
+                    sh '''
+                        ./mvnw -B clean verify
+                        IMAGE="eyesonu/backend-ci:${BUILD_NUMBER}"
+                        docker build --tag "$IMAGE" .
+                        docker image rm --force "$IMAGE" || true
+                    '''
                 }
             }
         }
@@ -54,7 +198,7 @@ pipeline {
             parallel {
                 stage('Admin frontend') {
                     steps {
-                        dir('apps/frontend/admin-dashboard') {
+                        dir("${env.BUILD_SOURCE_DIR}/apps/frontend/admin-dashboard") {
                             sh '''
                                 IMAGE="eyesonu/admin-ci:${BUILD_NUMBER}"
                                 docker build --tag "$IMAGE" .
@@ -65,7 +209,7 @@ pipeline {
                 }
                 stage('Reporter frontend') {
                     steps {
-                        dir('apps/frontend/reporter-webapp') {
+                        dir("${env.BUILD_SOURCE_DIR}/apps/frontend/reporter-webapp") {
                             sh '''
                                 IMAGE="eyesonu/reporter-ci:${BUILD_NUMBER}"
                                 docker build --tag "$IMAGE" .
@@ -88,19 +232,76 @@ pipeline {
                             echo "ERROR: Jenkins known_hosts is missing or empty: $HOME/.ssh/known_hosts" >&2
                             exit 1
                         }
+                        test -n "${GIT_COMMIT:-}" || {
+                            echo "ERROR: Jenkins GIT_COMMIT is missing; refusing to deploy an unverified checkout" >&2
+                            exit 1
+                        }
+                        printf '%s\n' "$GIT_COMMIT" | grep -Eq '^[0-9a-f]{40}([0-9a-f]{24})?$' || {
+                            echo "ERROR: Jenkins GIT_COMMIT must be a full lowercase object ID" >&2
+                            exit 1
+                        }
+                        test "${DEPLOY_SSH_USER:-}" = 'eyesonu-deploy' || {
+                            echo "ERROR: DEPLOY_SSH_USER must be the dedicated eyesonu-deploy account" >&2
+                            exit 1
+                        }
+                        case "${DEPLOY_PROFILE:-}" in
+                            dev|master) ;;
+                            *)
+                                echo "ERROR: DEPLOY_PROFILE must be dev or master" >&2
+                                exit 1
+                                ;;
+                        esac
+                        for deploy_path in "${DEPLOY_HOST_ROOT:-}" "${DEPLOY_HOST_ENV_FILE:-}"; do
+                            case "$deploy_path" in
+                                /*) ;;
+                                *)
+                                    echo "ERROR: deployment host paths must be absolute" >&2
+                                    exit 1
+                                    ;;
+                            esac
+                            case "$deploy_path" in
+                                *[!A-Za-z0-9._/-]*)
+                                    echo "ERROR: deployment host paths contain unsupported characters" >&2
+                                    exit 1
+                                    ;;
+                            esac
+                        done
 
+                        umask 077
+                        unset TMPDIR
+                        trusted_runner="$(mktemp)"
+                        trap 'rm -f "$trusted_runner"' EXIT
+                        trusted_git=/usr/bin/git
+                        test -x "$trusted_git" || {
+                            echo "ERROR: trusted Git executable is unavailable: $trusted_git" >&2
+                            exit 1
+                        }
+                        env -i \
+                          PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+                          HOME=/tmp \
+                          XDG_CONFIG_HOME=/tmp \
+                          GIT_CONFIG_NOSYSTEM=1 \
+                          GIT_CONFIG_GLOBAL=/dev/null \
+                          GIT_CONFIG_COUNT=0 \
+                          GIT_ATTR_NOSYSTEM=1 \
+                          GIT_NO_REPLACE_OBJECTS=1 \
+                          "$trusted_git" --no-replace-objects \
+                            -c core.hooksPath=/dev/null \
+                            -c core.fsmonitor=false \
+                            show "$GIT_COMMIT:infra/scripts/run-verified-deployment.sh" > "$trusted_runner"
+                        test -s "$trusted_runner" || {
+                            echo "ERROR: trusted verified-deployment runner is empty" >&2
+                            exit 1
+                        }
+
+                        echo 'Deploying verified release from the host object database:'
                         ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
                           "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-                          "test -f '$DEPLOY_HOST_ROOT/infra/scripts/deploy-on-host.sh' || { \
-                               echo 'ERROR: deploy script is missing on the deployment host: $DEPLOY_HOST_ROOT/infra/scripts/deploy-on-host.sh' >&2; \
-                               exit 1; \
-                           }; \
-                           echo 'Deployment host checkout:'; \
-                           git -C '$DEPLOY_HOST_ROOT' rev-parse --short HEAD 2>/dev/null || echo unknown; \
-                           DEPLOY_ROOT='$DEPLOY_HOST_ROOT' \
-                           DEPLOY_ENV_FILE='$DEPLOY_HOST_ENV_FILE' \
-                           bash '$DEPLOY_HOST_ROOT/infra/scripts/deploy-on-host.sh' '$DEPLOY_PROFILE'"
+                          "/usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/home/eyesonu-deploy LC_ALL=C /bin/bash --noprofile --norc -s -- '$GIT_COMMIT' '$DEPLOY_HOST_ROOT' '$DEPLOY_HOST_ENV_FILE' '$DEPLOY_PROFILE' '$DEPLOY_SSH_USER'" \
+                          < "$trusted_runner"
                     '''
+                }
+            }
                 }
             }
         }

@@ -1,4 +1,6 @@
 *
 !Dockerfile
-!target/
-!target/*.jar
+!.dockerignore
+!pom.xml
+!src/
+!src/**

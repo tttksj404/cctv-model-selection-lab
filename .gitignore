@@ -3,6 +3,7 @@
 .env.*
 !**/.env.example
 !**/.env.deploy.example
+infra/certbot/
 secrets/
 *.key
 *.pem
