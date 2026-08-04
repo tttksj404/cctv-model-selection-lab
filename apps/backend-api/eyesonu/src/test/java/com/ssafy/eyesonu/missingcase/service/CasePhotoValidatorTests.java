@@ -3,7 +3,7 @@ package com.ssafy.eyesonu.missingcase.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class CasePhotoValidatorTests {
 
 	@BeforeEach
 	void setUp() {
-		S3Properties properties = new S3Properties();
+		MinioProperties properties = new MinioProperties();
 		properties.setCasePhotoMaxFileSizeBytes(10L * 1024 * 1024);
 		validator = new CasePhotoValidator(properties);
 	}
@@ -40,7 +40,7 @@ class CasePhotoValidatorTests {
 
 	@Test
 	void acceptsFileAtMaximumConfiguredSize() {
-		S3Properties properties = new S3Properties();
+		MinioProperties properties = new MinioProperties();
 		properties.setCasePhotoMaxFileSizeBytes(3);
 		CasePhotoValidator exactLimit = new CasePhotoValidator(properties);
 
@@ -61,7 +61,7 @@ class CasePhotoValidatorTests {
 
 	@Test
 	void rejectsOversizedFileBeforeReadingIt() {
-		S3Properties properties = new S3Properties();
+		MinioProperties properties = new MinioProperties();
 		properties.setCasePhotoMaxFileSizeBytes(2);
 		CasePhotoValidator small = new CasePhotoValidator(properties);
 		ApiException exception = assertThrows(ApiException.class, () -> small.validate(

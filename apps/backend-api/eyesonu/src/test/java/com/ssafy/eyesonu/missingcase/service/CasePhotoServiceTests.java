@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CasePhotoState;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
@@ -43,7 +43,7 @@ class CasePhotoServiceTests {
 		metadataWriter = mock(CasePhotoMetadataWriter.class);
 		when(mapper.findPhotoState(1L)).thenReturn(state(CaseStatus.SEARCHING, "cases/1/photos/old.jpg"));
 		when(urlSigner.createGetUrl(anyString())).thenReturn("https://storage.example/photo");
-		S3Properties properties = new S3Properties();
+		MinioProperties properties = new MinioProperties();
 		properties.setCasePhotoMaxFileSizeBytes(10L * 1024 * 1024);
 		service = new CasePhotoService(
 				mapper,

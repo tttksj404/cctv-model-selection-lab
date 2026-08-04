@@ -1,6 +1,6 @@
 package com.ssafy.eyesonu.recording.service;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateRequest;
@@ -22,17 +22,17 @@ public class RecordingAnalysisUploadUrlService {
     private final AnalysisJobMapper analysisJobMapper;
     private final CandidateEventObjectKeyFactory objectKeyFactory;
     private final StorageObjectUrlSigner urlSigner;
-    private final S3Properties s3Properties;
+    private final MinioProperties minioProperties;
 
     public RecordingAnalysisUploadUrlService(
             AnalysisJobMapper analysisJobMapper,
             CandidateEventObjectKeyFactory objectKeyFactory,
             StorageObjectUrlSigner urlSigner,
-            S3Properties s3Properties) {
+            MinioProperties minioProperties) {
         this.analysisJobMapper = analysisJobMapper;
         this.objectKeyFactory = objectKeyFactory;
         this.urlSigner = urlSigner;
-        this.s3Properties = s3Properties;
+        this.minioProperties = minioProperties;
     }
 
     public RecordingAnalysisUploadUrlCreateResponse create(
@@ -66,7 +66,7 @@ public class RecordingAnalysisUploadUrlService {
                 .map(candidate -> createCandidateUpload(job, attempt, candidate))
                 .toList();
         return new RecordingAnalysisUploadUrlCreateResponse(
-                attempt, uploads, s3Properties.getPresignedUrlExpiry().toSeconds());
+                attempt, uploads, minioProperties.getPresignedUrlExpiry().toSeconds());
     }
 
     private RecordingAnalysisUploadUrlCreateResponse.CandidateUpload createCandidateUpload(

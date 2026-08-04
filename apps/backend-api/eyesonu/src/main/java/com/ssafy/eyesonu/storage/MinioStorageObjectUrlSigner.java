@@ -2,7 +2,7 @@ package com.ssafy.eyesonu.storage;
 
 import java.util.concurrent.TimeUnit;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.http.Method;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 public class MinioStorageObjectUrlSigner implements StorageObjectUrlSigner {
 
 	private final MinioClient client;
-	private final S3Properties properties;
+	private final MinioProperties properties;
 
 	public MinioStorageObjectUrlSigner(
 			@Qualifier("publicMinioClient") MinioClient client,
-			S3Properties properties) {
+			MinioProperties properties) {
 		this.client = client;
 		this.properties = properties;
 	}

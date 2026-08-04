@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.domain.RecordingRegistrationResult;
@@ -55,7 +55,7 @@ class RecordingCommandServiceTests {
 
     @BeforeEach
     void setUp() {
-        S3Properties properties = new S3Properties();
+        MinioProperties properties = new MinioProperties();
         properties.setMaxFileSizeBytes(MAX_FILE_SIZE);
         service = new RecordingCommandService(
                 cameraMapper, recordingMapper, validator, storageVerifier, writer, properties);

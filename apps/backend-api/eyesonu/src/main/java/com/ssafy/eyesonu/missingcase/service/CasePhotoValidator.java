@@ -1,6 +1,6 @@
 package com.ssafy.eyesonu.missingcase.service;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,9 +17,9 @@ public class CasePhotoValidator {
 			(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
 	};
 
-	private final S3Properties properties;
+	private final MinioProperties properties;
 
-	public CasePhotoValidator(S3Properties properties) {
+	public CasePhotoValidator(MinioProperties properties) {
 		this.properties = properties;
 	}
 
