@@ -1,6 +1,6 @@
 package com.ssafy.eyesonu.storage;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import io.minio.MinioClient;
 import io.minio.GetObjectArgs;
 import io.minio.StatObjectArgs;
@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 public class MinioStorageObjectVerifier implements StorageObjectVerifier {
 
 	private final MinioClient client;
-	private final S3Properties properties;
+	private final MinioProperties properties;
 
 	public MinioStorageObjectVerifier(
 			@Qualifier("minioClient") MinioClient client,
-			S3Properties properties) {
+			MinioProperties properties) {
 		this.client = client;
 		this.properties = properties;
 	}
