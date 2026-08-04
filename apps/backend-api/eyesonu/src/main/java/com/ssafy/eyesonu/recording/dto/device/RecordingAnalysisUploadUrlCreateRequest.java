@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record RecordingAnalysisUploadUrlCreateRequest(
-        @NotNull @NotEmpty @Size(max = 1000) List<@Valid Candidate> candidates) {
+        @NotNull @NotEmpty @Size(max = 100) List<@Valid Candidate> candidates) {
 
     public record Candidate(
             @NotBlank @Size(max = 100) String trackId,
