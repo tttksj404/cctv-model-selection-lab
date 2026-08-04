@@ -291,7 +291,7 @@ curl --fail --show-error --max-time 10 \
 - peer 연결 방식과 HLS·MinIO·권한·재부팅 테스트 결과
 - 롤백 여부와 남은 후속 작업
 
-인증 URL, auth key, S3 자격증명, Device Key, 전체 환경 파일과 인증 헤더는 기록하지 않는다.
+인증 URL, auth key, MinIO 애플리케이션 자격증명, Device Key, 전체 환경 파일과 인증 헤더는 기록하지 않는다.
 
 ## 10. 상태 점검과 장애 분리
 
@@ -301,7 +301,7 @@ curl --fail --show-error --max-time 10 \
 | --- | --- | --- | --- |
 | Tailscale peer | EC2와 Pi | peer online, ping 성공 | 터널·인증·정책·경로 문제 |
 | MediaMTX HLS | EC2 호스트와 Nginx 컨테이너 | 카메라 path GET `200 OK` | MediaMTX·소스 스트림·8888 경로 문제 |
-| MinIO 업로드 | Pi | health, PUT, HEAD/stat 성공 | Serve·MinIO·9000 경로·S3 권한 문제 |
+| MinIO 업로드 | Pi | health, PUT, HEAD/stat 성공 | Serve·MinIO·9000 경로·MinIO 권한 문제 |
 | DB 카메라 상태 | 중앙 API·DB | 등록·활성 상태 조회 성공 | 업무 데이터 상태이며 위 연결 상태를 대신하지 않음 |
 
 장애 화면이나 운영 로그에는 실패한 계층과 마지막 성공·점검 시각을 분리해 표시한다.
