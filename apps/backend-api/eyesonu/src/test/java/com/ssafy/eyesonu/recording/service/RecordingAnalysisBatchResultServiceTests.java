@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +106,42 @@ class RecordingAnalysisBatchResultServiceTests {
 
         assertTrue(response.duplicate());
         verify(jobMapper, never()).markSucceeded(any(), any());
+    }
+
+    @Test
+    void completesLeaseBoundAiWorkerResultAndProjectsCandidates() {
+        AnalysisJob running = job("RUNNING");
+        running.setClaimedBy("notebook-1");
+        running.setLeaseTokenHash("lease-hash");
+        running.setClaimExpiresAt(Instant.now().plusSeconds(60));
+        when(jobMapper.findRecordingAnalysisById(5001L)).thenReturn(running);
+        when(jobMapper.findRecordingAnalysisByIdForUpdate(5001L)).thenReturn(running);
+        when(resultMapper.findByJobIdAndAttempt(5001L, 1)).thenReturn(null);
+        when(recordingMapper.findById(3001L)).thenReturn(new Recording(
+                3001L, 11L, null, null, "recordings/CAM-001/video.mp4", 100L, null));
+        when(cameraMapper.findById(11L)).thenReturn(Optional.of(
+                new Camera(11L, 2L, "CAM-001", "Front")));
+        when(candidateService.createRecordingAnalysisBatch(any(), any(), any(), any(), any()))
+                .thenReturn(List.of(9001L));
+        when(jobMapper.complete(5001L, "notebook-1", "lease-hash", "hybrid-v1", "{}", "result-hash"))
+                .thenReturn(1);
+        RecordingAnalysisBatchResultRequest request = new RecordingAnalysisBatchResultRequest(
+                "ai-worker-5001-attempt-1-result-hash", List.of(candidate("track-1")));
+
+        var response = service.completeFromAiWorker(
+                5001L,
+                request,
+                "notebook-1",
+                "lease-hash",
+                "hybrid-v1",
+                "{}",
+                "result-hash");
+
+        assertEquals("SUCCEEDED", response.status());
+        assertEquals(List.of(9001L), response.candidateIds());
+        verify(resultStorageValidator).verify(running, request);
+        verify(jobMapper).complete(
+                5001L, "notebook-1", "lease-hash", "hybrid-v1", "{}", "result-hash");
     }
 
     private void prepareRunningJob() {

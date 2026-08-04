@@ -17,6 +17,7 @@ from qwen_backend.central_client import (
     CentralWorkerError,
 )
 from qwen_backend.worker_protocol import (
+    RabbitWorkerJobEvent,
     WorkerClaimResponse,
     WorkerJob,
     worker_result_from_runtime,
@@ -31,6 +32,7 @@ def test_runtime_result_never_serializes_notebook_absolute_crop_path() -> None:
                 candidateKey="track-3",
                 frameOffsetMs=1_250,
                 similarity=0.91,
+                framePath="C:/Users/worker/artifacts/job-71/frame-1250.jpg",
                 cropPath="C:/Users/worker/artifacts/job-71/track-3.jpg",
                 boundingBox=RuntimeBoundingBox(x=10, y=20, width=30, height=40),
                 attributeSummary="fixture",
@@ -78,6 +80,26 @@ def test_claim_response_requires_lease_with_job() -> None:
 
     assert response.job is not None
     assert response.lease_token == "lease-1"
+
+
+def test_rabbit_worker_event_contains_only_routing_metadata() -> None:
+    event = RabbitWorkerJobEvent(
+        eventId="command-71",
+        jobId=71,
+        caseId=11,
+        attempt=1,
+        occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
+    )
+
+    assert event.job_id == 71
+    assert event.model_dump(mode="json", by_alias=True) == {
+        "schemaVersion": "eyesonu-ai-worker-event-v1",
+        "eventId": "command-71",
+        "jobId": 71,
+        "caseId": 11,
+        "attempt": 1,
+        "occurredAt": "2026-07-30T00:00:00Z",
+    }
 
 
 def test_central_client_does_not_retry_mutating_requests_by_default() -> None:

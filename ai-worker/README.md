@@ -91,6 +91,8 @@ uv run eyesonu-ai-worker --log-level INFO
 
 중앙 워커 계약의 endpoint, lease, 실패 재시도와 로컬 경로 비노출 정책은
 [노트북 상주 AI Worker 실행 계약](docs/NOTEBOOK_AI_WORKER_RUNTIME.md)을 참고한다.
+RabbitMQ 기반 수신·lease·증거 업로드의 운영 계약은
+[RabbitMQ 노트북 AI Worker 전송 계약](docs/RABBITMQ_NOTEBOOK_WORKER_TRANSPORT.md)을 참고한다.
 
 아래 구역 확률 API는 기본 `qwen_backend.main:app`에 등록되지 않는 별도 비교 연구
 앱입니다. 개발용 신뢰 레지스트리와 4×4 요청 계약만 확인하며, research 앱 자체가

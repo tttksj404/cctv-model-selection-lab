@@ -10,6 +10,7 @@ class TrackFrame:
     track_id: int
     frame_index: int
     frame_offset_ms: int
+    frame_path: Path
     crop_path: Path
     left: int
     top: int
@@ -81,7 +82,9 @@ def detect_person_tracks(
     last_saved_frame: dict[int, int] = {}
     minimum_gap = max(1, round(fps * sample_every_seconds))
     track_root = output_dir / "tracks"
+    frame_root = output_dir / "frames"
     track_root.mkdir(parents=True, exist_ok=True)
+    frame_root.mkdir(parents=True, exist_ok=True)
 
     for result_index, result in enumerate(results):
         frame_index = result_index * stride
@@ -120,11 +123,15 @@ def detect_person_tracks(
             crop_path = track_root / f"track-{tracker_id}-{frame_index:08d}.jpg"
             if not cv2.imwrite(str(crop_path), crop):
                 raise OSError(f"crop_write_failed: {crop_path.name}")
+            frame_path = frame_root / f"frame-{frame_index:08d}.jpg"
+            if not frame_path.exists() and not cv2.imwrite(str(frame_path), result.orig_img):
+                raise OSError(f"frame_write_failed: {frame_path.name}")
             frames.append(
                 TrackFrame(
                     track_id=tracker_id,
                     frame_index=frame_index,
                     frame_offset_ms=frame_offset_ms,
+                    frame_path=frame_path,
                     crop_path=crop_path,
                     left=left,
                     top=top,

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Typed candidate-attribute inference boundary for the GPU server"
 requires-python = ">=3.11"
 dependencies = [
+  "aio-pika>=9.5,<10",
   "fastapi>=0.115,<1",
   "httpx2[http2,brotli,zstd]>=2.9,<3",
   "orjson>=3.10,<4",

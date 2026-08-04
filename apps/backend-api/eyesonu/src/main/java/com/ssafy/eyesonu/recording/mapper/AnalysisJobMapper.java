@@ -48,6 +48,8 @@ public interface AnalysisJobMapper {
 
     AnalysisJob findByIdForWorker(@Param("jobId") Long jobId);
 
+    List<AnalysisJob> findExpiredRunningForRecovery(@Param("limit") int limit);
+
     int claim(
             @Param("jobId") Long jobId,
             @Param("workerId") String workerId,
@@ -72,6 +74,11 @@ public interface AnalysisJobMapper {
             @Param("jobId") Long jobId,
             @Param("workerId") String workerId,
             @Param("leaseTokenHash") String leaseTokenHash,
+            @Param("nextStatus") String nextStatus,
+            @Param("errorMessage") String errorMessage);
+
+    int recoverExpired(
+            @Param("jobId") Long jobId,
             @Param("nextStatus") String nextStatus,
             @Param("errorMessage") String errorMessage);
 }
