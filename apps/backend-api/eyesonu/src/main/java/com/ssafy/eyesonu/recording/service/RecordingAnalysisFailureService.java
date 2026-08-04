@@ -37,10 +37,10 @@ public class RecordingAnalysisFailureService {
     @Transactional
     public RecordingAnalysisFailureResponse fail(
             Long jobId, RecordingAnalysisFailureRequest request, String workerId) {
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
+        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId, workerId);
         if (job == null) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
-                    "Recording analysis job was not found.");
+            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_CLAIMED",
+                    "Recording analysis job is claimed by another worker.");
         }
         int attempt = job.getRetryCount() + 1;
         String payloadHash = payloadHash(request);
@@ -72,7 +72,7 @@ public class RecordingAnalysisFailureService {
         resultMapper.insert(result);
         String storedError = request.errorMessage() == null || request.errorMessage().isBlank()
                 ? request.errorCode() : request.errorCode() + ": " + request.errorMessage();
-        if (jobMapper.markFailed(job.getCaseId(), jobId, storedError) != 1) {
+        if (jobMapper.markFailed(job.getCaseId(), jobId, workerId, storedError) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job changed before failure was recorded.");
         }

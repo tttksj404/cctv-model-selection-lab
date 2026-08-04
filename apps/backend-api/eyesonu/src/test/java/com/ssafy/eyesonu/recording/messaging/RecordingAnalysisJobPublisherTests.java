@@ -83,9 +83,14 @@ class RecordingAnalysisJobPublisherTests {
                 "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
                 5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"));
 
-        assertFalse(new ObjectMapper().findAndRegisterModules()
-                .valueToTree(event)
-                .has("similarityThreshold"));
+        var payload = new ObjectMapper().findAndRegisterModules().valueToTree(event);
+
+        assertFalse(payload.has("similarityThreshold"));
+        assertFalse(payload.has("prompt"));
+        assertFalse(payload.has("exclusionPrompt"));
+        assertFalse(payload.has("searchStart"));
+        assertFalse(payload.has("searchEnd"));
+        assertFalse(payload.has("searchArea"));
     }
 
     @Test

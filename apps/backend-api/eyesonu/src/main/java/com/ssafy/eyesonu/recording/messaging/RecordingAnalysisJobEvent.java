@@ -12,17 +12,12 @@ public record RecordingAnalysisJobEvent(
         String cameraCode,
         String cameraName,
         String recordingObjectKey,
-        String prompt,
-        String exclusionPrompt,
-        Instant searchStart,
-        Instant searchEnd,
-        String searchArea,
         int attempt,
         Instant occurredAt) {
 
     public RecordingAnalysisJobEvent(
             String commandId, String eventType, Long jobId, Long caseId, Instant occurredAt) {
         this(commandId, eventType, jobId, caseId, null, null, null, null, null,
-                null, null, null, null, null, 1, occurredAt);
+                1, occurredAt);
     }
 }

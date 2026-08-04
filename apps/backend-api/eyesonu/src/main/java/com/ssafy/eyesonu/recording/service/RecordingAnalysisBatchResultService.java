@@ -103,6 +103,7 @@ public class RecordingAnalysisBatchResultService {
             throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
                     "Only running recording analysis jobs can submit results.");
         }
+        validateWorkerOwnership(job, workerId);
         resultStorageValidator.verify(job, request);
 
         RecordingAnalysisBatchResultResponse response = transactionTemplate.execute(status ->
@@ -115,10 +116,10 @@ public class RecordingAnalysisBatchResultService {
 
     private RecordingAnalysisBatchResultResponse completeInTransaction(
             Long jobId, RecordingAnalysisBatchResultRequest request, String workerId, String payloadHash) {
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
+        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId, workerId);
         if (job == null) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
-                    "Recording analysis job was not found.");
+            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_CLAIMED",
+                    "Recording analysis job is claimed by another worker.");
         }
         int attempt = job.getRetryCount() + 1;
         RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
@@ -166,7 +167,7 @@ public class RecordingAnalysisBatchResultService {
         result.setStatus("SUCCEEDED");
         result.setCandidateCount(request.candidates().size());
         resultMapper.insert(result);
-        if (jobMapper.markSucceeded(job.getCaseId(), jobId) != 1) {
+        if (jobMapper.markSucceededForWorker(job.getCaseId(), jobId, workerId) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job changed before completion.");
         }
@@ -201,13 +202,37 @@ public class RecordingAnalysisBatchResultService {
         }
     }
 
+    private void validateWorkerOwnership(AnalysisJob job, String workerId) {
+        if (workerId == null || workerId.isBlank() || !workerId.equals(job.getClaimedBy())) {
+            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_CLAIMED",
+                    "Recording analysis job is claimed by another worker.");
+        }
+    }
+
     private String payloadHash(RecordingAnalysisBatchResultRequest request) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(
-                    request.toString().getBytes(StandardCharsets.UTF_8)));
+            StringBuilder canonical = new StringBuilder();
+            appendField(canonical, request.resultId());
+            for (RecordingAnalysisBatchResultRequest.Candidate candidate : request.candidates()) {
+                appendField(canonical, candidate.trackId());
+                appendField(canonical, candidate.detectedAt().toInstant().toString());
+                appendField(canonical, candidate.similarity().stripTrailingZeros().toPlainString());
+                appendField(canonical, candidate.frameObjectKey());
+                appendField(canonical, candidate.cropObjectKey());
+                appendField(canonical, candidate.boundingBox().x());
+                appendField(canonical, candidate.boundingBox().y());
+                appendField(canonical, candidate.boundingBox().width());
+                appendField(canonical, candidate.boundingBox().height());
+            }
+            return HexFormat.of().formatHex(digest.digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
+    }
+
+    private void appendField(StringBuilder canonical, Object value) {
+        String text = String.valueOf(value);
+        canonical.append(text.length()).append(':').append(text).append(';');
     }
 }
