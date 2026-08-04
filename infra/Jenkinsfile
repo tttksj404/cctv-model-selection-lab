@@ -10,12 +10,8 @@ pipeline {
     }
 
     environment {
-        DEPLOY_COMPOSE = 'infra/compose.deploy.yml'
-        DEPLOY_ENV_FILE = '/run/secrets/eyesonu-deploy.env'
         DEPLOY_SSH_HOST = '127.0.0.1'
         DEPLOY_SSH_USER = 'eyesonu-deploy'
-        DEPLOY_HOST_ROOT = '/home/ubuntu/jenkins-data/workspace/ssafy-a204-infra'
-        DEPLOY_HOST_ENV_FILE = '/etc/eyesonu/deploy.env'
         // Let Testcontainers' cleanup sidecar remove orphaned test containers
         // when a build is interrupted or the test JVM exits unexpectedly.
         TESTCONTAINERS_RYUK_DISABLED = 'false'
@@ -27,7 +23,8 @@ pipeline {
             agent none
             steps {
                 script {
-                    def rawBranch = (env.gitlabTargetBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: '').trim()
+                    def eventType = (env.gitlabActionType ?: '').trim().toUpperCase()
+                    def rawBranch = (env.gitlabBranch ?: env.BRANCH_NAME ?: env.GIT_BRANCH ?: '').trim()
                     // This policy is intentionally part of the protected
                     // deployment job's pipeline definition, not an executable
                     // from the checked-out release tree.
@@ -42,16 +39,15 @@ pipeline {
                         'refs/remotes/origin/master': 'master'
                     ]
                     def deployProfile = deployProfilesByReference[rawBranch] ?: ''
-                    def targetBranch = deployProfile ?: rawBranch
                     def mergeRequest = env.gitlabMergeRequestIid?.trim()
                     def eventCommit = env.gitlabAfter?.trim() ?: ''
-                    if (mergeRequest || !deployProfile) {
-                        error("Protected deployment job accepts only non-MR dev/master events; run CI in an isolated job (branch=${rawBranch}, mergeRequest=${mergeRequest ? 'yes' : 'no'}).")
+                    if (eventType != 'PUSH' || mergeRequest || !deployProfile) {
+                        error("Protected deployment job accepts only GitLab PUSH events for dev/master; run CI in an isolated job (event=${eventType ?: 'missing'}, branch=${rawBranch}, mergeRequest=${mergeRequest ? 'yes' : 'no'}).")
                     }
-                    if (eventCommit && !(eventCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
-                        error("GitLab event commit is not a full lowercase object ID: ${eventCommit}")
+                    if (!(eventCommit ==~ /^[0-9a-f]{40}([0-9a-f]{24})?$/)) {
+                        error("GitLab PUSH event commit must be a full lowercase object ID: ${eventCommit ?: 'missing'}")
                     }
-                    env.TARGET_BRANCH = targetBranch
+                    env.TARGET_BRANCH = rawBranch
                     env.DEPLOY_PROFILE = deployProfile
                     env.DEPLOY_EVENT_COMMIT = eventCommit
                     env.CAN_DEPLOY = 'true'
@@ -221,6 +217,36 @@ pipeline {
             }
         }
 
+        stage('Build immutable deployment images') {
+            steps {
+                dir(env.BUILD_SOURCE_DIR) {
+                    sh '''
+                        set -eu
+                        release_tag="${GIT_COMMIT:?verified release commit is required}"
+                        printf '%s\n' "$release_tag" | grep -Eq '^[0-9a-f]{40}([0-9a-f]{24})?$'
+
+                        docker build --tag "eyesonu/backend-dev:$release_tag" apps/backend-api/eyesonu
+                        docker tag "eyesonu/backend-dev:$release_tag" "eyesonu/backend-master:$release_tag"
+
+                        docker build --build-arg VITE_MEDIA_STREAM_BASE_URL=/media-stream \
+                            --tag "eyesonu/admin-dev:$release_tag" apps/frontend/admin-dashboard
+                        docker tag "eyesonu/admin-dev:$release_tag" "eyesonu/admin-master:$release_tag"
+
+                        docker build --tag "eyesonu/reporter-dev:$release_tag" apps/frontend/reporter-webapp
+                        docker tag "eyesonu/reporter-dev:$release_tag" "eyesonu/reporter-master:$release_tag"
+
+                        for image in \
+                            "eyesonu/backend-dev:$release_tag" "eyesonu/backend-master:$release_tag" \
+                            "eyesonu/admin-dev:$release_tag" "eyesonu/admin-master:$release_tag" \
+                            "eyesonu/reporter-dev:$release_tag" "eyesonu/reporter-master:$release_tag"; do
+                            docker image inspect --format '{{.Id}}' "$image" \
+                                | grep -Eq '^sha256:[0-9a-f]{64}$'
+                        done
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to EC2 Docker Engine') {
             when {
                 expression { env.CAN_DEPLOY == 'true' }
@@ -251,54 +277,10 @@ pipeline {
                                 exit 1
                                 ;;
                         esac
-                        for deploy_path in "${DEPLOY_HOST_ROOT:-}" "${DEPLOY_HOST_ENV_FILE:-}"; do
-                            case "$deploy_path" in
-                                /*) ;;
-                                *)
-                                    echo "ERROR: deployment host paths must be absolute" >&2
-                                    exit 1
-                                    ;;
-                            esac
-                            case "$deploy_path" in
-                                *[!A-Za-z0-9._/-]*)
-                                    echo "ERROR: deployment host paths contain unsupported characters" >&2
-                                    exit 1
-                                    ;;
-                            esac
-                        done
-
-                        umask 077
-                        unset TMPDIR
-                        trusted_runner="$(mktemp)"
-                        trap 'rm -f "$trusted_runner"' EXIT
-                        trusted_git=/usr/bin/git
-                        test -x "$trusted_git" || {
-                            echo "ERROR: trusted Git executable is unavailable: $trusted_git" >&2
-                            exit 1
-                        }
-                        env -i \
-                          PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-                          HOME=/tmp \
-                          XDG_CONFIG_HOME=/tmp \
-                          GIT_CONFIG_NOSYSTEM=1 \
-                          GIT_CONFIG_GLOBAL=/dev/null \
-                          GIT_CONFIG_COUNT=0 \
-                          GIT_ATTR_NOSYSTEM=1 \
-                          GIT_NO_REPLACE_OBJECTS=1 \
-                          "$trusted_git" --no-replace-objects \
-                            -c core.hooksPath=/dev/null \
-                            -c core.fsmonitor=false \
-                            show "$GIT_COMMIT:infra/scripts/run-verified-deployment.sh" > "$trusted_runner"
-                        test -s "$trusted_runner" || {
-                            echo "ERROR: trusted verified-deployment runner is empty" >&2
-                            exit 1
-                        }
-
-                        echo 'Deploying verified release from the host object database:'
+                        echo 'Requesting deployment through the restricted host broker:'
                         ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
                           "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-                          "/usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/home/eyesonu-deploy LC_ALL=C /bin/bash --noprofile --norc -s -- '$GIT_COMMIT' '$DEPLOY_HOST_ROOT' '$DEPLOY_HOST_ENV_FILE' '$DEPLOY_PROFILE' '$DEPLOY_SSH_USER'" \
-                          < "$trusted_runner"
+                          "eyesonu-deploy '$DEPLOY_PROFILE' '$GIT_COMMIT'"
                     '''
                 }
             }

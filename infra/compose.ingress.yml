@@ -1,0 +1,36 @@
+name: eyesonu-ingress
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: eyesonu-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # This stack is operated only by root. Profile releases are allowed to
+      # inspect this ingress but never create, recreate, or reload it.
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/snippets:/etc/nginx/snippets:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/www:/var/www/certbot:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/conf:/etc/letsencrypt:ro
+    networks:
+      - dev
+      - prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/nginx-health | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+networks:
+  dev:
+    external: true
+    name: eyesonu-dev
+  prod:
+    external: true
+    name: eyesonu-prod
