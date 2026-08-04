@@ -89,6 +89,19 @@ uv run eyesonu-ai-worker --once
 uv run eyesonu-ai-worker --log-level INFO
 ```
 
+노트북에 이미 받은 `ai.env.txt`를 그대로 사용할 때는 복사하거나 키를 출력할 필요 없이
+다음처럼 경로만 넘긴다. 이 파일에는 중앙 서버 URL·Worker Key뿐 아니라 RabbitMQ URL과
+queue도 있어야 한다.
+
+```powershell
+.\scripts\Start-NotebookAiWorker.ps1 `
+  -EnvFile C:\Users\SSAFY\Desktop\ai.env.txt `
+  -Once
+```
+
+`CENTRAL_API_BASE_URL`/`CENTRAL_API_WORKER_KEY`와 `RABBITMQ_URL`/`RABBITMQ_QUEUE`는
+기존 노트북 설정 파일 호환 이름이며, `EYESONU_AI_WORKER_*` 이름도 동일하게 지원한다.
+
 중앙 워커 계약의 endpoint, lease, 실패 재시도와 로컬 경로 비노출 정책은
 [노트북 상주 AI Worker 실행 계약](docs/NOTEBOOK_AI_WORKER_RUNTIME.md)을 참고한다.
 RabbitMQ 기반 수신·lease·증거 업로드의 운영 계약은

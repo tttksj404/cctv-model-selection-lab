@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -18,13 +19,39 @@ from qwen_backend.central_client import (
 )
 from qwen_backend.worker_protocol import (
     RabbitWorkerJobEvent,
-    WorkerClaimResponse,
-    WorkerJob,
-    worker_result_from_runtime,
+    RecordingAnalysisClaim,
+    RecordingAnalysisEvidenceUpload,
+    RecordingAnalysisTarget,
+    RecordingAnalysisUploadObject,
+    result_from_runtime,
 )
 
 
-def test_runtime_result_never_serializes_notebook_absolute_crop_path() -> None:
+def _target() -> RecordingAnalysisTarget:
+    return RecordingAnalysisTarget(
+        jobId=71,
+        caseId=11,
+        searchConditionId=21,
+        recordingId=31,
+        cameraId=41,
+        cameraCode="CAM-001",
+        cameraName="Gate A",
+        recordingObjectKey="recordings/CAM-001/video.mp4",
+        recordingDownloadUrl="https://storage.example/video.mp4",
+        recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
+        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
+        prompt="red jacket",
+        searchFromMs=0,
+        searchToMs=5_000,
+        attempt=1,
+    )
+
+
+def _envelope(data: dict[str, object]) -> dict[str, object]:
+    return {"timestamp": "2026-07-30T00:00:00Z", "data": data}
+
+
+def test_result_uses_absolute_detection_time_and_never_serializes_local_paths() -> None:
     runtime = CandidateRuntimeResponse(
         modelKey="fixture-hybrid-v1",
         candidates=(
@@ -39,11 +66,32 @@ def test_runtime_result_never_serializes_notebook_absolute_crop_path() -> None:
             ),
         ),
     )
+    upload = RecordingAnalysisEvidenceUpload(
+        trackId="track-3",
+        frame=RecordingAnalysisUploadObject(
+            objectKey="analysis/analysis-71/attempt-1/frames/frame.jpg",
+            uploadUrl="https://storage.example/upload/frame.jpg",
+            contentType="image/jpeg",
+        ),
+        crop=RecordingAnalysisUploadObject(
+            objectKey="analysis/analysis-71/attempt-1/crops/crop.jpg",
+            uploadUrl="https://storage.example/upload/crop.jpg",
+            contentType="image/jpeg",
+        ),
+    )
 
-    result = worker_result_from_runtime(runtime, 42)
+    result = result_from_runtime(
+        runtime,
+        _target(),
+        worker_id="notebook-test",
+        evidence_by_track_id={"track-3": upload},
+    )
 
-    payload = result.model_dump(by_alias=True)
-    assert "cropPath" not in payload["candidates"][0]
+    assert result.result_id == "notebook-test:71:1"
+    assert result.candidates[0].detected_at == datetime(2026, 7, 30, 0, 0, 1, 250_000, tzinfo=UTC)
+    payload = result.model_dump(mode="json", by_alias=True)
+    assert "cropPath" not in str(payload)
+    assert "framePath" not in str(payload)
     assert payload["candidates"][0]["boundingBox"] == {
         "x": 10,
         "y": 20,
@@ -52,76 +100,39 @@ def test_runtime_result_never_serializes_notebook_absolute_crop_path() -> None:
     }
 
 
-def test_claim_response_requires_lease_with_job() -> None:
-    job = WorkerJob(
-        jobId=71,
-        caseId=11,
-        searchConditionId=21,
-        recordingId=31,
-        modelKey="fixture-hybrid-v1",
-        cameraId=41,
-        cameraName="Gate A",
-        cameraAddress="CAM-001",
-        videoUrl="https://storage.example/video.mp4",
-        recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
-        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
-        prompt="red jacket",
-        similarityThreshold=0.8,
-        searchFromMs=0,
-        searchToMs=5_000,
-        leaseExpiresAt=datetime(2026, 7, 30, 0, 1, tzinfo=UTC),
-    )
-
-    response = WorkerClaimResponse(
-        job=job,
-        leaseToken="lease-1",
-        leaseExpiresAt=job.lease_expires_at,
-    )
-
-    assert response.job is not None
-    assert response.lease_token == "lease-1"
+def test_non_duplicate_claim_requires_lease_token() -> None:
+    with pytest.raises(ValidationError, match="leaseToken"):
+        RecordingAnalysisClaim(
+            jobId=71,
+            status="RUNNING",
+            attempt=1,
+            duplicate=False,
+            startedAt=datetime(2026, 7, 30, tzinfo=UTC),
+            claimedBy="recording-ai-worker",
+            claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
+        )
 
 
-def test_claim_job_accepts_server_contract_without_similarity_threshold() -> None:
-    job = WorkerJob(
-        jobId=71,
-        caseId=11,
-        searchConditionId=21,
-        recordingId=31,
-        modelKey="fixture-hybrid-v1",
-        cameraId=41,
-        cameraName="Gate A",
-        cameraAddress="CAM-001",
-        videoUrl="https://storage.example/video.mp4",
-        recordingStart=datetime(2026, 7, 30, tzinfo=UTC),
-        recordingEnd=datetime(2026, 7, 30, 1, tzinfo=UTC),
-        prompt="red jacket",
-        searchFromMs=0,
-        searchToMs=5_000,
-        leaseExpiresAt=datetime(2026, 7, 30, 0, 1, tzinfo=UTC),
-    )
-
-    assert job.similarity_threshold is None
-
-
-def test_rabbit_worker_event_contains_only_routing_metadata() -> None:
+def test_rabbit_event_matches_current_dev_payload_without_person_data() -> None:
     event = RabbitWorkerJobEvent(
-        eventId="command-71",
+        commandId="command-71",
+        eventType="RECORDING_ANALYSIS_JOB_CREATED",
         jobId=71,
         caseId=11,
+        recordingId=31,
+        cameraId=41,
+        cameraCode="CAM-001",
+        cameraName="Gate A",
+        recordingObjectKey="recordings/CAM-001/video.mp4",
         attempt=1,
         occurredAt=datetime(2026, 7, 30, tzinfo=UTC),
     )
 
     assert event.job_id == 71
-    assert event.model_dump(mode="json", by_alias=True) == {
-        "schemaVersion": "eyesonu-ai-worker-event-v1",
-        "eventId": "command-71",
-        "jobId": 71,
-        "caseId": 11,
-        "attempt": 1,
-        "occurredAt": "2026-07-30T00:00:00Z",
-    }
+    assert (
+        event.model_dump(mode="json", by_alias=True)["eventType"]
+        == "RECORDING_ANALYSIS_JOB_CREATED"
+    )
 
 
 def test_central_client_does_not_retry_mutating_requests_by_default() -> None:
@@ -178,5 +189,72 @@ def test_central_client_rejects_malformed_storage_content_length(tmp_path: Path)
                     tmp_path / "video.mp4",
                     max_bytes=1024,
                 )
+
+    anyio.run(scenario)
+
+
+def test_central_client_chunks_upload_url_requests_without_reusing_track_ids() -> None:
+    async def scenario() -> None:
+        requested_track_counts: list[int] = []
+
+        async def handler(request: httpx2.Request) -> httpx2.Response:
+            assert request.headers["X-Worker-Key"] == "test-key"
+            assert request.headers["X-Worker-Claim-Token"] == "lease-1"
+            payload = json.loads(request.content)
+            candidates = payload["candidates"]
+            requested_track_counts.append(len(candidates))
+            response_candidates = [
+                {
+                    "trackId": candidate["trackId"],
+                    "frame": {
+                        "objectKey": f"analysis/frames/{candidate['trackId']}.jpg",
+                        "uploadUrl": f"https://storage.example/frames/{candidate['trackId']}.jpg",
+                        "contentType": "image/jpeg",
+                    },
+                    "crop": {
+                        "objectKey": f"analysis/crops/{candidate['trackId']}.jpg",
+                        "uploadUrl": f"https://storage.example/crops/{candidate['trackId']}.jpg",
+                        "contentType": "image/jpeg",
+                    },
+                }
+                for candidate in candidates
+            ]
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "attempt": 1,
+                        "candidates": response_candidates,
+                        "expiresInSeconds": 900,
+                    }
+                ),
+                request=request,
+            )
+
+        runtime_candidates = tuple(
+            RuntimeCandidate(
+                candidateKey=f"track-{index}",
+                frameOffsetMs=index,
+                similarity=0.9,
+                framePath=Path(f"frame-{index}.jpg"),
+                cropPath=Path(f"crop-{index}.jpg"),
+                boundingBox=RuntimeBoundingBox(x=0, y=0, width=1, height=1),
+            )
+            for index in range(101)
+        )
+        transport = httpx2.MockTransport(handler)
+        async with httpx2.AsyncClient(
+            transport=transport, base_url="https://central.example"
+        ) as http_client:
+            client = CentralWorkerClient(
+                base_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                client=http_client,
+            )
+            uploads = await client.create_evidence_upload_urls(71, "lease-1", runtime_candidates)
+
+        assert requested_track_counts == [100, 1]
+        assert set(uploads) == {candidate.candidate_key for candidate in runtime_candidates}
 
     anyio.run(scenario)

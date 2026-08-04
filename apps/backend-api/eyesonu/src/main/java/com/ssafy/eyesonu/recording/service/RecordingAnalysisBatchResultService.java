@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,6 +41,7 @@ public class RecordingAnalysisBatchResultService {
     private final CandidateEventCommandService candidateService;
     private final AuditService auditService;
     private final RecordingAnalysisResultStorageValidator resultStorageValidator;
+    private final RecordingAnalysisJobClaimService claimService;
     private final TransactionTemplate transactionTemplate;
 
     @Autowired
@@ -53,9 +53,10 @@ public class RecordingAnalysisBatchResultService {
             CandidateEventCommandService candidateService,
             AuditService auditService,
             RecordingAnalysisResultStorageValidator resultStorageValidator,
+            RecordingAnalysisJobClaimService claimService,
             PlatformTransactionManager transactionManager) {
         this(jobMapper, resultMapper, recordingMapper, cameraMapper, candidateService,
-                auditService, resultStorageValidator, new TransactionTemplate(transactionManager));
+                auditService, resultStorageValidator, claimService, new TransactionTemplate(transactionManager));
     }
 
     RecordingAnalysisBatchResultService(
@@ -66,6 +67,7 @@ public class RecordingAnalysisBatchResultService {
             CandidateEventCommandService candidateService,
             AuditService auditService,
             RecordingAnalysisResultStorageValidator resultStorageValidator,
+            RecordingAnalysisJobClaimService claimService,
             TransactionTemplate transactionTemplate) {
         this.jobMapper = jobMapper;
         this.resultMapper = resultMapper;
@@ -74,11 +76,15 @@ public class RecordingAnalysisBatchResultService {
         this.candidateService = candidateService;
         this.auditService = auditService;
         this.resultStorageValidator = resultStorageValidator;
+        this.claimService = claimService;
         this.transactionTemplate = transactionTemplate;
     }
 
     public RecordingAnalysisBatchResultResponse complete(
-            Long jobId, RecordingAnalysisBatchResultRequest request, String workerId) {
+            Long jobId,
+            RecordingAnalysisBatchResultRequest request,
+            String workerId,
+            String claimToken) {
         validateUniqueTracks(request);
         String payloadHash = payloadHash(request);
         // External storage calls must not run while the database row is locked.
@@ -100,77 +106,29 @@ public class RecordingAnalysisBatchResultService {
             throw new ApiException(HttpStatus.CONFLICT, "RESULT_ID_CONFLICT",
                     "A different result was already submitted for this job.");
         }
-        if (!"RUNNING".equals(job.getStatus())) {
-            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_RUNNABLE",
-                    "Only running recording analysis jobs can submit results.");
-        }
+        claimService.requireActiveWorkerJob(jobId, workerId, claimToken);
         resultStorageValidator.verify(job, request);
+        String leaseTokenHash = claimService.hashClaimToken(claimToken);
 
         RecordingAnalysisBatchResultResponse response = transactionTemplate.execute(status ->
-                completeInTransaction(jobId, request, workerId, payloadHash));
+                completeInTransaction(jobId, request, workerId, leaseTokenHash, payloadHash));
         if (response == null) {
             throw new IllegalStateException("Recording analysis completion transaction returned no result");
         }
         return response;
     }
 
-    /**
-     * Completes a notebook AI Worker lease while projecting each verified
-     * candidate into the normal candidate-event tables. The object-store check
-     * remains outside the row-lock transaction; the lease is checked again
-     * after the lock is acquired before any candidate is persisted.
-     */
-    public RecordingAnalysisBatchResultResponse completeFromAiWorker(
+    private RecordingAnalysisBatchResultResponse completeInTransaction(
             Long jobId,
             RecordingAnalysisBatchResultRequest request,
             String workerId,
             String leaseTokenHash,
-            String modelKey,
-            String resultPayload,
-            String resultDigest) {
-        validateUniqueTracks(request);
-        AnalysisJob job = jobMapper.findRecordingAnalysisById(jobId);
+            String payloadHash) {
+        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(
+                jobId, workerId, leaseTokenHash);
         if (job == null) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
-                    "Recording analysis job was not found.");
-        }
-        int attempt = job.getRetryCount() + 1;
-        RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
-        if (existing != null) {
-            if (existing.getResultId().equals(request.resultId())
-                    && existing.getPayloadHash().equals(resultDigest)
-                    && "SUCCEEDED".equals(job.getStatus())) {
-                return new RecordingAnalysisBatchResultResponse(
-                        jobId, existing.getResultId(), job.getStatus(), existing.getCandidateCount(),
-                        List.of(), true, job.getCompletedAt());
-            }
-            throw new ApiException(HttpStatus.CONFLICT, "RESULT_ID_CONFLICT",
-                    "A different result was already submitted for this job.");
-        }
-        requireActiveWorkerLease(job, workerId, leaseTokenHash);
-        resultStorageValidator.verify(job, request);
-
-        RecordingAnalysisBatchResultResponse response = transactionTemplate.execute(status ->
-                completeFromAiWorkerInTransaction(
-                        jobId,
-                        request,
-                        workerId,
-                        leaseTokenHash,
-                        modelKey,
-                        resultPayload,
-                        resultDigest));
-        if (response == null) {
-            throw new IllegalStateException("AI Worker completion transaction returned no result");
-        }
-        return response;
-    }
-
-    private RecordingAnalysisBatchResultResponse completeInTransaction(
-            Long jobId, RecordingAnalysisBatchResultRequest request, String workerId, String payloadHash) {
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
-        if (job == null) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
-                    "Recording analysis job was not found.");
+            throw new ApiException(HttpStatus.CONFLICT, "JOB_NOT_CLAIMED",
+                    "Recording analysis job is claimed by another worker.");
         }
         int attempt = job.getRetryCount() + 1;
         RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
@@ -218,7 +176,8 @@ public class RecordingAnalysisBatchResultService {
         result.setStatus("SUCCEEDED");
         result.setCandidateCount(request.candidates().size());
         resultMapper.insert(result);
-        if (jobMapper.markSucceeded(job.getCaseId(), jobId) != 1) {
+        if (jobMapper.markSucceededForWorker(
+                job.getCaseId(), jobId, workerId, leaseTokenHash) != 1) {
             throw new ApiException(HttpStatus.CONFLICT, "RESOURCE_STATE_CONFLICT",
                     "Recording analysis job changed before completion.");
         }
@@ -227,83 +186,6 @@ public class RecordingAnalysisBatchResultService {
         auditService.recordRequired(
                 "RECORDING_ANALYSIS_JOB_SUCCEEDED", null, job.getCaseId(), "ANALYSIS_JOB", jobId,
                 Map.of("workerId", workerId, "candidateCount", request.candidates().size()));
-        return new RecordingAnalysisBatchResultResponse(
-                jobId, request.resultId(), job.getStatus(), request.candidates().size(),
-                List.copyOf(candidateIds), false, job.getCompletedAt());
-    }
-
-    private RecordingAnalysisBatchResultResponse completeFromAiWorkerInTransaction(
-            Long jobId,
-            RecordingAnalysisBatchResultRequest request,
-            String workerId,
-            String leaseTokenHash,
-            String modelKey,
-            String resultPayload,
-            String resultDigest) {
-        AnalysisJob job = jobMapper.findRecordingAnalysisByIdForUpdate(jobId);
-        if (job == null) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND",
-                    "Recording analysis job was not found.");
-        }
-        int attempt = job.getRetryCount() + 1;
-        RecordingAnalysisResult existing = resultMapper.findByJobIdAndAttempt(jobId, attempt);
-        if (existing != null) {
-            if (existing.getResultId().equals(request.resultId())
-                    && existing.getPayloadHash().equals(resultDigest)
-                    && "SUCCEEDED".equals(job.getStatus())) {
-                return new RecordingAnalysisBatchResultResponse(
-                        jobId, existing.getResultId(), job.getStatus(), existing.getCandidateCount(),
-                        List.of(), true, job.getCompletedAt());
-            }
-            throw new ApiException(HttpStatus.CONFLICT, "RESULT_ID_CONFLICT",
-                    "A different result was already submitted for this job.");
-        }
-        requireActiveWorkerLease(job, workerId, leaseTokenHash);
-
-        Recording recording = recordingMapper.findById(job.getRecordingId());
-        if (recording == null) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
-                    "Recording analysis target was not found.");
-        }
-        Camera camera = cameraMapper.findById(recording.getCameraId()).orElseThrow(() ->
-                new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "BUSINESS_RULE_VIOLATION",
-                        "Recording camera was not found."));
-        MediaServerPrincipal sourcePrincipal = new MediaServerPrincipal(
-                camera.mediaServerId(), camera.cameraCode());
-
-        List<CandidateEventCreateRequest> events = new ArrayList<>();
-        for (int index = 0; index < request.candidates().size(); index++) {
-            events.add(toEvent(job, camera, request.candidates().get(index), attempt, index));
-        }
-        List<Long> candidateIds = events.isEmpty()
-                ? List.of()
-                : candidateService.createRecordingAnalysisBatch(
-                        sourcePrincipal, events, camera.id(), jobId, recording.getId());
-
-        RecordingAnalysisResult result = new RecordingAnalysisResult();
-        result.setJobId(jobId);
-        result.setAttempt(attempt);
-        result.setResultId(request.resultId());
-        result.setPayloadHash(resultDigest);
-        result.setStatus("SUCCEEDED");
-        result.setCandidateCount(request.candidates().size());
-        resultMapper.insert(result);
-        if (jobMapper.complete(
-                jobId,
-                workerId,
-                leaseTokenHash,
-                modelKey,
-                resultPayload,
-                resultDigest) != 1) {
-            throw new ApiException(HttpStatus.CONFLICT, "AI_WORKER_LEASE_CONFLICT",
-                    "The AI Worker lease changed before completion.");
-        }
-        job.setStatus("SUCCEEDED");
-        job.setCompletedAt(Instant.now());
-        auditService.recordRequired(
-                "AI_WORKER_RECORDING_ANALYSIS_SUCCEEDED", null, job.getCaseId(), "ANALYSIS_JOB", jobId,
-                Map.of("workerId", workerId, "modelKey", modelKey,
-                        "candidateCount", request.candidates().size()));
         return new RecordingAnalysisBatchResultResponse(
                 jobId, request.resultId(), job.getStatus(), request.candidates().size(),
                 List.copyOf(candidateIds), false, job.getCompletedAt());
@@ -330,24 +212,30 @@ public class RecordingAnalysisBatchResultService {
         }
     }
 
-    private void requireActiveWorkerLease(AnalysisJob job, String workerId, String leaseTokenHash) {
-        if (!"RUNNING".equals(job.getStatus())
-                || !Objects.equals(workerId, job.getClaimedBy())
-                || !Objects.equals(leaseTokenHash, job.getLeaseTokenHash())
-                || job.getClaimExpiresAt() == null
-                || !job.getClaimExpiresAt().isAfter(Instant.now())) {
-            throw new ApiException(HttpStatus.CONFLICT, "AI_WORKER_LEASE_CONFLICT",
-                    "The AI Worker lease is missing, expired, or owned by another worker.");
-        }
-    }
-
     private String payloadHash(RecordingAnalysisBatchResultRequest request) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(
-                    request.toString().getBytes(StandardCharsets.UTF_8)));
+            StringBuilder canonical = new StringBuilder();
+            appendField(canonical, request.resultId());
+            for (RecordingAnalysisBatchResultRequest.Candidate candidate : request.candidates()) {
+                appendField(canonical, candidate.trackId());
+                appendField(canonical, candidate.detectedAt().toInstant().toString());
+                appendField(canonical, candidate.similarity().stripTrailingZeros().toPlainString());
+                appendField(canonical, candidate.frameObjectKey());
+                appendField(canonical, candidate.cropObjectKey());
+                appendField(canonical, candidate.boundingBox().x());
+                appendField(canonical, candidate.boundingBox().y());
+                appendField(canonical, candidate.boundingBox().width());
+                appendField(canonical, candidate.boundingBox().height());
+            }
+            return HexFormat.of().formatHex(digest.digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
+    }
+
+    private void appendField(StringBuilder canonical, Object value) {
+        String text = String.valueOf(value);
+        canonical.append(text.length()).append(':').append(text).append(';');
     }
 }

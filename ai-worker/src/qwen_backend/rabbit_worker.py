@@ -25,7 +25,7 @@ class RabbitDelivery(Protocol):
 
 
 class RabbitJobProcessor:
-    """Maps one broker delivery to exactly one central-server job claim."""
+    """Keep one RabbitMQ delivery unacknowledged until a terminal callback succeeds."""
 
     def __init__(self, worker: NotebookWorker) -> None:
         self._worker = worker
@@ -38,35 +38,46 @@ class RabbitJobProcessor:
         try:
             event = RabbitWorkerJobEvent.model_validate_json(delivery.body)
         except ValidationError:
-            logger.exception("rejecting malformed AI Worker RabbitMQ message")
+            logger.exception("rejecting malformed recording-analysis RabbitMQ message")
             await delivery.reject(requeue=False)
             return False
 
         try:
-            claim = await client.claim_job(event.job_id, self._worker.settings.model_key)
+            claim = await client.claim_job(event.job_id)
         except CentralWorkerError:
-            logger.exception("central job claim failed; requeueing job_id=%d", event.job_id)
+            logger.exception("central claim failed; requeueing job_id=%d", event.job_id)
             await delivery.reject(requeue=True)
             return False
 
-        if claim.job is None:
-            await delivery.ack()
-            logger.info("acknowledged stale AI Worker job message job_id=%d", event.job_id)
+        if claim.job_id != event.job_id:
+            logger.error(
+                "claim/event job mismatch claim_job_id=%d event_job_id=%d",
+                claim.job_id,
+                event.job_id,
+            )
+            await delivery.reject(requeue=False)
             return False
-        if claim.job.job_id != event.job_id:
-            raise RuntimeError("central claim returned a different job than the broker event")
-        # The lease has been persisted before the delivery is acknowledged.
-        # If the notebook dies after this point, lease recovery emits a new
-        # outbox event instead of allowing this message to be processed twice.
+        if claim.duplicate:
+            logger.info("acknowledged already-claimed recording job job_id=%d", event.job_id)
+            await delivery.ack()
+            return False
+
+        processed = await self._worker.process_claim(client, claim)
+        if not processed:
+            logger.warning("terminal callback not confirmed; requeueing job_id=%d", event.job_id)
+            await delivery.reject(requeue=True)
+            return False
         await delivery.ack()
-        return await self._worker.process_claim(client, claim)
+        return True
 
 
 class RabbitRecordingWorker:
     def __init__(self, worker: NotebookWorker) -> None:
         rabbitmq_url = worker.settings.rabbitmq_url
         if rabbitmq_url is None:
-            raise ValueError("RabbitMQ worker requires EYESONU_AI_WORKER_RABBITMQ_URL")
+            raise ValueError(
+                "RabbitMQ worker requires EYESONU_AI_WORKER_RABBITMQ_URL or RABBITMQ_URL"
+            )
         self._worker = worker
         self._rabbitmq_url = rabbitmq_url.get_secret_value()
         self._processor = RabbitJobProcessor(worker)

@@ -22,11 +22,11 @@ import jakarta.annotation.PreDestroy;
 @Component
 public class RecordingAnalysisJobPublisher implements AutoCloseable {
 
-    public static final String EVENT_TYPE = "AI_WORKER_RECORDING_ANALYSIS_REQUESTED";
-    public static final String QUEUE = "ai.worker.recording-analysis.v1";
-    public static final String ROUTING_KEY = "recording.analysis.requested";
-    public static final String EXCHANGE = "ai.worker.analysis.v1";
-    public static final String DEAD_LETTER_EXCHANGE = "ai.worker.analysis.dlx";
+    public static final String EVENT_TYPE = "RECORDING_ANALYSIS_JOB_CREATED";
+    public static final String QUEUE = "search.target.recording.queue";
+    public static final String ROUTING_KEY = "search.target.recording.created";
+    public static final String EXCHANGE = "search.target.exchange";
+    public static final String DEAD_LETTER_EXCHANGE = "search.target.dlx";
     public static final String DEAD_LETTER_QUEUE = QUEUE + ".dlq";
     public static final String DEAD_LETTER_ROUTING_KEY = ROUTING_KEY + ".dlq";
     private static final long CONFIRM_TIMEOUT_SECONDS = 5L;
@@ -102,12 +102,10 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
                     outbox, claimed.claimToken(), leaseOwned);
             try {
                 RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                        RecordingAnalysisJobEvent.SCHEMA_VERSION,
-                        outbox.getCommandId(),
-                        outbox.getJobId(),
-                        outbox.getCaseId(),
-                        outbox.getAttempt(),
-                        outbox.getOccurredAt());
+                        outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
+                        outbox.getCaseId(), outbox.getRecordingId(), outbox.getCameraId(),
+                        outbox.getCameraCode(), outbox.getCameraName(), outbox.getRecordingObjectKey(),
+                        outbox.getAttempt(), outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());
                 ensureLeaseOwned(leaseOwned);
                 rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY, event, message -> {

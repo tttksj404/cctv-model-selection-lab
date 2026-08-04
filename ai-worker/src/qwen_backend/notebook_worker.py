@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 import anyio
 from anyio.to_thread import run_sync
 from dotenv import find_dotenv, load_dotenv
-from pydantic import Field, SecretStr, field_validator
+from pydantic import AliasChoices, Field, SecretStr, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from qwen_backend.candidate_runtime import (
@@ -23,54 +23,70 @@ from qwen_backend.candidate_runtime import (
 from qwen_backend.central_client import CentralWorkerClient, CentralWorkerError
 from qwen_backend.solider_clip_engine import create_engine
 from qwen_backend.worker_protocol import (
-    WorkerClaimResponse,
-    WorkerEvidenceUpload,
-    WorkerJob,
-    WorkerResult,
-    worker_result_from_runtime,
+    RecordingAnalysisClaim,
+    RecordingAnalysisEvidenceUpload,
+    RecordingAnalysisResult,
+    RecordingAnalysisTarget,
+    failure_result_id,
+    result_from_runtime,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class NotebookWorkerSettings(BaseSettings):
+    """Notebook-local configuration for a RabbitMQ-driven recording worker."""
+
     model_config = SettingsConfigDict(
         env_prefix="EYESONU_AI_WORKER_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
-    central_api_url: str = Field(min_length=1)
-    api_key: SecretStr = Field(min_length=1)
+    central_api_url: str = Field(
+        min_length=1,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_CENTRAL_API_URL",
+            "CENTRAL_API_BASE_URL",
+        ),
+    )
+    api_key: SecretStr = Field(
+        min_length=1,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_API_KEY",
+            "CENTRAL_API_WORKER_KEY",
+        ),
+    )
     worker_id: str = Field(
         default_factory=lambda: f"notebook-{socket.gethostname()}",
         min_length=1,
         max_length=100,
     )
     model_key: str = Field(default="hybrid-solider-clip-v1", min_length=1, max_length=100)
-    poll_interval_seconds: float = Field(default=2.0, gt=0.1, le=60.0)
     heartbeat_interval_seconds: float = Field(default=20.0, gt=0.5, le=300.0)
-    rabbitmq_url: SecretStr | None = None
-    rabbitmq_queue: str = Field(
-        default="ai.worker.recording-analysis.v1",
-        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
+    rabbitmq_url: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_RABBITMQ_URL",
+            "RABBITMQ_URL",
+        ),
     )
-    # One GPU worker must hold at most one unacknowledged analysis job. This
-    # keeps the lease, local CUDA memory, and RabbitMQ acknowledgement model
-    # aligned even when an environment file is edited manually.
+    rabbitmq_queue: str = Field(
+        default="search.target.recording.queue",
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_RABBITMQ_QUEUE",
+            "RABBITMQ_QUEUE",
+        ),
+    )
     rabbitmq_prefetch_count: int = Field(default=1, ge=1, le=1)
     rabbitmq_reconnect_delay_seconds: float = Field(default=5.0, gt=0.1, le=300.0)
     cache_dir: Path = Path("artifacts/ai-worker/cache")
     output_dir: Path = Path("artifacts/ai-worker/jobs")
     max_download_bytes: int = Field(default=5 * 1024 * 1024 * 1024, gt=0, le=50 * 1024**3)
-    max_reference_download_bytes: int = Field(
-        default=50 * 1024 * 1024,
-        gt=0,
-        le=1024 * 1024 * 1024,
-    )
     max_evidence_upload_bytes: int = Field(default=10 * 1024 * 1024, gt=0, le=100 * 1024 * 1024)
-    once: bool = False
 
     @field_validator("central_api_url")
     @classmethod
@@ -116,7 +132,7 @@ class NotebookWorkerSettings(BaseSettings):
 
 
 class LeaseLostError(RuntimeError):
-    pass
+    """The central server no longer accepts this worker's terminal callback."""
 
 
 class NotebookWorker:
@@ -126,74 +142,50 @@ class NotebookWorker:
         *,
         engine_factory: Callable[[], CandidateRuntimeEngine] = create_engine,
     ) -> None:
-        # CandidateRuntimeEngine reads QWEN_CANDIDATE_* from os.environ.
-        # pydantic-settings parses .env without mutating os.environ, so load it
-        # before the lazy engine factory is first called.
+        # CandidateRuntimeEngine reads QWEN_CANDIDATE_* from os.environ. Settings
+        # parsing does not populate os.environ, so dotenv must precede lazy engine creation.
         load_dotenv(find_dotenv(usecwd=True), override=False)
-        if settings.heartbeat_interval_seconds >= settings.poll_interval_seconds * 100:
-            logger.info(
-                "worker heartbeat interval is long compared with polling interval; "
-                "central lease still controls validity"
-            )
         self.settings = settings
         self._engine_factory = engine_factory
         self._engine: CandidateRuntimeEngine | None = None
 
     async def run_forever(self) -> None:
-        if self.settings.rabbitmq_url is not None:
-            from qwen_backend.rabbit_worker import RabbitRecordingWorker
+        """Consume the central server's recording-analysis queue until interrupted."""
 
-            await RabbitRecordingWorker(self).run_forever()
-            return
-        async with CentralWorkerClient(
-            base_url=self.settings.central_api_url,
-            api_key=self.settings.api_key.get_secret_value(),
-            worker_id=self.settings.worker_id,
-        ) as client:
-            while True:
-                try:
-                    claimed = await self._run_once(client)
-                except CentralWorkerError:
-                    logger.exception("central worker polling failed")
-                    claimed = False
-                if not claimed:
-                    await anyio.sleep(self.settings.poll_interval_seconds)
+        from qwen_backend.rabbit_worker import RabbitRecordingWorker
+
+        await RabbitRecordingWorker(self).run_forever()
 
     async def run_once(self) -> bool:
-        if self.settings.rabbitmq_url is not None:
-            from qwen_backend.rabbit_worker import RabbitRecordingWorker
+        """Process at most one RabbitMQ delivery for local smoke testing."""
 
-            return await RabbitRecordingWorker(self).run_once()
-        async with CentralWorkerClient(
-            base_url=self.settings.central_api_url,
-            api_key=self.settings.api_key.get_secret_value(),
-            worker_id=self.settings.worker_id,
-        ) as client:
-            return await self._run_once(client)
+        from qwen_backend.rabbit_worker import RabbitRecordingWorker
 
-    async def _run_once(self, client: CentralWorkerClient) -> bool:
-        claim = await client.claim(self.settings.model_key)
-        return await self.process_claim(client, claim)
+        return await RabbitRecordingWorker(self).run_once()
 
     async def process_claim(
         self,
         client: CentralWorkerClient,
-        claim: WorkerClaimResponse,
+        claim: RecordingAnalysisClaim,
     ) -> bool:
-        if claim.job is None:
-            return False
-        if claim.lease_token is None:
-            raise RuntimeError("central claim response omitted lease token")
-        job = claim.job
-        logger.info("claimed AI Worker job job_id=%d recording_id=%d", job.job_id, job.recording_id)
+        """Run one claimed recording job and confirm one terminal server callback."""
+
+        if claim.duplicate:
+            logger.info("central claim is already owned job_id=%d", claim.job_id)
+            return True
+        lease_token = claim.lease_token
+        if lease_token is None:
+            raise ValueError("non-duplicate central claim omitted leaseToken")
         try:
-            result = await self._process_job(client, claim)
+            target = await client.fetch_target(claim.job_id, lease_token)
+            if target.attempt != claim.attempt:
+                raise CentralWorkerError("central target attempt does not match claimed attempt")
+            result = await self._process_target(client, target, lease_token)
         except LeaseLostError:
             logger.error(
-                "AI Worker lease was lost; result was not acknowledged job_id=%d",
-                job.job_id,
+                "worker lease was lost; terminal callback was not sent job_id=%d", claim.job_id
             )
-            return True
+            return False
         except (
             CentralWorkerError,
             FileNotFoundError,
@@ -202,159 +194,224 @@ class NotebookWorker:
             RuntimeError,
             ValueError,
         ) as exception:
-            retryable = isinstance(exception, (CentralWorkerError, FileNotFoundError, OSError))
-            logger.exception("AI Worker job failed job_id=%d retryable=%s", job.job_id, retryable)
-            try:
-                await client.fail(
-                    job.job_id,
-                    claim.lease_token,
-                    error_code=type(exception).__name__,
-                    error_message=" ".join(str(exception).split()) or type(exception).__name__,
-                    retryable=retryable,
+            if isinstance(exception, CentralWorkerError) and exception.is_lease_conflict:
+                logger.warning(
+                    "worker lease conflict before failure callback job_id=%d", claim.job_id
                 )
-            except CentralWorkerError:
-                logger.exception("AI Worker failure could not be reported job_id=%d", job.job_id)
-            return True
+                return False
+            return await self._report_failure(client, claim, lease_token, exception)
 
-        await client.complete(job.job_id, claim.lease_token, result)
+        try:
+            await client.complete(claim.job_id, lease_token, result)
+        except CentralWorkerError as exception:
+            if exception.is_lease_conflict:
+                logger.warning("worker lease conflict on completion job_id=%d", claim.job_id)
+            else:
+                logger.exception("central completion was not confirmed job_id=%d", claim.job_id)
+            return False
         logger.info(
             "AI Worker job completed job_id=%d candidates=%d",
-            job.job_id,
+            claim.job_id,
             len(result.candidates),
         )
         return True
 
-    async def _process_job(
+    async def _report_failure(
         self,
         client: CentralWorkerClient,
-        claim: WorkerClaimResponse,
-    ) -> WorkerResult:
-        job = claim.job
-        lease_token = claim.lease_token
-        if job is None or lease_token is None:
-            raise RuntimeError("central claim response was incomplete")
-        self.settings.cache_dir.mkdir(parents=True, exist_ok=True)
-        job_output_dir = self.settings.output_dir / f"job-{job.job_id}"
-        job_output_dir.mkdir(parents=True, exist_ok=True)
-        video_path = await client.download(
-            job.video_url,
-            self.settings.cache_dir / f"job-{job.job_id}.mp4",
-            max_bytes=self.settings.max_download_bytes,
-        )
-        reference_path: Path | None = None
-        if job.reference_url is not None:
-            reference_path = await client.download(
-                job.reference_url,
-                self.settings.cache_dir / f"job-{job.job_id}-reference.jpg",
-                max_bytes=self.settings.max_reference_download_bytes,
+        claim: RecordingAnalysisClaim,
+        lease_token: str,
+        exception: CentralWorkerError
+        | FileNotFoundError
+        | ImportError
+        | OSError
+        | RuntimeError
+        | ValueError,
+    ) -> bool:
+        logger.exception("AI Worker job failed job_id=%d", claim.job_id)
+        try:
+            await client.fail(
+                claim.job_id,
+                lease_token,
+                result_id=failure_result_id(
+                    worker_id=self.settings.worker_id,
+                    job_id=claim.job_id,
+                    attempt=claim.attempt,
+                ),
+                error_code=type(exception).__name__,
+                error_message=" ".join(str(exception).split()) or type(exception).__name__,
             )
-        request = CandidateRuntimeRequest(
-            model_key=job.model_key,
-            job_id=job.job_id,
-            case_id=job.case_id,
-            search_condition_id=job.search_condition_id,
-            recording_id=job.recording_id,
-            camera_id=job.camera_id,
-            camera_name=job.camera_name,
-            camera_address=job.camera_address,
-            video_path=video_path,
-            reference_path=reference_path,
-            output_dir=job_output_dir,
-            prompt=job.prompt,
-            exclusion_prompt=job.exclusion_prompt,
-            similarity_threshold=job.similarity_threshold,
-            search_from_ms=job.search_from_ms,
-            search_to_ms=job.search_to_ms,
-        )
-        started = time.perf_counter()
+        except CentralWorkerError as callback_error:
+            if callback_error.is_lease_conflict:
+                logger.warning(
+                    "worker lease conflict while reporting failure job_id=%d", claim.job_id
+                )
+            else:
+                logger.exception("central failure was not confirmed job_id=%d", claim.job_id)
+            return False
+        return True
+
+    async def _process_target(
+        self,
+        client: CentralWorkerClient,
+        target: RecordingAnalysisTarget,
+        lease_token: str,
+    ) -> RecordingAnalysisResult:
+        self.settings.cache_dir.mkdir(parents=True, exist_ok=True)
+        job_output_dir = self.settings.output_dir / f"job-{target.job_id}-attempt-{target.attempt}"
+        job_output_dir.mkdir(parents=True, exist_ok=True)
         stop_heartbeat = anyio.Event()
         lease_lost = anyio.Event()
         runtime_response: CandidateRuntimeResponse | None = None
-        evidence_by_candidate_key: dict[str, WorkerEvidenceUpload] = {}
-        elapsed_ms = 0
+        evidence_by_track_id: dict[str, RecordingAnalysisEvidenceUpload] = {}
+        started = time.perf_counter()
         async with anyio.create_task_group() as task_group:
             task_group.start_soon(
                 self._heartbeat_loop,
                 client,
-                job,
+                target.job_id,
                 lease_token,
                 stop_heartbeat,
                 lease_lost,
             )
-            runtime_response = await run_sync(
-                self._run_local_runtime,
-                request,
-                abandon_on_cancel=False,
-            )
-            elapsed_ms = round((time.perf_counter() - started) * 1_000)
-            evidence_by_candidate_key = await self._upload_candidate_evidence(
-                client,
-                job,
-                lease_token,
-                runtime_response,
-            )
-            stop_heartbeat.set()
-            task_group.cancel_scope.cancel()
-        if lease_lost.is_set():
-            raise LeaseLostError(f"lease lost for job {job.job_id}")
+            try:
+                target, video_path = await self._download_target_recording(
+                    client,
+                    target,
+                    lease_token,
+                )
+                self._raise_if_lease_lost(lease_lost, target.job_id)
+                request = CandidateRuntimeRequest(
+                    model_key=self.settings.model_key,
+                    job_id=target.job_id,
+                    case_id=target.case_id,
+                    search_condition_id=target.search_condition_id,
+                    recording_id=target.recording_id,
+                    camera_id=target.camera_id,
+                    camera_name=target.camera_name,
+                    camera_address=target.camera_code,
+                    video_path=video_path,
+                    reference_path=None,
+                    output_dir=job_output_dir,
+                    prompt=target.prompt,
+                    exclusion_prompt=target.exclusion_prompt,
+                    similarity_threshold=None,
+                    search_from_ms=target.search_from_ms,
+                    search_to_ms=target.search_to_ms,
+                )
+                runtime_response = await run_sync(
+                    self._run_local_runtime,
+                    request,
+                    abandon_on_cancel=False,
+                )
+                self._raise_if_lease_lost(lease_lost, target.job_id)
+                evidence_by_track_id = await self._upload_candidate_evidence(
+                    client,
+                    target,
+                    lease_token,
+                    runtime_response,
+                )
+                self._raise_if_lease_lost(lease_lost, target.job_id)
+            finally:
+                stop_heartbeat.set()
+        self._raise_if_lease_lost(lease_lost, target.job_id)
         if runtime_response is None:
             raise RuntimeError("local inference did not return a response")
-        return worker_result_from_runtime(
+        elapsed_ms = round((time.perf_counter() - started) * 1_000)
+        logger.info("local inference finished job_id=%d elapsed_ms=%d", target.job_id, elapsed_ms)
+        return result_from_runtime(
             runtime_response,
-            elapsed_ms,
-            evidence_by_candidate_key,
+            target,
+            worker_id=self.settings.worker_id,
+            evidence_by_track_id=evidence_by_track_id,
         )
 
     async def _upload_candidate_evidence(
         self,
         client: CentralWorkerClient,
-        job: WorkerJob,
+        target: RecordingAnalysisTarget,
         lease_token: str,
         runtime_response: CandidateRuntimeResponse,
-    ) -> dict[str, WorkerEvidenceUpload]:
+    ) -> dict[str, RecordingAnalysisEvidenceUpload]:
         if not runtime_response.candidates:
             return {}
         uploads = await client.create_evidence_upload_urls(
-            job.job_id,
+            target.job_id,
             lease_token,
             runtime_response.candidates,
         )
-        if set(uploads) != {candidate.candidate_key for candidate in runtime_response.candidates}:
+        expected_track_ids = {candidate.candidate_key for candidate in runtime_response.candidates}
+        if set(uploads) != expected_track_ids:
             raise CentralWorkerError("central evidence response did not match runtime candidates")
         for candidate in runtime_response.candidates:
             upload = uploads[candidate.candidate_key]
             await client.upload_image(
-                upload.frame_upload_url,
+                upload.frame.upload_url,
                 candidate.frame_path,
-                content_type="image/jpeg",
+                content_type=upload.frame.content_type,
                 max_bytes=self.settings.max_evidence_upload_bytes,
             )
             await client.upload_image(
-                upload.crop_upload_url,
+                upload.crop.upload_url,
                 candidate.crop_path,
-                content_type="image/jpeg",
+                content_type=upload.crop.content_type,
                 max_bytes=self.settings.max_evidence_upload_bytes,
             )
         return uploads
 
+    async def _download_target_recording(
+        self,
+        client: CentralWorkerClient,
+        target: RecordingAnalysisTarget,
+        lease_token: str,
+    ) -> tuple[RecordingAnalysisTarget, Path]:
+        """Download once, refreshing only an expired signed URL for the same claimed target."""
+
+        destination = self.settings.cache_dir / f"job-{target.job_id}-attempt-{target.attempt}.mp4"
+        try:
+            return target, await client.download(
+                target.recording_download_url,
+                destination,
+                max_bytes=self.settings.max_download_bytes,
+            )
+        except CentralWorkerError as exception:
+            if exception.status_code not in {401, 403}:
+                raise
+
+            refreshed_target = await client.fetch_target(target.job_id, lease_token)
+            if (
+                refreshed_target.job_id != target.job_id
+                or refreshed_target.attempt != target.attempt
+                or refreshed_target.case_id != target.case_id
+                or refreshed_target.recording_id != target.recording_id
+            ):
+                raise CentralWorkerError(
+                    "refreshed target no longer matches the claimed recording job"
+                ) from exception
+            return refreshed_target, await client.download(
+                refreshed_target.recording_download_url,
+                destination,
+                max_bytes=self.settings.max_download_bytes,
+            )
+
     async def _heartbeat_loop(
         self,
         client: CentralWorkerClient,
-        job: WorkerJob,
+        job_id: int,
         lease_token: str,
         stop: anyio.Event,
         lease_lost: anyio.Event,
     ) -> None:
-        while True:
+        while not stop.is_set():
             with anyio.move_on_after(self.settings.heartbeat_interval_seconds) as scope:
                 await stop.wait()
             if not scope.cancel_called:
                 return
             try:
-                await client.heartbeat(job.job_id, lease_token)
+                await client.heartbeat(job_id, lease_token)
             except CentralWorkerError:
                 lease_lost.set()
-                logger.exception("AI Worker heartbeat failed job_id=%d", job.job_id)
+                logger.exception("AI Worker heartbeat failed job_id=%d", job_id)
                 return
 
     def _run_local_runtime(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
@@ -363,12 +420,24 @@ class NotebookWorker:
         serialized = run_runtime(request.model_dump_json(by_alias=True), self._engine)
         return CandidateRuntimeResponse.model_validate_json(serialized)
 
+    @staticmethod
+    def _raise_if_lease_lost(lease_lost: anyio.Event, job_id: int) -> None:
+        if lease_lost.is_set():
+            raise LeaseLostError(f"lease lost for job {job_id}")
+
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run the notebook-hosted EyesOnU AI Worker against the central server."
     )
-    parser.add_argument("--once", action="store_true", help="Claim at most one job and exit.")
+    parser.add_argument(
+        "--once", action="store_true", help="Consume at most one RabbitMQ job and exit."
+    )
+    parser.add_argument(
+        "--env-file",
+        type=Path,
+        help="Optional dotenv file to load before worker settings and model initialization.",
+    )
     parser.add_argument(
         "--log-level",
         default="INFO",
@@ -377,20 +446,33 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _load_worker_env_file(env_file: Path | None) -> None:
+    if env_file is None:
+        return
+    if not env_file.is_file():
+        raise ValueError(f"AI Worker environment file does not exist: {env_file}")
+    load_dotenv(env_file, override=False)
+
+
 def main() -> int:
     args = _parser().parse_args()
     logging.basicConfig(
         level=getattr(logging, args.log_level),
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
-    settings = NotebookWorkerSettings()  # pyright: ignore[reportCallIssue]
     try:
+        _load_worker_env_file(args.env_file)
+        settings = NotebookWorkerSettings()  # pyright: ignore[reportCallIssue]
+        worker = NotebookWorker(settings)
         if args.once:
-            anyio.run(NotebookWorker(settings).run_once)
+            anyio.run(worker.run_once)
         else:
-            anyio.run(NotebookWorker(settings).run_forever)
+            anyio.run(worker.run_forever)
     except KeyboardInterrupt:
         logger.info("AI Worker stopped by operator")
+    except (OSError, ValidationError, ValueError) as exception:
+        logger.error("AI Worker startup failed: %s", exception)
+        return 2
     return 0
 
 
