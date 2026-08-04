@@ -11,9 +11,11 @@ email="$2"
 shift 2
 
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-cert_dir="$repo_root/infra/certbot/conf"
+runtime_root="${DEPLOY_RUNTIME_ROOT:-$repo_root/infra}"
+cert_dir="$runtime_root/certbot/conf"
+webroot_dir="$runtime_root/certbot/www"
 
-mkdir -p "$cert_dir"
+mkdir -p "$cert_dir" "$webroot_dir"
 
 domains="-d $primary_domain"
 for domain in "$@"; do

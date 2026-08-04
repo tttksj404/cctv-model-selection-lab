@@ -58,10 +58,12 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/snippets:/etc/nginx/snippets:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
+      # Nginx is shared by dev and master. Its configuration and certificate
+      # state are host-runtime inputs, never profile-release bind mounts.
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for shared Nginx runtime}/nginx/snippets:/etc/nginx/snippets:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/www:/var/www/certbot:ro
+      - ${DEPLOY_RUNTIME_ROOT:?Set DEPLOY_RUNTIME_ROOT for certificate storage}/certbot/conf:/etc/letsencrypt:ro
     networks:
       - dev
       - prod
