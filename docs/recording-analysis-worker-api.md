@@ -19,8 +19,6 @@
   "cameraCode": "CAM-003",
   "cameraName": "??",
   "recordingObjectKey": "recordings/CAM-003/2026/08/03/video.mp4",
-  "prompt": "a man wearing a black short sleeve top and black pants",
-  "exclusionPrompt": null,
   "searchStart": "2026-08-03T00:00:00Z",
   "searchEnd": "2026-08-03T00:30:00Z",
   "searchArea": "??? ???",
