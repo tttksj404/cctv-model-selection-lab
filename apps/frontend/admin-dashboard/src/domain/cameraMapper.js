@@ -42,12 +42,5 @@ export function buildCameraPlaybackUrl(cameraCode, baseUrl) {
     ?.replace(/\/+$/, "");
   if (!configuredBaseUrl) throw new TypeError("미디어 스트림 기본 URL이 필요합니다.");
 
-  const query = new URLSearchParams({
-    controls: "false",
-    muted: "true",
-    autoplay: "true",
-    playsinline: "true",
-    disablepictureinpicture: "true"
-  });
-  return `${configuredBaseUrl}/${encodeURIComponent(normalizedCode)}?${query}`;
+  return `${configuredBaseUrl}/${encodeURIComponent(normalizedCode)}/index.m3u8`;
 }
