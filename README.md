@@ -155,6 +155,15 @@ Extension Pack for Java에 Lombok 지원이 포함되어 있으므로 별도의 
 
 Docker 인프라가 실행 중인지 확인한 후 `F5`를 누르거나 Spring Boot Dashboard에서 애플리케이션을 실행합니다.
 
+### 미디어 서버 녹화 업로드
+
+- 미디어 서버는 `X-Device-Key`와 canonical UUID `Idempotency-Key`로 `/api/v1/device/cameras/camera-01/recording-upload-urls`를 호출해 15분짜리 단일 PUT URL과 서버 생성 object key를 발급받습니다.
+- 배포 환경에서는 응답의 공용 HTTPS storage URL에 `Content-Type: video/mp4`로 녹화본을 PUT한 뒤, 같은 UUID·촬영 시간·object key로 `/api/v1/device/cameras/camera-01/recordings`를 호출해 완료 등록합니다.
+- 녹화본 제한은 `104857600`바이트(100 MiB)입니다. URL이 만료되거나 PUT이 실패하면 최초 요청과 동일한 UUID, `startTime`, `endTime`으로 URL을 재발급받아 전체 파일을 다시 업로드합니다. 완료 등록 후에는 아직 만료되지 않은 기존 URL도 폐기하고 다시 PUT하지 않습니다.
+- `MINIO_APP_ACCESS_KEY`와 `MINIO_APP_SECRET_KEY`는 백엔드가 MinIO를 관리하고 URL을 서명하기 위한 값입니다. Raspberry Pi 5 등 미디어 서버에 배포하지 않으며, Tailscale은 dev HLS 연결에만 사용합니다.
+
+전체 요청·응답과 운영 규칙은 [REST API 명세서](<./docs/API 명세서.md>)와 [미디어 서버 Device Key 운영](<./docs/미디어서버 Device Key 운영.md>)을 따릅니다.
+
 ### 관리자 세션 인증
 
 - 최초 실행 시 `infra/.env`의 `ADMIN_BOOTSTRAP_*` 값으로 `SUPER_ADMIN` 계정 하나를 생성합니다. 이미 관리자가 있으면 이 값으로 계정을 덮어쓰지 않습니다.

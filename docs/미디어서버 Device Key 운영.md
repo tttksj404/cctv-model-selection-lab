@@ -76,7 +76,7 @@ Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배�
 
 ```bash
 curl --fail-with-body --request POST \
-  "${CENTRAL_API_BASE_URL}/api/v1/device/cameras/CAM-001/heartbeat" \
+  "${CENTRAL_API_BASE_URL}/api/v1/device/cameras/camera-01/heartbeat" \
   --header "X-Device-Key: <REDACTED_DEVICE_KEY>" \
   --header "Content-Type: application/json" \
   --data '{"occurredAt":"2026-07-20T02:00:00Z","status":"ONLINE","detail":null}'
@@ -87,25 +87,30 @@ curl --fail-with-body --request POST \
 ```sql
 SELECT id, camera_code, status, last_heartbeat, updated_at
 FROM cameras
-WHERE camera_code = 'CAM-001';
+WHERE camera_code = 'camera-01';
 ```
 
-- 잘못된 Device Key 또는 누락된 Key: `401` (`INVALID_DEVICE_KEY`)
+- Device Key 누락: `401` (`AUTHENTICATION_REQUIRED`)
+- Device Key 형식·keyId·secret 오류 또는 비활성화된 키: `401` (`INVALID_DEVICE_KEY`)
 - 인증된 미디어 서버에 속하지 않는 카메라: `403` (`ACCESS_DENIED`)
 - 존재하지 않는 카메라: `404` (`RESOURCE_NOT_FOUND`)
 - Heartbeat 발신을 중단한 뒤 30초 timeout과 다음 상태 확인 주기를 기다리면 `status = 'OFFLINE'`으로 전환된다. `last_heartbeat`는 변경되지 않는다.
 
-### 녹화 메타데이터 등록 순서
+### 녹화 업로드와 메타데이터 등록 순서
 
-dev Tailscale 구성이 구현된 뒤 Raspberry Pi 5 업로더는 [dev Tailscale 연동 운영](<./Tailscale 연동 운영.md>)에 정의된 tailnet MinIO endpoint를 장치 업로드 전용으로 사용한다. 현재 `dev` 저장소에는 해당 Tailscale·MinIO 노출 구성이 적용되어 있지 않다. 적용 후에도 이 주소는 브라우저에 반환하지 않으며, 녹화 객체 업로드 후 메타데이터 등록은 기존 공용 HTTPS Device API로 수행한다.
+미디어 서버는 MinIO endpoint·bucket·app access key·app secret key나 Tailscale MinIO 주소를 보관하지 않는다. 배포 환경에서는 공용 HTTPS Device API로 업로드 URL을 발급받고, 응답의 공용 HTTPS `uploadUrl`에만 녹화본을 업로드한다. Tailscale은 dev 실시간 HLS 연결에만 사용한다.
 
-1. 미디어 서버가 `recordings/{cameraCode}/.../*.mp4` 키와 소문자 `.mp4` 확장자로 녹화 파일을 MinIO에 업로드한다.
-2. 업로드 성공 응답을 받은 뒤 `POST /api/v1/device/cameras/{cameraCode}/recordings`를 `X-Device-Key`와 `Idempotency-Key` 헤더로 호출한다.
-3. 촬영 시각은 UTC offset을 포함한 RFC 3339 형식과 최대 6자리 소수 초로 전송한다. local/test의 녹화 객체 제한은 5 GiB이며 prod에서는 `RECORDING_MAX_FILE_SIZE_BYTES`를 반드시 지정한다.
-4. 중앙 서버는 같은 버킷의 객체를 HEAD/stat으로 확인하고 실제 파일 크기로 메타데이터를 등록한다.
+1. 녹화를 마치면 canonical UUID를 `Idempotency-Key`로 생성하고 `POST /api/v1/device/cameras/camera-01/recording-upload-urls`를 호출한다. 요청 본문에는 UTC offset을 포함한 RFC 3339 `startTime`·`endTime`을 최대 6자리 소수 초로 보낸다.
+2. 중앙 서버는 `recordings/camera-01/yyyy/MM/dd/yyyyMMddTHHmmssSSSSSSZ_{uuid}.mp4` 형식의 `objectKey`와 15분 동안 유효한 단일 PUT URL을 반환한다. 응답은 캐시하거나 로그에 기록하지 않는다.
+3. `uploadUrl`에 원본 MP4 바이트를 `Content-Type: video/mp4`로 PUT한다. 이 요청에는 `X-Device-Key`를 추가하지 않는다. URL 만료 또는 전송 실패 시 최초 요청과 동일한 UUID, `startTime`, `endTime`으로 URL을 다시 발급받아 파일 전체를 재전송한다.
+4. PUT 성공 후 `POST /api/v1/device/cameras/camera-01/recordings`에 같은 `Idempotency-Key`, `startTime`, `endTime`, 서버가 발급한 `objectKey`를 보내 완료를 등록한다.
+5. 중앙 서버는 예상 object key 일치 여부와 객체의 실제 크기, `video/mp4` Content-Type, ISO BMFF `ftyp` 시그니처를 검증한 뒤 실제 파일 크기로 메타데이터를 등록한다.
 
-등록 요청에는 `startTime`, `endTime`, `objectKey`만 포함하며 `fileSize`나 업로드 상태는 보내지 않는다. 객체가 없거나 사용할 수 없으면 녹화 리소스가 생성되지 않으므로 객체 저장소를 정상화한 뒤 같은 멱등 요청으로 재시도한다.
-Device 공통 rate limit은 별도 작업에서 확정하며 현재 녹화 등록 계약에는 `429` 응답을 포함하지 않는다.
+녹화본의 최대 크기는 모든 환경에서 `104857600`바이트(100 MiB)다. URL 발급 응답의 `maxFileSizeBytes`도 같은 값을 반환하지만 presigned PUT 자체가 크기를 제한하지는 않으므로 업로더가 PUT 전에 크기를 검사해야 한다. URL 발급 내역은 DB에 저장하지 않으므로 재발급 입력을 임의로 바꾸지 않는다. 이미 같은 UUID로 완료 등록한 녹화에는 새 URL을 발급하지 않으며 `409 RECORDING_ALREADY_REGISTERED`를 반환한다.
+
+완료 등록 성공 후에는 `uploadUrl`을 즉시 폐기하고 같은 object key에 다시 PUT하지 않는다. 완료 전에 발급된 URL은 등록 성공으로 취소되지 않으며 원래 만료 시각까지 유효하다.
+
+완료 요청에는 `startTime`, `endTime`, `objectKey`만 포함하며 `fileSize`나 업로드 상태는 보내지 않는다. 객체가 없거나 사용할 수 없으면 녹화 리소스가 생성되지 않으므로 객체 저장소를 정상화한 뒤 같은 멱등 요청으로 재시도한다. Device 공통 rate limit은 별도 작업에서 확정하며 현재 녹화 URL 발급·등록 계약에는 `429` 응답을 포함하지 않는다.
 
 ### 임시 연결 테스트 API
 

@@ -3,6 +3,7 @@ package com.ssafy.eyesonu.recording.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +72,8 @@ class RecordingRegistrationConcurrencyTests {
             assertFalse(TransactionSynchronizationManager.isActualTransactionActive());
             return new StorageObject(80L, "video/mp4");
         });
+        when(storageVerifier.readPrefix(anyString(), anyInt()))
+                .thenReturn(new byte[] {0, 0, 0, 12, 'f', 't', 'y', 'p', 'i', 's', 'o', 'm'});
     }
 
     @AfterEach
@@ -80,7 +83,7 @@ class RecordingRegistrationConcurrencyTests {
 
     @Test
     void sameKeyAndFingerprintCreateOnceAndReturnOneReplay() throws Exception {
-        RecordingCreateRequest request = request(CAMERA_A, "same.mp4", 0);
+        RecordingCreateRequest request = request(CAMERA_A, KEY_1, 0);
 
         List<Object> outcomes = concurrently(
                 () -> service.create(principal, CAMERA_A, KEY_1, request),
@@ -102,8 +105,8 @@ class RecordingRegistrationConcurrencyTests {
     @Test
     void sameKeyAndDifferentFingerprintReturnConflictAndRollbackLoser() throws Exception {
         List<Object> outcomes = concurrently(
-                () -> service.create(principal, CAMERA_A, KEY_1, request(CAMERA_A, "first.mp4", 0)),
-                () -> service.create(principal, CAMERA_B, KEY_1, request(CAMERA_B, "second.mp4", 60)));
+                () -> service.create(principal, CAMERA_A, KEY_1, request(CAMERA_A, KEY_1, 0)),
+                () -> service.create(principal, CAMERA_B, KEY_1, request(CAMERA_B, KEY_1, 60)));
 
         assertEquals(1, outcomes.stream().filter(RecordingCreateResult.class::isInstance).count());
         ApiException conflict = singleApiException(outcomes);
@@ -113,18 +116,14 @@ class RecordingRegistrationConcurrencyTests {
     }
 
     @Test
-    void differentKeysAndSameObjectReturnDuplicateResourceAndRollbackLoser() throws Exception {
-        RecordingCreateRequest request = request(CAMERA_A, "shared.mp4", 0);
-
+    void differentKeysCreateDifferentServerOwnedObjects() throws Exception {
         List<Object> outcomes = concurrently(
-                () -> service.create(principal, CAMERA_A, KEY_1, request),
-                () -> service.create(principal, CAMERA_A, KEY_2, request));
+                () -> service.create(principal, CAMERA_A, KEY_1, request(CAMERA_A, KEY_1, 0)),
+                () -> service.create(principal, CAMERA_A, KEY_2, request(CAMERA_A, KEY_2, 0)));
 
-        assertEquals(1, outcomes.stream().filter(RecordingCreateResult.class::isInstance).count());
-        ApiException conflict = singleApiException(outcomes);
-        assertEquals(409, conflict.getStatus().value());
-        assertEquals("DUPLICATE_RESOURCE", conflict.getCode());
-        assertDatabaseCounts(1, 1);
+        assertEquals(2, outcomes.stream().filter(RecordingCreateResult.class::isInstance).count(),
+                () -> "Unexpected outcomes: " + outcomes);
+        assertDatabaseCounts(2, 2);
     }
 
     private void insertCamera(long id, String code) {
@@ -136,13 +135,13 @@ class RecordingRegistrationConcurrencyTests {
                 """, id, MEDIA_SERVER_ID, code, code, "rtsp://" + code + "/stream");
     }
 
-    private RecordingCreateRequest request(String cameraCode, String fileName, long startOffsetSeconds) {
+    private RecordingCreateRequest request(String cameraCode, String idempotencyKey, long startOffsetSeconds) {
         OffsetDateTime start = OffsetDateTime.parse("2026-07-20T01:00:00Z")
                 .plusSeconds(startOffsetSeconds);
         return new RecordingCreateRequest(
                 start,
                 start.plusMinutes(1),
-                "recordings/" + cameraCode + "/" + fileName);
+                new RecordingObjectKeyFactory().create(cameraCode, start.toInstant(), idempotencyKey));
     }
 
     private List<Object> concurrently(Callable<?> first, Callable<?> second) throws Exception {
