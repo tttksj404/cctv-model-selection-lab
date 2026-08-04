@@ -10,10 +10,13 @@
 | 공개 URL | `MINIO_PUBLIC_ENDPOINT` | 브라우저용 presigned URL | 외부 클라이언트가 접근할 수 있는 HTTPS 주소를 사용한다. 비워 두지 않는다. |
 | API 포트 | `MINIO_API_PORT` | Compose | MinIO API 포트와 보안 그룹 설정을 일치시킨다. |
 | 버킷 | `MINIO_BUCKET` | 백엔드·미디어 서버 | 환경별 버킷을 분리하고 버킷명을 배포 로그에 출력하지 않는다. |
-| 리전 | `MINIO_REGION_NAME` | 백엔드·MinIO | 애플리케이션과 버킷 정책의 값이 일치해야 한다. |
+| 백엔드 리전 | `MINIO_REGION` | 백엔드 | Spring Boot가 객체 저장소 연결에 사용하는 리전이다. |
+| MinIO 서버 리전 | `MINIO_REGION_NAME` | MinIO 서버 컨테이너 | Compose가 MinIO 서버에 전달하는 native 환경변수다. `MINIO_REGION`과 같은 값을 사용한다. |
 | 애플리케이션 키 | `MINIO_APP_ACCESS_KEY`, `MINIO_APP_SECRET_KEY` | 백엔드·미디어 서버 | root 계정 대신 최소 권한 애플리케이션 계정을 사용한다. |
 
 운영 배포에서는 `infra/compose.deploy.yml`이 호스트 환경변수를 컨테이너 환경변수로 전달한다. 전환 기간에만 기존 `S3_*` 값의 fallback이 허용되며, 신규 배포 대상은 `MINIO_*` 값을 직접 설정한다.
+
+백엔드 서비스에는 `MINIO_REGION`, MinIO 서버 컨테이너에는 `MINIO_REGION_NAME`을 설정한다. 두 값은 같은 리전 문자열을 사용해야 하지만, 서로 대체되는 환경변수는 아니다.
 
 ## 2. 자격증명 교체
 
@@ -32,7 +35,7 @@
 
 버킷을 삭제하거나 Compose volume을 제거하기 전에 백업과 복구 가능 여부를 확인한다. `docker compose down -v`는 객체를 지울 수 있으므로 운영 복구 명령으로 사용하지 않는다.
 
-1. 백엔드의 `MINIO_INTERNAL_ENDPOINT`, `MINIO_BUCKET`, 리전, 애플리케이션 키를 확인한다.
+1. 백엔드의 `MINIO_INTERNAL_ENDPOINT`, `MINIO_BUCKET`, `MINIO_REGION`, MinIO 서버의 `MINIO_REGION_NAME`, 애플리케이션 키를 확인한다.
 2. MinIO health endpoint와 버킷 존재 여부를 확인한다.
 3. 버킷이 없으면 운영 승인 후 동일한 이름으로 생성하고 private 정책을 적용한다.
 4. 백업에서 객체를 복구한 뒤 대표적인 사건 사진, 녹화 파일, 후보 crop 객체를 `statObject`로 확인한다.
