@@ -3,8 +3,15 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const caseApi = vi.hoisted(() => ({
+  addCaseCameras: vi.fn(),
   closeCase: vi.fn(),
+  createSearchCondition: vi.fn(),
+  deleteSearchCondition: vi.fn(),
   getCase: vi.fn(),
+  listCaseCameras: vi.fn(),
+  listSearchConditions: vi.fn(),
+  removeCaseCamera: vi.fn(),
+  replaceSearchCondition: vi.fn(),
   updateCaseStatus: vi.fn()
 }));
 
@@ -36,8 +43,7 @@ const rawCase = (overrides = {}) => ({
 const mountedApps = [];
 
 async function flushUi() {
-  await Promise.resolve();
-  await Promise.resolve();
+  for (let index = 0; index < 8; index += 1) await Promise.resolve();
   await nextTick();
 }
 
@@ -92,6 +98,20 @@ async function inputModalReason(root, value) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  caseApi.listSearchConditions.mockResolvedValue([{
+    id: 1,
+    prompt: "a person wearing a blue short sleeve top and black pants",
+    normalizedPrompt: "a person wearing a blue short sleeve top and black pants",
+    normalizedExclusionPrompt: null,
+    realtimeUsable: true
+  }]);
+  caseApi.listCaseCameras.mockResolvedValue([{
+    id: 1,
+    cameraId: 3,
+    cameraCode: "CAM-003",
+    cameraName: "3번 카메라",
+    searchEnabled: true
+  }]);
 });
 
 afterEach(() => {
@@ -115,9 +135,29 @@ describe("CaseDetailView", () => {
     expect(root.textContent).toContain("탐지된 후보가 없습니다.");
     expect(root.querySelector(".portrait img").getAttribute("src")).toBe("https://storage.example/photo.jpg");
 
-    const options = [...root.querySelectorAll("select option")].map((option) => option.value);
+    const options = [...root.querySelectorAll('select[aria-label="변경할 사건 상태"] option')]
+      .map((option) => option.value);
     expect(options).toEqual(["searching"]);
     expect(root.textContent).toContain("현장 탐색");
+  });
+
+  it("사건 본문은 설정 조회 완료를 기다리지 않고 먼저 표시한다", async () => {
+    const pendingConditions = deferred();
+    const pendingCameras = deferred();
+    caseApi.getCase.mockResolvedValue(rawCase());
+    caseApi.listSearchConditions.mockReturnValue(pendingConditions.promise);
+    caseApi.listCaseCameras.mockReturnValue(pendingCameras.promise);
+
+    const root = await mountView();
+
+    expect(root.textContent).toContain("김민수");
+    expect(root.textContent).toContain("데이터를 불러오는 중입니다.");
+
+    pendingConditions.resolve([]);
+    pendingCameras.resolve([]);
+    await flushUi();
+    expect(root.textContent).toContain("등록된 탐색 조건이 없습니다.");
+    expect(root.textContent).toContain("배정된 카메라가 없습니다.");
   });
 
   it("상태 변경 사유를 필수로 보내고 RECEIVED→SEARCHING 422를 안내한다", async () => {
@@ -143,6 +183,71 @@ describe("CaseDetailView", () => {
       reason: "탐색 개시"
     });
     expect(root.textContent).toContain("탐색 조건과 활성 카메라가 필요합니다.");
+  });
+
+  it("상태 변경 422 시 외부에서 종료된 사건 상태를 다시 불러온다", async () => {
+    caseApi.getCase
+      .mockResolvedValueOnce(rawCase())
+      .mockResolvedValueOnce(rawCase({ status: "CLOSED", closedAt: "2026-08-03T05:00:00Z" }));
+    caseApi.updateCaseStatus.mockRejectedValue({
+      status: 422,
+      code: "BUSINESS_RULE_VIOLATION",
+      message: "허용되지 않는 사건 상태 전이입니다."
+    });
+    const root = await mountView();
+
+    buttonByText(root, "상태 변경").click();
+    await nextTick();
+    await inputModalReason(root, "탐색 개시");
+    modalButtonByText(root, "상태 변경").click();
+    await flushUi();
+
+    expect(caseApi.getCase).toHaveBeenCalledTimes(2);
+    expect(root.querySelector(".modal")).toBeNull();
+    expect(root.textContent).toContain("사건 상태가 '종료' 상태로 변경되어 최신 정보를 불러왔습니다.");
+    expect(root.textContent).toContain("종료 사건 · 읽기 전용");
+  });
+
+  it("실시간 사용 가능 조건이나 활성 카메라가 없으면 SEARCHING 전환을 UI에서 차단한다", async () => {
+    caseApi.getCase.mockResolvedValue(rawCase());
+    caseApi.listSearchConditions.mockResolvedValue([{
+      id: 2,
+      prompt: "해석할 수 없는 기존 문장",
+      normalizedPrompt: null,
+      realtimeUsable: false
+    }]);
+    caseApi.listCaseCameras.mockResolvedValue([]);
+    const root = await mountView();
+
+    buttonByText(root, "상태 변경").click();
+    await nextTick();
+
+    expect(root.querySelector(".modal")).toBeNull();
+    expect(root.textContent).toContain("탐색을 시작하려면 실시간 사용 가능 조건과 활성 배정 카메라가 각각 하나 이상 필요합니다.");
+    expect(root.textContent).toContain("조건 설정으로 이동");
+    expect(root.textContent).toContain("카메라 설정으로 이동");
+    expect(caseApi.updateCaseStatus).not.toHaveBeenCalled();
+  });
+
+  it("설정 mutation 422가 외부 종료를 알리면 사건을 재조회해 읽기 전용으로 바꾼다", async () => {
+    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
+    caseApi.getCase
+      .mockResolvedValueOnce(rawCase())
+      .mockResolvedValueOnce(rawCase({ status: "CLOSED", closedAt: "2026-08-03T05:00:00Z" }));
+    caseApi.removeCaseCamera.mockRejectedValue({
+      status: 422,
+      code: "BUSINESS_RULE_VIOLATION",
+      message: "종료 사건은 설정을 변경할 수 없습니다."
+    });
+    const root = await mountView();
+
+    buttonByText(root, "제외").click();
+    await flushUi();
+
+    expect(caseApi.getCase).toHaveBeenCalledTimes(2);
+    expect(root.textContent).toContain("종료 사건 · 읽기 전용");
+    expect(root.textContent).toContain("종료된 사건은 더 이상 상태를 변경할 수 없습니다.");
+    expect(buttonByText(root, "카메라 추가")).toBeUndefined();
   });
 
   it("일반 종료 충돌 시 최신 정보를 다시 조회하고 두 번째 확인에서 force=true로 종료한다", async () => {
@@ -214,6 +319,58 @@ describe("CaseDetailView", () => {
     await flushUi();
     expect(root.textContent).toContain("두 번째 사건");
     expect(root.textContent).not.toContain("늦은 첫 번째 사건");
+  });
+
+  it("늦게 도착한 이전 사건 설정 응답이 새 사건 설정을 덮지 않는다", async () => {
+    const oldConditions = deferred();
+    const oldCameras = deferred();
+    caseApi.getCase.mockImplementation((caseId) => Promise.resolve(rawCase({
+      id: Number(caseId),
+      caseNumber: `EFU-${caseId}`,
+      missingName: `${caseId}번 사건`
+    })));
+    caseApi.listSearchConditions.mockImplementation((caseId) => (
+      caseId === "17" ? oldConditions.promise : Promise.resolve([{
+        id: 18,
+        prompt: "a woman wearing a red long sleeve top and black pants",
+        normalizedPrompt: "a woman wearing a red long sleeve top and black pants",
+        realtimeUsable: true
+      }])
+    ));
+    caseApi.listCaseCameras.mockImplementation((caseId) => (
+      caseId === "17" ? oldCameras.promise : Promise.resolve([{
+        id: 18,
+        cameraId: 18,
+        cameraCode: "CAM-018",
+        cameraName: "새 사건 카메라",
+        searchEnabled: true
+      }])
+    ));
+    const { root, router } = await mountViewContext();
+
+    await router.push("/admin/cases/18");
+    await flushUi();
+    expect(root.textContent).toContain("a woman wearing a red long sleeve top and black pants");
+    expect(root.textContent).toContain("새 사건 카메라");
+
+    oldConditions.resolve([{
+      id: 17,
+      prompt: "a man wearing a blue short sleeve top and gray pants",
+      normalizedPrompt: "a man wearing a blue short sleeve top and gray pants",
+      realtimeUsable: true
+    }]);
+    oldCameras.resolve([{
+      id: 17,
+      cameraId: 17,
+      cameraCode: "CAM-017",
+      cameraName: "이전 사건 카메라",
+      searchEnabled: true
+    }]);
+    await flushUi();
+
+    expect(root.textContent).toContain("새 사건 카메라");
+    expect(root.textContent).not.toContain("이전 사건 카메라");
+    expect(root.textContent).not.toContain("a man wearing a blue short sleeve top and gray pants");
   });
 
   it("상태 변경 중 다른 사건으로 이동하면 이전 응답을 새 상세에 적용하지 않는다", async () => {
