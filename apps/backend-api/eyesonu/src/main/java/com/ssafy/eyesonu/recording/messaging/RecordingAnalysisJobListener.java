@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(
-        prefix = "recording.analysis.consumer",
+        prefix = "recording.analysis.backend-consumer",
         name = "auto-start",
         havingValue = "true",
         matchIfMissing = false)
@@ -24,7 +24,7 @@ public class RecordingAnalysisJobListener {
     }
 
     @RabbitListener(
-            queues = RecordingAnalysisJobPublisher.QUEUE,
+            queues = "${recording.analysis.backend-consumer.queue}",
             containerFactory = "recordingAnalysisJobListenerContainerFactory")
     public void consume(RecordingAnalysisJobEvent event) {
         consumer.consume(event);

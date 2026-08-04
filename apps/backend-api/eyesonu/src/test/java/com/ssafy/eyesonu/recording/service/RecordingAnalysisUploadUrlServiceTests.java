@@ -13,7 +13,6 @@ import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventObjectKeyFactory;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateRequest;
-import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
 import com.ssafy.eyesonu.storage.StorageObjectUrlSigner;
 import java.time.Duration;
@@ -29,9 +28,10 @@ class RecordingAnalysisUploadUrlServiceTests {
 
     private static final long JOB_ID = 42L;
     private static final String WORKER_ID = "recording-ai-worker";
+    private static final String CLAIM_TOKEN = "claim-token-42";
 
-    @Mock private AnalysisJobMapper analysisJobMapper;
     @Mock private StorageObjectUrlSigner urlSigner;
+    @Mock private RecordingAnalysisJobClaimService claimService;
 
     private RecordingAnalysisUploadUrlService service;
 
@@ -40,18 +40,18 @@ class RecordingAnalysisUploadUrlServiceTests {
         MinioProperties properties = new MinioProperties();
         properties.setPresignedUrlExpiry(Duration.ofMinutes(15));
         service = new RecordingAnalysisUploadUrlService(
-                analysisJobMapper, new CandidateEventObjectKeyFactory(), urlSigner, properties);
+                new CandidateEventObjectKeyFactory(), urlSigner, properties, claimService);
     }
 
     @Test
     void createsFrameAndCropUrlsForClaimedAttempt() {
         AnalysisJob job = runningJob();
         job.setRetryCount(1);
-        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(job);
+        when(claimService.requireActiveWorkerJob(JOB_ID, WORKER_ID, CLAIM_TOKEN)).thenReturn(job);
         when(urlSigner.createPutUrl(anyString()))
                 .thenAnswer(invocation -> "https://storage.example/" + invocation.getArgument(0));
 
-        var response = service.create(JOB_ID, WORKER_ID, request("track-17"));
+        var response = service.create(JOB_ID, WORKER_ID, CLAIM_TOKEN, request("track-17"));
 
         assertEquals(2, response.attempt());
         assertEquals(900, response.expiresInSeconds());
@@ -65,21 +65,24 @@ class RecordingAnalysisUploadUrlServiceTests {
 
     @Test
     void rejectsUploadUrlRequestFromAnotherWorker() {
-        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(runningJob());
+        when(claimService.requireActiveWorkerJob(JOB_ID, "another-worker", CLAIM_TOKEN))
+                .thenThrow(new ApiException(org.springframework.http.HttpStatus.CONFLICT,
+                        "WORKER_LEASE_CONFLICT", "Worker lease is not valid."));
 
         ApiException exception = assertThrows(ApiException.class, () ->
-                service.create(JOB_ID, "another-worker", request("track-17")));
+                service.create(JOB_ID, "another-worker", CLAIM_TOKEN, request("track-17")));
 
-        assertEquals("JOB_NOT_CLAIMED", exception.getCode());
+        assertEquals("WORKER_LEASE_CONFLICT", exception.getCode());
         verify(urlSigner, never()).createPutUrl(anyString());
     }
 
     @Test
     void rejectsDuplicateTrackIds() {
-        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(runningJob());
+        when(claimService.requireActiveWorkerJob(JOB_ID, WORKER_ID, CLAIM_TOKEN))
+                .thenReturn(runningJob());
 
         ApiException exception = assertThrows(ApiException.class, () ->
-                service.create(JOB_ID, WORKER_ID, request("track-17", "track-17")));
+                service.create(JOB_ID, WORKER_ID, CLAIM_TOKEN, request("track-17", "track-17")));
 
         assertEquals("VALIDATION_ERROR", exception.getCode());
         verify(urlSigner, never()).createPutUrl(anyString());
@@ -87,12 +90,13 @@ class RecordingAnalysisUploadUrlServiceTests {
 
     @Test
     void mapsSignerFailureToStorageUnavailable() {
-        when(analysisJobMapper.findRecordingAnalysisById(JOB_ID)).thenReturn(runningJob());
+        when(claimService.requireActiveWorkerJob(JOB_ID, WORKER_ID, CLAIM_TOKEN))
+                .thenReturn(runningJob());
         when(urlSigner.createPutUrl(anyString()))
                 .thenThrow(new StorageObjectUnavailableException(new RuntimeException("down")));
 
         ApiException exception = assertThrows(ApiException.class, () ->
-                service.create(JOB_ID, WORKER_ID, request("track-17")));
+                service.create(JOB_ID, WORKER_ID, CLAIM_TOKEN, request("track-17")));
 
         assertEquals("STORAGE_UNAVAILABLE", exception.getCode());
     }

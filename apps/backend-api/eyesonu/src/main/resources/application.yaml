@@ -32,8 +32,26 @@ mybatis:
 recording:
   analysis:
     worker-claim-lease-seconds: 300
+    retry-delay-buckets-seconds: [5, 15, 30, 60, 300]
     outbox:
+      auto-start: true
       claim-lease-seconds: 300
+      publish-batch-size: 50
+      confirm-timeout: 5s
+      confirm-poll-interval: 200ms
+      poll-delay-ms: 1000
+    lease-recovery:
+      auto-start: true
+      batch-size: 50
+      poll-delay-ms: 60000
+    backend-consumer:
+      auto-start: false
+      queue: recording.analysis.backend.queue
+      retry:
+        max-attempts: 2
+        initial-interval-ms: 1000
+        multiplier: 2.0
+        max-interval-ms: 10000
 
 camera:
   heartbeat:

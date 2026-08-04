@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.gz binary
+*.zlib binary
+*.tgz binary
+*.pt binary
+*.pth binary
+*.joblib binary
+*.mov binary
+*.mp4 binary
