@@ -1,5 +1,6 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import Hls from "hls.js";
 import { Info, Maximize2, Minimize2, Pause, PictureInPicture2, Play } from "lucide-vue-next";
 
 const emit = defineEmits(["info", "state-change"]);
@@ -15,8 +16,8 @@ const state = ref("loading");
 const isPlaying = ref(false);
 const pipSupported = ref(false);
 const isFullscreen = ref(false);
-const iframeKey = ref(0);
 let peerConnection = null;
+let hls = null;
 
 const setState = (nextState) => {
   state.value = nextState;
@@ -51,6 +52,45 @@ const markPlaying = () => {
 
 const markPaused = () => {
   isPlaying.value = false;
+};
+
+const disposeHls = () => {
+  hls?.destroy();
+  hls = null;
+};
+
+const startHls = async () => {
+  const video = videoRef.value;
+  if (!video) return;
+
+  disposeHls();
+
+  if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = props.url;
+    try {
+      await video.play();
+    } catch {
+      setState("error");
+    }
+    return;
+  }
+
+  if (!Hls.isSupported()) {
+    throw new Error("HLS를 재생할 수 없는 브라우저입니다.");
+  }
+
+  hls = new Hls();
+  hls.on(Hls.Events.ERROR, (_event, data) => {
+    if (data.fatal) {
+      setState("error");
+      disposeHls();
+    }
+  });
+  hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    video.play().catch(() => setState("error"));
+  });
+  hls.loadSource(props.url);
+  hls.attachMedia(video);
 };
 
 const startWebRtc = async () => {
@@ -92,18 +132,18 @@ const startWebRtc = async () => {
 const start = async () => {
   setState("loading");
 
-  if (props.protocol === "HLS") {
-    iframeKey.value += 1;
-    return;
-  }
-
   try {
-    await startWebRtc();
+    if (props.protocol === "HLS") await startHls();
+    else await startWebRtc();
   } catch (error) {
     console.error(`[${props.protocol}] stream error`, error);
     setState("error");
   }
 };
+
+watch(() => props.url, () => {
+  start();
+});
 
 const togglePlay = async () => {
   if (!videoRef.value) return;
@@ -141,8 +181,7 @@ onMounted(() => {
   videoRef.value?.addEventListener("playing", markPlaying);
   videoRef.value?.addEventListener("pause", markPaused);
   document.addEventListener("fullscreenchange", updateFullscreenState);
-  if (props.protocol !== "HLS") start();
-  else emit("state-change", "loading");
+  start();
 });
 
 onBeforeUnmount(() => {
@@ -150,24 +189,13 @@ onBeforeUnmount(() => {
   videoRef.value?.removeEventListener("pause", markPaused);
   document.removeEventListener("fullscreenchange", updateFullscreenState);
   peerConnection?.close();
+  disposeHls();
 });
 </script>
 
 <template>
   <div ref="playerRoot" class="stream-player">
-    <iframe
-      v-if="protocol === 'HLS'"
-      :key="iframeKey"
-      class="stream-player-iframe"
-      :src="url"
-      title="HLS 실시간 영상"
-      allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-      referrerpolicy="no-referrer"
-      @load="markPlaying"
-      @error="setState('error')"
-    />
     <video
-      v-else
       ref="videoRef"
       class="stream-player-video"
       autoplay

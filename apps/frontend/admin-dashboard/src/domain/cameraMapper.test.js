@@ -37,13 +37,11 @@ describe("cameraMapper", () => {
     expect(toUiCameraStatus("ERROR")).toBe("error");
   });
 
-  it("builds an encoded MediaMTX player URL from the environment base and camera code", () => {
+  it("builds an encoded MediaMTX HLS playlist URL from the environment base and camera code", () => {
     const url = new URL(buildCameraPlaybackUrl("camera/01", "http://media.example:8888/"));
     expect(url.origin).toBe("http://media.example:8888");
-    expect(url.pathname).toBe("/camera%2F01");
-    expect(url.searchParams.get("autoplay")).toBe("true");
-    expect(url.searchParams.get("controls")).toBe("false");
-    expect(url.searchParams.get("playsinline")).toBe("true");
+    expect(url.pathname).toBe("/camera%2F01/index.m3u8");
+    expect(url.search).toBe("");
   });
 
   it("builds a same-origin proxy URL without a duplicate slash", () => {
@@ -53,12 +51,8 @@ describe("cameraMapper", () => {
     );
 
     expect(url.origin).toBe("https://admin-dev.example.com");
-    expect(url.pathname).toBe("/media-stream/camera%2F01");
-    expect(url.searchParams.get("autoplay")).toBe("true");
-    expect(url.searchParams.get("controls")).toBe("false");
-    expect(url.searchParams.get("muted")).toBe("true");
-    expect(url.searchParams.get("playsinline")).toBe("true");
-    expect(url.searchParams.get("disablepictureinpicture")).toBe("true");
+    expect(url.pathname).toBe("/media-stream/camera%2F01/index.m3u8");
+    expect(url.search).toBe("");
   });
 
   it("falls back to the default media URL when the environment value is blank", () => {
@@ -67,7 +61,7 @@ describe("cameraMapper", () => {
     const url = new URL(buildCameraPlaybackUrl("camera-01"));
 
     expect(url.origin).toBe("http://70.12.108.93:8888");
-    expect(url.pathname).toBe("/camera-01");
+    expect(url.pathname).toBe("/camera-01/index.m3u8");
   });
 
   it("rejects missing camera codes", () => {
