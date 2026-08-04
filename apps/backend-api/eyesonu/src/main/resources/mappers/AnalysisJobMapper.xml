@@ -142,6 +142,7 @@
         FROM analysis_jobs
         WHERE id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS'
+          AND claimed_by = #{workerId}
         FOR UPDATE
     </select>
 
@@ -195,10 +196,20 @@
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
     </update>
 
+    <update id="markSucceededForWorker">
+        UPDATE analysis_jobs
+        SET status = 'SUCCEEDED', completed_at = UTC_TIMESTAMP(6), error_message = NULL,
+            claimed_by = NULL, claim_expires_at = NULL
+        WHERE case_id = #{caseId} AND id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
+          AND claimed_by = #{workerId}
+    </update>
+
     <update id="markFailed">
         UPDATE analysis_jobs
         SET status = 'FAILED', completed_at = UTC_TIMESTAMP(6), error_message = #{errorMessage}
         WHERE case_id = #{caseId} AND id = #{jobId}
           AND job_type = 'RECORDING_ANALYSIS' AND status = 'RUNNING'
+          AND claimed_by = #{workerId}
     </update>
 </mapper>
