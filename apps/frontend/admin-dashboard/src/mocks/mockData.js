@@ -87,7 +87,7 @@ export const routePoints = [
 
 export const auditLogs = [
   { id: "l1", time: "07-21 14:32", actor: "김민준", type: "후보 판정", target: "CASE-0417", result: "성공", ip: "10.10.1.44", detail: "후보 k1 대상 확인 처리" },
-  { id: "l2", time: "07-21 13:10", actor: "SYSTEM", type: "탐색 조건 변경", target: "CASE-0417", result: "성공", ip: "10.10.1.20", detail: "유사도 임계값 0.68에서 0.72로 변경" },
+  { id: "l2", time: "07-21 13:10", actor: "SYSTEM", type: "탐색 조건 변경", target: "CASE-0417", result: "성공", ip: "10.10.1.20", detail: "실시간 탐색 조건을 변경" },
   { id: "l3", time: "07-20 22:40", actor: "정하늘", type: "사건 상태 변경", target: "CASE-0416", result: "성공", ip: "10.10.1.45", detail: "탐색 중에서 후보 발견으로 변경" }
 ];
 

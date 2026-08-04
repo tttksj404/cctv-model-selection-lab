@@ -180,7 +180,50 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisBatchResultRequest")
 						.exists())
 				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisFailureRequest")
-						.exists());
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisJobClaimResponse")
+						.exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.RecordingAnalysisJobClaimResponse.properties.similarityThreshold")
+						.doesNotExist());
+	}
+
+	@Test
+	void searchConditionContractsExposePutAndNoSimilarityThreshold() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/admin/cases/{caseId}/search-conditions/{conditionId}'].put")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.SearchConditionCreateRequest").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionCreateRequest.properties.similarityThreshold")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.SearchConditionUpdateRequest").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionUpdateRequest.properties.similarityThreshold")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.SearchConditionResponse").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionResponse.properties.normalizedPrompt")
+						.exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionResponse.properties.normalizedExclusionPrompt")
+						.exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionResponse.properties.realtimeUsable")
+						.exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionResponse.properties.similarityThreshold")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.SearchConditionTargetResponse").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.SearchConditionTargetResponse.properties.similarityThreshold")
+						.doesNotExist())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisJobResponse").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.RecordingAnalysisJobResponse.properties.similarityThreshold")
+						.doesNotExist());
 	}
 
 	@Test

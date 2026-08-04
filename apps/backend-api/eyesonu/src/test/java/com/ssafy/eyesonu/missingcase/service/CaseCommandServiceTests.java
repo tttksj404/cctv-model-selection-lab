@@ -15,12 +15,14 @@ import com.ssafy.eyesonu.audit.service.AuditService;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
+import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCloseRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseCreateRequest;
 import com.ssafy.eyesonu.missingcase.dto.admin.CaseStatusUpdateRequest;
 import com.ssafy.eyesonu.missingcase.mapper.MissingCaseMapper;
 import com.ssafy.eyesonu.missingcase.messaging.SearchTargetEventPublisher;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
@@ -33,6 +35,7 @@ class CaseCommandServiceTests {
 	private CaseNumberGenerator caseNumberGenerator;
 	private CaseRegistrationWriter registrationWriter;
 	private SearchTargetEventPublisher searchTargetEventPublisher;
+	private RealtimePromptNormalizer promptNormalizer;
 	private CaseCommandService service;
 
 	@BeforeEach
@@ -43,13 +46,15 @@ class CaseCommandServiceTests {
 		caseNumberGenerator = mock(CaseNumberGenerator.class);
 		registrationWriter = mock(CaseRegistrationWriter.class);
 		searchTargetEventPublisher = mock(SearchTargetEventPublisher.class);
+		promptNormalizer = new RealtimePromptNormalizer();
 		service = new CaseCommandService(
 				mapper,
 				validator,
 				caseNumberGenerator,
 				registrationWriter,
 				auditService,
-				searchTargetEventPublisher);
+				searchTargetEventPublisher,
+				promptNormalizer);
 	}
 
 	@Test
@@ -106,7 +111,7 @@ class CaseCommandServiceTests {
 	@Test
 	void searchingRequiresConditionAndActiveCamera() {
 		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
-		when(mapper.countSearchConditions(1L)).thenReturn(1L);
+		when(mapper.findSearchConditions(1L)).thenReturn(List.of(usableCondition()));
 		when(mapper.countActiveCameras(1L)).thenReturn(0L);
 
 		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
@@ -120,7 +125,7 @@ class CaseCommandServiceTests {
 	@Test
 	void appliesDocumentedStatusTransitionAfterResourcesAreReady() {
 		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
-		when(mapper.countSearchConditions(1L)).thenReturn(1L);
+		when(mapper.findSearchConditions(1L)).thenReturn(List.of(usableCondition()));
 		when(mapper.countActiveCameras(1L)).thenReturn(1L);
 		when(mapper.findById(1L)).thenReturn(row(CaseStatus.SEARCHING));
 
@@ -135,7 +140,7 @@ class CaseCommandServiceTests {
 	@Test
 	void searchingRequiresAtLeastOneSearchCondition() {
 		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
-		when(mapper.countSearchConditions(1L)).thenReturn(0L);
+		when(mapper.findSearchConditions(1L)).thenReturn(List.of());
 		when(mapper.countActiveCameras(1L)).thenReturn(1L);
 
 		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
@@ -144,6 +149,36 @@ class CaseCommandServiceTests {
 		assertEquals("BUSINESS_RULE_VIOLATION", exception.getCode());
 		assertEquals(422, exception.getStatus().value());
 		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void searchingRequiresARealtimeUsableCondition() {
+		SearchConditionRow unusable = new SearchConditionRow();
+		unusable.setPrompt("a person wearing a khaki windbreaker");
+		when(mapper.findByIdForUpdate(1L)).thenReturn(row(CaseStatus.RECEIVED));
+		when(mapper.findSearchConditions(1L)).thenReturn(List.of(unusable));
+
+		ApiException exception = assertThrows(ApiException.class, () -> service.updateStatus(
+				1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "search"), 7L));
+
+		assertApiError(exception, "BUSINESS_RULE_VIOLATION", 422);
+		verify(mapper, never()).updateStatus(any(), any(), any());
+	}
+
+	@Test
+	void validatesReadinessForEveryTransitionBackIntoSearching() {
+		for (CaseStatus previous : List.of(CaseStatus.CANDIDATE_FOUND, CaseStatus.FIELD_SEARCH)) {
+			org.mockito.Mockito.reset(mapper, auditService, searchTargetEventPublisher);
+			when(mapper.findByIdForUpdate(1L)).thenReturn(row(previous));
+			when(mapper.findSearchConditions(1L)).thenReturn(List.of(usableCondition()));
+			when(mapper.countActiveCameras(1L)).thenReturn(1L);
+			when(mapper.findById(1L)).thenReturn(row(CaseStatus.SEARCHING));
+
+			assertEquals(CaseStatus.SEARCHING, service.updateStatus(
+					1L, new CaseStatusUpdateRequest(CaseStatus.SEARCHING, "resume"), 7L).status());
+			verify(mapper).findSearchConditions(1L);
+			verify(mapper).updateStatus(1L, CaseStatus.SEARCHING, null);
+		}
 	}
 
 	@Test
@@ -241,6 +276,14 @@ class CaseCommandServiceTests {
 		row.setStatus(status);
 		row.setUpdatedAt(Instant.parse("2026-07-20T00:00:00Z"));
 		if (status == CaseStatus.CLOSED) row.setClosedAt(Instant.parse("2026-07-20T01:00:00Z"));
+		return row;
+	}
+
+	private SearchConditionRow usableCondition() {
+		SearchConditionRow row = new SearchConditionRow();
+		row.setId(10L);
+		row.setCaseId(1L);
+		row.setPrompt("a person wearing a black long sleeve top and blue pants");
 		return row;
 	}
 }

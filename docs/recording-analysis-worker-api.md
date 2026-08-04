@@ -21,7 +21,6 @@
   "recordingObjectKey": "recordings/CAM-003/2026/08/03/video.mp4",
   "prompt": "a man wearing a black short sleeve top and black pants",
   "exclusionPrompt": null,
-  "similarityThreshold": 0.72,
   "searchStart": "2026-08-03T00:00:00Z",
   "searchEnd": "2026-08-03T00:30:00Z",
   "searchArea": "??? ???",
@@ -29,6 +28,8 @@
   "occurredAt": "2026-08-03T00:31:00Z"
 }
 ```
+
+Backend는 후보 선별 임계값을 작업 메시지나 작업 snapshot으로 전달하지 않는다. AI Worker는 배포된 모델의 실행 설정에 따라 후보 선별 기준을 자체 관리한다.
 
 `commandId`? ??? ?? ??? ????. `attempt`? ?? ??? 1?? ??? ????? ????.
 

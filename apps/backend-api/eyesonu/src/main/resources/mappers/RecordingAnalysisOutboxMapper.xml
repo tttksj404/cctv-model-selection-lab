@@ -16,7 +16,6 @@
         <result property="recordingObjectKey" column="recording_object_key"/>
         <result property="prompt" column="prompt"/>
         <result property="exclusionPrompt" column="exclusion_prompt"/>
-        <result property="similarityThreshold" column="similarity_threshold"/>
         <result property="searchStart" column="search_start"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchEnd" column="search_end"
@@ -32,12 +31,11 @@
         INSERT INTO recording_analysis_outbox (
             command_id, event_type, job_id, case_id, recording_id, camera_id,
             camera_code, camera_name, recording_object_key, prompt, exclusion_prompt,
-            similarity_threshold, search_start, search_end, search_area, attempt, occurred_at,
+            search_start, search_end, search_area, attempt, occurred_at,
             status, retry_count, next_attempt_at
         ) VALUES (
             #{commandId}, #{eventType}, #{jobId}, #{caseId}, #{recordingId}, #{cameraId},
             #{cameraCode}, #{cameraName}, #{recordingObjectKey}, #{prompt}, #{exclusionPrompt},
-            #{similarityThreshold},
             #{searchStart,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchEnd,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchArea}, #{attempt},
@@ -49,7 +47,7 @@
     <select id="findReady" resultMap="outboxResultMap">
         SELECT id, command_id, event_type, job_id, case_id, recording_id, camera_id,
                camera_code, camera_name, recording_object_key, prompt, exclusion_prompt,
-               similarity_threshold, search_start, search_end, search_area, attempt,
+               search_start, search_end, search_area, attempt,
                occurred_at, retry_count
         FROM recording_analysis_outbox
         WHERE status IN ('PENDING', 'PROCESSING')

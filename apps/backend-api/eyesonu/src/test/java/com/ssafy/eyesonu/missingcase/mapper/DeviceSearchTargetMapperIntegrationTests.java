@@ -2,9 +2,12 @@ package com.ssafy.eyesonu.missingcase.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.missingcase.domain.DeviceSearchTargetRow;
+import com.ssafy.eyesonu.missingcase.domain.SearchConditionRow;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -105,6 +108,25 @@ class DeviceSearchTargetMapperIntegrationTests {
 		assertEquals(1, conditionRows.size());
 		assertEquals(Instant.parse("2026-07-30T12:00:00Z"), cameraRows.getFirst().getUpdatedAt());
 		assertNotNull(conditionRows.getFirst().getPrompt());
+	}
+
+	@Test
+	void newConditionLeavesLegacyThresholdNullWithoutChangingExistingValues() {
+		SearchConditionRow row = new SearchConditionRow();
+		row.setCaseId(CASE_ID);
+		row.setPrompt("a person wearing a blue long sleeve top and black pants");
+
+		mapper.insertSearchCondition(row);
+
+		assertNotNull(row.getId());
+		assertNull(jdbcTemplate.queryForObject(
+				"SELECT similarity_threshold FROM search_conditions WHERE id = ?",
+				BigDecimal.class,
+				row.getId()));
+		assertEquals(new BigDecimal("0.7000"), jdbcTemplate.queryForObject(
+				"SELECT similarity_threshold FROM search_conditions WHERE id = ?",
+				BigDecimal.class,
+				178006L));
 	}
 
 	@Test
