@@ -83,7 +83,7 @@ class RecordingAnalysisJobPublisherTests {
     void recordingAnalysisEventDoesNotExposeSimilarityThreshold() {
         RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
                 "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE,
-                5001L, 101L, Instant.parse("2026-07-31T04:00:00Z"));
+                5001L, Instant.parse("2026-07-31T04:00:00Z"));
 
         var payload = new ObjectMapper().findAndRegisterModules().valueToTree(event);
 
@@ -93,6 +93,12 @@ class RecordingAnalysisJobPublisherTests {
         assertFalse(payload.has("searchStart"));
         assertFalse(payload.has("searchEnd"));
         assertFalse(payload.has("searchArea"));
+        assertFalse(payload.has("caseId"));
+        assertFalse(payload.has("recordingId"));
+        assertFalse(payload.has("cameraId"));
+        assertFalse(payload.has("cameraCode"));
+        assertFalse(payload.has("cameraName"));
+        assertFalse(payload.has("recordingObjectKey"));
     }
 
     @Test
@@ -137,9 +143,11 @@ class RecordingAnalysisJobPublisherTests {
 
         assertThat(payload)
                 .contains(
-                        "commandId", "eventType", "jobId", "caseId", "recordingId", "cameraId",
-                        "cameraCode", "cameraName", "recordingObjectKey", "attempt", "occurredAt")
-                .doesNotContain("prompt", "exclusionPrompt", "similarityThreshold");
+                        "commandId", "eventType", "jobId", "occurredAt")
+                .doesNotContain(
+                        "caseId", "recordingId", "cameraId", "cameraCode", "cameraName",
+                        "recordingObjectKey", "attempt", "prompt", "exclusionPrompt",
+                        "similarityThreshold");
     }
 
     @Test

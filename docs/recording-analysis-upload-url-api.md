@@ -53,7 +53,7 @@ Content-Type: application/json
 ```
 
 응답의 `trackId` 집합은 요청 집합과 정확히 같아야 한다. 누락, 중복, 다른 track이 있으면
-Worker는 결과를 제출하지 않고 `/fail` 또는 requeue 절차로 처리한다.
+Worker는 결과를 제출하지 않고 `/fail` 또는 확인된 fixed-TTL 지연 재발행 절차로 처리한다.
 
 ## 2. MinIO/S3 직접 PUT
 
@@ -105,6 +105,7 @@ signature가 유효한지 확인한 후 candidate event를 저장한다. 하나�
 
 - URL 만료나 일시적 저장소 오류: 유효 lease 안에서 `/upload-urls`를 다시 요청한 뒤 재업로드한다.
 - `WORKER_LEASE_CONFLICT`: 현재 Worker는 더 이상 소유자가 아니므로 result/fail을 제출하지 않고
-  RabbitMQ delivery를 requeue한다.
+  RabbitMQ delivery를 즉시 재큐잉하지 않는다. broker confirm 뒤 fixed-TTL 지연 재발행해 새 claim을
+  시도하며, 지연 delivery가 사라져도 중앙 서버 lease-recovery scheduler가 만료 작업을 복구한다.
 - terminal callback 응답을 잃은 경우: 동일 `resultId`와 동일 payload로 다시 제출하면 백엔드가
   idempotent하게 `duplicate: true`를 반환한다.

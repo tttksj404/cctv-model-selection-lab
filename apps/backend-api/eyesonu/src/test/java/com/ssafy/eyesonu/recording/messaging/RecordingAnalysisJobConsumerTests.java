@@ -20,7 +20,7 @@ class RecordingAnalysisJobConsumerTests {
     void claimsJobReceivedFromRabbitMq() {
         RecordingAnalysisJobConsumer consumer = new RecordingAnalysisJobConsumer(claimService);
         RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, 101L, Instant.now());
+                "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, 5001L, Instant.now());
 
         consumer.consume(event);
 
@@ -31,7 +31,7 @@ class RecordingAnalysisJobConsumerTests {
     void acknowledgesMalformedEventWithoutRetrying() {
         RecordingAnalysisJobConsumer consumer = new RecordingAnalysisJobConsumer(claimService);
         RecordingAnalysisJobEvent event = new RecordingAnalysisJobEvent(
-                "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, null, 101L, Instant.now());
+                "command-1", RecordingAnalysisJobPublisher.EVENT_TYPE, null, Instant.now());
 
         consumer.consume(event);
 

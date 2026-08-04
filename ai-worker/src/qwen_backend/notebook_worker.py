@@ -83,6 +83,26 @@ class NotebookWorkerSettings(BaseSettings):
     )
     rabbitmq_prefetch_count: int = Field(default=1, ge=1, le=1)
     rabbitmq_reconnect_delay_seconds: float = Field(default=5.0, gt=0.1, le=300.0)
+    rabbitmq_retry_exchange: str = Field(
+        default="search.target.recording.retry.exchange",
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_RABBITMQ_RETRY_EXCHANGE",
+            "RABBITMQ_RETRY_EXCHANGE",
+        ),
+    )
+    rabbitmq_retry_routing_key_prefix: str = Field(
+        default="search.target.recording.retry",
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_RABBITMQ_RETRY_ROUTING_KEY_PREFIX",
+            "RABBITMQ_RETRY_ROUTING_KEY_PREFIX",
+            "EYESONU_AI_WORKER_RABBITMQ_RETRY_ROUTING_KEY",
+            "RABBITMQ_RETRY_ROUTING_KEY",
+        ),
+    )
+    rabbitmq_retry_delay_seconds: float = Field(default=5.0, gt=0.1, le=300.0)
+    rabbitmq_max_retry_attempts: int = Field(default=20, ge=1, le=100)
     cache_dir: Path = Path("artifacts/ai-worker/cache")
     output_dir: Path = Path("artifacts/ai-worker/jobs")
     max_download_bytes: int = Field(default=5 * 1024 * 1024 * 1024, gt=0, le=50 * 1024**3)
@@ -170,12 +190,11 @@ class NotebookWorker:
     ) -> bool:
         """Run one claimed recording job and confirm one terminal server callback."""
 
-        if claim.duplicate:
-            logger.info("central claim is already owned job_id=%d", claim.job_id)
-            return True
+        if claim.disposition != "CLAIMED":
+            raise ValueError("process_claim requires a claim owned by this worker")
         lease_token = claim.lease_token
         if lease_token is None:
-            raise ValueError("non-duplicate central claim omitted leaseToken")
+            raise ValueError("claimed central job omitted leaseToken")
         try:
             target = await client.fetch_target(claim.job_id, lease_token)
             if target.attempt != claim.attempt:
@@ -206,9 +225,9 @@ class NotebookWorker:
         except CentralWorkerError as exception:
             if exception.is_lease_conflict:
                 logger.warning("worker lease conflict on completion job_id=%d", claim.job_id)
-            else:
-                logger.exception("central completion was not confirmed job_id=%d", claim.job_id)
-            return False
+                return False
+            logger.exception("central completion was not confirmed job_id=%d", claim.job_id)
+            raise
         logger.info(
             "AI Worker job completed job_id=%d candidates=%d",
             claim.job_id,
@@ -246,9 +265,9 @@ class NotebookWorker:
                 logger.warning(
                     "worker lease conflict while reporting failure job_id=%d", claim.job_id
                 )
-            else:
-                logger.exception("central failure was not confirmed job_id=%d", claim.job_id)
-            return False
+                return False
+            logger.exception("central failure was not confirmed job_id=%d", claim.job_id)
+            raise
         return True
 
     async def _process_target(
@@ -262,6 +281,7 @@ class NotebookWorker:
         job_output_dir.mkdir(parents=True, exist_ok=True)
         stop_heartbeat = anyio.Event()
         lease_lost = anyio.Event()
+        fatal_heartbeat_errors: list[CentralWorkerError] = []
         runtime_response: CandidateRuntimeResponse | None = None
         evidence_by_track_id: dict[str, RecordingAnalysisEvidenceUpload] = {}
         started = time.perf_counter()
@@ -273,6 +293,7 @@ class NotebookWorker:
                 lease_token,
                 stop_heartbeat,
                 lease_lost,
+                fatal_heartbeat_errors,
             )
             try:
                 target, video_path = await self._download_target_recording(
@@ -280,7 +301,7 @@ class NotebookWorker:
                     target,
                     lease_token,
                 )
-                self._raise_if_lease_lost(lease_lost, target.job_id)
+                self._raise_if_lease_lost(lease_lost, target.job_id, fatal_heartbeat_errors)
                 request = CandidateRuntimeRequest(
                     model_key=self.settings.model_key,
                     job_id=target.job_id,
@@ -304,17 +325,17 @@ class NotebookWorker:
                     request,
                     abandon_on_cancel=False,
                 )
-                self._raise_if_lease_lost(lease_lost, target.job_id)
+                self._raise_if_lease_lost(lease_lost, target.job_id, fatal_heartbeat_errors)
                 evidence_by_track_id = await self._upload_candidate_evidence(
                     client,
                     target,
                     lease_token,
                     runtime_response,
                 )
-                self._raise_if_lease_lost(lease_lost, target.job_id)
+                self._raise_if_lease_lost(lease_lost, target.job_id, fatal_heartbeat_errors)
             finally:
                 stop_heartbeat.set()
-        self._raise_if_lease_lost(lease_lost, target.job_id)
+        self._raise_if_lease_lost(lease_lost, target.job_id, fatal_heartbeat_errors)
         if runtime_response is None:
             raise RuntimeError("local inference did not return a response")
         elapsed_ms = round((time.perf_counter() - started) * 1_000)
@@ -401,6 +422,7 @@ class NotebookWorker:
         lease_token: str,
         stop: anyio.Event,
         lease_lost: anyio.Event,
+        fatal_errors: list[CentralWorkerError],
     ) -> None:
         while not stop.is_set():
             with anyio.move_on_after(self.settings.heartbeat_interval_seconds) as scope:
@@ -409,9 +431,15 @@ class NotebookWorker:
                 return
             try:
                 await client.heartbeat(job_id, lease_token)
-            except CentralWorkerError:
+            except CentralWorkerError as error:
                 lease_lost.set()
                 logger.exception("AI Worker heartbeat failed job_id=%d", job_id)
+                if (
+                    not error.is_lease_conflict
+                    and error.status_code is not None
+                    and 400 <= error.status_code < 500
+                ):
+                    fatal_errors.append(error)
                 return
 
     def _run_local_runtime(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
@@ -421,7 +449,13 @@ class NotebookWorker:
         return CandidateRuntimeResponse.model_validate_json(serialized)
 
     @staticmethod
-    def _raise_if_lease_lost(lease_lost: anyio.Event, job_id: int) -> None:
+    def _raise_if_lease_lost(
+        lease_lost: anyio.Event,
+        job_id: int,
+        fatal_errors: list[CentralWorkerError],
+    ) -> None:
+        if fatal_errors:
+            raise fatal_errors[0]
         if lease_lost.is_set():
             raise LeaseLostError(f"lease lost for job {job_id}")
 

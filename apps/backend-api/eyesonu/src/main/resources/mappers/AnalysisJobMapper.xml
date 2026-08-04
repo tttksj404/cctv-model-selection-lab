@@ -88,8 +88,64 @@
           AND (
               status = 'QUEUED'
               OR (status = 'RUNNING'
-                  AND claim_expires_at IS NOT NULL
-                  AND claim_expires_at &lt;= UTC_TIMESTAMP(6))
+                  AND (
+                      claim_expires_at &lt;= UTC_TIMESTAMP(6)
+                      OR (
+                          claim_expires_at IS NULL
+                          AND (
+                              started_at IS NULL
+                              OR started_at &lt;= DATE_SUB(
+                                  UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                          )
+                      )
+                  ))
+          )
+    </update>
+
+    <select id="findExpiredRecordingAnalysisJobsForRecovery" resultMap="analysisJobResultMap">
+        SELECT <include refid="analysisJobColumns"/>
+        FROM analysis_jobs
+        WHERE job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND (
+              claim_expires_at &lt;= UTC_TIMESTAMP(6)
+              OR (
+                  claim_expires_at IS NULL
+                  AND (
+                      started_at IS NULL
+                      OR started_at &lt;= DATE_SUB(
+                          UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                  )
+              )
+          )
+        ORDER BY COALESCE(claim_expires_at, started_at, requested_at), id
+        LIMIT #{limit}
+        FOR UPDATE SKIP LOCKED
+    </select>
+
+    <update id="requeueExpiredRecordingAnalysisJob">
+        UPDATE analysis_jobs
+        SET status = 'QUEUED',
+            retry_count = retry_count + 1,
+            started_at = NULL,
+            claimed_by = NULL,
+            claim_expires_at = NULL,
+            lease_token_hash = NULL,
+            completed_at = NULL,
+            error_message = NULL
+        WHERE id = #{jobId}
+          AND job_type = 'RECORDING_ANALYSIS'
+          AND status = 'RUNNING'
+          AND (
+              claim_expires_at &lt;= UTC_TIMESTAMP(6)
+              OR (
+                  claim_expires_at IS NULL
+                  AND (
+                      started_at IS NULL
+                      OR started_at &lt;= DATE_SUB(
+                          UTC_TIMESTAMP(6), INTERVAL #{leaseSeconds} SECOND)
+                  )
+              )
           )
     </update>
 

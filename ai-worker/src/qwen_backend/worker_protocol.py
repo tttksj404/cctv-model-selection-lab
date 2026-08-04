@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime, timedelta
-from typing import ClassVar, Final, Literal
+from typing import ClassVar, Final, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
@@ -27,7 +27,11 @@ class WorkerModel(BaseModel):
 
 
 class RabbitWorkerJobEvent(WorkerModel):
-    """Routing-only event published by the central server's outbox."""
+    """Routing-only event published by the central server's outbox.
+
+    Legacy enriched fields are ignored during a rolling deployment, but the
+    publisher contract emits only the four fields below.
+    """
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
         alias_generator=to_camel,
@@ -39,32 +43,54 @@ class RabbitWorkerJobEvent(WorkerModel):
     command_id: str = Field(min_length=1, max_length=100)
     event_type: Literal["RECORDING_ANALYSIS_JOB_CREATED"]
     job_id: int = Field(gt=0)
-    case_id: int = Field(gt=0)
-    recording_id: int = Field(gt=0)
-    camera_id: int = Field(gt=0)
-    camera_code: str = Field(min_length=1, max_length=100)
-    camera_name: str = Field(min_length=1, max_length=255)
-    recording_object_key: str = Field(min_length=1, max_length=500)
-    attempt: int = Field(ge=1, le=100)
     occurred_at: datetime
 
 
 class RecordingAnalysisClaim(WorkerModel):
     job_id: int = Field(gt=0)
-    status: Literal["RUNNING"]
+    status: Literal["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"]
     attempt: int = Field(ge=1, le=100)
-    duplicate: bool
-    started_at: datetime
-    claimed_by: str = Field(min_length=1, max_length=100)
-    claim_expires_at: datetime
+    disposition: Literal[
+        "CLAIMED",
+        "LEASE_HELD",
+        "LEASE_HELD_BY_SELF",
+        "LEASE_HELD_BY_OTHER",
+        "RETRY_PENDING",
+        "TERMINAL",
+    ] | None = None
+    duplicate: bool | None = None
+    started_at: datetime | None = None
+    claimed_by: str | None = Field(default=None, min_length=1, max_length=100)
+    claim_expires_at: datetime | None = None
     lease_token: str | None = Field(default=None, min_length=1, max_length=200)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_legacy_duplicate_claim(cls, value: object) -> object:
+        if not isinstance(value, Mapping):
+            return value
+        payload: dict[str, object] = dict(cast(Mapping[str, object], value))
+        if "disposition" not in payload and payload.get("status") == "RUNNING":
+            payload["disposition"] = "LEASE_HELD" if payload.get("duplicate") is True else "CLAIMED"
+        return payload
 
     @model_validator(mode="after")
     def validate_lease_shape(self) -> RecordingAnalysisClaim:
-        if self.duplicate and self.lease_token is not None:
-            raise ValueError("duplicate claim must not return leaseToken")
-        if not self.duplicate and self.lease_token is None:
-            raise ValueError("non-duplicate claim requires leaseToken")
+        if self.disposition == "CLAIMED":
+            if self.status != "RUNNING" or self.lease_token is None:
+                raise ValueError("CLAIMED response requires RUNNING status and leaseToken")
+        elif self.disposition in {"LEASE_HELD", "LEASE_HELD_BY_SELF", "LEASE_HELD_BY_OTHER"}:
+            if self.status != "RUNNING" or self.lease_token is not None:
+                raise ValueError("LEASE_HELD response requires RUNNING status without leaseToken")
+        elif self.disposition == "RETRY_PENDING":
+            if self.status != "QUEUED" or self.lease_token is not None:
+                raise ValueError("RETRY_PENDING response requires QUEUED status without leaseToken")
+        elif self.disposition == "TERMINAL":
+            is_terminal = self.status in {"SUCCEEDED", "FAILED", "CANCELLED"}
+            if not is_terminal or self.lease_token is not None:
+                raise ValueError("TERMINAL response requires terminal status without leaseToken")
+        else:
+            raise ValueError("claim response requires disposition")
         return self
 
 
