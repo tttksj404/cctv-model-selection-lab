@@ -26,7 +26,7 @@ class MinioPropertiesBindingTests {
 				Map.entry("eyesonu.storage.minio.connect-timeout", "2s"),
 				Map.entry("eyesonu.storage.minio.read-timeout", "4s"),
 				Map.entry("eyesonu.storage.minio.call-timeout", "8s"),
-				Map.entry("eyesonu.storage.minio.max-file-size-bytes", "5368709120"),
+				Map.entry("eyesonu.storage.minio.max-file-size-bytes", "104857600"),
 				Map.entry("eyesonu.storage.minio.candidate-image-max-file-size-bytes", "8388608"),
 				Map.entry("eyesonu.storage.minio.presigned-url-expiry", "10m"));
 
@@ -42,7 +42,7 @@ class MinioPropertiesBindingTests {
 		assertEquals(Duration.ofSeconds(2), properties.getConnectTimeout());
 		assertEquals(Duration.ofSeconds(4), properties.getReadTimeout());
 		assertEquals(Duration.ofSeconds(8), properties.getCallTimeout());
-		assertEquals(5_368_709_120L, properties.getMaxFileSizeBytes());
+		assertEquals(104_857_600L, properties.getMaxFileSizeBytes());
 		assertEquals(8_388_608L, properties.getCandidateImageMaxFileSizeBytes());
 		assertEquals(Duration.ofMinutes(10), properties.getPresignedUrlExpiry());
 	}

@@ -2,6 +2,7 @@ package com.ssafy.eyesonu.recording.service;
 
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.dto.device.RecordingCreateRequest;
+import com.ssafy.eyesonu.recording.dto.device.RecordingUploadUrlCreateRequest;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -21,6 +22,12 @@ public class RecordingRequestValidator {
     private static final Pattern UUID_PATTERN = Pattern.compile(
             "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
+    private final RecordingObjectKeyFactory objectKeyFactory;
+
+    public RecordingRequestValidator(RecordingObjectKeyFactory objectKeyFactory) {
+        this.objectKeyFactory = objectKeyFactory;
+    }
+
     public NormalizedRecordingCreateRequest validate(
             String cameraCode, String idempotencyKey, RecordingCreateRequest request) {
         if (request == null) {
@@ -30,21 +37,31 @@ public class RecordingRequestValidator {
             throw validationError("cameraCode is required");
         }
 
-        String normalizedKey = normalizeIdempotencyKey(idempotencyKey);
-        Instant startTime = normalizeTime(request.startTime(), "startTime");
-        Instant endTime = normalizeTime(request.endTime(), "endTime");
-        if (!endTime.isAfter(startTime)) {
-            throw validationError("endTime must be after startTime");
-        }
-        validateObjectKey(cameraCode, request.objectKey());
+        NormalizedRecordingUploadRequest uploadRequest = normalize(
+                cameraCode, idempotencyKey, request.startTime(), request.endTime());
+        validateObjectKey(uploadRequest.objectKey(), request.objectKey());
 
         return new NormalizedRecordingCreateRequest(
-                cameraCode,
-                normalizedKey,
-                startTime,
-                endTime,
+                uploadRequest.cameraCode(),
+                uploadRequest.idempotencyKey(),
+                uploadRequest.startTime(),
+                uploadRequest.endTime(),
                 request.objectKey(),
-                fingerprint(cameraCode, startTime, endTime, request.objectKey()));
+                fingerprint(
+                        uploadRequest.cameraCode(),
+                        uploadRequest.startTime(),
+                        uploadRequest.endTime(),
+                        request.objectKey()));
+    }
+
+    public NormalizedRecordingUploadRequest validateUpload(
+            String cameraCode,
+            String idempotencyKey,
+            RecordingUploadUrlCreateRequest request) {
+        if (request == null) {
+            throw validationError("Request body is required");
+        }
+        return normalize(cameraCode, idempotencyKey, request.startTime(), request.endTime());
     }
 
     public Instant normalizeQueryTime(OffsetDateTime value, String fieldName) {
@@ -52,6 +69,28 @@ public class RecordingRequestValidator {
             return null;
         }
         return normalizeTime(value, fieldName);
+    }
+
+    private NormalizedRecordingUploadRequest normalize(
+            String cameraCode,
+            String idempotencyKey,
+            OffsetDateTime startTimeValue,
+            OffsetDateTime endTimeValue) {
+        if (cameraCode == null || cameraCode.isBlank()) {
+            throw validationError("cameraCode is required");
+        }
+        String normalizedKey = normalizeIdempotencyKey(idempotencyKey);
+        Instant startTime = normalizeTime(startTimeValue, "startTime");
+        Instant endTime = normalizeTime(endTimeValue, "endTime");
+        if (!endTime.isAfter(startTime)) {
+            throw validationError("endTime must be after startTime");
+        }
+        return new NormalizedRecordingUploadRequest(
+                cameraCode,
+                normalizedKey,
+                startTime,
+                endTime,
+                objectKeyFactory.create(cameraCode, startTime, normalizedKey));
     }
 
     private String normalizeIdempotencyKey(String value) {
@@ -75,27 +114,15 @@ public class RecordingRequestValidator {
         return value.toInstant();
     }
 
-    private void validateObjectKey(String cameraCode, String objectKey) {
+    private void validateObjectKey(String expectedObjectKey, String objectKey) {
         if (objectKey == null || objectKey.isBlank()) {
             throw validationError("objectKey is required");
         }
         if (objectKey.codePointCount(0, objectKey.length()) > MAX_OBJECT_KEY_LENGTH) {
             throw validationError("objectKey must not exceed 500 characters");
         }
-        if (objectKey.indexOf('\\') >= 0 || objectKey.codePoints().anyMatch(Character::isISOControl)) {
-            throw validationError("objectKey contains an invalid character");
-        }
-        if (!objectKey.startsWith("recordings/" + cameraCode + "/") || !objectKey.endsWith(".mp4")) {
-            throw validationError("objectKey must match recordings/{cameraCode}/.../*.mp4");
-        }
-        for (String segment : objectKey.split("/", -1)) {
-            if (segment.isEmpty() || ".".equals(segment) || "..".equals(segment)) {
-                throw validationError("objectKey contains an invalid path segment");
-            }
-        }
-        String fileName = objectKey.substring(objectKey.lastIndexOf('/') + 1);
-        if (".mp4".equals(fileName)) {
-            throw validationError("objectKey must include a file name before .mp4");
+        if (!expectedObjectKey.equals(objectKey)) {
+            throw validationError("objectKey must match the server-issued recording object key");
         }
     }
 

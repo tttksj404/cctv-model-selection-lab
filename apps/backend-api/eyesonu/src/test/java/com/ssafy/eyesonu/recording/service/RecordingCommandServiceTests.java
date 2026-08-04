@@ -40,16 +40,18 @@ class RecordingCommandServiceTests {
 
     private static final long MEDIA_SERVER_ID = 7L;
     private static final long CAMERA_ID = 11L;
-    private static final String CAMERA_CODE = "CAM-001";
+    private static final String CAMERA_CODE = "camera-01";
     private static final String IDEMPOTENCY_KEY = "550e8400-e29b-41d4-a716-446655440000";
-    private static final String OBJECT_KEY = "recordings/CAM-001/2026/video.mp4";
-    private static final long MAX_FILE_SIZE = 5_368_709_120L;
+    private static final String OBJECT_KEY = "recordings/camera-01/2026/07/20/"
+            + "20260720T010000000000Z_" + IDEMPOTENCY_KEY + ".mp4";
+    private static final long MAX_FILE_SIZE = 104_857_600L;
 
     private final CameraMapper cameraMapper = mock(CameraMapper.class);
     private final RecordingMapper recordingMapper = mock(RecordingMapper.class);
     private final StorageObjectVerifier storageVerifier = mock(StorageObjectVerifier.class);
     private final RecordingRegistrationWriter writer = mock(RecordingRegistrationWriter.class);
-    private final RecordingRequestValidator validator = new RecordingRequestValidator();
+    private final RecordingRequestValidator validator =
+            new RecordingRequestValidator(new RecordingObjectKeyFactory());
 
     private RecordingCommandService service;
 
@@ -61,6 +63,7 @@ class RecordingCommandServiceTests {
                 cameraMapper, recordingMapper, validator, storageVerifier, writer, properties);
         when(cameraMapper.findByCameraCode(CAMERA_CODE)).thenReturn(Optional.of(
                 new Camera(CAMERA_ID, MEDIA_SERVER_ID, CAMERA_CODE, "Camera")));
+        when(storageVerifier.readPrefix(OBJECT_KEY, 12)).thenReturn(mp4Prefix());
     }
 
     @Test
@@ -78,6 +81,7 @@ class RecordingCommandServiceTests {
         assertFalse(result.duplicate());
         assertSame(persisted, result.recording());
         verify(storageVerifier).stat(OBJECT_KEY);
+        verify(storageVerifier).readPrefix(OBJECT_KEY, 12);
         verify(writer).create(eq(MEDIA_SERVER_ID), any(NormalizedRecordingCreateRequest.class), eq(80L));
     }
 
@@ -119,10 +123,10 @@ class RecordingCommandServiceTests {
 
         assertApiError("RESOURCE_NOT_FOUND", 404, () -> service.create(
                 principal(), "MISSING", IDEMPOTENCY_KEY,
-                requestFor("MISSING", "recordings/MISSING/video.mp4")));
+                requestFor("MISSING", expectedKey("MISSING"))));
         assertApiError("ACCESS_DENIED", 403, () -> service.create(
                 principal(), "FOREIGN", IDEMPOTENCY_KEY,
-                requestFor("FOREIGN", "recordings/FOREIGN/video.mp4")));
+                requestFor("FOREIGN", expectedKey("FOREIGN"))));
         verifyNoInteractions(storageVerifier, writer);
     }
 
@@ -159,6 +163,36 @@ class RecordingCommandServiceTests {
                 .thenReturn(recording(100L, MAX_FILE_SIZE));
         RecordingCreateResult atLimit = service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request());
         assertEquals(MAX_FILE_SIZE, atLimit.recording().getFileSize());
+    }
+
+    @Test
+    void rejectsWrongMimeAndInvalidOrShortMp4Signatures() {
+        when(storageVerifier.stat(OBJECT_KEY)).thenReturn(new StorageObject(80L, "application/octet-stream"));
+        assertApiError("STORAGE_OBJECT_INVALID", 422,
+                () -> service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request()));
+
+        when(storageVerifier.stat(OBJECT_KEY)).thenReturn(new StorageObject(80L, "video/mp4"));
+        when(storageVerifier.readPrefix(OBJECT_KEY, 12)).thenReturn(new byte[12]);
+        assertApiError("STORAGE_OBJECT_INVALID", 422,
+                () -> service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request()));
+
+        when(storageVerifier.readPrefix(OBJECT_KEY, 12)).thenReturn(new byte[] {0, 0, 0, 8, 'f', 't'});
+        assertApiError("STORAGE_OBJECT_INVALID", 422,
+                () -> service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request()));
+    }
+
+    @Test
+    void mapsPrefixReadFailures() {
+        when(storageVerifier.stat(OBJECT_KEY)).thenReturn(new StorageObject(80L, "video/mp4"));
+        doThrow(new StorageObjectNotFoundException(null))
+                .when(storageVerifier).readPrefix(OBJECT_KEY, 12);
+        assertApiError("STORAGE_OBJECT_NOT_FOUND", 422,
+                () -> service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request()));
+
+        doThrow(new StorageObjectUnavailableException(null))
+                .when(storageVerifier).readPrefix(OBJECT_KEY, 12);
+        assertApiError("STORAGE_UNAVAILABLE", 503,
+                () -> service.create(principal(), CAMERA_CODE, IDEMPOTENCY_KEY, request()));
     }
 
     @Test
@@ -214,6 +248,17 @@ class RecordingCommandServiceTests {
                 OBJECT_KEY,
                 fileSize,
                 Instant.parse("2026-07-20T01:01:01Z"));
+    }
+
+    private String expectedKey(String cameraCode) {
+        return new RecordingObjectKeyFactory().create(
+                cameraCode,
+                Instant.parse("2026-07-20T01:00:00Z"),
+                IDEMPOTENCY_KEY);
+    }
+
+    private byte[] mp4Prefix() {
+        return new byte[] {0, 0, 0, 12, 'f', 't', 'y', 'p', 'i', 's', 'o', 'm'};
     }
 
     private void assertApiError(String code, int status, Runnable action) {

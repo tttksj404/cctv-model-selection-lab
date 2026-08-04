@@ -101,6 +101,8 @@ class SwaggerDocumentationTests {
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/device/cameras/{cameraCode}/heartbeat'].post.summary")
 						.value("카메라 Heartbeat 수신"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/device/search-targets'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/device/candidate-event-upload-urls'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/v1/admin/recordings'].get").exists())
@@ -341,7 +343,40 @@ class SwaggerDocumentationTests {
 						.exists())
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/device/cameras/{cameraCode}/recordings'].post.responses['429']")
-						.doesNotExist());
+						.doesNotExist())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post"
+								+ ".security[0].%s".formatted(SwaggerConfig.DEVICE_KEY_SCHEME)).isArray())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post"
+								+ ".parameters[1].name").value("Idempotency-Key"))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post"
+								+ ".parameters[1].required").value(true))
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['201']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['400']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['401']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['403']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['404']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['409']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['415']")
+						.exists())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/device/cameras/{cameraCode}/recording-upload-urls'].post.responses['503']")
+						.exists());
 	}
 
 	@Test
@@ -354,12 +389,33 @@ class SwaggerDocumentationTests {
 						.exists())
 				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.objectKey")
 						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.startTime.example")
+						.value("2026-08-04T03:15:30.123456Z"))
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.endTime.example")
+						.value("2026-08-04T03:16:00.123456Z"))
+				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.objectKey.example")
+						.value("recordings/camera-01/2026/08/04/"
+								+ "20260804T031530123456Z_550e8400-e29b-41d4-a716-446655440000.mp4"))
 				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.fileSize")
 						.doesNotExist())
 				.andExpect(jsonPath("$.components.schemas.RecordingCreateRequest.properties.uploadStatus")
 						.doesNotExist())
 				.andExpect(jsonPath("$.components.schemas.RecordingCreateResponse.properties.duplicate")
 						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingUploadUrlCreateRequest.properties.startTime")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingUploadUrlCreateRequest.properties.endTime")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingUploadUrlCreateResponse.properties.objectKey")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingUploadUrlCreateResponse.properties.uploadUrl")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingUploadUrlCreateResponse.properties.contentType")
+						.exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.RecordingUploadUrlCreateResponse.properties.expiresInSeconds").exists())
+				.andExpect(jsonPath(
+						"$.components.schemas.RecordingUploadUrlCreateResponse.properties.maxFileSizeBytes").exists())
 				.andExpect(jsonPath("$.components.schemas.AdminRecordingListResponse.properties.videoUrl")
 						.doesNotExist())
 				.andExpect(jsonPath("$.components.schemas.AdminRecordingDetailResponse.properties.videoUrl")
