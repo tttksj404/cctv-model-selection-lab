@@ -6,8 +6,11 @@ import com.ssafy.eyesonu.common.config.SwaggerConfig;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisJobClaimResponse;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultRequest;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultResponse;
+import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateRequest;
+import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateResponse;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobClaimService;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisBatchResultService;
+import com.ssafy.eyesonu.recording.service.RecordingAnalysisUploadUrlService;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureRequest;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureResponse;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisFailureService;
@@ -33,14 +36,17 @@ public class RecordingAnalysisWorkerController {
 
     private final RecordingAnalysisJobClaimService claimService;
     private final RecordingAnalysisBatchResultService resultService;
+    private final RecordingAnalysisUploadUrlService uploadUrlService;
     private final RecordingAnalysisFailureService failureService;
 
     public RecordingAnalysisWorkerController(
             RecordingAnalysisJobClaimService claimService,
             RecordingAnalysisBatchResultService resultService,
+            RecordingAnalysisUploadUrlService uploadUrlService,
             RecordingAnalysisFailureService failureService) {
         this.claimService = claimService;
         this.resultService = resultService;
+        this.uploadUrlService = uploadUrlService;
         this.failureService = failureService;
     }
 
@@ -51,6 +57,15 @@ public class RecordingAnalysisWorkerController {
         return ResponseEntity.ok(ApiResponse.of(
                 RecordingAnalysisJobClaimResponse.from(
                         claimService.claimForWorker(jobId, worker.workerId()))));
+    }
+
+    @PostMapping("/{jobId}/upload-urls")
+    public ResponseEntity<ApiResponse<RecordingAnalysisUploadUrlCreateResponse>> uploadUrls(
+            @AuthenticationPrincipal WorkerPrincipal worker,
+            @PathVariable @Positive Long jobId,
+            @Valid @RequestBody RecordingAnalysisUploadUrlCreateRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(
+                uploadUrlService.create(jobId, worker.workerId(), request)));
     }
 
     @PostMapping("/{jobId}/result")
