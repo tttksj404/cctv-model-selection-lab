@@ -24,7 +24,7 @@ public class RecordingAnalysisJobListener {
     }
 
     @RabbitListener(
-            queues = "${recording.analysis.backend-consumer.queue:recording.analysis.backend.queue}",
+            queues = "${recording.analysis.backend-consumer.queue}",
             containerFactory = "recordingAnalysisJobListenerContainerFactory")
     public void consume(RecordingAnalysisJobEvent event) {
         consumer.consume(event);

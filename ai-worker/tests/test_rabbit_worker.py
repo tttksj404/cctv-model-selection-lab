@@ -6,7 +6,8 @@ from types import SimpleNamespace
 import anyio
 
 from qwen_backend.notebook_worker import NotebookWorker, NotebookWorkerSettings
-from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRecordingWorker
+from qwen_backend.rabbit_consumer import RabbitRecordingWorker
+from qwen_backend.rabbit_worker import RabbitJobProcessor
 from qwen_backend.worker_protocol import RabbitWorkerJobEvent, RecordingAnalysisClaim
 
 

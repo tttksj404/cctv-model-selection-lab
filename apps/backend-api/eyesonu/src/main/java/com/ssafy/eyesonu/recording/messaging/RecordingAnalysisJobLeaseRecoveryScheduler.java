@@ -20,7 +20,7 @@ public class RecordingAnalysisJobLeaseRecoveryScheduler {
         this.recoveryService = recoveryService;
     }
 
-    @Scheduled(fixedDelayString = "${recording.analysis.lease-recovery.poll-delay-ms:60000}")
+    @Scheduled(fixedDelayString = "${recording.analysis.lease-recovery.poll-delay-ms}")
     public void recoverExpiredJobs() {
         recoveryService.recoverExpiredJobs();
     }

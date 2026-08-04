@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
+import com.ssafy.eyesonu.recording.config.RecordingAnalysisProperties;
 import com.ssafy.eyesonu.recording.mapper.AnalysisJobMapper;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 import java.util.List;
@@ -27,7 +28,8 @@ class RecordingAnalysisJobLeaseRecoveryServiceTests {
 
     @BeforeEach
     void setUp() {
-        service = new RecordingAnalysisJobLeaseRecoveryService(analysisJobMapper, publisher, 300);
+        service = new RecordingAnalysisJobLeaseRecoveryService(
+                analysisJobMapper, publisher, properties(300, 50));
     }
 
     @Test
@@ -56,5 +58,24 @@ class RecordingAnalysisJobLeaseRecoveryServiceTests {
         service.recoverExpiredJobs();
 
         verify(publisher, never()).enqueue(5001L, 101L);
+    }
+
+    @Test
+    void usesConfiguredRecoveryBatchAndLeaseDuration() {
+        service = new RecordingAnalysisJobLeaseRecoveryService(
+                analysisJobMapper, publisher, properties(123, 7));
+        when(analysisJobMapper.findExpiredRecordingAnalysisJobsForRecovery(7, 123))
+                .thenReturn(List.of());
+
+        service.recoverExpiredJobs();
+
+        verify(analysisJobMapper).findExpiredRecordingAnalysisJobsForRecovery(7, 123);
+    }
+
+    private RecordingAnalysisProperties properties(long workerClaimLeaseSeconds, int batchSize) {
+        RecordingAnalysisProperties properties = new RecordingAnalysisProperties();
+        properties.setWorkerClaimLeaseSeconds(workerClaimLeaseSeconds);
+        properties.getLeaseRecovery().setBatchSize(batchSize);
+        return properties;
     }
 }
