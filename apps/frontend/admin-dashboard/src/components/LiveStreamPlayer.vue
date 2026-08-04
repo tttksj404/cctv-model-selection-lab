@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Hls from "hls.js";
 import { Info, Maximize2, Minimize2, Pause, PictureInPicture2, Play } from "lucide-vue-next";
 
@@ -67,7 +67,11 @@ const startHls = async () => {
 
   if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = props.url;
-    await video.play();
+    try {
+      await video.play();
+    } catch {
+      setState("error");
+    }
     return;
   }
 
@@ -77,7 +81,10 @@ const startHls = async () => {
 
   hls = new Hls();
   hls.on(Hls.Events.ERROR, (_event, data) => {
-    if (data.fatal) setState("error");
+    if (data.fatal) {
+      setState("error");
+      disposeHls();
+    }
   });
   hls.on(Hls.Events.MANIFEST_PARSED, () => {
     video.play().catch(() => setState("error"));
@@ -133,6 +140,10 @@ const start = async () => {
     setState("error");
   }
 };
+
+watch(() => props.url, () => {
+  start();
+});
 
 const togglePlay = async () => {
   if (!videoRef.value) return;
