@@ -3,7 +3,7 @@ package com.ssafy.eyesonu.recording.service;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.recording.domain.Recording;
 import com.ssafy.eyesonu.recording.domain.RecordingRegistrationResult;
@@ -34,13 +34,13 @@ public class RecordingCommandService {
             RecordingRequestValidator requestValidator,
             StorageObjectVerifier storageObjectVerifier,
             RecordingRegistrationWriter registrationWriter,
-            S3Properties s3Properties) {
+            MinioProperties minioProperties) {
         this.cameraMapper = cameraMapper;
         this.recordingMapper = recordingMapper;
         this.requestValidator = requestValidator;
         this.storageObjectVerifier = storageObjectVerifier;
         this.registrationWriter = registrationWriter;
-        this.maxFileSizeBytes = s3Properties.getMaxFileSizeBytes();
+        this.maxFileSizeBytes = minioProperties.getMaxFileSizeBytes();
     }
 
     public RecordingCreateResult create(

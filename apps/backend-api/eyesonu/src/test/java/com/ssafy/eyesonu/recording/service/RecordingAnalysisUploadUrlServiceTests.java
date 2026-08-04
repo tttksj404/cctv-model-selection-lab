@@ -8,7 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.service.CandidateEventObjectKeyFactory;
 import com.ssafy.eyesonu.recording.domain.AnalysisJob;
@@ -37,7 +37,7 @@ class RecordingAnalysisUploadUrlServiceTests {
 
     @BeforeEach
     void setUp() {
-        S3Properties properties = new S3Properties();
+        MinioProperties properties = new MinioProperties();
         properties.setPresignedUrlExpiry(Duration.ofMinutes(15));
         service = new RecordingAnalysisUploadUrlService(
                 analysisJobMapper, new CandidateEventObjectKeyFactory(), urlSigner, properties);

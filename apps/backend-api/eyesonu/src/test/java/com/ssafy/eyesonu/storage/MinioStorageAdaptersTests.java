@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.time.Duration;
 
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectResponse;
@@ -31,7 +31,7 @@ class MinioStorageAdaptersTests {
 	private static final String OBJECT_KEY = "recordings/CAM-001/private-video.mp4";
 
 	private final MinioClient client = mock(MinioClient.class);
-	private final S3Properties properties = properties();
+	private final MinioProperties properties = properties();
 
 	@Test
 	void returnsObjectMetadataFromStat() throws Exception {
@@ -153,8 +153,8 @@ class MinioStorageAdaptersTests {
 		return exception;
 	}
 
-	private S3Properties properties() {
-		S3Properties properties = new S3Properties();
+	private MinioProperties properties() {
+		MinioProperties properties = new MinioProperties();
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
 		properties.setMaxFileSizeBytes(5_368_709_120L);

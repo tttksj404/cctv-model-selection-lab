@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.ssafy.eyesonu.auth.device.MediaServerPrincipal;
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.mapper.CameraMapper;
-import com.ssafy.eyesonu.common.config.properties.S3Properties;
+import com.ssafy.eyesonu.common.config.properties.MinioProperties;
 import com.ssafy.eyesonu.common.exception.ApiException;
 import com.ssafy.eyesonu.missingcase.domain.CaseStatus;
 import com.ssafy.eyesonu.missingcase.domain.MissingCaseRow;
@@ -42,7 +42,7 @@ class CandidateEventUploadUrlServiceTests {
 
     @BeforeEach
     void setUp() {
-        S3Properties properties = new S3Properties();
+        MinioProperties properties = new MinioProperties();
         properties.setPresignedUrlExpiry(Duration.ofMinutes(15));
         service = new CandidateEventUploadUrlService(
                 cameraMapper, candidateEventMapper, caseQueryService,
