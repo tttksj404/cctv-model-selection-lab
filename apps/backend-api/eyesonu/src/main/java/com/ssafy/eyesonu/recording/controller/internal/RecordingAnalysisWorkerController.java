@@ -8,9 +8,11 @@ import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultReques
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisBatchResultResponse;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateRequest;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisUploadUrlCreateResponse;
+import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisJobTargetResponse;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobClaimService;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisBatchResultService;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisUploadUrlService;
+import com.ssafy.eyesonu.recording.service.RecordingAnalysisJobTargetService;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureRequest;
 import com.ssafy.eyesonu.recording.dto.device.RecordingAnalysisFailureResponse;
 import com.ssafy.eyesonu.recording.service.RecordingAnalysisFailureService;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,16 +40,19 @@ public class RecordingAnalysisWorkerController {
     private final RecordingAnalysisJobClaimService claimService;
     private final RecordingAnalysisBatchResultService resultService;
     private final RecordingAnalysisUploadUrlService uploadUrlService;
+    private final RecordingAnalysisJobTargetService targetService;
     private final RecordingAnalysisFailureService failureService;
 
     public RecordingAnalysisWorkerController(
             RecordingAnalysisJobClaimService claimService,
             RecordingAnalysisBatchResultService resultService,
             RecordingAnalysisUploadUrlService uploadUrlService,
+            RecordingAnalysisJobTargetService targetService,
             RecordingAnalysisFailureService failureService) {
         this.claimService = claimService;
         this.resultService = resultService;
         this.uploadUrlService = uploadUrlService;
+        this.targetService = targetService;
         this.failureService = failureService;
     }
 
@@ -57,6 +63,13 @@ public class RecordingAnalysisWorkerController {
         return ResponseEntity.ok(ApiResponse.of(
                 RecordingAnalysisJobClaimResponse.from(
                         claimService.claimForWorker(jobId, worker.workerId()))));
+    }
+
+    @GetMapping("/{jobId}/target")
+    public ResponseEntity<ApiResponse<RecordingAnalysisJobTargetResponse>> target(
+            @AuthenticationPrincipal WorkerPrincipal worker,
+            @PathVariable @Positive Long jobId) {
+        return ResponseEntity.ok(ApiResponse.of(targetService.find(jobId, worker.workerId())));
     }
 
     @PostMapping("/{jobId}/upload-urls")

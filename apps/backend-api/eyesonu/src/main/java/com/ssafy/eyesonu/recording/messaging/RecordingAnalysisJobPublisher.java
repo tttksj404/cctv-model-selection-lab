@@ -105,8 +105,6 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
                         outbox.getCommandId(), outbox.getEventType(), outbox.getJobId(),
                         outbox.getCaseId(), outbox.getRecordingId(), outbox.getCameraId(),
                         outbox.getCameraCode(), outbox.getCameraName(), outbox.getRecordingObjectKey(),
-                        outbox.getPrompt(), outbox.getExclusionPrompt(),
-                        outbox.getSearchStart(), outbox.getSearchEnd(), outbox.getSearchArea(),
                         outbox.getAttempt(), outbox.getOccurredAt());
                 CorrelationData correlationData = new CorrelationData(outbox.getCommandId());
                 ensureLeaseOwned(leaseOwned);
