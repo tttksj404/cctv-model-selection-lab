@@ -172,12 +172,23 @@ class SwaggerDocumentationTests {
 								+ ".security[0].%s".formatted(SwaggerConfig.WORKER_KEY_SCHEME))
 						.isArray())
 				.andExpect(jsonPath(
+						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/upload-urls'].post"
+								+ ".security[0].%s".formatted(SwaggerConfig.WORKER_KEY_SCHEME))
+						.isArray())
+				.andExpect(jsonPath(
+						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/upload-urls'].post")
+						.exists())
+				.andExpect(jsonPath(
 						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/result'].post")
 						.exists())
 				.andExpect(jsonPath(
 						"$.paths['/api/v1/internal/recording-analysis-jobs/{jobId}/fail'].post")
 						.exists())
 				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisBatchResultRequest")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisUploadUrlCreateRequest")
+						.exists())
+				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisUploadUrlCreateResponse")
 						.exists())
 				.andExpect(jsonPath("$.components.schemas.RecordingAnalysisFailureRequest")
 						.exists())
