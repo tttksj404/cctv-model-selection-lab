@@ -9,15 +9,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-@ConfigurationProperties(prefix = "eyesonu.storage.s3")
-public class S3Properties {
+@ConfigurationProperties(prefix = "eyesonu.storage.minio")
+public class MinioProperties {
 
 	private static final Duration MAX_PRESIGNED_URL_EXPIRY = Duration.ofDays(7);
 
+	@NotNull
 	private URI endpoint;
 
 	@NotNull
@@ -29,10 +29,10 @@ public class S3Properties {
 	@NotBlank
 	private String bucket;
 
-	private boolean pathStyleAccess;
-
+	@NotBlank
 	private String accessKey;
 
+	@NotBlank
 	private String secretKey;
 
 	@NotNull
@@ -86,14 +86,6 @@ public class S3Properties {
 
 	public void setBucket(String bucket) {
 		this.bucket = bucket;
-	}
-
-	public boolean isPathStyleAccess() {
-		return pathStyleAccess;
-	}
-
-	public void setPathStyleAccess(boolean pathStyleAccess) {
-		this.pathStyleAccess = pathStyleAccess;
 	}
 
 	public String getAccessKey() {
@@ -168,17 +160,12 @@ public class S3Properties {
 		this.presignedUrlExpiry = presignedUrlExpiry;
 	}
 
-	@AssertTrue(message = "S3 access-key and secret-key must either both be set or both be omitted")
-	public boolean isCredentialsComplete() {
-		return StringUtils.hasText(accessKey) == StringUtils.hasText(secretKey);
-	}
-
-	@AssertTrue(message = "S3 client timeouts must be greater than zero")
+	@AssertTrue(message = "MinIO client timeouts must be greater than zero")
 	public boolean isTimeoutsPositive() {
 		return isPositive(connectTimeout) && isPositive(readTimeout) && isPositive(callTimeout);
 	}
 
-	@AssertTrue(message = "S3 presigned URL expiry must be between 1 second and 7 days")
+	@AssertTrue(message = "MinIO presigned URL expiry must be between 1 second and 7 days")
 	public boolean isPresignedUrlExpiryValid() {
 		return presignedUrlExpiry != null
 				&& presignedUrlExpiry.compareTo(Duration.ofSeconds(1)) >= 0

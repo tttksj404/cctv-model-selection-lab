@@ -11,42 +11,35 @@ import jakarta.validation.Validator;
 
 import org.junit.jupiter.api.Test;
 
-class S3PropertiesValidationTests {
+class MinioPropertiesValidationTests {
 
 	private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
 	@Test
-	void acceptsCompleteStaticCredentials() {
-		S3Properties properties = validProperties();
-		properties.setAccessKey("eyesonu-app");
-		properties.setSecretKey("eyesonu-app-secret");
+	void acceptsCompleteMinioConfiguration() {
+		MinioProperties properties = validProperties();
 
 		assertTrue(validator.validate(properties).isEmpty());
 	}
 
 	@Test
-	void acceptsOmittedCredentialsForIamRole() {
-		assertTrue(validator.validate(validProperties()).isEmpty());
-	}
-
-	@Test
 	void rejectsMissingBucketAndRegion() {
-		S3Properties properties = new S3Properties();
+		MinioProperties properties = new MinioProperties();
 
 		assertFalse(validator.validate(properties).isEmpty());
 	}
 
 	@Test
-	void rejectsOnlyOneCredential() {
-		S3Properties properties = validProperties();
-		properties.setAccessKey("eyesonu-app");
+	void rejectsMissingSecretKey() {
+		MinioProperties properties = validProperties();
+		properties.setSecretKey("");
 
 		assertFalse(validator.validate(properties).isEmpty());
 	}
 
 	@Test
 	void rejectsNonPositiveTimeouts() {
-		S3Properties properties = validProperties();
+		MinioProperties properties = validProperties();
 		properties.setCallTimeout(Duration.ZERO);
 
 		assertFalse(validator.validate(properties).isEmpty());
@@ -54,9 +47,9 @@ class S3PropertiesValidationTests {
 
 	@Test
 	void rejectsInvalidPresignedUrlExpiry() {
-		S3Properties tooShort = validProperties();
+		MinioProperties tooShort = validProperties();
 		tooShort.setPresignedUrlExpiry(Duration.ofMillis(999));
-		S3Properties tooLong = validProperties();
+		MinioProperties tooLong = validProperties();
 		tooLong.setPresignedUrlExpiry(Duration.ofDays(7).plusSeconds(1));
 
 		assertFalse(validator.validate(tooShort).isEmpty());
@@ -65,17 +58,20 @@ class S3PropertiesValidationTests {
 
 	@Test
 	void rejectsNonPositiveMaxFileSize() {
-		S3Properties properties = validProperties();
+		MinioProperties properties = validProperties();
 		properties.setMaxFileSizeBytes(0);
 
 		assertFalse(validator.validate(properties).isEmpty());
 	}
 
-	private S3Properties validProperties() {
-		S3Properties properties = new S3Properties();
+	private MinioProperties validProperties() {
+		MinioProperties properties = new MinioProperties();
+		properties.setEndpoint(URI.create("http://minio:9000"));
 		properties.setRegion("ap-northeast-2");
 		properties.setBucket("eyesonu-media");
 		properties.setPublicEndpoint(URI.create("https://storage.example.test"));
+		properties.setAccessKey("eyesonu-app");
+		properties.setSecretKey("eyesonu-app-secret");
 		properties.setMaxFileSizeBytes(5_368_709_120L);
 		return properties;
 	}

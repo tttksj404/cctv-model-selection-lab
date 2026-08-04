@@ -955,9 +955,9 @@ Content-Type: application/json
 6. 객체가 존재하고 실제 크기가 0보다 크며 환경별 제한 이하인지 확인한다.
 7. 별도 DB 트랜잭션에서 카메라 소유권을 잠금 재확인하고 녹화와 성공 멱등 요청을 원자적으로 생성한 뒤, 생성 행을 재조회한다.
 
-- 성공한 S3 PUT 이후 HEAD는 강한 일관성을 가지므로 객체 미발견을 전파 지연으로 처리하지 않는다. 자세한 내용은 [Amazon S3 데이터 일관성 모델](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)을 따른다.
-- [S3 HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) 또는 [MinIO statObject](https://docs.min.io/aistor/developers/sdk/java/api/)로 메타데이터만 조회하며 파일 본문을 다운로드하거나 H.264 코덱을 검사하지 않는다.
-- 전송 무결성이 필요하면 업로드 과정에서 객체 저장소의 체크섬 기능을 사용한다. multipart ETag를 전체 파일 MD5로 간주하지 않는다. 자세한 내용은 [Amazon S3 객체 무결성 검사](https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity-upload.html)를 따른다.
+- 성공한 MinIO PUT 이후 `statObject`는 강한 일관성을 가지므로 객체 미발견을 전파 지연으로 처리하지 않는다. 저장소 응답을 기준으로 즉시 성공·실패를 판정한다.
+- [MinIO statObject](https://docs.min.io/aistor/developers/sdk/java/api/)로 메타데이터만 조회하며 파일 본문을 다운로드하거나 H.264 코덱을 검사하지 않는다.
+- 전송 무결성이 필요하면 업로드 과정에서 MinIO 객체 저장소의 체크섬 기능을 사용한다. multipart ETag를 전체 파일 MD5로 간주하지 않는다.
 
 신규 등록 응답 `201 Created`:
 

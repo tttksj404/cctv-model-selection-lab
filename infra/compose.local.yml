@@ -54,9 +54,9 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_PASSWORD}
-      MINIO_REGION_NAME: ${S3_REGION:-ap-northeast-2}
+      MINIO_REGION_NAME: ${MINIO_REGION:-ap-northeast-2}
     ports:
-      - "127.0.0.1:${S3_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
       - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio_data:/data
@@ -78,22 +78,22 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Copy infra/.env.example to infra/.env and set MINIO_ROOT_PASSWORD}
-      S3_BUCKET: ${S3_BUCKET:-eyesonu-media}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Copy infra/.env.example to infra/.env and set S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY:?Copy infra/.env.example to infra/.env and set S3_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-eyesonu-media}
+      MINIO_APP_ACCESS_KEY: ${MINIO_APP_ACCESS_KEY:?Copy infra/.env.example to infra/.env and set MINIO_APP_ACCESS_KEY}
+      MINIO_APP_SECRET_KEY: ${MINIO_APP_SECRET_KEY:?Copy infra/.env.example to infra/.env and set MINIO_APP_SECRET_KEY}
     volumes:
       - ./minio/policies/eyesonu-app.json:/policies/eyesonu-app.json:ro
     entrypoint:
       - /bin/sh
       - -c
       - >-
-        test "$${S3_BUCKET}" = "eyesonu-media" &&
+        test "$${MINIO_BUCKET}" = "eyesonu-media" &&
         mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
-        mc mb --ignore-existing "local/$${S3_BUCKET}" &&
-        mc anonymous set private "local/$${S3_BUCKET}" &&
-        mc admin user add local "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}" &&
+        mc mb --ignore-existing "local/$${MINIO_BUCKET}" &&
+        mc anonymous set private "local/$${MINIO_BUCKET}" &&
+        mc admin user add local "$${MINIO_APP_ACCESS_KEY}" "$${MINIO_APP_SECRET_KEY}" &&
         mc admin policy create local eyesonu-app /policies/eyesonu-app.json &&
-        mc admin policy attach local eyesonu-app --user "$${S3_ACCESS_KEY}"
+        mc admin policy attach local eyesonu-app --user "$${MINIO_APP_ACCESS_KEY}"
     networks:
       - backend
 
