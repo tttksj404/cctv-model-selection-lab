@@ -324,10 +324,10 @@ describe("CaseFormView", () => {
         caseNumber: "EFU-NEW-33",
         status: "RECEIVED",
         reportedAt: "2026-07-30T05:30:00Z"
-      });
+    });
     caseApi.putCasePhoto.mockResolvedValue({ photoUrl: "https://storage.example/33.jpg" });
     const root = await mountView();
-    const photo = fillRequiredForm(root);
+    const photo = await fillRequiredForm(root);
 
     buttonByText(root, "사건 등록 · ID 발급").click();
     await nextTick();

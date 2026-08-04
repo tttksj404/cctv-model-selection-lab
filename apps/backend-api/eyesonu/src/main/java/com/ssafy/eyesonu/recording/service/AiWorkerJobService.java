@@ -25,6 +25,7 @@ import com.ssafy.eyesonu.recording.mapper.RecordingMapper;
 import com.ssafy.eyesonu.recording.messaging.RecordingAnalysisJobPublisher;
 import com.ssafy.eyesonu.storage.StorageObjectUrlSigner;
 import com.ssafy.eyesonu.storage.StorageObjectUnavailableException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,7 +33,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.HashSet;
@@ -282,8 +282,6 @@ public class AiWorkerJobService {
                 recording.getEndTime(),
                 job.getPromptSnapshot() == null ? "" : job.getPromptSnapshot(),
                 job.getExclusionPromptSnapshot(),
-                job.getSimilarityThresholdSnapshot() == null
-                        ? java.math.BigDecimal.ZERO : job.getSimilarityThresholdSnapshot(),
                 searchFromMs,
                 searchToMs,
                 leaseExpiresAt);

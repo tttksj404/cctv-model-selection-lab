@@ -1,6 +1,16 @@
 package com.ssafy.eyesonu.recording.messaging;
 
 import java.time.Instant;
+
+/**
+ * Notification-only event for the notebook AI Worker queue.
+ *
+ * <p>The broker is deliberately not a transport for prompts, recording keys,
+ * camera metadata, thresholds, or signed URLs. A worker claims {@code jobId}
+ * from the central server and receives those details over its authenticated
+ * API call. This keeps broker messages small and prevents a stale message
+ * from containing a previous revision of a search condition.</p>
+ */
 public record RecordingAnalysisJobEvent(
         String schemaVersion,
         String eventId,
@@ -12,10 +22,9 @@ public record RecordingAnalysisJobEvent(
     public static final String SCHEMA_VERSION = "eyesonu-ai-worker-event-v1";
 
     /**
-     * Compatibility constructor for the previous internal consumer tests. The
-     * event type deliberately does not cross the broker boundary: the worker
-     * receives only the routing identity and loads all sensitive job details
-     * through its authenticated central-server claim request.
+     * Compatibility constructor for callers that still use the previous
+     * command/event naming. Those values intentionally do not cross the
+     * notebook-worker broker boundary.
      */
     public RecordingAnalysisJobEvent(
             String eventId, String ignoredEventType, Long jobId, Long caseId, Instant occurredAt) {

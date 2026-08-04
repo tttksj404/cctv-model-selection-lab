@@ -31,6 +31,17 @@ public class RealtimePromptNormalizer {
 		return gender + " wearing a " + upperColor + " " + sleeve + " top and " + lowerColor + " pants";
 	}
 
+	public String normalizeOrNull(String source) {
+		String normalized = normalize(source);
+		return normalized.isBlank() ? null : normalized;
+	}
+
+	public boolean isUsable(String prompt, String exclusionPrompt) {
+		if (normalizeOrNull(prompt) == null) return false;
+		return exclusionPrompt == null || exclusionPrompt.isBlank()
+				|| normalizeOrNull(exclusionPrompt) != null;
+	}
+
 	private List<ColorMatch> findColors(String value) {
 		List<ColorMatch> matches = new ArrayList<>();
 		addKoreanColor(matches, value, "검은색", "black");

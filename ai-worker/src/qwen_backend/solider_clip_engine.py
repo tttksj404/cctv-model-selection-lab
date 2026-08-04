@@ -267,7 +267,12 @@ class SoliderClipCandidateEngine:
         )
         return CandidateRuntimeResponse(
             modelKey=self.model_key,
-            candidates=self._aggregate_tracks(frames, combined, scoring_mode),
+            candidates=self._aggregate_tracks(
+                frames,
+                combined,
+                scoring_mode,
+                similarity_threshold=request.similarity_threshold,
+            ),
         )
 
     def _aggregate_tracks(
@@ -275,6 +280,8 @@ class SoliderClipCandidateEngine:
         frames: Sequence[TrackFrame],
         scores,
         scoring_mode: str,
+        *,
+        similarity_threshold: float | None,
     ) -> tuple[RuntimeCandidate, ...]:
         grouped: dict[int, list[tuple[TrackFrame, float]]] = defaultdict(list)
         for frame, score in zip(frames, scores, strict=True):
@@ -285,6 +292,8 @@ class SoliderClipCandidateEngine:
             representative, _ = ranked[0]
             aggregate_count = min(self._config.aggregate_top_frames, len(ranked))
             track_score = sum(score for _, score in ranked[:aggregate_count]) / aggregate_count
+            if similarity_threshold is not None and track_score < similarity_threshold:
+                continue
             candidates.append(
                 RuntimeCandidate(
                     candidateKey=f"track-{track_id}",

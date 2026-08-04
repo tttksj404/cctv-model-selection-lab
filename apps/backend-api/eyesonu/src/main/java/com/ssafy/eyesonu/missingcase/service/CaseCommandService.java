@@ -30,6 +30,7 @@ public class CaseCommandService {
 	private final CaseRegistrationWriter registrationWriter;
 	private final AuditService auditService;
 	private final SearchTargetEventPublisher searchTargetEventPublisher;
+	private final RealtimePromptNormalizer promptNormalizer;
 
 	public CaseCommandService(
 			MissingCaseMapper mapper,
@@ -37,13 +38,15 @@ public class CaseCommandService {
 			CaseNumberGenerator caseNumberGenerator,
 			CaseRegistrationWriter registrationWriter,
 			AuditService auditService,
-			SearchTargetEventPublisher searchTargetEventPublisher) {
+			SearchTargetEventPublisher searchTargetEventPublisher,
+			RealtimePromptNormalizer promptNormalizer) {
 		this.mapper = mapper;
 		this.validator = validator;
 		this.caseNumberGenerator = caseNumberGenerator;
 		this.registrationWriter = registrationWriter;
 		this.auditService = auditService;
 		this.searchTargetEventPublisher = searchTargetEventPublisher;
+		this.promptNormalizer = promptNormalizer;
 	}
 
 	public CaseCreateResponse create(CaseCreateRequest request, Long adminId) {
@@ -90,8 +93,11 @@ public class CaseCommandService {
 		if (!row.getStatus().canTransitionTo(request.status())) {
 			throw business("허용되지 않는 사건 상태 전이입니다.");
 		}
-		if (row.getStatus() == CaseStatus.RECEIVED && request.status() == CaseStatus.SEARCHING) {
-			if (mapper.countSearchConditions(caseId) == 0 || mapper.countActiveCameras(caseId) == 0) {
+		if (request.status() == CaseStatus.SEARCHING) {
+			boolean hasRealtimeUsableCondition = mapper.findSearchConditions(caseId).stream()
+					.anyMatch(condition -> promptNormalizer.isUsable(
+							condition.getPrompt(), condition.getExclusionPrompt()));
+			if (!hasRealtimeUsableCondition || mapper.countActiveCameras(caseId) == 0) {
 				throw business("탐색 조건과 활성 카메라를 각각 하나 이상 등록해야 합니다.");
 			}
 		}

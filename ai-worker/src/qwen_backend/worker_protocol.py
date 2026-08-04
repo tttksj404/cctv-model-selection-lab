@@ -61,7 +61,10 @@ class WorkerJob(WorkerModel):
     recording_end: datetime
     prompt: str = Field(max_length=4_000)
     exclusion_prompt: str | None = Field(default=None, max_length=4_000)
-    similarity_threshold: float = Field(ge=0.0, le=1.0)
+    # origin/dev intentionally does not expose a server-owned similarity
+    # threshold.  Keep this optional to accept that contract, while remaining
+    # forward compatible with a future per-job threshold.
+    similarity_threshold: float | None = Field(default=None, ge=0.0, le=1.0)
     search_from_ms: int = Field(default=0, ge=0)
     search_to_ms: int | None = Field(default=None, gt=0)
     lease_expires_at: datetime

@@ -40,7 +40,10 @@ class CandidateRuntimeRequest(RuntimeModel):
     output_dir: Path
     prompt: str
     exclusion_prompt: str | None
-    similarity_threshold: float = Field(ge=0.0, le=1.0)
+    # A missing threshold means the central server requested ranked candidates
+    # without an automatic cut-off.  An explicitly supplied value is still
+    # honored by the runtime for forward-compatible server contracts.
+    similarity_threshold: float | None = Field(default=None, ge=0.0, le=1.0)
     search_from_ms: int = Field(default=0, ge=0)
     search_to_ms: int | None = Field(default=None, gt=0)
 

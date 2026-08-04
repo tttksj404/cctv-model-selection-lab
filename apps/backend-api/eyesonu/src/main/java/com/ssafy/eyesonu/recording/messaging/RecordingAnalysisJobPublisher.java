@@ -82,7 +82,6 @@ public class RecordingAnalysisJobPublisher implements AutoCloseable {
         outbox.setRecordingObjectKey(snapshot.getRecordingObjectKey());
         outbox.setPrompt(snapshot.getPrompt());
         outbox.setExclusionPrompt(snapshot.getExclusionPrompt());
-        outbox.setSimilarityThreshold(snapshot.getSimilarityThreshold());
         outbox.setSearchStart(snapshot.getSearchStart());
         outbox.setSearchEnd(snapshot.getSearchEnd());
         outbox.setSearchArea(snapshot.getSearchArea());

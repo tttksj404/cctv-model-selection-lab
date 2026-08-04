@@ -6,7 +6,8 @@ from types import SimpleNamespace
 import anyio
 
 from qwen_backend.central_client import CentralWorkerError
-from qwen_backend.rabbit_worker import RabbitJobProcessor
+from qwen_backend.notebook_worker import NotebookWorker, NotebookWorkerSettings
+from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRecordingWorker
 from qwen_backend.worker_protocol import RabbitWorkerJobEvent, WorkerClaimResponse, WorkerJob
 
 
@@ -44,6 +45,50 @@ class FakeWorker:
     async def process_claim(self, client: FakeClient, claim: WorkerClaimResponse) -> bool:
         self.processed.append(claim)
         return True
+
+
+class EmptyCentralClient:
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+    async def __aenter__(self) -> EmptyCentralClient:
+        return self
+
+    async def __aexit__(self, *args) -> None:
+        return None
+
+
+class EmptyQueue:
+    async def get(self, *, fail: bool):
+        assert fail is False
+        return None
+
+
+class QosChannel:
+    def __init__(self) -> None:
+        self.prefetch_count: int | None = None
+        self.queue_name: str | None = None
+
+    async def set_qos(self, *, prefetch_count: int) -> None:
+        self.prefetch_count = prefetch_count
+
+    async def declare_queue(self, name: str, *, durable: bool, passive: bool) -> EmptyQueue:
+        self.queue_name = name
+        assert durable is True
+        assert passive is True
+        return EmptyQueue()
+
+
+class QosConnection:
+    def __init__(self, channel: QosChannel) -> None:
+        self._channel = channel
+        self.closed = False
+
+    async def channel(self) -> QosChannel:
+        return self._channel
+
+    async def close(self) -> None:
+        self.closed = True
 
 
 def _event_body() -> bytes:
@@ -129,3 +174,28 @@ def test_rabbit_processor_dead_letters_malformed_message() -> None:
         assert delivery.rejected == [False]
 
     anyio.run(scenario)
+
+
+def test_rabbit_worker_configures_single_delivery_prefetch(monkeypatch) -> None:
+    channel = QosChannel()
+    connection = QosConnection(channel)
+
+    async def connect_robust(url: str) -> QosConnection:
+        assert url == "amqp://guest:guest@localhost/"
+        return connection
+
+    monkeypatch.setattr("qwen_backend.rabbit_worker.CentralWorkerClient", EmptyCentralClient)
+    monkeypatch.setattr("qwen_backend.rabbit_worker.aio_pika.connect_robust", connect_robust)
+    worker = NotebookWorker(
+        NotebookWorkerSettings(
+            central_api_url="https://central.example",
+            api_key="test-key",
+            worker_id="notebook-test",
+            rabbitmq_url="amqp://guest:guest@localhost/",
+        )
+    )
+
+    assert anyio.run(RabbitRecordingWorker(worker).run_once) is False
+    assert channel.prefetch_count == 1
+    assert channel.queue_name == "ai.worker.recording-analysis.v1"
+    assert connection.closed is True

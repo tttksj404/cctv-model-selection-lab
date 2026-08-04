@@ -17,7 +17,6 @@
         <result property="searchEndSnapshot" column="search_end_snapshot"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchAreaSnapshot" column="search_area_snapshot"/>
-        <result property="similarityThresholdSnapshot" column="similarity_threshold_snapshot"/>
         <result property="retryCount" column="retry_count"/>
         <result property="errorMessage" column="error_message"/>
         <result property="requestedAt" column="requested_at"
@@ -46,7 +45,6 @@
         <result property="recordingObjectKey" column="recording_object_key"/>
         <result property="prompt" column="prompt"/>
         <result property="exclusionPrompt" column="exclusion_prompt"/>
-        <result property="similarityThreshold" column="similarity_threshold"/>
         <result property="searchStart" column="search_start"
                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
         <result property="searchEnd" column="search_end"
@@ -60,21 +58,21 @@
         INSERT INTO analysis_jobs (
             case_id, search_condition_id, recording_id, job_type, status,
             prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
-            search_end_snapshot, search_area_snapshot, similarity_threshold_snapshot,
+            search_end_snapshot, search_area_snapshot,
             retry_count, requested_at
         ) VALUES (
             #{caseId}, #{searchConditionId}, #{recordingId}, #{jobType}, #{status},
             #{promptSnapshot}, #{exclusionPromptSnapshot},
             #{searchStartSnapshot,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
             #{searchEndSnapshot,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
-            #{searchAreaSnapshot}, #{similarityThresholdSnapshot}, 0, UTC_TIMESTAMP(6)
+            #{searchAreaSnapshot}, 0, UTC_TIMESTAMP(6)
         )
     </insert>
 
     <sql id="analysisJobColumns">
         id, case_id, search_condition_id, recording_id, job_type, status,
         prompt_snapshot, exclusion_prompt_snapshot, search_start_snapshot,
-        search_end_snapshot, search_area_snapshot, similarity_threshold_snapshot,
+        search_end_snapshot, search_area_snapshot,
         retry_count, error_message, requested_at, started_at, claimed_by,
         claim_expires_at, completed_at, lease_token_hash, result_model_key,
         result_payload, result_digest
@@ -163,7 +161,6 @@
                r.s3_key AS recording_object_key,
                aj.prompt_snapshot AS prompt,
                aj.exclusion_prompt_snapshot AS exclusion_prompt,
-               aj.similarity_threshold_snapshot AS similarity_threshold,
                aj.search_start_snapshot AS search_start,
                aj.search_end_snapshot AS search_end,
                aj.search_area_snapshot AS search_area,

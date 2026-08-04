@@ -56,7 +56,10 @@ class NotebookWorkerSettings(BaseSettings):
         default="ai.worker.recording-analysis.v1",
         pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$",
     )
-    rabbitmq_prefetch_count: int = Field(default=1, ge=1, le=10)
+    # One GPU worker must hold at most one unacknowledged analysis job. This
+    # keeps the lease, local CUDA memory, and RabbitMQ acknowledgement model
+    # aligned even when an environment file is edited manually.
+    rabbitmq_prefetch_count: int = Field(default=1, ge=1, le=1)
     rabbitmq_reconnect_delay_seconds: float = Field(default=5.0, gt=0.1, le=300.0)
     cache_dir: Path = Path("artifacts/ai-worker/cache")
     output_dir: Path = Path("artifacts/ai-worker/jobs")
