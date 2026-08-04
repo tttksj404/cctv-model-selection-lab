@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.ssafy.eyesonu.TestDatabaseConfiguration;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
+import com.ssafy.eyesonu.camera.domain.CameraHeartbeatState;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
 import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,5 +99,40 @@ class CameraMapperTest {
         assertThat(updated.status()).isEqualTo("OFFLINE");
         assertThat(updated.lastHeartbeat()).isNull();
         assertThat(updated.mediaServerId()).isEqualTo(152002L);
+    }
+
+    @Test
+    void heartbeatMapperStoresNewestStateAndTimeoutCanMarkItOffline() {
+        String cameraCode = "recording-fixture-camera-153001";
+        Instant occurredAt = Instant.parse("2026-07-20T02:00:00Z");
+        CameraHeartbeatState initial = cameraMapper
+                .findHeartbeatStateByCameraCode(cameraCode)
+                .orElseThrow();
+        Instant initialUpdatedAt = cameraMapper.findAdminById(initial.id()).updatedAt();
+
+        assertThat(initial.status()).isEqualTo("OFFLINE");
+        assertThat(cameraMapper.updateHeartbeat(initial.id(), initial.mediaServerId(), "ONLINE", occurredAt)).isEqualTo(1);
+        assertThat(cameraMapper.updateHeartbeat(
+                initial.id(), initial.mediaServerId(), "ERROR", occurredAt.minusSeconds(1))).isZero();
+        assertThat(cameraMapper.updateHeartbeat(
+                initial.id(), 999999L, "ERROR", occurredAt.plusSeconds(1))).isZero();
+
+        CameraHeartbeatState online = cameraMapper
+                .findHeartbeatStateByCameraCode(cameraCode)
+                .orElseThrow();
+        assertThat(online.status()).isEqualTo("ONLINE");
+        assertThat(online.lastHeartbeat()).isEqualTo(occurredAt);
+        assertThat(cameraMapper.findAdminById(initial.id()).updatedAt())
+                .isAfter(initialUpdatedAt);
+
+        Instant threshold = occurredAt.plusSeconds(30);
+        assertThat(cameraMapper.markOffline(threshold)).isEqualTo(1);
+        assertThat(cameraMapper.markOffline(threshold)).isZero();
+
+        CameraHeartbeatState offline = cameraMapper
+                .findHeartbeatStateByCameraCode(cameraCode)
+                .orElseThrow();
+        assertThat(offline.status()).isEqualTo("OFFLINE");
+        assertThat(offline.lastHeartbeat()).isEqualTo(occurredAt);
     }
 }

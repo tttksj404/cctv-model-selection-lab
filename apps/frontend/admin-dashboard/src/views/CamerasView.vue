@@ -6,6 +6,7 @@ import BasePagination from "../components/common/BasePagination.vue";
 import StateBlock from "../components/common/StateBlock.vue";
 import StatusBadge from "../components/common/StatusBadge.vue";
 import { mapCamera } from "../domain/cameraMapper";
+import { CAMERA_POLL_INTERVAL_MS } from "../config/cameraPolling";
 
 const router = useRouter();
 const filters = reactive({ keyword: "", status: "all" });
@@ -17,6 +18,8 @@ const totalCount = ref(0);
 const loading = ref(true);
 const error = ref("");
 let latestRequestId = 0;
+let activeRequestCount = 0;
+let refreshTimer = null;
 
 const listParams = () => ({
   status: filters.status === "all" ? undefined : filters.status.toUpperCase(),
@@ -26,24 +29,32 @@ const listParams = () => ({
   sort: "cameraCode,asc"
 });
 
-const load = async () => {
+const load = async ({ silent = false } = {}) => {
+  if (silent && activeRequestCount > 0) return;
   const requestId = ++latestRequestId;
-  loading.value = true;
-  error.value = "";
+  activeRequestCount += 1;
+  if (!silent) {
+    loading.value = true;
+    error.value = "";
+  }
 
   try {
     const result = await listCameras(listParams());
     if (requestId !== latestRequestId) return;
+    error.value = "";
     rows.value = (result.data || []).map(mapCamera);
     totalPages.value = Math.max(1, result.meta?.totalPages || 0);
     totalCount.value = result.meta?.totalElements || 0;
   } catch (cause) {
     if (requestId !== latestRequestId) return;
-    rows.value = [];
-    totalPages.value = 1;
-    totalCount.value = 0;
-    error.value = cause?.message || "CCTV 목록을 불러오지 못했습니다.";
+    if (!silent) {
+      rows.value = [];
+      totalPages.value = 1;
+      totalCount.value = 0;
+      error.value = cause?.message || "CCTV 목록을 불러오지 못했습니다.";
+    }
   } finally {
+    activeRequestCount -= 1;
     if (requestId === latestRequestId) loading.value = false;
   }
 };
@@ -61,8 +72,14 @@ watch(() => [filters.keyword, filters.status], () => {
   load();
 });
 watch(page, load);
-onMounted(load);
-onBeforeUnmount(() => { latestRequestId += 1; });
+onMounted(() => {
+  load();
+  refreshTimer = window.setInterval(() => load({ silent: true }), CAMERA_POLL_INTERVAL_MS);
+});
+onBeforeUnmount(() => {
+  latestRequestId += 1;
+  if (refreshTimer) window.clearInterval(refreshTimer);
+});
 </script>
 
 <template>

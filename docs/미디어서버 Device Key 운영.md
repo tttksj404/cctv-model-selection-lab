@@ -59,6 +59,42 @@ X-Device-Key: msk_<keyId>.<secret>
 
 Device Key는 URL, 요청 본문, 로그에 기록하지 않는다. 실제 배포에서는 HTTPS로만 전송한다.
 
+### Heartbeat 발신 주기
+
+미디어 서버가 카메라 Heartbeat 발신 주기를 소유한다. 기본값은 10초이며, 실제 발신 주기는 미디어 서버의 `CAMERA_HEARTBEAT_INTERVAL` 설정(기본 `10s`)에서 조정한다.
+중앙 서버는 Heartbeat를 생성하거나 발신하지 않고, 마지막 Heartbeat 수신 시각을 기준으로 timeout을 판정한다.
+중앙 서버의 기본 `OFFLINE` timeout은 30초, 상태 확인 주기는 10초이며 다음 백엔드 환경 변수로 조정한다.
+
+- `CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS`
+- `CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS`
+
+### Heartbeat 연동 재현 증거
+
+아래 예시는 실제 Device Key를 노출하지 않는 redacted placeholder 기반 확인 절차다.
+
+정상 Heartbeat 요청은 `204 No Content`를 반환해야 한다.
+
+```bash
+curl --fail-with-body --request POST \
+  "${CENTRAL_API_BASE_URL}/api/v1/device/cameras/CAM-001/heartbeat" \
+  --header "X-Device-Key: <REDACTED_DEVICE_KEY>" \
+  --header "Content-Type: application/json" \
+  --data '{"occurredAt":"2026-07-20T02:00:00Z","status":"ONLINE","detail":null}'
+```
+
+정상 응답은 본문 없이 HTTP `204`다. 중앙 서버는 요청의 `occurredAt`을 UTC instant로 저장한다.
+
+```sql
+SELECT id, camera_code, status, last_heartbeat, updated_at
+FROM cameras
+WHERE camera_code = 'CAM-001';
+```
+
+- 잘못된 Device Key 또는 누락된 Key: `401` (`INVALID_DEVICE_KEY`)
+- 인증된 미디어 서버에 속하지 않는 카메라: `403` (`ACCESS_DENIED`)
+- 존재하지 않는 카메라: `404` (`RESOURCE_NOT_FOUND`)
+- Heartbeat 발신을 중단한 뒤 30초 timeout과 다음 상태 확인 주기를 기다리면 `status = 'OFFLINE'`으로 전환된다. `last_heartbeat`는 변경되지 않는다.
+
 ### 녹화 메타데이터 등록 순서
 
 dev Tailscale 구성이 구현된 뒤 Raspberry Pi 5 업로더는 [dev Tailscale 연동 운영](<./Tailscale 연동 운영.md>)에 정의된 tailnet MinIO endpoint를 장치 업로드 전용으로 사용한다. 현재 `dev` 저장소에는 해당 Tailscale·MinIO 노출 구성이 적용되어 있지 않다. 적용 후에도 이 주소는 브라우저에 반환하지 않으며, 녹화 객체 업로드 후 메타데이터 등록은 기존 공용 HTTPS Device API로 수행한다.

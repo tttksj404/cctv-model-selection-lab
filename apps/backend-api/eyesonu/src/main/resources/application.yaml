@@ -34,3 +34,8 @@ recording:
     worker-claim-lease-seconds: 300
     outbox:
       claim-lease-seconds: 300
+
+camera:
+  heartbeat:
+    offline-timeout-ms: ${CAMERA_HEARTBEAT_OFFLINE_TIMEOUT_MS:30000}
+    status-check-interval-ms: ${CAMERA_HEARTBEAT_STATUS_CHECK_INTERVAL_MS:10000}

@@ -70,6 +70,7 @@ describe("CamerasView", () => {
   afterEach(() => {
     app?.unmount();
     root?.remove();
+    vi.useRealTimers();
   });
 
   it("uses server pagination and renders real camera metadata", async () => {
@@ -148,5 +149,21 @@ describe("CamerasView", () => {
 
     expect(listCamerasMock).toHaveBeenCalledTimes(2);
     expect(root.textContent).toContain("camera-01");
+  });
+
+  it("polls the current page and stops polling after unmount", async () => {
+    vi.useFakeTimers();
+    listCamerasMock.mockResolvedValue(result([camera()]));
+    mount();
+    await settle();
+
+    expect(listCamerasMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settle();
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
+
+    app.unmount();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
   });
 });
