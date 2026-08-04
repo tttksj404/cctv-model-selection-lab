@@ -14,7 +14,39 @@ X-Worker-Key: <worker-key>
 The response contains the current `attempt`. The Worker must use that attempt
 when uploading images and submitting the result.
 
-## 2. Request image upload URLs
+## 2. Read the analysis target
+
+The Worker reads the recording source and appearance target through the backend
+after claiming the job:
+
+```http
+GET /api/v1/internal/recording-analysis-jobs/{jobId}/target
+X-Worker-Key: <worker-key>
+```
+
+The response includes the recording object key, canonical appearance prompts,
+search time and area, camera information, and the current attempt. The Worker
+must use this response instead of receiving appearance prompts through RabbitMQ.
+
+```json
+{
+  "jobId": 42,
+  "caseId": 7,
+  "recordingId": 15,
+  "cameraId": 3,
+  "cameraCode": "CAM-003",
+  "cameraName": "Front",
+  "recordingObjectKey": "recordings/CAM-003/2026/08/03/video.mp4",
+  "prompt": "a man wearing a black short sleeve top and black pants",
+  "exclusionPrompt": null,
+  "searchStart": "2026-08-03T00:00:00Z",
+  "searchEnd": "2026-08-03T00:30:00Z",
+  "searchArea": "front gate",
+  "attempt": 1
+}
+```
+
+## 3. Request image upload URLs
 
 ```http
 POST /api/v1/internal/recording-analysis-jobs/{jobId}/upload-urls
@@ -63,7 +95,7 @@ response has one frame URL and one crop URL per track:
 The Worker uploads only the image bytes to each URL. It must use the returned
 `contentType` and retry the URL request if the URL expires.
 
-## 3. Submit the analysis details
+## 4. Submit the analysis details
 
 After every image upload succeeds, submit the result using the returned object
 keys:
