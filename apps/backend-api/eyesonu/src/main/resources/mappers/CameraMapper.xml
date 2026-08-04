@@ -27,6 +27,18 @@
         </constructor>
     </resultMap>
 
+    <resultMap id="cameraHeartbeatStateResultMap"
+               type="com.ssafy.eyesonu.camera.domain.CameraHeartbeatState">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="media_server_id" javaType="java.lang.Long"/>
+            <arg column="camera_code" javaType="java.lang.String"/>
+            <arg column="status" javaType="java.lang.String"/>
+            <arg column="last_heartbeat" javaType="java.time.Instant"
+                 typeHandler="com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler"/>
+        </constructor>
+    </resultMap>
+
     <sql id="adminCameraColumns">
         c.id,
         c.media_server_id,
@@ -57,6 +69,31 @@
             </if>
         </where>
     </sql>
+
+    <select id="findHeartbeatStateByCameraCode" resultMap="cameraHeartbeatStateResultMap">
+        SELECT id, media_server_id, camera_code, status, last_heartbeat
+        FROM cameras
+        WHERE camera_code = #{cameraCode}
+    </select>
+
+    <update id="updateHeartbeat">
+        UPDATE cameras
+        SET status = #{status},
+            last_heartbeat = #{lastHeartbeat,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler},
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE id = #{cameraId}
+          AND media_server_id = #{mediaServerId}
+          AND (last_heartbeat IS NULL OR last_heartbeat &lt; #{lastHeartbeat,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler})
+    </update>
+
+    <update id="markOffline">
+        UPDATE cameras
+        SET status = 'OFFLINE',
+            updated_at = UTC_TIMESTAMP(6)
+        WHERE status &lt;&gt; 'OFFLINE'
+          AND last_heartbeat IS NOT NULL
+          AND last_heartbeat &lt; #{threshold,typeHandler=com.ssafy.eyesonu.common.persistence.mybatis.UtcInstantTypeHandler}
+    </update>
 
     <select id="countAdminCameras" resultType="long">
         SELECT COUNT(*)

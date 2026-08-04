@@ -2,9 +2,11 @@ package com.ssafy.eyesonu.camera.mapper;
 
 import com.ssafy.eyesonu.camera.domain.Camera;
 import com.ssafy.eyesonu.camera.domain.CameraCreateCommand;
+import com.ssafy.eyesonu.camera.domain.CameraHeartbeatState;
 import com.ssafy.eyesonu.camera.domain.CameraManagementRow;
 import com.ssafy.eyesonu.camera.domain.CameraStreamUrlRow;
 import com.ssafy.eyesonu.camera.domain.CameraUpdateCommand;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
@@ -44,6 +46,17 @@ public interface CameraMapper {
     FOR UPDATE
     """)
     Optional<Camera> findByCameraCodeForUpdate(@Param("cameraCode") String cameraCode);
+
+    Optional<CameraHeartbeatState> findHeartbeatStateByCameraCode(
+            @Param("cameraCode") String cameraCode);
+
+    int updateHeartbeat(
+            @Param("cameraId") Long cameraId,
+            @Param("mediaServerId") Long mediaServerId,
+            @Param("status") String status,
+            @Param("lastHeartbeat") Instant lastHeartbeat);
+
+    int markOffline(@Param("threshold") Instant threshold);
 
     long countAdminCameras(
             @Param("status") String status,

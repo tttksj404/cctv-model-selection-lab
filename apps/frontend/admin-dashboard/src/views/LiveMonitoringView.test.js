@@ -46,6 +46,7 @@ describe("LiveMonitoringView", () => {
   afterEach(() => {
     app?.unmount();
     root?.remove();
+    vi.useRealTimers();
   });
 
   it("loads up to four cameras and fills the remaining quad slots", async () => {
@@ -90,5 +91,43 @@ describe("LiveMonitoringView", () => {
 
     expect(listCamerasMock).toHaveBeenCalledTimes(2);
     expect(root.textContent).toContain("Camera 01");
+  });
+
+  it("polls camera state and clears the timer on unmount", async () => {
+    vi.useFakeTimers();
+    listCamerasMock.mockResolvedValue(result([rawCamera(1, "camera-01")]));
+    mount();
+    await settle();
+
+    expect(listCamerasMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settle();
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
+
+    app.unmount();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(listCamerasMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("updates camera status without replacing the active player element", async () => {
+    const onlineCamera = rawCamera(1, "camera-01");
+    onlineCamera.status = "ONLINE";
+    onlineCamera.lastHeartbeat = "2026-07-20T02:00:00Z";
+    vi.useFakeTimers();
+    listCamerasMock
+      .mockResolvedValueOnce(result([rawCamera(1, "camera-01")]))
+      .mockResolvedValueOnce(result([onlineCamera]));
+    mount();
+    await settle();
+
+    const iframe = root.querySelector("iframe");
+    await vi.advanceTimersByTimeAsync(10_000);
+    await settle();
+
+    expect(root.querySelector("iframe")).toBe(iframe);
+    root.querySelector('button[aria-label="카메라 정보"]').click();
+    await settle();
+    expect(root.textContent).toContain("ONLINE");
+    expect(root.textContent).toContain("2026-07-20 11:00");
   });
 });
