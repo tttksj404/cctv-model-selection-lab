@@ -68,6 +68,29 @@ def test_target_accepts_closed_30_or_60_second_recording_windows(
     assert target.search_to_ms == search_to_ms
 
 
+def test_target_accepts_fractional_millisecond_recording_boundary() -> None:
+    target = RecordingAnalysisTarget.model_validate(
+        {
+            "jobId": 71,
+            "caseId": 11,
+            "recordingId": 31,
+            "cameraId": 41,
+            "cameraCode": "CAM-001",
+            "cameraName": "Gate A",
+            "recordingObjectKey": "recordings/CAM-001/video.mp4",
+            "recordingDownloadUrl": "https://storage.example/video.mp4",
+            "recordingStart": "2026-07-30T00:00:00.000000Z",
+            "recordingEnd": "2026-07-30T00:00:30.000600Z",
+            "prompt": "red jacket",
+            "analysisStart": "2026-07-30T00:00:00.000000Z",
+            "analysisEnd": "2026-07-30T00:00:30.000600Z",
+            "attempt": 1,
+        }
+    )
+
+    assert target.resolved_search_window_ms == (0, 30_001)
+
+
 def _envelope(data: dict[str, object]) -> dict[str, object]:
     return {"timestamp": "2026-07-30T00:00:00Z", "data": data}
 

@@ -214,6 +214,17 @@
     "florenceRole": "offline attribute-label candidate; not enabled as a second runtime generator",
     "sonnetRole": "offline Claude CLI attribute annotation pilot only; no CHIRLA identity arm was run and provider training-use terms still require approval",
     "runtimeGenerativeEnsemble": false,
+    "recordingWorkerRuntime": {
+      "engine": "multi_model_candidate_engine",
+      "detector": "YOLO+ByteTrack",
+      "appearance": "CLIP ViT-L/14 holistic plus prompt contrast",
+      "attributeGate": "ROI color plus SOLIDER-PAR; CLIP PETA/PA100k fallback",
+      "identity": "SOLIDER reference or case-anchor; attribute-first without anchor",
+      "historicalRetrieval": "case gallery when identity anchor is available",
+      "trackFusion": "temporal and spatial consistency with availability-aware late fusion",
+      "qwenReview": "top-K local Qwen review when QWEN_PROVIDER=qwen and checkpoint is ready",
+      "missingModelPolicy": "record_unavailable_and_fail_closed_for_required_color"
+    },
     "autoMatchRequires": [
       "embedded score present",
       "historical score present",

@@ -33,6 +33,47 @@ def test_qwen_provider_is_lazy() -> None:
     assert provider.model_loaded is False
 
 
+def test_qwen_provider_uses_the_existing_qwen3vl_loader_without_qwen_vl_utils(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    import sys
+    import types
+
+    model_calls: list[tuple[Path, dict[str, object]]] = []
+    processor_calls: list[tuple[Path, dict[str, object]]] = []
+
+    class FakeProcessor:
+        @classmethod
+        def from_pretrained(cls, checkpoint: Path, **kwargs: object) -> "FakeProcessor":
+            processor_calls.append((checkpoint, kwargs))
+            return cls()
+
+    class FakeModel:
+        @classmethod
+        def from_pretrained(cls, checkpoint: Path, **kwargs: object) -> "FakeModel":
+            model_calls.append((checkpoint, kwargs))
+            return cls()
+
+        def eval(self) -> "FakeModel":
+            return self
+
+    fake_transformers = types.ModuleType("transformers")
+    fake_transformers.AutoProcessor = FakeProcessor
+    fake_transformers.Qwen3VLForConditionalGeneration = FakeModel
+    monkeypatch.setitem(sys.modules, "transformers", fake_transformers)
+
+    provider = Qwen3VLProvider(
+        Settings(provider="qwen", model_path=tmp_path, model_version="legacy-qwen3vl")
+    )
+    provider._load()
+
+    assert provider.model_loaded is True
+    assert processor_calls == [(tmp_path, {"local_files_only": True})]
+    assert model_calls[0][0] == tmp_path
+    assert model_calls[0][1]["local_files_only"] is True
+
+
 def test_model_payload_requires_strict_fields() -> None:
     with pytest.raises(ValidationError):
         ModelAnalysisPayload.model_validate({"decision": "review", "attributes": {}})

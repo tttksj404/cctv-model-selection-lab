@@ -9,9 +9,9 @@ from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import AliasChoices, Field, model_validator
+from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from qwen_backend.candidate_runtime import (
@@ -82,10 +82,66 @@ class CandidateEngineSettings(BaseSettings):
     frame_stride: int = Field(default=3, ge=1, le=100)
     sample_every_seconds: float = Field(default=0.75, gt=0.0, le=60.0)
     crop_margin: float = Field(default=0.05, ge=0.0, le=0.5)
+    minimum_person_crop_quality: float = Field(
+        default=0.40,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_MIN_PERSON_CROP_QUALITY"),
+    )
     reid_weight: float = Field(default=0.75, ge=0.0, le=1.0)
     clip_weight: float = Field(default=0.25, ge=0.0, le=1.0)
     aggregate_top_frames: int = Field(default=3, ge=1, le=100)
     reid_batch_size: int = Field(default=32, ge=1, le=256)
+    solider_par_head: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "QWEN_CANDIDATE_SOLIDER_PAR_HEAD",
+            "SOLIDER_PAR_HEAD",
+        ),
+    )
+    anchor_directory: Path | None = Field(
+        default=Path("artifacts/ai-worker/case-anchors"),
+        validation_alias=AliasChoices(
+            "QWEN_CANDIDATE_ANCHOR_DIR",
+            "CCTV_CASE_ANCHOR_DIR",
+        ),
+    )
+    historical_gallery_directory: Path | None = Field(
+        default=Path("artifacts/ai-worker/historical-gallery"),
+        validation_alias=AliasChoices(
+            "QWEN_CANDIDATE_HISTORICAL_GALLERY_DIR",
+            "CCTV_HISTORICAL_GALLERY_DIR",
+        ),
+    )
+    qwen_review_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REVIEW_ENABLED"),
+    )
+    qwen_review_top_k: int = Field(default=5, ge=1, le=20)
+    qwen_review_provider: Literal["local", "remote"] = Field(
+        default="local",
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REVIEW_PROVIDER"),
+    )
+    qwen_remote_base_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REMOTE_BASE_URL"),
+    )
+    qwen_remote_model: str = Field(
+        default="qwen-active",
+        min_length=1,
+        max_length=200,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REMOTE_MODEL"),
+    )
+    qwen_remote_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REMOTE_API_KEY"),
+    )
+    qwen_remote_timeout_seconds: float = Field(
+        default=90.0,
+        gt=0.0,
+        le=600.0,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_QWEN_REMOTE_TIMEOUT_SECONDS"),
+    )
 
     @model_validator(mode="after")
     def validate_scoring_weights(self) -> CandidateEngineSettings:
@@ -113,11 +169,24 @@ class EngineConfig:
     clip_weight: float
     aggregate_top_frames: int
     reid_batch_size: int
+    minimum_person_crop_quality: float = 0.40
     model_directory: str = "models"
     model_manifest: str = "configs/realtime_model_manifest.json"
     clip_revision: str = "32bd64288804d66eefd0ccbe215aa642df71cc41"
     clip_cache_dir: Path | None = Path("artifacts/ai-worker/model-cache/clip")
     clip_local_files_only: bool = True
+    solider_par_head: Path | None = None
+    anchor_directory: Path | None = Path("artifacts/ai-worker/case-anchors")
+    historical_gallery_directory: Path | None = Path(
+        "artifacts/ai-worker/historical-gallery"
+    )
+    qwen_review_enabled: bool = True
+    qwen_review_top_k: int = 5
+    qwen_review_provider: Literal["local", "remote"] = "local"
+    qwen_remote_base_url: str | None = None
+    qwen_remote_model: str = "qwen-active"
+    qwen_remote_api_key: str | None = None
+    qwen_remote_timeout_seconds: float = 90.0
 
     @property
     def solider_checkpoint(self) -> str:
@@ -142,6 +211,7 @@ class EngineConfig:
             frame_stride=settings.frame_stride,
             sample_every_seconds=settings.sample_every_seconds,
             crop_margin=settings.crop_margin,
+            minimum_person_crop_quality=settings.minimum_person_crop_quality,
             reid_weight=settings.reid_weight,
             clip_weight=settings.clip_weight,
             aggregate_top_frames=settings.aggregate_top_frames,
@@ -151,6 +221,20 @@ class EngineConfig:
             clip_revision=settings.clip_revision,
             clip_cache_dir=settings.clip_cache_dir,
             clip_local_files_only=settings.clip_local_files_only,
+            solider_par_head=settings.solider_par_head,
+            anchor_directory=settings.anchor_directory,
+            historical_gallery_directory=settings.historical_gallery_directory,
+            qwen_review_enabled=settings.qwen_review_enabled,
+            qwen_review_top_k=settings.qwen_review_top_k,
+            qwen_review_provider=settings.qwen_review_provider,
+            qwen_remote_base_url=settings.qwen_remote_base_url,
+            qwen_remote_model=settings.qwen_remote_model,
+            qwen_remote_api_key=(
+                settings.qwen_remote_api_key.get_secret_value()
+                if settings.qwen_remote_api_key is not None
+                else None
+            ),
+            qwen_remote_timeout_seconds=settings.qwen_remote_timeout_seconds,
         )
 
 
@@ -203,6 +287,17 @@ def _solider_scores(
         batch_size=1,
     )[0]
     return _to_unit_interval(frame_features @ reference_feature)
+
+
+def score_solider(
+    frames: Sequence[TrackFrame],
+    reference_path: Path,
+    config: EngineConfig,
+    encoder: Any,
+) -> Any:
+    """Public adapter for the multi-model recording engine."""
+
+    return _solider_scores(frames, reference_path, config, encoder)
 
 
 def _encode_solider_paths(
@@ -318,6 +413,9 @@ class SoliderClipCandidateEngine:
                 self._cache_hits["yolo"] += 1
             return self._detector
 
+    def get_detector(self) -> Any:
+        return self._get_detector()
+
     def _load_clip_bundle(self) -> _ClipBundle:
         from transformers import CLIPModel, CLIPProcessor
 
@@ -352,6 +450,9 @@ class SoliderClipCandidateEngine:
                 self._cache_hits["clip"] += 1
             return self._clip_bundle
 
+    def get_clip_bundle(self) -> _ClipBundle:
+        return self._get_clip_bundle()
+
     def _load_solider_encoder(self) -> Any:
         import sys
 
@@ -384,6 +485,9 @@ class SoliderClipCandidateEngine:
             else:
                 self._cache_hits["solider"] += 1
             return self._solider_encoder
+
+    def get_solider_encoder(self) -> Any:
+        return self._get_solider_encoder()
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
         frames = detect_person_tracks(

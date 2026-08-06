@@ -12,8 +12,8 @@ from qwen_backend.candidate_runtime import (
     run_runtime,
 )
 from qwen_backend.central_client import CentralWorkerClient
+from qwen_backend.multi_model_candidate_engine import create_engine
 from qwen_backend.recording_job_executor import RecordingJobExecutor
-from qwen_backend.solider_clip_engine import create_engine
 from qwen_backend.worker_protocol import (
     DeviceAiSearchJob,
     RabbitWorkerJobEvent,
