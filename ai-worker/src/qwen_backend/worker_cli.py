@@ -34,6 +34,11 @@ def parser() -> argparse.ArgumentParser:
         default="INFO",
         choices=("DEBUG", "INFO", "WARNING", "ERROR"),
     )
+    command_parser.add_argument(
+        "--no-status-window",
+        action="store_true",
+        help="Disable the local desktop status window for headless execution.",
+    )
     return command_parser
 
 
@@ -60,7 +65,7 @@ def main() -> int:
     try:
         load_worker_env_file(args.env_file)
         settings = NotebookWorkerSettings()  # pyright: ignore[reportCallIssue]
-        worker = NotebookWorker(settings)
+        worker = NotebookWorker(settings, show_status_window=not args.no_status_window)
         if args.once:
             anyio.run(worker.run_once)
         else:

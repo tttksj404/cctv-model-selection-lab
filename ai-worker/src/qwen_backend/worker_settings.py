@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import socket
 from pathlib import Path
-from typing import Annotated, Final
+from typing import Annotated, Final, Literal
 from urllib.parse import urlsplit
 
-from pydantic import AliasChoices, Field, SecretStr, field_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 DEFAULT_MODEL_KEY: Final = "hybrid-solider-clip-v1"
@@ -19,6 +19,10 @@ DEFAULT_RABBITMQ_RETRY_DELAY_BUCKETS_SECONDS: Final = (5, 15, 30, 60, 300)
 DEFAULT_RABBITMQ_MAX_RETRY_ATTEMPTS: Final = 20
 DEFAULT_MAX_DOWNLOAD_BYTES: Final = 5 * 1024 * 1024 * 1024
 DEFAULT_MAX_EVIDENCE_UPLOAD_BYTES: Final = 10 * 1024 * 1024
+DEFAULT_EVIDENCE_UPLOAD_CONCURRENCY: Final = 4
+DEFAULT_DOWNLOAD_WINDOW_MODE: Final = "segment"
+DEFAULT_FFMPEG_PATH: Final = "ffmpeg"
+DEFAULT_SEGMENT_TIMEOUT_SECONDS: Final = 900.0
 
 
 class NotebookWorkerSettings(BaseSettings):
@@ -43,7 +47,17 @@ class NotebookWorkerSettings(BaseSettings):
         min_length=1,
         validation_alias=AliasChoices(
             "EYESONU_AI_WORKER_API_KEY",
+            "X-Worker-Key",
             "CENTRAL_API_WORKER_KEY",
+            "AI_WORKER_DEVICE_KEY",
+            "EYESONU_AI_DEVICE_KEY",
+        ),
+    )
+    auth_mode: Literal["auto", "device", "worker"] = Field(
+        default="worker",
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_AUTH_MODE",
+            "AI_WORKER_AUTH_MODE",
         ),
     )
     worker_id: str = Field(
@@ -121,6 +135,95 @@ class NotebookWorkerSettings(BaseSettings):
         gt=0,
         le=100 * 1024 * 1024,
     )
+    evidence_upload_concurrency: int = Field(
+        default=DEFAULT_EVIDENCE_UPLOAD_CONCURRENCY,
+        ge=1,
+        le=16,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_EVIDENCE_UPLOAD_CONCURRENCY",
+            "AI_WORKER_EVIDENCE_UPLOAD_CONCURRENCY",
+        ),
+    )
+    download_window_mode: Literal["segment", "analyze"] = Field(
+        default=DEFAULT_DOWNLOAD_WINDOW_MODE,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_DOWNLOAD_WINDOW_MODE",
+            "AI_WORKER_DOWNLOAD_WINDOW_MODE",
+        ),
+    )
+    ffmpeg_path: str = Field(
+        default=DEFAULT_FFMPEG_PATH,
+        min_length=1,
+        max_length=500,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_FFMPEG_PATH",
+            "AI_WORKER_FFMPEG_PATH",
+        ),
+    )
+    segment_timeout_seconds: float = Field(
+        default=DEFAULT_SEGMENT_TIMEOUT_SECONDS,
+        gt=1.0,
+        le=7_200.0,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_SEGMENT_TIMEOUT_SECONDS",
+            "AI_WORKER_SEGMENT_TIMEOUT_SECONDS",
+        ),
+    )
+    storage_endpoint: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_ENDPOINT",
+            "EYESONU_AI_S3_ENDPOINT",
+            "MINIO_INTERNAL_ENDPOINT",
+            "MINIO_PUBLIC_ENDPOINT",
+        ),
+    )
+    storage_bucket: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_BUCKET",
+            "EYESONU_AI_S3_BUCKET",
+            "MINIO_BUCKET",
+        ),
+    )
+    storage_region: str = Field(
+        default="ap-northeast-2",
+        min_length=1,
+        max_length=100,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_REGION",
+            "EYESONU_AI_S3_REGION",
+            "MINIO_REGION",
+        ),
+    )
+    storage_access_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_ACCESS_KEY",
+            "EYESONU_AI_S3_ACCESS_KEY",
+            "MINIO_APP_ACCESS_KEY",
+            "AWS_ACCESS_KEY_ID",
+        ),
+    )
+    storage_secret_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_SECRET_KEY",
+            "EYESONU_AI_S3_SECRET_KEY",
+            "MINIO_APP_SECRET_KEY",
+            "AWS_SECRET_ACCESS_KEY",
+        ),
+    )
+    storage_path_style: bool = Field(
+        # The deployed MinIO endpoint is exposed through one storage host;
+        # path-style addressing works for both that proxy and local MinIO.
+        # AWS S3 callers can explicitly set EYESONU_AI_S3_PATH_STYLE=false.
+        default=True,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_STORAGE_PATH_STYLE",
+            "EYESONU_AI_S3_PATH_STYLE",
+        ),
+    )
 
     @field_validator("central_api_url")
     @classmethod
@@ -130,6 +233,33 @@ class NotebookWorkerSettings(BaseSettings):
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             raise ValueError("central API URL must use http or https")
         return normalized
+
+    @field_validator("storage_endpoint")
+    @classmethod
+    def validate_storage_endpoint(cls, value: str | None) -> str | None:
+        if value is None or not value.strip():
+            return None
+        normalized = value.strip().rstrip("/")
+        parsed = urlsplit(normalized)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("storage endpoint must use http or https")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_storage_credentials(self) -> NotebookWorkerSettings:
+        configured = (
+            self.storage_endpoint,
+            self.storage_bucket,
+            self.storage_access_key,
+            self.storage_secret_key,
+        )
+        if any(value is not None for value in configured) and not all(
+            value is not None for value in configured
+        ):
+            raise ValueError(
+                "storage endpoint, bucket, access key, and secret key must be configured together"
+            )
+        return self
 
     @field_validator("api_key")
     @classmethod

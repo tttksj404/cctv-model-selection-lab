@@ -14,8 +14,13 @@ from qwen_backend.candidate_runtime import (
 from qwen_backend.central_client import CentralWorkerClient
 from qwen_backend.recording_job_executor import RecordingJobExecutor
 from qwen_backend.solider_clip_engine import create_engine
-from qwen_backend.worker_protocol import RecordingAnalysisClaim
+from qwen_backend.worker_protocol import (
+    DeviceAiSearchJob,
+    RabbitWorkerJobEvent,
+    RecordingAnalysisClaim,
+)
 from qwen_backend.worker_settings import NotebookWorkerSettings
+from qwen_backend.worker_status import WorkerStatusController
 
 
 class NotebookWorker:
@@ -26,6 +31,7 @@ class NotebookWorker:
         settings: NotebookWorkerSettings,
         *,
         engine_factory: Callable[[], CandidateRuntimeEngine] = create_engine,
+        show_status_window: bool = False,
     ) -> None:
         # CandidateRuntimeEngine reads QWEN_CANDIDATE_* from os.environ. Settings
         # parsing does not populate os.environ, so dotenv must precede lazy engine creation.
@@ -33,21 +39,38 @@ class NotebookWorker:
         self.settings = settings
         self._engine_factory = engine_factory
         self._engine: CandidateRuntimeEngine | None = None
-        self._executor = RecordingJobExecutor(settings, self._run_local_runtime)
+        self._status = WorkerStatusController(show_window=show_status_window)
+        self._executor = RecordingJobExecutor(
+            settings,
+            self._run_local_runtime,
+            status=self._status,
+        )
+
+    @property
+    def status(self) -> WorkerStatusController:
+        return self._status
 
     async def run_forever(self) -> None:
         """Consume the central server's recording-analysis queue until interrupted."""
 
         from qwen_backend.rabbit_consumer import RabbitRecordingWorker
 
-        await RabbitRecordingWorker(self).run_forever()
+        self._status.start()
+        try:
+            await RabbitRecordingWorker(self).run_forever()
+        finally:
+            self._status.close()
 
     async def run_once(self) -> bool:
         """Process at most one RabbitMQ delivery for local smoke testing."""
 
         from qwen_backend.rabbit_consumer import RabbitRecordingWorker
 
-        return await RabbitRecordingWorker(self).run_once()
+        self._status.start()
+        try:
+            return await RabbitRecordingWorker(self).run_once()
+        finally:
+            self._status.close()
 
     async def process_claim(
         self,
@@ -57,6 +80,24 @@ class NotebookWorker:
         """Run one claimed recording job and confirm one terminal central callback."""
 
         return await self._executor.process_claim(client, claim)
+
+    async def process_device_event(
+        self,
+        client: CentralWorkerClient,
+        event: RabbitWorkerJobEvent,
+    ) -> bool:
+        """Run an enriched legacy-dev Rabbit event with the Device Key path."""
+
+        return await self._executor.process_device_event(client, event)
+
+    async def process_device_claim(
+        self,
+        client: CentralWorkerClient,
+        job: DeviceAiSearchJob,
+    ) -> bool:
+        """Run one job claimed through the current backend Device API."""
+
+        return await self._executor.process_device_claim(client, job)
 
     def _run_local_runtime(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
         if self._engine is None:

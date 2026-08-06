@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import aio_pika
 import anyio
+import pytest
 
 from qwen_backend.central_client import CentralWorkerError
 from qwen_backend.rabbit_retry import AioPikaRetryScheduler
-from qwen_backend.rabbit_worker import RabbitJobProcessor
+from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRetryUnavailable
 from qwen_backend.worker_protocol import RecordingAnalysisClaim
 
 
@@ -60,6 +62,16 @@ class FakeRetryScheduler:
 
     async def schedule(self, body: bytes, *, retry_count: int, delay_seconds: float) -> None:
         self.scheduled.append((body, retry_count, delay_seconds))
+
+
+class RetryPublishDenied:
+    async def schedule(self, body: bytes, *, retry_count: int, delay_seconds: float) -> None:
+        raise aio_pika.exceptions.AMQPException()
+
+
+class ClosedDelivery(FakeDelivery):
+    async def reject(self, requeue: bool = False) -> None:
+        raise aio_pika.exceptions.ChannelInvalidStateError()
 
 
 class CapturingExchange:
@@ -163,6 +175,29 @@ def test_active_foreign_lease_is_delayed_until_it_can_be_reclaimed() -> None:
         assert len(scheduler.scheduled) == 1
         assert scheduler.scheduled[0][1] == 0
         assert scheduler.scheduled[0][2] >= 40.0
+
+    anyio.run(scenario)
+
+
+def test_retry_publish_failure_on_closed_channel_is_recoverable(monkeypatch) -> None:
+    async def scenario() -> None:
+        sleep_calls: list[float] = []
+
+        async def fake_sleep(delay: float) -> None:
+            sleep_calls.append(delay)
+
+        monkeypatch.setattr("qwen_backend.rabbit_worker.anyio.sleep", fake_sleep)
+        delivery = ClosedDelivery(_legacy_event_body())
+        processor = RabbitJobProcessor(
+            object(),
+            retry_scheduler=RetryPublishDenied(),
+            retry_delay_seconds=5.0,
+            max_retry_attempts=3,
+        )
+
+        with pytest.raises(RabbitRetryUnavailable):
+            await processor.handle(delivery, FakeClient(_lease_held_claim()))  # type: ignore[arg-type]
+        assert sleep_calls and sleep_calls[0] >= 40.0
 
     anyio.run(scenario)
 
@@ -315,5 +350,32 @@ def test_nonretryable_claim_error_is_dead_lettered_without_requeue() -> None:
         assert delivery.acked == 0
         assert delivery.rejected == [False]
         assert scheduler.scheduled == []
+
+    anyio.run(scenario)
+
+
+def test_case_not_searchable_is_deferred_and_not_dead_lettered() -> None:
+    async def scenario() -> None:
+        delivery = FakeDelivery(_legacy_event_body())
+        scheduler = FakeRetryScheduler()
+        processor = RabbitJobProcessor(
+            object(),
+            retry_scheduler=scheduler,
+            retry_delay_seconds=5.0,
+            max_retry_attempts=3,
+        )
+        error = CentralWorkerError(
+            "Case is not searchable",
+            status_code=422,
+            code="CASE_NOT_SEARCHABLE",
+        )
+
+        handled = await processor.handle(delivery, FakeClient(error))  # type: ignore[arg-type]
+
+        assert handled is False
+        assert delivery.acked == 1
+        assert delivery.rejected == []
+        assert len(scheduler.scheduled) == 1
+        assert scheduler.scheduled[0][1] == 1
 
     anyio.run(scenario)

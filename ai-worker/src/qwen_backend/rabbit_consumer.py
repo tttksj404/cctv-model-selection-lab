@@ -7,8 +7,10 @@ import aio_pika
 import anyio
 
 from qwen_backend.central_client import CentralWorkerClient, CentralWorkerError
+from qwen_backend.object_storage import S3ObjectStoreConfig
 from qwen_backend.rabbit_retry import AioPikaRetryScheduler, RabbitRetrySchedule
 from qwen_backend.rabbit_worker import RabbitJobProcessor, RabbitRetryUnavailable
+from qwen_backend.worker_status import WorkerStage
 
 if TYPE_CHECKING:
     from qwen_backend.notebook_worker import NotebookWorker
@@ -64,6 +66,10 @@ class RabbitRecordingWorker:
                 OSError,
                 TimeoutError,
             ):
+                self._worker.status.update(
+                    WorkerStage.RECONNECTING,
+                    "RabbitMQ 연결이 끊겨 재연결하는 중",
+                )
                 logger.exception(
                     "AI Worker RabbitMQ connection failed; retrying after %.1fs",
                     self._worker.settings.rabbitmq_reconnect_delay_seconds,
@@ -82,6 +88,10 @@ class RabbitRecordingWorker:
                     passive=True,
                 )
                 processor = self._processor(channel)
+                self._worker.status.update(
+                    WorkerStage.WAITING,
+                    "백엔드 작업 대기 중",
+                )
                 async with queue.iterator() as iterator:
                     async for delivery in iterator:
                         await processor.handle(delivery, client)
@@ -89,10 +99,27 @@ class RabbitRecordingWorker:
                 await connection.close()
 
     def _client(self) -> CentralWorkerClient:
+        storage_config = None
+        if self._worker.settings.storage_endpoint is not None:
+            access_key = self._worker.settings.storage_access_key
+            secret_key = self._worker.settings.storage_secret_key
+            bucket = self._worker.settings.storage_bucket
+            if access_key is None or secret_key is None or bucket is None:
+                raise ValueError("incomplete AI Worker S3/MinIO storage configuration")
+            storage_config = S3ObjectStoreConfig(
+                endpoint=self._worker.settings.storage_endpoint,
+                bucket=bucket,
+                region=self._worker.settings.storage_region,
+                access_key=access_key.get_secret_value(),
+                secret_key=secret_key.get_secret_value(),
+                path_style=self._worker.settings.storage_path_style,
+            )
         return CentralWorkerClient(
             base_url=self._worker.settings.central_api_url,
             api_key=self._worker.settings.api_key.get_secret_value(),
             worker_id=self._worker.settings.worker_id,
+            auth_mode=self._worker.settings.auth_mode,
+            storage_config=storage_config,
         )
 
     def _processor(self, channel: aio_pika.abc.AbstractChannel) -> RabbitJobProcessor:
@@ -107,4 +134,5 @@ class RabbitRecordingWorker:
             retry_delay_seconds=self._worker.settings.rabbitmq_retry_delay_seconds,
             max_retry_attempts=self._worker.settings.rabbitmq_max_retry_attempts,
             retry_schedule=self._retry_schedule,
+            status=self._worker.status,
         )

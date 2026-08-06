@@ -21,6 +21,7 @@ from qwen_backend.notebook_worker import (
     NotebookWorkerSettings,
     _load_worker_env_file,
 )
+from qwen_backend.rabbit_consumer import RabbitRecordingWorker
 from qwen_backend.worker_lease import (
     LeaseHeartbeatContext,
     maintain_lease,
@@ -241,6 +242,7 @@ def test_notebook_worker_claims_downloads_infers_uploads_and_completes(tmp_path:
                 heartbeat_interval_seconds=0.51,
                 cache_dir=tmp_path / "cache",
                 output_dir=tmp_path / "output",
+                download_window_mode="analyze",
             )
             engine = FixtureEngine()
             worker = NotebookWorker(settings, engine_factory=lambda: engine)
@@ -259,6 +261,145 @@ def test_notebook_worker_claims_downloads_infers_uploads_and_completes(tmp_path:
     ]
 
 
+def test_notebook_worker_uses_controller_signed_download_without_storage_credentials(
+    tmp_path: Path,
+) -> None:
+    calls: list[str] = []
+
+    async def handler(request: httpx2.Request) -> httpx2.Response:
+        calls.append(request.url.path)
+        if request.url.host == "central.example":
+            assert request.headers["X-Worker-Key"] == "test-key"
+            if not request.url.path.endswith("/claim"):
+                assert request.headers["X-Worker-Claim-Token"] == "lease-1"
+        if request.url.path.endswith("/claim"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "jobId": 71,
+                        "status": "RUNNING",
+                        "attempt": 1,
+                        "disposition": "CLAIMED",
+                        "leaseToken": "lease-1",
+                    }
+                ),
+                request=request,
+            )
+        if request.url.path.endswith("/target"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "jobId": 71,
+                        "caseId": 11,
+                        "searchConditionId": 21,
+                        "recordingId": 31,
+                        "cameraId": 41,
+                        "cameraCode": "CAM-001",
+                        "cameraName": "Gate A",
+                        "recordingObjectKey": "recordings/CAM-001/video.mp4",
+                        "recordingDownloadUrl": "https://storage.example/video.mp4",
+                        "recordingStart": "2026-08-05T08:00:00Z",
+                        "recordingEnd": "2026-08-05T08:01:00Z",
+                        "prompt": "gray shirt, black pants",
+                        "searchFromMs": 0,
+                        "searchToMs": 5_000,
+                        "attempt": 1,
+                    }
+                ),
+                request=request,
+            )
+        if request.url.path.endswith("/heartbeat"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "jobId": 71,
+                        "status": "RUNNING",
+                        "claimExpiresAt": "2026-08-05T08:05:00Z",
+                    }
+                ),
+                request=request,
+            )
+        if request.url.path == "/video.mp4":
+            return httpx2.Response(200, content=b"video", request=request)
+        if request.url.path.endswith("/upload-urls"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "attempt": 1,
+                        "candidates": [
+                            {
+                                "trackId": "track-3",
+                                "frame": {
+                                    "objectKey": "analysis/71/frame.jpg",
+                                    "uploadUrl": "https://storage.example/upload/frame.jpg",
+                                    "contentType": "image/jpeg",
+                                },
+                                "crop": {
+                                    "objectKey": "analysis/71/crop.jpg",
+                                    "uploadUrl": "https://storage.example/upload/crop.jpg",
+                                    "contentType": "image/jpeg",
+                                },
+                            }
+                        ],
+                        "expiresInSeconds": 900,
+                    }
+                ),
+                request=request,
+            )
+        if request.url.path in {"/upload/frame.jpg", "/upload/crop.jpg"}:
+            return httpx2.Response(200, request=request)
+        if request.url.path.endswith("/result"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "jobId": 71,
+                        "resultId": "notebook-test:71:1",
+                        "status": "SUCCEEDED",
+                        "candidateCount": 1,
+                        "candidateIds": [9001],
+                        "duplicate": False,
+                        "completedAt": "2026-08-05T08:00:02Z",
+                    }
+                ),
+                request=request,
+            )
+        pytest.fail(f"unexpected worker request: {request.url}")
+
+    async def scenario() -> None:
+        async with httpx2.AsyncClient(
+            transport=httpx2.MockTransport(handler), base_url="https://central.example"
+        ) as http_client:
+            client = CentralWorkerClient(
+                base_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                client=http_client,
+            )
+            settings = NotebookWorkerSettings(
+                central_api_url="https://central.example",
+                api_key="test-key",
+                worker_id="notebook-test",
+                model_key="fixture-hybrid-v1",
+                heartbeat_interval_seconds=0.51,
+                cache_dir=tmp_path / "cache",
+                output_dir=tmp_path / "output",
+                download_window_mode="analyze",
+            )
+            worker = NotebookWorker(settings, engine_factory=FixtureEngine)
+            claim = await client.claim_job(71)
+            assert await worker.process_claim(client, claim) is True
+
+    anyio.run(scenario)
+
+    assert "/video.mp4" in calls
+    assert "/api/v1/internal/recording-analysis-jobs/71/heartbeat" in calls
+
+
 def test_notebook_worker_reports_failure_when_target_lookup_fails(tmp_path: Path) -> None:
     calls: list[str] = []
 
@@ -275,7 +416,7 @@ def test_notebook_worker_reports_failure_when_target_lookup_fails(tmp_path: Path
         if request.url.path.endswith("/fail"):
             payload = json.loads(request.content)
             assert payload["resultId"] == "notebook-test:71:1:failure"
-            assert payload["errorCode"] == "CentralWorkerError"
+            assert payload["errorCode"] == "STORAGE_UNAVAILABLE"
             return httpx2.Response(
                 200,
                 json=_envelope(
@@ -421,6 +562,7 @@ def test_notebook_worker_refreshes_an_expired_signed_recording_url_once(tmp_path
             worker_id="notebook-test",
             cache_dir=tmp_path / "cache",
             output_dir=tmp_path / "output",
+            download_window_mode="analyze",
         )
         settings.cache_dir.mkdir(parents=True)
 
@@ -481,6 +623,42 @@ def test_notebook_worker_settings_accepts_central_server_env_aliases(
     assert settings.rabbitmq_queue == "legacy.recording.queue"
 
 
+def test_notebook_worker_settings_prefers_worker_key_over_device_key_alias(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The RecordingAnalysisWorkerController key is authoritative."""
+
+    for key in (
+        "EYESONU_AI_WORKER_API_KEY",
+        "X_WORKER_KEY",
+        "X_Worker_Key",
+        "X-Worker-Key",
+        "CENTRAL_API_WORKER_KEY",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("CENTRAL_API_BASE_URL", "https://central.example")
+    monkeypatch.setenv("CENTRAL_API_WORKER_KEY", "device-key")
+    monkeypatch.setenv("X-Worker-Key", "worker-key")
+    monkeypatch.setenv("AI_WORKER_AUTH_MODE", "worker")
+
+    settings = NotebookWorkerSettings()
+
+    assert settings.auth_mode == "worker"
+    assert settings.api_key.get_secret_value() == "worker-key"
+
+
+def test_controller_worker_contract_allows_no_direct_storage_credentials() -> None:
+    settings = NotebookWorkerSettings(
+        central_api_url="https://central.example",
+        api_key="worker-key",
+        auth_mode="worker",
+        worker_id="notebook-test",
+        rabbitmq_url="amqps://worker:secret@broker.example/%2Feyesonu",
+    )
+
+    RabbitRecordingWorker(NotebookWorker(settings, engine_factory=FixtureEngine))
+
+
 def test_notebook_worker_loads_an_explicit_env_file_before_settings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -490,7 +668,8 @@ def test_notebook_worker_loads_an_explicit_env_file_before_settings(
         "\n".join(
             (
                 "CENTRAL_API_BASE_URL=https://central.example",
-                "CENTRAL_API_WORKER_KEY=test-key",
+                "CENTRAL_API_WORKER_KEY=device-key",
+                "X-Worker-Key=worker-key",
                 "RABBITMQ_URL=amqps://worker:secret@broker.example/%2Feyesonu",
                 "RABBITMQ_QUEUE=search.target.recording.queue",
             )
@@ -501,6 +680,9 @@ def test_notebook_worker_loads_an_explicit_env_file_before_settings(
     for key in (
         "CENTRAL_API_BASE_URL",
         "CENTRAL_API_WORKER_KEY",
+        "X_WORKER_KEY",
+        "X_Worker_Key",
+        "X-Worker-Key",
         "RABBITMQ_URL",
         "RABBITMQ_QUEUE",
         "EYESONU_AI_WORKER_CENTRAL_API_URL",
@@ -514,6 +696,6 @@ def test_notebook_worker_loads_an_explicit_env_file_before_settings(
     settings = NotebookWorkerSettings()
 
     assert settings.central_api_url == "https://central.example"
-    assert settings.api_key.get_secret_value() == "test-key"
+    assert settings.api_key.get_secret_value() == "worker-key"
     assert settings.rabbitmq_url is not None
     assert settings.rabbitmq_queue == "search.target.recording.queue"

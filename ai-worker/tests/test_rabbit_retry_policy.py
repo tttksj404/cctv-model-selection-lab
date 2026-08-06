@@ -23,6 +23,16 @@ def test_only_transient_central_errors_are_retried() -> None:
     ) == "ACK"
 
 
+def test_case_not_searchable_is_deferred_until_the_case_is_activated() -> None:
+    assert classify_central_error(
+        CentralWorkerError(
+            "Case is not searchable",
+            status_code=422,
+            code="CASE_NOT_SEARCHABLE",
+        )
+    ) == "RETRY"
+
+
 def test_active_lease_delay_is_bounded_by_the_largest_declared_retry_bucket() -> None:
     policy = RabbitRetryPolicy(retry_delay_seconds=5.0, max_retry_attempts=20)
 

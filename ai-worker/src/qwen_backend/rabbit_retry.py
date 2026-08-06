@@ -39,6 +39,14 @@ class RabbitRetrySchedule:
 
 DEFAULT_RABBIT_RETRY_SCHEDULE: Final = RabbitRetrySchedule((5, 15, 30, 60, 300))
 
+# The central API currently allows a recording job to be created before its
+# case reaches SEARCHING.  Candidate persistence rejects that intermediate
+# state with CASE_NOT_SEARCHABLE (HTTP 422), so the message must stay
+# recoverable until the case is activated.  Keep this list explicit: a broad
+# "retry every 4xx" rule would turn permanent contract/auth errors into a
+# retry storm.
+TRANSIENT_CENTRAL_CODES: Final = frozenset({"CASE_NOT_SEARCHABLE"})
+
 
 class RetryScheduler(Protocol):
     async def schedule(self, body: bytes, *, retry_count: int, delay_seconds: float) -> None: ...
@@ -121,8 +129,10 @@ class RabbitRetryPolicy:
 
 
 def classify_central_error(error: CentralWorkerError) -> ClaimErrorAction:
-    """Retry only transient central failures; stale or invalid work must leave the queue."""
+    """Classify central errors without losing recoverable business-state work."""
 
+    if error.code in TRANSIENT_CENTRAL_CODES:
+        return "RETRY"
     if error.code == "JOB_NOT_RUNNABLE":
         return "ACK"
     if error.status_code is not None and 400 <= error.status_code < 500:
