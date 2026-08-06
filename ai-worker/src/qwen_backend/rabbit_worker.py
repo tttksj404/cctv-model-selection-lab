@@ -192,33 +192,54 @@ class RabbitJobProcessor:
                 claimed.job_id,
             )
 
-        try:
-            processed = await self._worker.process_device_claim(client, claimed)
-        except CentralWorkerError as error:
-            return await self._handle_central_error(
-                delivery,
-                claimed.job_id,
-                error,
-                "device processing",
-            )
-        except (FileNotFoundError, ImportError, OSError, RuntimeError, ValueError):
-            logger.exception(
-                "dead-lettering invalid current Device API recording job job_id=%d",
-                claimed.job_id,
-            )
-            await delivery.reject(requeue=False)
-            return False
-        if not processed:
-            logger.warning(
-                "current Device API result was not confirmed; deferring job_id=%d",
-                claimed.job_id,
-            )
-            await self._defer(
-                delivery,
-                job_id=claimed.job_id,
-                reason="device result unconfirmed",
-            )
-            return False
+        while claimed is not None:
+            try:
+                processed = await self._worker.process_device_claim(client, claimed)
+            except CentralWorkerError as error:
+                return await self._handle_central_error(
+                    delivery,
+                    claimed.job_id,
+                    error,
+                    "device processing",
+                )
+            except (FileNotFoundError, ImportError, OSError, RuntimeError, ValueError):
+                logger.exception(
+                    "dead-lettering invalid current Device API recording job job_id=%d",
+                    claimed.job_id,
+                )
+                await delivery.reject(requeue=False)
+                return False
+            if not processed:
+                logger.warning(
+                    "current Device API result was not confirmed; deferring job_id=%d",
+                    claimed.job_id,
+                )
+                await self._defer(
+                    delivery,
+                    job_id=claimed.job_id,
+                    reason="device result unconfirmed",
+                )
+                return False
+
+            # The Rabbit event is a wake-up signal, while the Device API claim
+            # endpoint is the FIFO authority.  Drain all jobs that are already
+            # queued before returning to RabbitMQ so a later event cannot jump
+            # ahead of older central-server work.
+            try:
+                claimed = await client.claim_device_job(self._worker.settings.model_key)
+            except CentralWorkerError as error:
+                return await self._handle_central_error(
+                    delivery,
+                    claimed.job_id,
+                    error,
+                    "device drain claim",
+                )
+            except (TypeError, ValueError):
+                logger.exception(
+                    "dead-lettering invalid current Device API drain claim"
+                )
+                await delivery.reject(requeue=False)
+                return False
         await delivery.ack()
         return True
 

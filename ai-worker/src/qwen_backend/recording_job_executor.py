@@ -561,6 +561,24 @@ class RecordingJobExecutor:
                 )
                 if lease_token is not None:
                     raise_if_lease_lost(lease_lost, target.job_id, fatal_heartbeat_errors)
+                reference_path: Path | None = None
+                if target.reference_photo_object_key:
+                    reference_destination = (
+                        self._settings.cache_dir
+                        / f"job-{target.job_id}-attempt-{target.attempt}-reference.jpg"
+                    )
+                    if target.reference_photo_download_url:
+                        reference_path = await client.download(
+                            target.reference_photo_download_url,
+                            reference_destination,
+                            max_bytes=self._settings.max_evidence_upload_bytes,
+                        )
+                    else:
+                        reference_path = await client.download_object(
+                            target.reference_photo_object_key,
+                            reference_destination,
+                            max_bytes=self._settings.max_evidence_upload_bytes,
+                        )
                 request = CandidateRuntimeRequest(
                     model_key=self._settings.model_key,
                     job_id=target.job_id,
@@ -571,11 +589,11 @@ class RecordingJobExecutor:
                     camera_name=target.camera_name,
                     camera_address=target.camera_code,
                     video_path=video_path,
-                    reference_path=None,
+                    reference_path=reference_path,
                     output_dir=job_output_dir,
                     prompt=target.prompt,
                     exclusion_prompt=target.exclusion_prompt,
-                    similarity_threshold=None,
+                    similarity_threshold=target.similarity_threshold,
                     search_from_ms=target.search_from_ms,
                     search_to_ms=target.search_to_ms,
                 )

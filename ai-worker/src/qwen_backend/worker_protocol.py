@@ -328,6 +328,13 @@ class RecordingAnalysisTarget(WorkerModel):
     recording_download_url_expires_in_seconds: int | None = Field(default=None, gt=0)
     recording_file_size_bytes: int | None = Field(default=None, ge=0)
     recording_content_type: str | None = Field(default=None, min_length=1, max_length=255)
+    # Optional additive fields: older central deployments omit the reference
+    # photo and threshold, while newer deployments can unlock SOLIDER and an
+    # explicit server-side cut-off without changing the worker callback shape.
+    reference_photo_object_key: str | None = Field(default=None, max_length=500)
+    reference_photo_download_url: str | None = Field(default=None, max_length=4_000)
+    reference_photo_download_url_expires_in_seconds: int | None = Field(default=None, gt=0)
+    similarity_threshold: float | None = Field(default=None, ge=0.0, le=1.0)
     recording_start: datetime
     recording_end: datetime
     prompt: str = Field(max_length=4_000)
@@ -341,11 +348,11 @@ class RecordingAnalysisTarget(WorkerModel):
     search_to_ms: int = Field(gt=0)
     attempt: int = Field(ge=1, le=100)
 
-    @field_validator("recording_download_url")
+    @field_validator("recording_download_url", "reference_photo_download_url")
     @classmethod
     def validate_download_url(cls, value: str | None) -> str | None:
         if value is not None and not value.startswith(("http://", "https://")):
-            raise ValueError("recordingDownloadUrl must use http or https")
+            raise ValueError("download URLs must use http or https")
         return value
 
     @model_validator(mode="before")
@@ -386,7 +393,7 @@ class RecordingAnalysisTarget(WorkerModel):
             raise ValueError("recordingStart must be earlier than recordingEnd")
         if self.search_from_ms >= self.search_to_ms:
             raise ValueError("searchFromMs must be earlier than searchToMs")
-        recording_duration_ms = int(
+        recording_duration_ms = round(
             (self.recording_end - self.recording_start).total_seconds() * 1_000
         )
         if self.search_to_ms > recording_duration_ms:

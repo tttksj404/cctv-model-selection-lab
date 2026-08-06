@@ -36,9 +36,11 @@ class FixtureEngine:
 
     def __init__(self) -> None:
         self.similarity_threshold: float | None = -1.0
+        self.reference_path: Path | None = None
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
         self.similarity_threshold = request.similarity_threshold
+        self.reference_path = request.reference_path
         time.sleep(0.7)
         frame_path = request.output_dir / "frame-1250.jpg"
         crop_path = request.output_dir / "track-3.jpg"
@@ -91,8 +93,8 @@ def _claim_data(*, duplicate: bool = False) -> dict[str, object]:
     }
 
 
-def _target_data() -> dict[str, object]:
-    return {
+def _target_data(*, include_reference: bool = False) -> dict[str, object]:
+    payload: dict[str, object] = {
         "jobId": 71,
         "caseId": 11,
         "searchConditionId": 21,
@@ -113,6 +115,15 @@ def _target_data() -> dict[str, object]:
         "searchToMs": 5_000,
         "attempt": 1,
     }
+    if include_reference:
+        payload.update(
+            {
+                "referencePhotoObjectKey": "cases/11/reference.jpg",
+                "referencePhotoDownloadUrl": "https://storage.example/reference.jpg",
+                "referencePhotoDownloadUrlExpiresInSeconds": 900,
+            }
+        )
+    return payload
 
 
 def _envelope(data: dict[str, object]) -> dict[str, object]:
@@ -139,7 +150,11 @@ def test_notebook_worker_claims_downloads_infers_uploads_and_completes(tmp_path:
             return httpx2.Response(200, json=_envelope(_claim_data()), request=request)
         if request.url.path == "/api/v1/internal/recording-analysis-jobs/71/target":
             assert request.headers["X-Worker-Claim-Token"] == "lease-1"
-            return httpx2.Response(200, json=_envelope(_target_data()), request=request)
+            return httpx2.Response(
+                200,
+                json=_envelope(_target_data(include_reference=True)),
+                request=request,
+            )
         if request.url.path == "/api/v1/internal/recording-analysis-jobs/71/heartbeat":
             assert request.headers["X-Worker-Claim-Token"] == "lease-1"
             state["heartbeat"] = True
@@ -219,6 +234,8 @@ def test_notebook_worker_claims_downloads_infers_uploads_and_completes(tmp_path:
             )
         if request.url.path == "/video.mp4":
             return httpx2.Response(200, content=b"video", request=request)
+        if request.url.path == "/reference.jpg":
+            return httpx2.Response(200, content=b"reference", request=request)
         state["failed"] = True
         return httpx2.Response(404, request=request)
 
@@ -249,6 +266,8 @@ def test_notebook_worker_claims_downloads_infers_uploads_and_completes(tmp_path:
             claim = await client.claim_job(71)
             assert await worker.process_claim(client, claim) is True
             assert engine.similarity_threshold is None
+            assert engine.reference_path is not None
+            assert engine.reference_path.read_bytes() == b"reference"
 
     anyio.run(scenario)
 

@@ -21,9 +21,9 @@ from qwen_backend.worker_settings import NotebookWorkerSettings
 DEVICE_KEY = "msk_0123456789abcdef." + "a" * 64
 
 
-def _job() -> DeviceAiSearchJob:
+def _job(job_id: int = 71) -> DeviceAiSearchJob:
     return DeviceAiSearchJob(
-        job_id=71,
+        job_id=job_id,
         lease_token="11111111-1111-4111-8111-111111111111",
         case_id=11,
         search_condition_id=21,
@@ -232,9 +232,12 @@ class _RetryScheduler:
 class _CurrentDeviceClient:
     uses_current_device_api = True
 
-    async def claim_device_job(self, model_key: str) -> DeviceAiSearchJob:
+    def __init__(self, jobs: list[DeviceAiSearchJob | None]) -> None:
+        self.jobs = jobs
+
+    async def claim_device_job(self, model_key: str) -> DeviceAiSearchJob | None:
         assert model_key == "hybrid-solider-clip-v1"
-        return _job()
+        return self.jobs.pop(0)
 
 
 class _CurrentDeviceWorker:
@@ -272,9 +275,42 @@ def test_current_device_rabbit_event_is_only_a_wakeup_signal() -> None:
     )
 
     async def scenario() -> bool:
-        return await processor.handle(delivery, _CurrentDeviceClient())  # type: ignore[arg-type]
+        return await processor.handle(
+            delivery,
+            _CurrentDeviceClient([_job(71), None]),
+        )  # type: ignore[arg-type]
 
     assert anyio.run(scenario) is True
     assert delivery.acked == 1
     assert delivery.rejected == []
     assert [job.job_id for job in worker.claims] == [71]
+
+
+def test_current_device_event_drains_older_queued_jobs_before_waiting() -> None:
+    event = RabbitWorkerJobEvent.model_validate(
+        {
+            "commandId": "command-71",
+            "eventType": "RECORDING_ANALYSIS_JOB_CREATED",
+            "jobId": 71,
+            "occurredAt": "2026-07-30T00:00:00Z",
+        }
+    )
+    delivery = _Delivery(event.model_dump_json(by_alias=True).encode())
+    worker = _CurrentDeviceWorker()
+    processor = RabbitJobProcessor(
+        worker,  # type: ignore[arg-type]
+        retry_scheduler=_RetryScheduler(),
+        retry_delay_seconds=5.0,
+        max_retry_attempts=3,
+    )
+
+    async def scenario() -> bool:
+        return await processor.handle(
+            delivery,
+            _CurrentDeviceClient([_job(71), _job(72), None]),
+        )  # type: ignore[arg-type]
+
+    assert anyio.run(scenario) is True
+    assert delivery.acked == 1
+    assert delivery.rejected == []
+    assert [job.job_id for job in worker.claims] == [71, 72]

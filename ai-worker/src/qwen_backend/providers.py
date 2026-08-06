@@ -76,7 +76,7 @@ class Qwen3VLProvider:
         self._settings = settings
         self._processor: Any | None = None
         self._model: Any | None = None
-        self._process_vision_info: Any | None = None
+        self._device: Any | None = None
         self._load_lock = Lock()
         self._inference_lock = Lock()
 
@@ -98,22 +98,25 @@ class Qwen3VLProvider:
                 raise ProviderUnavailable("Qwen checkpoint is unavailable")
             try:
                 import torch
-                from qwen_vl_utils import process_vision_info
-                from transformers import AutoModelForImageTextToText, AutoProcessor
+                from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
             except ImportError as exc:
                 raise ProviderUnavailable("Qwen runtime dependencies are missing") from exc
             try:
+                device = torch.device(
+                    "cuda" if torch.cuda.is_available() else "cpu"
+                )
+                dtype = torch.float16 if device.type == "cuda" else torch.float32
                 self._processor = AutoProcessor.from_pretrained(
                     self._settings.model_path, local_files_only=True
                 )
-                self._model = AutoModelForImageTextToText.from_pretrained(
+                self._model = Qwen3VLForConditionalGeneration.from_pretrained(
                     self._settings.model_path,
-                    torch_dtype=torch.bfloat16,
-                    attn_implementation="flash_attention_2",
+                    torch_dtype=dtype,
                     device_map=self._settings.device_map,
                     local_files_only=True,
                 )
-                self._process_vision_info = process_vision_info
+                self._model.eval()
+                self._device = device
             except (OSError, RuntimeError, ValueError) as exc:
                 raise ProviderUnavailable("Qwen checkpoint could not be loaded locally") from exc
 
@@ -122,7 +125,7 @@ class Qwen3VLProvider:
             self._load()
             assert self._processor is not None
             assert self._model is not None
-            assert self._process_vision_info is not None
+            assert self._device is not None
             started = time.perf_counter()
             prompt = (
                 "Inspect the candidate image against the search condition. "
@@ -143,23 +146,20 @@ class Qwen3VLProvider:
             ]
             try:
                 text = self._processor.apply_chat_template(
-                    messages, tokenize=False, add_generation_prompt=True
-                )
-                image_inputs, video_inputs = self._process_vision_info(messages)
-                inputs = self._processor(
-                    text=[text],
-                    images=image_inputs,
-                    videos=video_inputs,
-                    padding=True,
+                    messages,
+                    tokenize=True,
+                    add_generation_prompt=True,
+                    return_dict=True,
                     return_tensors="pt",
                 )
-                inputs = inputs.to(self._model.device)
+                inputs = text.to(self._device)
+                input_length = inputs.input_ids.shape[1]
                 generated_ids = self._model.generate(
                     **inputs, max_new_tokens=self._settings.max_new_tokens
                 )
                 trimmed_ids = [
-                    out_ids[len(in_ids) :]
-                    for in_ids, out_ids in zip(inputs.input_ids, generated_ids, strict=True)
+                    out_ids[input_length:]
+                    for out_ids in generated_ids
                 ]
                 raw = self._processor.batch_decode(
                     trimmed_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False
