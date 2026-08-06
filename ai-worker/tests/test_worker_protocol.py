@@ -121,17 +121,101 @@ def test_result_uses_absolute_detection_time_and_never_serializes_local_paths() 
     }
 
 
-def test_claimed_response_requires_lease_token() -> None:
-    with pytest.raises(ValidationError, match="CLAIMED"):
-        RecordingAnalysisClaim(
-            jobId=71,
-            status="RUNNING",
-            attempt=1,
-            disposition="CLAIMED",
-            startedAt=datetime(2026, 7, 30, tzinfo=UTC),
-            claimedBy="recording-ai-worker",
-            claimExpiresAt=datetime(2026, 7, 30, 0, 5, tzinfo=UTC),
+def test_controller_claim_accepts_worker_owned_claim_without_lease_token_and_signed_target_url(
+) -> None:
+    claim = RecordingAnalysisClaim.model_validate(
+        {
+            "jobId": 71,
+            "status": "RUNNING",
+            "attempt": 1,
+            "disposition": "CLAIMED",
+        }
+    )
+    target = RecordingAnalysisTarget.model_validate(
+        {
+            "jobId": 71,
+            "caseId": 11,
+            "searchConditionId": 21,
+            "recordingId": 31,
+            "cameraId": 41,
+            "cameraCode": "CAM-001",
+            "cameraName": "Gate A",
+            "recordingObjectKey": "recordings/CAM-001/video.mp4",
+            "recordingDownloadUrl": "https://storage.example/video.mp4",
+            "recordingStart": "2026-08-05T08:00:00Z",
+            "recordingEnd": "2026-08-05T08:01:00Z",
+            "prompt": "gray shirt, black pants",
+            "searchFromMs": 12_500,
+            "searchToMs": 17_750,
+            "attempt": 1,
+        }
+    )
+
+    assert claim.lease_token is None
+    assert target.recording_download_url == "https://storage.example/video.mp4"
+    assert target.resolved_search_window_ms == (12_500, 17_750)
+
+
+def test_controller_client_sends_worker_claim_token_for_target() -> None:
+    """The internal Worker controller owns the target and its signed recording URL."""
+
+    async def handler(request: httpx2.Request) -> httpx2.Response:
+        assert request.headers["X-Worker-Key"] == "test-worker-key"
+        if request.url.path.endswith("/claim"):
+            return httpx2.Response(
+                200,
+                json=_envelope(
+                    {
+                        "jobId": 71,
+                        "status": "RUNNING",
+                        "attempt": 1,
+                        "disposition": "CLAIMED",
+                        "leaseToken": "lease-1",
+                    }
+                ),
+                request=request,
+            )
+        assert request.url.path.endswith("/target")
+        assert request.headers["X-Worker-Claim-Token"] == "lease-1"
+        return httpx2.Response(
+            200,
+            json=_envelope(
+                {
+                    "jobId": 71,
+                    "caseId": 11,
+                    "recordingId": 31,
+                    "cameraId": 41,
+                    "cameraCode": "CAM-001",
+                    "cameraName": "Gate A",
+                    "recordingObjectKey": "recordings/CAM-001/video.mp4",
+                    "recordingDownloadUrl": "https://storage.example/video.mp4",
+                    "recordingStart": "2026-08-05T08:00:00Z",
+                    "recordingEnd": "2026-08-05T08:01:00Z",
+                    "prompt": "gray shirt, black pants",
+                    "searchFromMs": 12_500,
+                    "searchToMs": 17_750,
+                    "attempt": 1,
+                }
+            ),
+            request=request,
         )
+
+    async def scenario() -> RecordingAnalysisTarget:
+        async with httpx2.AsyncClient(
+            transport=httpx2.MockTransport(handler), base_url="https://central.example"
+        ) as http_client:
+            client = CentralWorkerClient(
+                base_url="https://central.example",
+                api_key="test-worker-key",
+                worker_id="notebook-worker",
+                client=http_client,
+            )
+            claim = await client.claim_job(71)
+            return await client.fetch_target(71, claim.lease_token)
+
+    target = anyio.run(scenario)
+
+    assert target.recording_download_url == "https://storage.example/video.mp4"
 
 
 def test_rabbit_event_is_routing_only_without_case_or_recording_metadata() -> None:
@@ -164,6 +248,33 @@ def test_legacy_duplicate_claim_maps_to_lease_held_for_safe_rollout() -> None:
 
     assert claim.disposition == "LEASE_HELD"
     assert claim.lease_token is None
+
+
+def test_claim_ignores_additive_backend_metadata() -> None:
+    claim = RecordingAnalysisClaim.model_validate(
+        {
+            "jobId": 71,
+            "status": "RUNNING",
+            "attempt": 1,
+            "duplicate": False,
+            "claimLeaseSeconds": 300,
+        }
+    )
+
+    assert claim.disposition == "CLAIMED"
+    assert claim.lease_token is None
+
+
+def test_claim_rejects_non_boolean_duplicate_without_guessing_ownership() -> None:
+    with pytest.raises(ValidationError, match="disposition"):
+        RecordingAnalysisClaim.model_validate(
+            {
+                "jobId": 71,
+                "status": "RUNNING",
+                "attempt": 1,
+                "duplicate": "false",
+            }
+        )
 
 
 def test_explicit_lease_owner_dispositions_are_supported() -> None:

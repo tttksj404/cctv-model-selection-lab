@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,9 +52,9 @@ def detect_person_tracks(
     margin: float,
     search_from_ms: int,
     search_to_ms: int | None,
+    detector: Any | None = None,
 ) -> tuple[TrackFrame, ...]:
     import cv2
-    from ultralytics import YOLO
 
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
@@ -65,7 +66,11 @@ def detect_person_tracks(
     if fps <= 0.0 or width <= 0 or height <= 0:
         raise RuntimeError("video_metadata_invalid")
 
-    model = YOLO(weights)
+    model = detector
+    if model is None:
+        from ultralytics import YOLO
+
+        model = YOLO(weights)
     results = model.track(
         source=str(video_path),
         stream=True,

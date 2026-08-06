@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-import hashlib
+import importlib.util
+import logging
 import math
+import shutil
+import threading
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,6 +21,8 @@ from qwen_backend.candidate_runtime import (
     RuntimeCandidate,
 )
 from qwen_backend.video_tracks import TrackFrame, detect_person_tracks
+
+logger = logging.getLogger(__name__)
 
 
 class CandidateEngineSettings(BaseSettings):
@@ -37,17 +43,38 @@ class CandidateEngineSettings(BaseSettings):
 
     model_key: str = Field(default="hybrid-solider-clip-v1", min_length=1, max_length=100)
     device: str = Field(default="cuda", min_length=1, max_length=50)
-    yolo_weights: str = Field(default="yolo11s.pt", min_length=1, max_length=500)
+    model_directory: Path = Field(default=Path("models"))
+    model_manifest: Path = Field(default=Path("configs/realtime_model_manifest.json"))
+    yolo_weights: str = Field(default="models/yolo11x.pt", min_length=1, max_length=500)
     tracker: str = Field(default="bytetrack.yaml", min_length=1, max_length=500)
-    reid_checkpoint: Path | None = None
+    reid_checkpoint: Path | None = Path("models/solider_reid/swin_base_msmt17.pth")
     solider_root: Path | None = Field(
-        default=None,
+        default=Path("external/SOLIDER-REID-runtime-8c08e1c"),
         validation_alias=AliasChoices("SOLIDER_REID_ROOT", "QWEN_CANDIDATE_SOLIDER_ROOT"),
     )
     clip_checkpoint: str = Field(
         default="openai/clip-vit-large-patch14",
         min_length=1,
         max_length=500,
+    )
+    clip_revision: str = Field(
+        default="32bd64288804d66eefd0ccbe215aa642df71cc41",
+        min_length=1,
+        max_length=100,
+    )
+    clip_cache_dir: Path | None = Field(
+        default=Path("artifacts/ai-worker/model-cache/clip"),
+        validation_alias=AliasChoices(
+            "QWEN_CANDIDATE_CLIP_CACHE_DIR",
+            "CLIP_CACHE_DIR",
+        ),
+    )
+    clip_local_files_only: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "QWEN_CANDIDATE_CLIP_LOCAL_FILES_ONLY",
+            "CLIP_LOCAL_FILES_ONLY",
+        ),
     )
     top_k: int = Field(default=20, ge=1, le=100)
     max_crops_per_track: int = Field(default=12, ge=1, le=100)
@@ -86,6 +113,17 @@ class EngineConfig:
     clip_weight: float
     aggregate_top_frames: int
     reid_batch_size: int
+    model_directory: str = "models"
+    model_manifest: str = "configs/realtime_model_manifest.json"
+    clip_revision: str = "32bd64288804d66eefd0ccbe215aa642df71cc41"
+    clip_cache_dir: Path | None = Path("artifacts/ai-worker/model-cache/clip")
+    clip_local_files_only: bool = True
+
+    @property
+    def solider_checkpoint(self) -> str:
+        if self.reid_checkpoint is None:
+            raise RuntimeError("SOLIDER checkpoint is not configured")
+        return str(self.reid_checkpoint)
 
     @classmethod
     def from_environment(cls) -> EngineConfig:
@@ -108,6 +146,11 @@ class EngineConfig:
             clip_weight=settings.clip_weight,
             aggregate_top_frames=settings.aggregate_top_frames,
             reid_batch_size=settings.reid_batch_size,
+            model_directory=str(settings.model_directory),
+            model_manifest=str(settings.model_manifest),
+            clip_revision=settings.clip_revision,
+            clip_cache_dir=settings.clip_cache_dir,
+            clip_local_files_only=settings.clip_local_files_only,
         )
 
 
@@ -119,12 +162,20 @@ def cuda_available() -> bool:
     return bool(torch.cuda.is_available())
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def validate_realtime_dependencies(*, ffmpeg_path: str | None = None) -> None:
+    """Fail fast when the worker was started without its realtime extra."""
+
+    required_modules = ("cv2", "torch", "transformers", "ultralytics")
+    missing = tuple(
+        module for module in required_modules if importlib.util.find_spec(module) is None
+    )
+    if missing:
+        raise RuntimeError(
+            "realtime dependencies are missing; run `uv sync --extra realtime`: "
+            + ", ".join(missing)
+        )
+    if ffmpeg_path is not None and shutil.which(ffmpeg_path) is None:
+        raise RuntimeError(f"ffmpeg executable was not found: {ffmpeg_path}")
 
 
 def _to_unit_interval(scores):
@@ -137,51 +188,72 @@ def _solider_scores(
     frames: Sequence[TrackFrame],
     reference_path: Path,
     config: EngineConfig,
+    encoder: Any,
 ):
-    import torch
-
-    from scripts.benchmark_chirla_reid import ImageEncoder, Record
-
     if config.reid_checkpoint is None or config.solider_root is None:
         raise RuntimeError("SOLIDER checkpoint and repository must be configured")
-    encoder = ImageEncoder(
-        "solider-reid-swin-base-msmt17",
-        torch.device(config.device),
-        checkpoint_override=str(config.reid_checkpoint),
-        solider_root=config.solider_root,
-        tta="hflip",
+    frame_features = _encode_solider_paths(
+        tuple(frame.crop_path for frame in frames),
+        encoder,
+        batch_size=config.reid_batch_size,
     )
-    records = [
-        Record(
-            path=frame.crop_path,
-            identity=str(frame.track_id),
-            role="query",
-            camera="runtime",
-            sequence="runtime",
-            sha256=_sha256(frame.crop_path),
-        )
-        for frame in frames
-    ]
-    reference = Record(
-        path=reference_path,
-        identity="reference",
-        role="gallery",
-        camera="reference",
-        sequence="reference",
-        sha256=_sha256(reference_path),
-    )
-    frame_features = encoder.encode(records, batch_size=config.reid_batch_size)
-    reference_feature = encoder.encode([reference], batch_size=1)[0]
+    reference_feature = _encode_solider_paths(
+        (reference_path,),
+        encoder,
+        batch_size=1,
+    )[0]
     return _to_unit_interval(frame_features @ reference_feature)
 
 
-def _clip_scores(frames: Sequence[TrackFrame], prompt: str, checkpoint: str, device: str):
+def _encode_solider_paths(
+    paths: Sequence[Path],
+    encoder: Any,
+    *,
+    batch_size: int,
+):
+    """Encode local crops through the same verified SOLIDER runtime as realtime inference."""
+
     import torch
     from PIL import Image
-    from transformers import CLIPModel, CLIPProcessor
 
-    processor = CLIPProcessor.from_pretrained(checkpoint)
-    model = CLIPModel.from_pretrained(checkpoint).to(device).eval()
+    features = []
+    for start in range(0, len(paths), batch_size):
+        tensors = []
+        for path in paths[start : start + batch_size]:
+            with Image.open(path) as image:
+                rgb_image = image.convert("RGB")
+                try:
+                    tensors.append(encoder.processor(rgb_image))
+                finally:
+                    rgb_image.close()
+        batch = torch.stack(tensors).to(encoder.device)
+        with torch.inference_mode():
+            feature = encoder.model(batch)[0]
+            flipped_feature = encoder.model(torch.flip(batch, dims=(3,)))[0]
+            combined = torch.nn.functional.normalize(feature, dim=-1) + (
+                torch.nn.functional.normalize(flipped_feature, dim=-1)
+            )
+            features.append(torch.nn.functional.normalize(combined, dim=-1).cpu())
+    return torch.cat(features, dim=0).numpy()
+
+
+@dataclass(frozen=True, slots=True)
+class _ClipBundle:
+    processor: Any
+    model: Any
+
+
+def _clip_scores(
+    frames: Sequence[TrackFrame],
+    prompt: str,
+    bundle: _ClipBundle,
+    device: str,
+):
+    import torch
+    from PIL import Image
+
+    processor = bundle.processor
+    model = bundle.model
     images = []
     try:
         for frame in frames:
@@ -208,6 +280,110 @@ class SoliderClipCandidateEngine:
     def __init__(self, config: EngineConfig) -> None:
         self._config = config
         self.model_key = config.model_key
+        self._cache_lock = threading.RLock()
+        self._detector: Any | None = None
+        self._clip_bundle: _ClipBundle | None = None
+        self._solider_encoder: Any | None = None
+        self._cache_loads = {"yolo": 0, "clip": 0, "solider": 0}
+        self._cache_hits = {"yolo": 0, "clip": 0, "solider": 0}
+
+    @property
+    def cache_status(self) -> dict[str, dict[str, int | bool]]:
+        """Return non-sensitive model-cache state for status pages and logs."""
+
+        with self._cache_lock:
+            return {
+                name: {
+                    "loaded": value > 0,
+                    "loads": value,
+                    "hits": self._cache_hits[name],
+                }
+                for name, value in self._cache_loads.items()
+            }
+
+    def _load_detector(self) -> Any:
+        from ultralytics import YOLO
+
+        from qwen_backend.realtime_model_security import verified_yolo_weights
+
+        return YOLO(verified_yolo_weights(self._config))
+
+    def _get_detector(self) -> Any:
+        with self._cache_lock:
+            if self._detector is None:
+                self._detector = self._load_detector()
+                self._cache_loads["yolo"] += 1
+                logger.info("candidate model cached component=YOLO")
+            else:
+                self._cache_hits["yolo"] += 1
+            return self._detector
+
+    def _load_clip_bundle(self) -> _ClipBundle:
+        from transformers import CLIPModel, CLIPProcessor
+
+        cache_dir = self._config.clip_cache_dir
+        if cache_dir is not None:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+        load_options = {
+            "revision": self._config.clip_revision,
+            "cache_dir": str(cache_dir) if cache_dir is not None else None,
+            "local_files_only": self._config.clip_local_files_only,
+            "use_fast": False,
+        }
+        processor = CLIPProcessor.from_pretrained(
+            self._config.clip_checkpoint,
+            **load_options,
+        )
+        model = CLIPModel.from_pretrained(
+            self._config.clip_checkpoint,
+            revision=self._config.clip_revision,
+            cache_dir=str(cache_dir) if cache_dir is not None else None,
+            local_files_only=self._config.clip_local_files_only,
+        )
+        return _ClipBundle(processor=processor, model=model.to(self._config.device).eval())
+
+    def _get_clip_bundle(self) -> _ClipBundle:
+        with self._cache_lock:
+            if self._clip_bundle is None:
+                self._clip_bundle = self._load_clip_bundle()
+                self._cache_loads["clip"] += 1
+                logger.info("candidate model cached component=CLIP")
+            else:
+                self._cache_hits["clip"] += 1
+            return self._clip_bundle
+
+    def _load_solider_encoder(self) -> Any:
+        import sys
+
+        import torch
+
+        from qwen_backend.realtime_identity import verified_solider_root
+        from qwen_backend.realtime_model_security import verified_solider_checkpoint
+        from qwen_backend.solider_runtime import SoliderImageEncoder
+
+        if self._config.solider_root is None or self._config.reid_checkpoint is None:
+            raise RuntimeError("SOLIDER checkpoint and repository must be configured")
+        # The verified checkout is an immutable runtime dependency.  Prevent the
+        # legacy package imports from leaving untracked __pycache__ files in it,
+        # which would make the integrity check fail on the next job.
+        sys.dont_write_bytecode = True
+        root = verified_solider_root(str(self._config.solider_root))
+        checkpoint = verified_solider_checkpoint(self._config)
+        return SoliderImageEncoder(
+            device=torch.device(self._config.device),
+            checkpoint=checkpoint,
+            root=root,
+        )
+
+    def _get_solider_encoder(self) -> Any:
+        with self._cache_lock:
+            if self._solider_encoder is None:
+                self._solider_encoder = self._load_solider_encoder()
+                self._cache_loads["solider"] += 1
+                logger.info("candidate model cached component=SOLIDER")
+            else:
+                self._cache_hits["solider"] += 1
+            return self._solider_encoder
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse:
         frames = detect_person_tracks(
@@ -223,6 +399,7 @@ class SoliderClipCandidateEngine:
             margin=self._config.crop_margin,
             search_from_ms=request.search_from_ms,
             search_to_ms=request.search_to_ms,
+            detector=self._get_detector(),
         )
         if not frames:
             return CandidateRuntimeResponse(modelKey=self.model_key, candidates=())
@@ -230,7 +407,12 @@ class SoliderClipCandidateEngine:
             raise ValueError("reference image or appearance prompt is required")
 
         reid_scores = (
-            _solider_scores(frames, request.reference_path, self._config)
+            _solider_scores(
+                frames,
+                request.reference_path,
+                self._config,
+                self._get_solider_encoder(),
+            )
             if request.reference_path is not None
             else None
         )
@@ -238,7 +420,7 @@ class SoliderClipCandidateEngine:
             _clip_scores(
                 frames,
                 request.prompt,
-                self._config.clip_checkpoint,
+                self._get_clip_bundle(),
                 self._config.device,
             )
             if request.prompt.strip()

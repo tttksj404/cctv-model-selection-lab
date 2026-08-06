@@ -30,7 +30,7 @@ class CandidateRuntimeRequest(RuntimeModel):
     model_key: str = Field(min_length=1, max_length=100)
     job_id: int = Field(gt=0)
     case_id: int = Field(gt=0)
-    search_condition_id: int = Field(gt=0)
+    search_condition_id: int | None = Field(default=None, gt=0)
     recording_id: int = Field(gt=0)
     camera_id: int = Field(gt=0)
     camera_name: str

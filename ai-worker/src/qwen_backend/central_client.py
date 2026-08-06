@@ -4,22 +4,40 @@ import logging
 import socket
 import time
 from collections.abc import Mapping, Sequence
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import TracebackType
 from typing import Final, Literal
 from urllib.parse import urlsplit
 
 import httpx2
-from pydantic import Field, JsonValue, TypeAdapter, model_validator
+from pydantic import Field, JsonValue, TypeAdapter, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from qwen_backend.candidate_runtime import RuntimeCandidate
-from qwen_backend.storage_transfer import StorageTransferError, download_to_path, upload_file
+from qwen_backend.object_storage import ObjectStorageError, S3ObjectStore, S3ObjectStoreConfig
+from qwen_backend.storage_transfer import (
+    StorageTransferError,
+    download_time_window_to_path,
+    download_to_path,
+    upload_file,
+)
 from qwen_backend.worker_protocol import (
+    DEVICE_AI_SEARCH_JOBS_PATH,
+    DEVICE_KEY_HEADER,
+    DEVICE_KEY_PATTERN,
+    DEVICE_RECORDING_ANALYSIS_JOBS_PATH,
     INTERNAL_RECORDING_ANALYSIS_JOBS_PATH,
     MAX_UPLOAD_URL_CANDIDATES,
     WORKER_CLAIM_TOKEN_HEADER,
     WORKER_KEY_HEADER,
+    DeviceAiClaimRequest,
+    DeviceAiCompleteRequest,
+    DeviceAiFailureRequest,
+    DeviceAiHeartbeatRequest,
+    DeviceAiMutationResponse,
+    DeviceAiSearchJob,
+    DeviceCandidateEvent,
     RecordingAnalysisClaim,
     RecordingAnalysisCompletion,
     RecordingAnalysisEvidenceUpload,
@@ -159,11 +177,17 @@ class CentralWorkerError(RuntimeError):
 
     @property
     def is_lease_conflict(self) -> bool:
-        return self.code == "WORKER_LEASE_CONFLICT"
+        return self.code in {"WORKER_LEASE_CONFLICT", "AI_JOB_LEASE_LOST"}
 
 
 class CentralWorkerClient:
-    """Typed client for the central recording-analysis worker contract."""
+    """Typed client for both the current Worker API and legacy Device API.
+
+    A media-server Device Key is deliberately never sent as ``X-Worker-Key``.
+    ``auto`` mode recognizes the ``msk_<id>.<secret>`` shape used by the
+    central server and selects ``X-Device-Key``; tests and newer deployments
+    can continue to use a non-device key with the internal Worker API.
+    """
 
     def __init__(
         self,
@@ -173,21 +197,27 @@ class CentralWorkerClient:
         worker_id: str,
         client: httpx2.AsyncClient | None = None,
         options: CentralClientOptions | None = None,
+        auth_mode: Literal["auto", "device", "worker"] = "auto",
+        storage_config: S3ObjectStoreConfig | None = None,
     ) -> None:
         normalized_url = _normalize_central_url(base_url)
         normalized_api_key = _normalize_api_key(api_key)
         normalized_worker_id = worker_id.strip()
         if not normalized_worker_id:
             raise ValueError("AI Worker worker ID is required")
+        if auth_mode == "device" and not DEVICE_KEY_PATTERN.fullmatch(normalized_api_key):
+            raise ValueError("device auth mode requires a valid media-server Device Key")
 
         active_options = options or CentralClientOptions()
         self._worker_id = normalized_worker_id
         self._api_key = normalized_api_key
+        self._auth_mode = _resolve_auth_mode(normalized_api_key, auth_mode)
+        self._auth_header = DEVICE_KEY_HEADER if self._auth_mode == "device" else WORKER_KEY_HEADER
         self._download_chunk_bytes = active_options.download_chunk_bytes
         self._owns_clients = client is None
         self._client = client or create_async_client(
             base_url=normalized_url,
-            headers={"Accept": "application/json", WORKER_KEY_HEADER: normalized_api_key},
+            headers={"Accept": "application/json", self._auth_header: normalized_api_key},
             options=active_options,
         )
         self._storage_client = (
@@ -197,6 +227,23 @@ class CentralWorkerClient:
                 timeout=active_options.download_timeout(), options=active_options
             )
         )
+        self._object_store = (
+            None
+            if storage_config is None
+            else S3ObjectStore(storage_config, self._storage_client or self._client)
+        )
+
+    @property
+    def uses_device_key(self) -> bool:
+        """Whether central calls use the media-server Device Key contract."""
+
+        return self._auth_mode == "device"
+
+    @property
+    def uses_current_device_api(self) -> bool:
+        """Whether the current backend dev AI-worker contract is active."""
+
+        return self._auth_mode == "device"
 
     async def __aenter__(self) -> CentralWorkerClient:
         return self
@@ -221,12 +268,42 @@ class CentralWorkerClient:
         response = await self._request(
             "POST", f"{INTERNAL_RECORDING_ANALYSIS_JOBS_PATH}/{job_id}/claim"
         )
-        claim = RecordingAnalysisClaim.model_validate(self._data(response))
+        data = self._normalize_claim_data(self._data(response))
+        try:
+            claim = RecordingAnalysisClaim.model_validate(data)
+        except ValidationError as error:
+            fields = sorted(data) if isinstance(data, dict) else []
+            logger.error(
+                "claim response schema failed job_id=%d fields=%s errors=%s",
+                job_id,
+                fields,
+                error.errors(include_url=False),
+            )
+            raise
         if claim.job_id != job_id:
             raise CentralWorkerError("central claim response returned a different job")
         return claim
 
-    async def fetch_target(self, job_id: int, claim_token: str) -> RecordingAnalysisTarget:
+    async def claim_device_job(self, model_key: str) -> DeviceAiSearchJob | None:
+        """Claim one queued recording through the current Device API contract."""
+
+        if not self.uses_current_device_api:
+            raise CentralWorkerError("current Device API requires Device Key authentication")
+        request = DeviceAiClaimRequest(model_key=model_key)
+        response = await self._request(
+            "POST",
+            f"{DEVICE_AI_SEARCH_JOBS_PATH}/claim",
+            payload=request,
+        )
+        if response.status_code == 204:
+            return None
+        return DeviceAiSearchJob.model_validate(self._data(response))
+
+    async def fetch_target(
+        self,
+        job_id: int,
+        claim_token: str | None,
+    ) -> RecordingAnalysisTarget:
         _require_positive_job_id(job_id)
         response = await self._request(
             "GET",
@@ -244,6 +321,13 @@ class CentralWorkerClient:
         claim_token: str,
     ) -> RecordingAnalysisWorkerHeartbeat:
         _require_positive_job_id(job_id)
+        if self.uses_current_device_api:
+            await self.heartbeat_device_job(job_id, claim_token)
+            return RecordingAnalysisWorkerHeartbeat(
+                job_id=job_id,
+                status="RUNNING",
+                claim_expires_at=datetime.now(UTC) + timedelta(minutes=5),
+            )
         response = await self._request(
             "POST",
             f"{INTERNAL_RECORDING_ANALYSIS_JOBS_PATH}/{job_id}/heartbeat",
@@ -254,10 +338,20 @@ class CentralWorkerClient:
             raise CentralWorkerError("central heartbeat response returned a different job")
         return heartbeat
 
+    async def heartbeat_device_job(self, job_id: int, lease_token: str) -> None:
+        """Refresh a lease using the current backend Device API contract."""
+
+        _require_positive_job_id(job_id)
+        await self._request(
+            "POST",
+            f"{DEVICE_AI_SEARCH_JOBS_PATH}/{job_id}/heartbeat",
+            payload=DeviceAiHeartbeatRequest(lease_token=lease_token),
+        )
+
     async def create_evidence_upload_urls(
         self,
         job_id: int,
-        claim_token: str,
+        claim_token: str | None,
         candidates: Sequence[RuntimeCandidate],
     ) -> dict[str, RecordingAnalysisEvidenceUpload]:
         """Request and validate all upload URLs, in server-sized batches."""
@@ -318,10 +412,11 @@ class CentralWorkerClient:
     async def complete(
         self,
         job_id: int,
-        claim_token: str,
+        claim_token: str | None,
         result: RecordingAnalysisResult,
     ) -> RecordingAnalysisCompletion:
         _require_positive_job_id(job_id)
+        started = time.perf_counter()
         response = await self._request(
             "POST",
             f"{INTERNAL_RECORDING_ANALYSIS_JOBS_PATH}/{job_id}/result",
@@ -331,12 +426,19 @@ class CentralWorkerClient:
         completion = RecordingAnalysisCompletion.model_validate(self._data(response))
         if completion.job_id != job_id:
             raise CentralWorkerError("central completion response returned a different job")
+        logger.info(
+            "central result callback accepted job_id=%d candidates=%d status=%s elapsed_ms=%d",
+            job_id,
+            len(result.candidates),
+            completion.status,
+            round((time.perf_counter() - started) * 1_000),
+        )
         return completion
 
     async def fail(
         self,
         job_id: int,
-        claim_token: str,
+        claim_token: str | None,
         *,
         result_id: str,
         error_code: str,
@@ -359,6 +461,77 @@ class CentralWorkerClient:
             raise CentralWorkerError("central failure response returned a different job")
         return failure
 
+    async def complete_device_result(
+        self,
+        job_id: int,
+        result: DeviceCandidateEvent,
+    ) -> JsonValue:
+        """Submit a legacy recording candidate using ``X-Device-Key``.
+
+        The legacy endpoint accepts the same candidate-event shape used by a
+        media server and owns the job transition on successful submission.
+        It intentionally does not send worker claim or lease headers.
+        """
+
+        _require_positive_job_id(job_id)
+        if not self.uses_device_key:
+            raise CentralWorkerError("device result requires Device Key authentication")
+        response = await self._request(
+            "POST",
+            f"{DEVICE_RECORDING_ANALYSIS_JOBS_PATH}/{job_id}/result",
+            payload=result,
+        )
+        return self._data(response)
+
+    async def complete_device_job(
+        self,
+        job_id: int,
+        request: DeviceAiCompleteRequest,
+    ) -> DeviceAiMutationResponse:
+        """Commit candidates through the current backend Device API contract."""
+
+        _require_positive_job_id(job_id)
+        if not self.uses_current_device_api:
+            raise CentralWorkerError("current Device API requires Device Key authentication")
+        started = time.perf_counter()
+        response = await self._request(
+            "POST",
+            f"{DEVICE_AI_SEARCH_JOBS_PATH}/{job_id}/complete",
+            payload=request,
+        )
+        mutation = DeviceAiMutationResponse.model_validate(self._data(response))
+        if mutation.job_id != job_id:
+            raise CentralWorkerError("central completion response returned a different job")
+        logger.info(
+            "central device result callback accepted job_id=%d candidates=%d "
+            "status=%s elapsed_ms=%d",
+            job_id,
+            len(request.candidates),
+            mutation.status,
+            round((time.perf_counter() - started) * 1_000),
+        )
+        return mutation
+
+    async def fail_device_job(
+        self,
+        job_id: int,
+        request: DeviceAiFailureRequest,
+    ) -> DeviceAiMutationResponse:
+        """Report a failure through the current backend Device API contract."""
+
+        _require_positive_job_id(job_id)
+        if not self.uses_current_device_api:
+            raise CentralWorkerError("current Device API requires Device Key authentication")
+        response = await self._request(
+            "POST",
+            f"{DEVICE_AI_SEARCH_JOBS_PATH}/{job_id}/fail",
+            payload=request,
+        )
+        mutation = DeviceAiMutationResponse.model_validate(self._data(response))
+        if mutation.job_id != job_id:
+            raise CentralWorkerError("central failure response returned a different job")
+        return mutation
+
     async def download(self, url: str, destination: Path, *, max_bytes: int) -> Path:
         try:
             return await download_to_path(
@@ -374,6 +547,76 @@ class CentralWorkerClient:
                 status_code=exception.status_code,
             ) from exception
 
+    async def download_segment(
+        self,
+        url: str,
+        destination: Path,
+        *,
+        start_ms: int,
+        end_ms: int,
+        max_bytes: int,
+        ffmpeg_path: str,
+        timeout_seconds: float,
+    ) -> Path:
+        """Materialize one claimed recording's search window from its signed URL."""
+
+        try:
+            return await download_time_window_to_path(
+                url,
+                destination,
+                start_ms=start_ms,
+                end_ms=end_ms,
+                max_bytes=max_bytes,
+                ffmpeg_path=ffmpeg_path,
+                timeout_seconds=timeout_seconds,
+            )
+        except StorageTransferError as exception:
+            raise CentralWorkerError(
+                str(exception),
+                status_code=exception.status_code,
+            ) from exception
+
+    async def download_object(self, object_key: str, destination: Path, *, max_bytes: int) -> Path:
+        """Download a private recording by object key using configured MinIO/S3 access."""
+
+        if self._object_store is None:
+            raise CentralWorkerError(
+                "recordingObjectKey requires S3/MinIO storage configuration"
+            )
+        try:
+            return await self._object_store.download(
+                object_key,
+                destination,
+                max_bytes=max_bytes,
+                chunk_bytes=self._download_chunk_bytes,
+            )
+        except (ObjectStorageError, OSError, ValueError) as exception:
+            raise CentralWorkerError("recording object download failed") from exception
+
+    async def upload_object(
+        self,
+        object_key: str,
+        source_path: Path,
+        *,
+        content_type: str,
+        max_bytes: int,
+    ) -> None:
+        """Upload a legacy analysis evidence object to private S3/MinIO."""
+
+        if self._object_store is None:
+            raise CentralWorkerError(
+                "legacy Device Key result requires S3/MinIO storage configuration"
+            )
+        try:
+            await self._object_store.upload(
+                object_key,
+                source_path,
+                content_type=content_type,
+                max_bytes=max_bytes,
+            )
+        except (ObjectStorageError, FileNotFoundError, OSError, ValueError) as exception:
+            raise CentralWorkerError("analysis evidence upload failed") from exception
+
     async def _request(
         self,
         method: Literal["GET", "POST"],
@@ -382,7 +625,7 @@ class CentralWorkerClient:
         headers: Mapping[str, str] | None = None,
         payload: WorkerModel | None = None,
     ) -> httpx2.Response:
-        request_headers = {"Accept": "application/json", WORKER_KEY_HEADER: self._api_key}
+        request_headers = {"Accept": "application/json", self._auth_header: self._api_key}
         request_headers.update(headers or {})
         try:
             response = await self._client.request(
@@ -407,7 +650,34 @@ class CentralWorkerClient:
         return payload["data"]
 
     @staticmethod
-    def _claim_token_headers(claim_token: str) -> dict[str, str]:
+    def _normalize_claim_data(data: JsonValue) -> JsonValue:
+        """Adapt the current Controller's duplicate flag to the worker state model.
+
+        ``RecordingAnalysisWorkerController`` returns an ``ApiResponse`` whose
+        data contains ``status`` and ``duplicate``.  The Worker state machine
+        also understands the older explicit ``disposition`` field, so convert
+        the current response at the HTTP boundary before Pydantic validation.
+        The protocol model repeats this normalization as a defensive path for
+        callers that construct the model directly.
+        """
+
+        if not isinstance(data, dict):
+            return data
+        if "disposition" in data or "duplicate" not in data:
+            return data
+        if data.get("status") != "RUNNING":
+            return data
+        duplicate = data["duplicate"]
+        if not isinstance(duplicate, bool):
+            return data
+        normalized = dict(data)
+        normalized["disposition"] = "LEASE_HELD" if duplicate else "CLAIMED"
+        return normalized
+
+    @staticmethod
+    def _claim_token_headers(claim_token: str | None) -> dict[str, str] | None:
+        if claim_token is None:
+            return None
         normalized_token = claim_token.strip()
         if not normalized_token:
             raise ValueError("worker claim token is required")
@@ -429,6 +699,17 @@ def _normalize_api_key(api_key: str) -> str:
     if normalized_api_key.lower() in _PLACEHOLDER_API_KEYS:
         raise ValueError("AI Worker API key must not be a placeholder")
     return normalized_api_key
+
+
+def _resolve_auth_mode(
+    api_key: str,
+    auth_mode: Literal["auto", "device", "worker"],
+) -> Literal["device", "worker"]:
+    if auth_mode == "device":
+        return "device"
+    if auth_mode == "worker":
+        return "worker"
+    return "device" if DEVICE_KEY_PATTERN.fullmatch(api_key) else "worker"
 
 
 def _require_positive_job_id(job_id: int) -> None:

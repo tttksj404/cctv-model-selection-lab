@@ -99,8 +99,38 @@ queue도 있어야 한다.
   -Once
 ```
 
+`RecordingAnalysisWorkerController`가 기본 계약이며 `X-Worker-Key`를 우선 사용한다.
+
+### 모델 수명주기와 녹화 구간
+
+워커의 기본 후보 엔진은 `models/yolo11x.pt`,
+`models/solider_reid/swin_base_msmt17.pth`,
+`external/SOLIDER-REID-runtime-8c08e1c`, 그리고 로컬 Hugging Face CLIP
+ViT-L/14 스냅샷을 사용한다. YOLO·CLIP·SOLIDER는 첫 추론 때 한 번만
+GPU/CPU 메모리에 올리고 같은 워커 프로세스의 다음 작업에서 재사용한다.
+`QWEN_CANDIDATE_*` 경로와 SHA-256 manifest가 맞지 않으면 추론을 시작하지
+않는다. 모델 파일은 저장소에 커밋하지 말고 배포 호스트의 `models/`와
+`external/`에 별도로 준비한다.
+
+중앙 서버 target의 `searchFromMs`~`searchToMs`가 있으면 워커는 기본적으로
+signed URL을 FFmpeg에 전달해 해당 구간만 `*.window.mp4`로 materialize한 뒤
+그 파일만 분석한다. 구간 파일을 만들었을 때도 결과 timestamp는 원본 녹화
+타임라인으로 다시 환산된다. 스토리지 프록시가 HTTP seek/range를 지원하지
+않는 개발 환경에서만 `EYESONU_AI_WORKER_DOWNLOAD_WINDOW_MODE=analyze`로
+전환할 수 있으며, 이 경우 파일은 전체를 받을 수 있지만 모델 분석은 검색
+구간 안에서만 수행한다.
+
+초기 준비 확인:
+
+```powershell
+uv sync --extra realtime --frozen
+ffmpeg -version
+Test-Path models/yolo11x.pt
+Test-Path models/solider_reid/swin_base_msmt17.pth
+Test-Path external/SOLIDER-REID-runtime-8c08e1c
+```
 `CENTRAL_API_BASE_URL`/`CENTRAL_API_WORKER_KEY`와 `RABBITMQ_URL`/`RABBITMQ_QUEUE`는
-기존 노트북 설정 파일 호환 이름이며, `EYESONU_AI_WORKER_*` 이름도 동일하게 지원한다.
+기존 노트북 설정 파일 호환 이름이다. `EYESONU_AI_WORKER_*` 이름도 지원한다.
 
 중앙 워커 계약의 endpoint, lease, 실패 재시도와 로컬 경로 비노출 정책은
 [노트북 상주 AI Worker 실행 계약](docs/NOTEBOOK_AI_WORKER_RUNTIME.md)을 참고한다.
@@ -208,3 +238,6 @@ ai-worker/
 ├─ deployment/           GPU 서버 실행 구성
 └─ docs/                 연동·학습·운영 문서
 ```
+
+Device API 기반 구형 전송이 필요한 경우의 노트북 전송 계약은
+[docs/DEVICE_KEY_LEGACY_TRANSPORT.md](docs/DEVICE_KEY_LEGACY_TRANSPORT.md)에 정리되어 있습니다.
