@@ -128,6 +128,20 @@ class NotebookWorkerSettings(BaseSettings):
         le=100,
     )
     cache_dir: Path = Path("artifacts/ai-worker/cache")
+    single_instance: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_SINGLE_INSTANCE",
+            "AI_WORKER_SINGLE_INSTANCE",
+        ),
+    )
+    instance_lock_file: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "EYESONU_AI_WORKER_INSTANCE_LOCK_FILE",
+            "AI_WORKER_INSTANCE_LOCK_FILE",
+        ),
+    )
     output_dir: Path = Path("artifacts/ai-worker/jobs")
     max_download_bytes: int = Field(default=DEFAULT_MAX_DOWNLOAD_BYTES, gt=0, le=50 * 1024**3)
     max_evidence_upload_bytes: int = Field(
@@ -224,6 +238,11 @@ class NotebookWorkerSettings(BaseSettings):
             "EYESONU_AI_S3_PATH_STYLE",
         ),
     )
+
+    def resolved_instance_lock_file(self) -> Path:
+        """Return the configured lock path or one scoped to this worker cache."""
+
+        return self.instance_lock_file or self.cache_dir / "worker.lock"
 
     @field_validator("central_api_url")
     @classmethod

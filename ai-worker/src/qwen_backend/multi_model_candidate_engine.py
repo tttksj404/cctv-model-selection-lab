@@ -243,6 +243,16 @@ class MultiModelCandidateEngine:
     def last_model_trace(self) -> tuple[tuple[str, str], ...]:
         return self._last_model_trace
 
+    def warm_up(self) -> None:
+        """Warm configured runtime components before the first queue delivery."""
+
+        self._base.warm_up()
+        bundle = self._base.get_clip_bundle()
+        self._get_fine(bundle)
+        self._get_solider_par()
+        qwen_status = self._qwen_review.warm_up()
+        logger.info("candidate optional model warm-up complete qwen_status=%s", qwen_status)
+
     def _get_fine(self, bundle: Any) -> FineAttributeRuntime | None:
         with self._lock:
             if self._fine_checked:

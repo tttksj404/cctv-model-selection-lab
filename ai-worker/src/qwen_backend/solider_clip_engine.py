@@ -453,6 +453,12 @@ class SoliderClipCandidateEngine:
     def get_clip_bundle(self) -> _ClipBundle:
         return self._get_clip_bundle()
 
+    def warm_up(self) -> None:
+        """Load the required detector and CLIP bundle once for this process."""
+
+        self._get_detector()
+        self._get_clip_bundle()
+
     def _load_solider_encoder(self) -> Any:
         import sys
 

@@ -4,7 +4,12 @@ import pytest
 from pydantic import ValidationError
 
 from qwen_backend.config import Settings
-from qwen_backend.providers import MockProvider, ModelAnalysisPayload, Qwen3VLProvider
+from qwen_backend.providers import (
+    MockProvider,
+    ModelAnalysisPayload,
+    Qwen3VLProvider,
+    QwenReviewPayload,
+)
 from qwen_backend.schemas import CandidateAnalysisRequest, SearchCondition
 
 
@@ -77,3 +82,25 @@ def test_qwen_provider_uses_the_existing_qwen3vl_loader_without_qwen_vl_utils(
 def test_model_payload_requires_strict_fields() -> None:
     with pytest.raises(ValidationError):
         ModelAnalysisPayload.model_validate({"decision": "review", "attributes": {}})
+
+
+def test_qwen_review_payload_uses_only_the_compact_review_contract() -> None:
+    payload = QwenReviewPayload.model_validate(
+        {
+            "decision": "review",
+            "confidence": 0.8,
+            "semantic_match_score": 0.7,
+        }
+    )
+
+    assert payload.decision == "review"
+    assert payload.semantic_match_score == 0.7
+    with pytest.raises(ValidationError):
+        QwenReviewPayload.model_validate(
+            {
+                "decision": "review",
+                "confidence": 0.8,
+                "semantic_match_score": 0.7,
+                "attributes": {"color": "gray"},
+            }
+        )

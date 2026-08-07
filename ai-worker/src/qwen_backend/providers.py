@@ -44,6 +44,16 @@ class ModelAnalysisPayload(BaseModel):
     failure_reason: str | None = Field(default=None, alias="failureReason")
 
 
+class QwenReviewPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    decision: Literal["match", "review", "reject"]
+    confidence: float = Field(ge=0.0, le=1.0)
+    semantic_match_score: float = Field(
+        alias="semanticMatchScore", ge=0.0, le=1.0
+    )
+
+
 class MockProvider:
     model_loaded = False
     model_version = "qwen3vl-mock-0.1"
@@ -87,6 +97,12 @@ class Qwen3VLProvider:
     @property
     def model_version(self) -> str:
         return self._settings.model_version
+
+    def warm_up(self) -> None:
+        """Load the local Qwen checkpoint without requiring an image request."""
+
+        with self._inference_lock:
+            self._load()
 
     def _load(self) -> None:
         if self._model is not None:
@@ -184,6 +200,63 @@ class Qwen3VLProvider:
             except (OSError, RuntimeError, TypeError, ValueError, KeyError, IndexError) as exc:
                 raise ProviderInferenceError(
                     "Qwen inference did not produce a valid response"
+                ) from exc
+
+    def review(self, request: CandidateAnalysisRequest) -> QwenReviewPayload:
+        """Run the compact schema used by the candidate-review hot path."""
+
+        with self._inference_lock:
+            self._load()
+            assert self._processor is not None
+            assert self._model is not None
+            assert self._device is not None
+            prompt = (
+                "Inspect the person image against the search condition. "
+                "Return exactly one JSON object with only these keys: "
+                "decision, confidence, semantic_match_score. "
+                "decision must be match, review, or reject. "
+                "confidence and semantic_match_score must be numbers from 0 to 1. "
+                "Do not add markdown, explanations, or other keys. "
+                f"Search condition: {request.search_condition.model_dump_json()}"
+            )
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": request.image_path},
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ]
+            try:
+                text = self._processor.apply_chat_template(
+                    messages,
+                    tokenize=True,
+                    add_generation_prompt=True,
+                    return_dict=True,
+                    return_tensors="pt",
+                )
+                inputs = text.to(self._device)
+                input_length = inputs.input_ids.shape[1]
+                generated_ids = self._model.generate(
+                    **inputs,
+                    max_new_tokens=self._settings.review_max_new_tokens,
+                    do_sample=False,
+                    use_cache=True,
+                )
+                trimmed_ids = [
+                    out_ids[input_length:]
+                    for out_ids in generated_ids
+                ]
+                raw = self._processor.batch_decode(
+                    trimmed_ids,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=False,
+                )[0]
+                return QwenReviewPayload.model_validate(self._parse_json(raw))
+            except (OSError, RuntimeError, TypeError, ValueError, KeyError, IndexError) as exc:
+                raise ProviderInferenceError(
+                    "Qwen compact review did not produce a valid response"
                 ) from exc
 
     @staticmethod

@@ -363,8 +363,16 @@ class RabbitJobProcessor:
                 delay_seconds=delay,
             )
         except (aio_pika.exceptions.AMQPException, OSError, TimeoutError) as error:
-            logger.exception("deferred retry publish failed; recovering source job_id=%d", job_id)
+            logger.warning(
+                "deferred retry publish failed; falling back to delayed source requeue "
+                "job_id=%d delay_seconds=%.1f error_type=%s",
+                job_id,
+                delay,
+                type(error).__name__,
+                exc_info=True,
+            )
             try:
+                await anyio.sleep(delay)
                 await delivery.reject(requeue=True)
             except (
                 aio_pika.exceptions.AMQPException,
@@ -379,7 +387,15 @@ class RabbitJobProcessor:
                     type(reject_error).__name__,
                 )
                 await anyio.sleep(delay)
-            raise RabbitRetryUnavailable("RabbitMQ deferred retry publish failed") from error
+                raise RabbitRetryUnavailable(
+                    "RabbitMQ deferred retry publish and source requeue failed"
+                ) from error
+            logger.warning(
+                "deferred retry fallback requeued source job_id=%d delay_seconds=%.1f",
+                job_id,
+                delay,
+            )
+            return
         logger.info(
             "deferred recording job job_id=%d retry_count=%d delay_seconds=%.1f reason=%s",
             job_id,

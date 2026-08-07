@@ -11,6 +11,7 @@ import anyio
 
 from qwen_backend.candidate_runtime import CandidateRuntimeResponse, RuntimeCandidate
 from qwen_backend.central_client import CentralWorkerError
+from qwen_backend.recording_cache import CacheMode, RecordingCache, RecordingCacheHit
 from qwen_backend.worker_protocol import (
     RecordingAnalysisEvidenceUpload,
     RecordingAnalysisTarget,
@@ -69,6 +70,7 @@ class RecordingEvidenceTransfer:
 
     def __init__(self, settings: NotebookWorkerSettings) -> None:
         self._settings = settings
+        self._recording_cache = RecordingCache(settings.cache_dir)
 
     async def upload_candidate_evidence(
         self,
@@ -133,10 +135,11 @@ class RecordingEvidenceTransfer:
         lease_token: str | None,
     ) -> tuple[RecordingAnalysisTarget, Path]:
         """Refresh exactly once when the signed URL expires for the same claimed recording."""
-
-        destination = self._destination_for(target)
+        cached = self._reuse_cached_recording(target)
+        if cached is not None:
+            return cached
         try:
-            return await self._download_once(client, target, destination)
+            return await self._download_or_reuse(client, target)
         except CentralWorkerError as exception:
             if exception.status_code not in {401, 403}:
                 raise
@@ -150,13 +153,77 @@ class RecordingEvidenceTransfer:
                 raise CentralWorkerError(
                     "refreshed target no longer matches the claimed recording job"
                 ) from exception
-            return await self._download_once(client, refreshed_target, destination)
+            return await self._download_or_reuse(client, refreshed_target)
 
     def _destination_for(self, target: RecordingAnalysisTarget) -> Path:
-        suffix = ".window.mp4" if self._settings.download_window_mode == "segment" else ".mp4"
-        return self._settings.cache_dir / (
-            f"job-{target.job_id}-attempt-{target.attempt}{suffix}"
+        return self._recording_cache.paths(
+            target,
+            self._cache_mode(),
+        ).video_path
+
+    async def _download_or_reuse(
+        self,
+        client: RecordingDownloadClient,
+        target: RecordingAnalysisTarget,
+    ) -> tuple[RecordingAnalysisTarget, Path]:
+        cached = self._reuse_cached_recording(target)
+        if cached is not None:
+            return cached
+        return await self._download_once(client, target, self._destination_for(target))
+
+    def _reuse_cached_recording(
+        self,
+        target: RecordingAnalysisTarget,
+    ) -> tuple[RecordingAnalysisTarget, Path] | None:
+        cache_candidates: tuple[tuple[CacheMode, RecordingCacheHit | None], ...] = (
+            ("full", self._recording_cache.find_hit(target, "full")),
+            (
+                self._cache_mode(),
+                self._recording_cache.find_hit(target, self._cache_mode()),
+            ),
         )
+        for mode, hit in cache_candidates:
+            if hit is None:
+                continue
+            path = hit.video_path
+            if mode == "segment":
+                cached_start_ms = hit.manifest.search_from_ms
+                cached_end_ms = hit.manifest.search_to_ms
+                if cached_start_ms is None or cached_end_ms is None:
+                    continue
+                resolved_target = _segment_target(
+                    target,
+                    segment_start_ms=cached_start_ms,
+                    segment_end_ms=cached_end_ms,
+                )
+            else:
+                resolved_target = target
+            cached_window = (
+                f"{hit.manifest.search_from_ms}-{hit.manifest.search_to_ms}"
+                if mode == "segment"
+                else "full"
+            )
+            requested_window = (
+                f"{target.search_from_ms}-{target.search_to_ms}" if mode == "segment" else "full"
+            )
+            logger.info(
+                "recording cache hit job_id=%d recording_id=%d mode=%s file=%s "
+                "requested_window=%s cached_window=%s",
+                target.job_id,
+                target.recording_id,
+                mode,
+                path.name,
+                requested_window,
+                cached_window,
+            )
+            return resolved_target, path
+        return None
+
+    def _cache_mode(self) -> CacheMode:
+        """Map the worker's download setting to the cache identity mode."""
+        if self._settings.download_window_mode == "segment":
+            return "segment"
+        return "full"
 
     async def _download_once(
         self,
@@ -164,6 +231,13 @@ class RecordingEvidenceTransfer:
         target: RecordingAnalysisTarget,
         destination: Path,
     ) -> tuple[RecordingAnalysisTarget, Path]:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        logger.info(
+            "recording network download started job_id=%d recording_id=%d mode=%s",
+            target.job_id,
+            target.recording_id,
+            self._cache_mode(),
+        )
         if target.recording_download_url is None:
             raise CentralWorkerError(
                 "RecordingAnalysisWorkerController target omitted recordingDownloadUrl",
@@ -179,19 +253,39 @@ class RecordingEvidenceTransfer:
                 ffmpeg_path=self._settings.ffmpeg_path,
                 timeout_seconds=self._settings.segment_timeout_seconds,
             )
+            self._recording_cache.store(target, "segment", path)
+            logger.info(
+                "recording network download completed job_id=%d recording_id=%d mode=segment",
+                target.job_id,
+                target.recording_id,
+            )
             return _segment_target(target), path
-        return target, await client.download(
+        path = await client.download(
             target.recording_download_url,
             destination,
             max_bytes=self._settings.max_download_bytes,
         )
+        self._recording_cache.store(target, "full", path)
+        logger.info(
+            "recording network download completed job_id=%d recording_id=%d mode=full",
+            target.job_id,
+            target.recording_id,
+        )
+        return target, path
 
 
-def _segment_target(target: RecordingAnalysisTarget) -> RecordingAnalysisTarget:
+def _segment_target(
+    target: RecordingAnalysisTarget,
+    *,
+    segment_start_ms: int | None = None,
+    segment_end_ms: int | None = None,
+) -> RecordingAnalysisTarget:
     """Translate local segment timestamps back to the original recording timeline."""
 
-    window_duration_ms = target.search_to_ms - target.search_from_ms
-    segment_start = target.recording_start + timedelta(milliseconds=target.search_from_ms)
+    start_ms = target.search_from_ms if segment_start_ms is None else segment_start_ms
+    end_ms = target.search_to_ms if segment_end_ms is None else segment_end_ms
+    window_duration_ms = end_ms - start_ms
+    segment_start = target.recording_start + timedelta(milliseconds=start_ms)
     segment_end = segment_start + timedelta(milliseconds=window_duration_ms)
     return target.model_copy(
         update={

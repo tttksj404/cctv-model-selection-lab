@@ -17,6 +17,7 @@ from qwen_backend.attribute_ensemble import (
 )
 from qwen_backend.multi_model_candidate_engine import select_evidence_frame
 from qwen_backend.qwen_review_runtime import QwenReviewRuntime
+from qwen_backend.realtime_models import SoliderCheckoutError
 from qwen_backend.track_evidence import track_consistency
 from qwen_backend.video_tracks import TrackFrame
 
@@ -28,6 +29,12 @@ def test_prompt_parser_keeps_upper_and_lower_colors_separate() -> None:
     assert attributes.lower_color == "black"
     assert attributes.glasses is True
     assert attributes.hair is True
+
+
+def test_solider_checkout_error_is_a_runtime_dependency_failure() -> None:
+    error = SoliderCheckoutError(Path("solider"), "working tree is not clean")
+
+    assert isinstance(error, RuntimeError)
 
 
 def test_roi_color_gate_rejects_navy_upper_for_white_upper() -> None:
@@ -256,7 +263,9 @@ def test_qwen_review_does_not_claim_usage_when_provider_is_not_configured(
 ) -> None:
     monkeypatch.setenv("QWEN_PROVIDER", "mock")
 
-    review, status = QwenReviewRuntime(enabled=True, top_k=5).review(
+    runtime = QwenReviewRuntime(enabled=True, top_k=5)
+    assert runtime.warm_up() == "unavailable:QWEN_PROVIDER_is_not_qwen"
+    review, status = runtime.review(
         tmp_path / "candidate.jpg",
         case_id=1,
         camera_id=2,

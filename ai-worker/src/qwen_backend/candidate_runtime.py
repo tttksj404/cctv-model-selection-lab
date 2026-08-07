@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import ClassVar, Literal, Protocol
+from typing import ClassVar, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
@@ -81,6 +81,13 @@ class CandidateRuntimeEngine(Protocol):
     model_key: str
 
     def analyze(self, request: CandidateRuntimeRequest) -> CandidateRuntimeResponse: ...
+
+
+@runtime_checkable
+class WarmableCandidateRuntimeEngine(Protocol):
+    """Optional lifecycle contract for engines with process-local model caches."""
+
+    def warm_up(self) -> None: ...
 
 
 def run_runtime(raw_request: str, engine: CandidateRuntimeEngine) -> str:

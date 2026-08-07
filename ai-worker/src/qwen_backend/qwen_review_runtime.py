@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import mimetypes
 import os
 import urllib.error
@@ -13,6 +14,8 @@ from typing import Any, Literal, cast
 from qwen_backend.config import get_settings
 from qwen_backend.providers import ModelAnalysisPayload, ProviderError, Qwen3VLProvider
 from qwen_backend.schemas import CandidateAnalysisRequest, SearchCondition
+
+logger = logging.getLogger(__name__)
 
 QwenReviewDecision = Literal["match", "review", "reject"]
 
@@ -152,10 +155,54 @@ class QwenReviewRuntime:
         self._remote_timeout_seconds = remote_timeout_seconds
         self._provider: Qwen3VLProvider | None = None
         self._remote_provider: RemoteQwenReviewClient | None = None
+        self._warmup_status: str | None = None
 
     @property
     def top_k(self) -> int:
         return self._top_k
+
+    def warm_up(self) -> str:
+        """Prepare the configured local/remote reviewer once for this process."""
+
+        if self._warmup_status is not None:
+            return self._warmup_status
+        if not self._enabled:
+            self._warmup_status = "disabled"
+            return self._warmup_status
+
+        if self._provider_mode == "remote":
+            try:
+                if not self._remote_base_url:
+                    self._warmup_status = "unavailable:remote_endpoint_not_configured"
+                else:
+                    self._remote_provider = RemoteQwenReviewClient(
+                        base_url=self._remote_base_url,
+                        model=self._remote_model,
+                        api_key=self._remote_api_key,
+                        timeout_seconds=self._remote_timeout_seconds,
+                    )
+                    self._warmup_status = "ready:remote"
+            except (ProviderError, OSError, RuntimeError, TypeError, ValueError) as error:
+                self._warmup_status = f"unavailable:remote:{type(error).__name__}"
+                logger.warning("remote Qwen reviewer warm-up unavailable: %s", error)
+            return self._warmup_status
+
+        try:
+            provider_name = (
+                os.environ.get("QWEN_PROVIDER") or get_settings().provider
+            ).strip().lower()
+            if provider_name != "qwen":
+                self._warmup_status = "unavailable:QWEN_PROVIDER_is_not_qwen"
+                return self._warmup_status
+            if self._provider is None:
+                self._provider = Qwen3VLProvider(get_settings())
+            self._provider.warm_up()
+        except (ProviderError, OSError, RuntimeError, TypeError, ValueError) as error:
+            self._warmup_status = f"unavailable:{type(error).__name__}"
+            logger.warning("local Qwen reviewer warm-up unavailable: %s", error)
+        else:
+            self._warmup_status = "ready:local"
+        return self._warmup_status
 
     def review(
         self,
@@ -168,6 +215,8 @@ class QwenReviewRuntime:
     ) -> tuple[QwenReview | None, str]:
         if not self._enabled:
             return None, "disabled"
+        if self._warmup_status is not None and self._warmup_status.startswith("unavailable:"):
+            return None, self._warmup_status
 
         if self._provider_mode == "remote":
             if not self._remote_base_url:
@@ -204,7 +253,7 @@ class QwenReviewRuntime:
         if self._provider is None:
             self._provider = Qwen3VLProvider(get_settings())
         try:
-            analysis = self._provider.analyze(
+            analysis = self._provider.review(
                 CandidateAnalysisRequest(
                     caseId=str(case_id),
                     cameraId=str(camera_id),
