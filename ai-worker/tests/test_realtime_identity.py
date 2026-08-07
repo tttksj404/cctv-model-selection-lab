@@ -31,7 +31,7 @@ def test_non_image_reference_is_rejected_before_model_loading(tmp_path: Path) ->
         validate_reference_image(invalid_image)
 
 
-def test_dirty_checkout_is_rejected_without_deleting_untracked_bytecode(
+def test_generated_python_bytecode_does_not_make_checkout_dirty(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -93,11 +93,15 @@ def test_dirty_checkout_is_rejected_without_deleting_untracked_bytecode(
     monkeypatch.setattr(realtime_identity, "SOLIDER_COMMIT", commit)
     generated.write_bytes(b"generated")
 
-    with pytest.raises(SoliderCheckoutError, match="working tree is not clean"):
-        verified_solider_root(str(checkout))
+    assert verified_solider_root(str(checkout)) == checkout.resolve()
 
     assert tracked.read_bytes() == b"official"
     assert generated.read_bytes() == b"generated"
+
+    untracked_source = checkout / "config" / "generated.py"
+    untracked_source.write_text("# unexpected source", encoding="utf-8")
+    with pytest.raises(SoliderCheckoutError, match="working tree is not clean"):
+        verified_solider_root(str(checkout))
 
 
 def test_checkout_validation_disables_repository_fsmonitor(

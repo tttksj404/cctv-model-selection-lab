@@ -191,7 +191,7 @@ class ReferenceImageError(Exception):
         super().__init__(f"기준 사진을 읽을 수 없습니다: {path.name}")
 
 
-class SoliderCheckoutError(Exception):
+class SoliderCheckoutError(RuntimeError):
     def __init__(self, root: Path, detail: str) -> None:
         super().__init__(f"SOLIDER 실행 코드 검증 실패 ({root.name}): {detail}")
 

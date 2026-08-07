@@ -1,8 +1,8 @@
 # EYES:ON U AI Worker 전체 제작·연결·학습 안내서
 
-> 작성 기준일: 2026-08-06
+> 작성 기준일: 2026-08-07
 > 저장소: `S15P11A204-deploy-ai-worker-env-fix`
-> 기준 브랜치: `fix/deploy-ai-worker-env-contract`
+> 기준 구현: ServerAI AI Worker (`hybrid-solider-clip-v1`)
 
 ## 이 문서를 먼저 읽어야 하는 이유
 
@@ -130,6 +130,13 @@ AI Worker와 Jetson을 나눈 이유는 속도와 위치가 다르기 때문이�
 16. 한 프레임의 우연한 오판을 줄이기 위해 track 안의 여러 관측을 합쳐 후보 점수를
     계산한다.
 
+동일 녹화본을 여러 작업이 다시 요청하는 경우에는 `recordingObjectKey`를 녹화본의
+식별자로 사용한다. Worker는 이 키를 안전한 파일명으로 변환한 로컬 캐시와 sidecar
+manifest를 확인한 뒤, 키·다운로드 모드·검색 구간·파일 크기·완료 여부가 모두 맞을
+때만 재사용한다. 따라서 단순히 `job-*.window.mp4`라는 파일명이 같거나 비슷하다는
+이유로 다른 영상을 재사용하지 않는다. 캐시가 검증되지 않으면 signed URL에서 다시
+받는다.
+
 ### 3.4 결과 저장과 관리자 화면
 
 17. Worker가 후보별 원본 프레임과 사람 crop을 업로드할 signed PUT URL을 중앙
@@ -165,6 +172,41 @@ AI Worker와 Jetson을 나눈 이유는 속도와 위치가 다르기 때문이�
 
 ---
 
+### 3.6 ServerAI 서비스 연계와 추론 경량화
+
+현재 ServerAI의 실행 경로는 다음처럼 고정한다.
+
+```text
+중앙 서버
+  -> RabbitMQ에 jobId routing 이벤트 발행
+  -> 노트북/지정 Worker가 claim
+  -> Worker가 중앙의 target API에서 녹화본 정보와 signed URL 조회
+  -> 로컬 캐시 확인 후 필요한 구간만 준비
+  -> YOLO11x + ByteTrack + SOLIDER/CLIP 추론
+  -> 후보 crop/frame을 signed PUT으로 MinIO/S3에 업로드
+  -> 중앙 result API에 후보·점수·좌표·시간 전달
+  -> 중앙 DB와 관리자 화면에서 후보/경로 표시
+```
+
+중앙 서버는 영상 전체를 모델에 직접 넘기지 않는다. 중앙 서버는 사건·녹화본·작업
+상태를 관리하고, Worker는 로컬 컴퓨터의 GPU/CPU에서 실제 영상을 분석한다.
+RabbitMQ는 작업 신호를 전달하고, 영상·이미지는 MinIO/S3가 보관한다. Jetson은 이
+과거 녹화본 검색 Worker와 분리된 실시간 카메라 후보 탐지 경로다.
+
+경량화는 정확도를 먼저 훼손하지 않는 순서로 적용했다.
+
+1. `searchFromMs`~`searchToMs` 구간만 FFmpeg로 준비한다.
+2. Worker 생명주기 동안 YOLO, CLIP, SOLIDER를 캐시해 작업마다 모델을 다시 읽지 않는다.
+3. YOLO는 사람 class만 처리하고 ByteTrack으로 같은 관측을 track 단위로 묶는다.
+4. track마다 최대 12개 crop을 샘플링하고, 상위 3개 프레임 점수를 최종 집계에 사용한다.
+5. 기준 사진이 있으면 SOLIDER를 중심으로, 인상착의 prompt가 있으면 CLIP을 사용하며,
+   둘 다 있으면 SOLIDER 0.75와 CLIP 0.25의 검증된 기본 조합을 사용한다.
+6. FP16·INT8·TensorRT 가중치 변환은 별도 실험 항목이며, 현재 ServerAI 기본 경로의
+   검증 완료 최적화라고 표현하지 않는다.
+
+이 구조 덕분에 모델을 바꿀 때 중앙 API·RabbitMQ·MinIO 계약은 유지하고
+`CandidateRuntimeEngine` 또는 모델 설정만 교체할 수 있다.
+
 ## 4. 저장소 안에서 기능이 어디에 있는가
 
 | 위치 | 내용 |
@@ -176,6 +218,7 @@ AI Worker와 Jetson을 나눈 이유는 속도와 위치가 다르기 때문이�
 | `src/qwen_backend/rabbit_retry.py` | 오류를 ACK, 지연 retry, dead-letter로 분류 |
 | `src/qwen_backend/worker_protocol.py` | API 요청·응답의 Pydantic 데이터 모델과 불변식 |
 | `src/qwen_backend/worker_transfer.py` | signed 녹화 다운로드와 후보 증거 업로드 조정 |
+| `src/qwen_backend/recording_cache.py` | `recordingObjectKey`·검색 구간·파일 크기를 검증하는 로컬 녹화본 캐시와 manifest |
 | `src/qwen_backend/storage_transfer.py` | URL 검증, FFmpeg 구간 추출, 제한된 파일 전송 |
 | `src/qwen_backend/solider_clip_engine.py` | 현재 후보 모델 조합과 모델 cache |
 | `src/qwen_backend/video_tracks.py` | YOLO track 결과에서 프레임·사람 crop 추출 |
@@ -727,9 +770,23 @@ PRID2011은 cross-camera ReID와 distractor를 확인하는 공개 proxy로 사�
 실험은 “기준 사진이 있는 경우, 같은 사람과 방해 인물을 구분하는가”를 보는 데
 도움이 되지만 프로젝트 서비스의 실제 85%를 증명하지 않는다.
 
-Market1501, SIMUletic과 여러 공개 ReID/vision 데이터는 후보 모델 비교와 feature
-adapter 연구에 사용되거나 준비되었다. 각 결과는 데이터셋 이름·split·metric이
-다르면 서로 같은 숫자처럼 합치지 않는다.
+ServerAI 모델 비교와 데이터 보강에는 아래 공개 데이터와 직접 촬영 데이터를
+구분해 사용했다. 공개 데이터의 수치는 프로젝트 CCTV의 identity 정확도로 합치지
+않고, 각 데이터셋의 목적에 맞는 proxy 지표로만 기록한다.
+
+| 데이터 | 성격 | ServerAI에서의 사용 |
+| --- | --- | --- |
+| 프로젝트 직접 촬영 영상 (`IMG_*.mov`, `20260729_*.mp4` 등) | 우리 CCTV 시야·높이·조명에 맞춘 자체 데이터 | 사람 crop·track·실행 smoke test와 프로젝트 도메인 점검. identity/camera/time held-out 라벨이 충분하지 않으므로 일반화 85% 근거로 단독 사용하지 않음 |
+| **PA-100K** | 대규모 보행자 속성 데이터셋 | 모자·안경·가방·상의/하의 등 26개 속성 head의 파인튜닝·mA/InsF1/macro-F1 비교 |
+| **Simuletic/CCTV-Pedestrian-1K-Person-Attribute-Dataset** | CCTV 보행자 crop·속성 데이터 | 프로젝트 촬영과 비슷한 CCTV 인물 crop을 보강하고 속성/도메인 적응 실험에 사용 |
+| **CHIRLA** | 공개 CCTV cross-camera ReID proxy | identity/camera·sequence held-out Rank-1, Recall@5 비교 |
+| **PRID2011** | 공개 cross-camera video ReID·distractor proxy | multi-shot gallery/query, known identity·distractor·open-set 판단 검증 |
+| **Market-1501 / Market1501-attributes** | 공개 person ReID·속성 비교 데이터 | FastReID/feature adapter와 ReID·속성 head 비교 및 공개 데이터 기준선 확인 |
+
+각 결과는 데이터셋 이름·split·metric이 다르면 서로 같은 숫자처럼 합치지 않는다.
+현재 문서에서 PETA 등 다른 데이터셋을 실제 학습에 사용했다고 적지 않은 이유도
+동일하다. 다운로드·라벨 검수·split·실험 결과가 저장소에 함께 남은 데이터만 실제
+사용 데이터로 분류한다.
 
 ### 12.5 라벨이 필요한 이유
 
@@ -933,12 +990,14 @@ validation 숫자만 보고 85%가 넘었다고 말하지 않고, test에서 내
 
 ```text
 임베디드 실시간 후보: NanoOWL/CLIP 계열 경량 경로
-노트북 과거 영상 후보: YOLO11x + ByteTrack + CLIP ViT-L/14
-기준 사진이 있는 ReID: SOLIDER Swin-Base 추가
-서버 속성 연구 후보: SOLIDER PAR head
-설명·충돌 검토: Qwen 후보
-offline teacher-like label: Sonnet/Florence/Grounding DINO/SAM2 결과를 사람 검수 후 사용
-최종 자동 확정: 아직 production 승인하지 않음
+ServerAI 운영 기본: YOLO11x + ByteTrack + SOLIDER Swin-Base + CLIP ViT-L/14
+  - 기준 사진이 있으면 SOLIDER 0.75 중심
+  - 인상착의 prompt가 있으면 CLIP 0.25 보조
+  - track별 상위 3개 frame을 집계해 Top-K 후보 반환
+Qwen: 설명·속성·충돌 검토 연구 후보
+Sonnet/Florence/Grounding DINO/SAM2: offline teacher·label 생성 연구 후보
+Jetson: NanoOWL/CLIP 계열의 별도 실시간 후보 경로
+최종 자동 확정: 아직 production 승인하지 않음; 중앙 서버·관리자 검토로 닫음
 ```
 
 ---
@@ -1059,6 +1118,28 @@ claim/target HTTP
 첫 작업은 모델 cache가 비어 있어 느릴 수 있다. 다음 작업에서도 매번 `cached` 로그가
 다시 나오면 cache 수명주기 문제가 있는 것이다. 결과 callback만 느리다면 추론이
 끝난 뒤 중앙 API, DB transaction, object metadata 저장을 별도로 확인한다.
+
+#### 녹화본 다운로드를 줄이는 현재 캐시 기준
+
+로컬에 같은 영상이 있다는 이유만으로 재사용하면 다른 사건·다른 구간의 파일을
+잘못 분석할 수 있다. 현재는 `recordingObjectKey`의 SHA-256 기반 canonical path와
+`.manifest.json`을 함께 저장한다. manifest에는 원본 object key, 원본 파일 크기,
+로컬 파일 크기, `full`/`segment` 모드, 검색 시작·끝 시각, `complete` 상태를 남긴다.
+
+다음 조건을 모두 만족할 때만 백엔드 다운로드를 생략한다.
+
+```text
+recordingObjectKey 일치
+  + cache manifest 존재 및 complete=true
+  + 로컬 영상 파일 존재
+  + manifest의 local_file_size와 실제 파일 크기 일치
+  + 원본 파일 크기를 받았다면 그 값도 일치
+  + 요청 모드와 검색 구간이 일치
+```
+
+`full` 캐시가 검증되면 같은 object key의 구간 검색 요청에도 사용할 수 있지만,
+추론에는 target의 원래 시간 오프셋을 유지한다. 과거에 남은 `job-*.window.mp4`처럼
+manifest가 없는 파일은 안전한 cache hit로 취급하지 않는다.
 
 ### 문제 E. Worker가 종료되어 결과가 안 감
 
@@ -1193,6 +1274,8 @@ attribute_summary
 - Worker Key와 Device Key 분리
 - signed URL과 파일 크기·경로 검증
 - 검색 시간 구간 segment 다운로드 경로
+- `recordingObjectKey` 기반 로컬 녹화본 cache와 manifest 검증·재사용
+- 동일 object key의 full cache가 유효할 때 구간 다운로드를 생략하는 경로
 - YOLO/CLIP/SOLIDER 생명주기 cache
 - track 단위 crop 저장과 상위 프레임 평균
 - heartbeat와 lease 손실 처리
@@ -1282,6 +1365,7 @@ p50/p95, GPU memory, JSON valid rate
 - `src/qwen_backend/rabbit_worker.py`
 - `src/qwen_backend/rabbit_retry.py`
 - `src/qwen_backend/worker_transfer.py`
+- `src/qwen_backend/recording_cache.py`
 - `src/qwen_backend/storage_transfer.py`
 - `src/qwen_backend/distillation.py`
 - `src/qwen_backend/worker_settings.py`
@@ -1322,11 +1406,14 @@ p50/p95, GPU memory, JSON valid rate
 
 ## 마지막 정리
 
-현재 AI Worker는 “중앙 서버가 시킨 과거 영상 검색을 노트북에서 수행하고, 후보
-근거를 저장한 뒤 중앙 서버에 반환하는 파이프라인”으로 정리되어 있다. 실제 기본
-후보 엔진은 `YOLO11x + ByteTrack + CLIP ViT-L/14`이고 기준 사진이 있을 때
-`SOLIDER Swin-Base`를 추가한다. Qwen, Sonnet, Grounding DINO, SAM2.1, Florence-2는
-각각 설명·속성·geometry·teacher 연구 역할로 분리되어 있다.
+현재 AI Worker는 중앙 서버가 RabbitMQ로 작업을 깨우고, 노트북 또는 지정된 ServerAI
+컴퓨터가 MinIO/S3의 과거 영상을 로컬에서 분석한 뒤 후보 근거를 중앙 서버에
+반환하는 파이프라인이다. 운영 기본 후보 엔진은
+`YOLO11x + ByteTrack + SOLIDER Swin-Base + CLIP ViT-L/14`이며, 기준 사진·prompt
+입력에 따라 두 임베딩 점수를 결합한다. 같은 녹화본을 다시 분석할 때는
+`recordingObjectKey`와 manifest로 로컬 파일의 동일성을 확인해 불필요한 다운로드를
+줄인다. Qwen, Sonnet, Grounding DINO, SAM2.1, Florence-2는 각각 설명·속성·geometry·
+teacher 연구 역할로 분리되어 있고, 현재 ServerAI의 필수 실행 경로에는 포함하지 않는다.
 
 파인튜닝과 증류 코드는 준비되어 있고 여러 proxy 비교도 남아 있지만, 현재 실험
 기록만으로 프로젝트 CCTV의 모든 상황에서 일반화 85%를 증명했다고 말할 수는 없다.

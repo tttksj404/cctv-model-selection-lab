@@ -8,6 +8,7 @@ import anyio
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
+from qwen_backend.worker_instance_lock import WorkerInstanceAlreadyRunningError
 from qwen_backend.worker_settings import NotebookWorkerSettings
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,10 @@ def main() -> int:
             anyio.run(worker.run_forever)
     except KeyboardInterrupt:
         logger.info("AI Worker stopped by operator")
-    except (OSError, ValidationError, ValueError) as exception:
+    except WorkerInstanceAlreadyRunningError as exception:
+        logger.warning("AI Worker duplicate launch refused lock=%s", exception.lock_path)
+        return 0
+    except (OSError, RuntimeError, ValidationError, ValueError) as exception:
         logger.error("AI Worker startup failed: %s", exception)
         return 2
     return 0

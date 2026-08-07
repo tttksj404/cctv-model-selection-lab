@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     image_root: Path = Path.cwd()
     model_version: str = "Qwen3-VL-8B-Instruct"
     max_new_tokens: int = Field(default=256, ge=1, le=512)
+    review_max_new_tokens: int = Field(default=64, ge=16, le=128)
     device_map: str = "auto"
     internal_api_key: str | None = Field(default=None, min_length=1)
     inference_concurrency: int = Field(default=2, ge=1, le=16)

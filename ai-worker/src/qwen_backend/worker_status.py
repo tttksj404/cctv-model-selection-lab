@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class WorkerStage(StrEnum):
     WAITING = "waiting"
+    WARMING = "warming"
     RECEIVED = "received"
     CLAIMING = "claiming"
     FETCHING_TARGET = "fetching_target"
@@ -33,6 +34,7 @@ class WorkerStage(StrEnum):
 
 STAGE_LABELS: Mapping[WorkerStage, str] = MappingProxyType(
     {
+        WorkerStage.WARMING: "모델 준비 중",
         WorkerStage.WAITING: "백엔드 작업 대기 중",
         WorkerStage.RECEIVED: "작업 수신",
         WorkerStage.CLAIMING: "작업 점유 확인",
@@ -49,6 +51,7 @@ STAGE_LABELS: Mapping[WorkerStage, str] = MappingProxyType(
 
 STAGE_PROGRESS: Mapping[WorkerStage, int] = MappingProxyType(
     {
+        WorkerStage.WARMING: 0,
         WorkerStage.WAITING: 0,
         WorkerStage.RECEIVED: 3,
         WorkerStage.CLAIMING: 8,

@@ -53,3 +53,22 @@ def test_candidate_models_are_loaded_once_for_engine_lifetime(monkeypatch) -> No
         "clip": {"loaded": True, "loads": 1, "hits": 1},
         "solider": {"loaded": True, "loads": 1, "hits": 1},
     }
+
+
+def test_candidate_warm_up_loads_required_models_before_inference(monkeypatch) -> None:
+    engine = _engine()
+    calls = {"yolo": 0, "clip": 0}
+
+    def load(name: str) -> object:
+        calls[name] += 1
+        return object()
+
+    monkeypatch.setattr(engine, "_load_detector", lambda: load("yolo"))
+    monkeypatch.setattr(engine, "_load_clip_bundle", lambda: load("clip"))
+
+    engine.warm_up()
+    engine.warm_up()
+
+    assert calls == {"yolo": 1, "clip": 1}
+    assert engine.cache_status["yolo"]["loaded"] is True
+    assert engine.cache_status["clip"]["loaded"] is True

@@ -202,6 +202,31 @@ def test_retry_publish_failure_on_closed_channel_is_recoverable(monkeypatch) -> 
     anyio.run(scenario)
 
 
+def test_retry_publish_failure_delays_source_requeue_to_avoid_a_tight_loop(monkeypatch) -> None:
+    async def scenario() -> None:
+        sleep_calls: list[float] = []
+
+        async def fake_sleep(delay: float) -> None:
+            sleep_calls.append(delay)
+
+        monkeypatch.setattr("qwen_backend.rabbit_worker.anyio.sleep", fake_sleep)
+        delivery = FakeDelivery(_legacy_event_body())
+        processor = RabbitJobProcessor(
+            object(),
+            retry_scheduler=RetryPublishDenied(),
+            retry_delay_seconds=5.0,
+            max_retry_attempts=3,
+        )
+
+        handled = await processor.handle(delivery, FakeClient(_lease_held_claim()))  # type: ignore[arg-type]
+
+        assert handled is False
+        assert sleep_calls and sleep_calls[0] >= 40.0
+        assert delivery.rejected == [True]
+
+    anyio.run(scenario)
+
+
 def test_active_same_worker_lease_is_also_delayed_without_reprocessing() -> None:
     async def scenario() -> None:
         delivery = FakeDelivery(_legacy_event_body())

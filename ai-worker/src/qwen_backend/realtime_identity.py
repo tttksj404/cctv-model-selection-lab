@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Protocol, TypeAlias
 
 import numpy as np
@@ -21,6 +21,8 @@ from qwen_backend.solider_runtime import SoliderImageEncoder
 
 SOLIDER_COMMIT = "8c08e1c3255e8e1e51e006bf189e52cc57b009ed"
 SOLIDER_REMOTE = "https://github.com/tinyvision/SOLIDER-REID.git"
+_PYTHON_CACHE_DIRECTORY = "__pycache__"
+_PYTHON_BYTECODE_SUFFIXES = (".pyc", ".pyo")
 
 
 class SoliderRuntimeConfig(Protocol):
@@ -93,6 +95,18 @@ def _git_output(root: Path, *arguments: str) -> str:
     return result.stdout.strip()
 
 
+def _is_generated_python_bytecode(status_record: str) -> bool:
+    """Return whether a Git status record is disposable Python bytecode."""
+
+    if not status_record.startswith("?? "):
+        return False
+    relative_path = PurePosixPath(status_record[3:].replace("\\", "/"))
+    return (
+        _PYTHON_CACHE_DIRECTORY in relative_path.parts
+        and relative_path.suffix.lower() in _PYTHON_BYTECODE_SUFFIXES
+    )
+
+
 def verified_solider_root(candidate: str) -> Path:
     root = Path(candidate).resolve()
     if not root.is_dir():
@@ -110,10 +124,16 @@ def verified_solider_root(candidate: str) -> Path:
         root,
         "status",
         "--porcelain=v1",
+        "-z",
         "--untracked-files=all",
     )
-    if status:
-        raise SoliderCheckoutError(root, f"working tree is not clean: {status.splitlines()[0]}")
+    dirty_records = tuple(
+        record
+        for record in status.split("\0")
+        if record and not _is_generated_python_bytecode(record)
+    )
+    if dirty_records:
+        raise SoliderCheckoutError(root, f"working tree is not clean: {dirty_records[0]}")
     expected_config = root / "configs" / "msmt17" / "swin_base.yml"
     if not expected_config.is_file():
         raise SoliderCheckoutError(root, "runtime config missing")
@@ -128,13 +148,13 @@ def _solider_feature(output: SoliderOutput) -> torch.Tensor:
 
 class SoliderIdentityScorer:
     def __init__(self, config: SoliderRuntimeConfig) -> None:
+        sys.dont_write_bytecode = True
         root = verified_solider_root(config.solider_root)
         reference_path = (
             validate_reference_image(config.reference_image)
             if config.reference_image is not None
             else None
         )
-        sys.dont_write_bytecode = True
         checkpoint = verified_solider_checkpoint(config)
         self._encoder = SoliderImageEncoder(
             device=torch.device(config.device),

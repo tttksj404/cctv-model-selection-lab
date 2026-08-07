@@ -16,6 +16,7 @@ from qwen_backend.candidate_runtime import (
     RuntimeCandidate,
 )
 from qwen_backend.central_client import CentralWorkerClient, CentralWorkerError
+from qwen_backend.recording_cache import RecordingCache, RecordingCacheTarget
 from qwen_backend.worker_lease import (
     LeaseHeartbeatContext,
     LeaseLostError,
@@ -70,6 +71,44 @@ class RecordingJobExecutor:
         self._runtime_runner = runtime_runner
         self._status = status or NullWorkerStatus()
         self._transfer = RecordingEvidenceTransfer(settings)
+        self._recording_cache = RecordingCache(settings.cache_dir)
+
+    async def _download_recording_with_cache(
+        self,
+        client: CentralWorkerClient,
+        recording_object_key: str,
+        *,
+        download_url: str | None = None,
+    ) -> Path:
+        """Reuse a complete object-key cache for every worker API path."""
+
+        target = RecordingCacheTarget(recording_object_key=recording_object_key)
+        cached = self._recording_cache.find(target, "full")
+        if cached is not None:
+            logger.info(
+                "recording cache hit job_source=%s mode=full file=%s",
+                recording_object_key,
+                cached.name,
+            )
+            return cached
+        destination = self._recording_cache.paths(target, "full").video_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        logger.info("recording network download started mode=full")
+        if download_url is not None:
+            path = await client.download(
+                download_url,
+                destination,
+                max_bytes=self._settings.max_download_bytes,
+            )
+        else:
+            path = await client.download_object(
+                recording_object_key,
+                destination,
+                max_bytes=self._settings.max_download_bytes,
+            )
+        self._recording_cache.store(target, "full", path)
+        logger.info("recording network download completed mode=full")
+        return path
 
     async def process_claim(
         self,
@@ -167,18 +206,11 @@ class RecordingJobExecutor:
             "녹화본을 노트북으로 다운로드하는 중",
             job_id=target.job_id,
         )
-        if event.recording_download_url is not None:
-            video_path = await client.download(
-                event.recording_download_url,
-                self._settings.cache_dir / f"job-{target.job_id}-attempt-{target.attempt}.mp4",
-                max_bytes=self._settings.max_download_bytes,
-            )
-        else:
-            video_path = await client.download_object(
-                target.recording_object_key,
-                self._settings.cache_dir / f"job-{target.job_id}-attempt-{target.attempt}.mp4",
-                max_bytes=self._settings.max_download_bytes,
-            )
+        video_path = await self._download_recording_with_cache(
+            client,
+            target.recording_object_key,
+            download_url=event.recording_download_url,
+        )
         request = CandidateRuntimeRequest(
             model_key=self._settings.model_key,
             job_id=target.job_id,
@@ -320,10 +352,9 @@ class RecordingJobExecutor:
                         "녹화본과 신고자 기준 사진을 로컬로 내려받는 중",
                         job_id=job.job_id,
                     )
-                    video_path = await client.download_object(
+                    video_path = await self._download_recording_with_cache(
+                        client,
                         job.recording_object_key,
-                        self._settings.cache_dir / f"job-{job.job_id}-attempt-{job.attempt}.mp4",
-                        max_bytes=self._settings.max_download_bytes,
                     )
                     reference_path: Path | None = None
                     if job.reference_photo_object_key:
@@ -555,7 +586,7 @@ class RecordingJobExecutor:
                     lease_token,
                 )
                 logger.info(
-                    "recording download finished job_id=%d elapsed_ms=%d",
+                    "recording source resolved job_id=%d elapsed_ms=%d",
                     target.job_id,
                     round((time.perf_counter() - download_started) * 1_000),
                 )

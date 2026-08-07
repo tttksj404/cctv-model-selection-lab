@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from qwen_backend.config import Settings
 from qwen_backend.distillation import DistillationSample
 from qwen_backend.evaluation import StudentPrediction, evaluate_predictions
@@ -26,6 +28,16 @@ def test_florence_settings_are_explicitly_configured() -> None:
 
     assert settings.florence_enabled is True
     assert settings.florence_max_new_tokens == 128
+
+
+def test_qwen_review_has_a_separate_compact_token_budget(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("QWEN_REVIEW_MAX_NEW_TOKENS", "64")
+
+    settings = Settings()
+
+    assert settings.review_max_new_tokens == 64
 
 
 def test_florence_label_round_trips_into_qwen_distillation_contract() -> None:
