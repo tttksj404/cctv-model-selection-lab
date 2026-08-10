@@ -1,0 +1,8 @@
+# Reference-only direct versions. Use training/zone-region-lock/uv.lock for installation.
+catboost==1.2.10
+joblib==1.5.3
+numpy==2.4.4
+scikit-learn==1.9.0
+torch==2.6.0
+xgboost==3.2.0
+

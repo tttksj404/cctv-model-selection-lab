@@ -1,0 +1,219 @@
+openapi: 3.1.0
+info:
+  title: EyesOnU Zone Dashboard Proxy Contract
+  version: 0.3.0
+  description: >-
+    AI Worker와 브라우저를 직접 연결하지 않기 위한 향후 중앙 백엔드 프록시 계약 초안이다.
+    현재 dashboard runtime에서는 호출되지 않는다.
+paths:
+  /api/v1/admin/cases/{caseId}/ai-search/zone-probability:
+    get:
+      operationId: getZoneProbabilityForAdmin
+      security:
+        - sessionCookie: []
+      summary: 관리자용 최신 구역 확률과 카메라 우선순위를 조회한다.
+      description: >-
+        현재 중앙 백엔드의 /api/v1/admin/cases/{caseId} 네임스페이스에 맞춘 미래 프록시
+        계약이다. 현재 mock-only 대시보드는 이 경로를 호출하지 않는다.
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        "200":
+          description: AI Worker 결과에서 대시보드 소비 필드를 중앙 백엔드가 반환한다.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseZoneProbabilityView"
+        "401":
+          description: 관리자 세션이 없거나 만료됨
+        "403":
+          description: 해당 사건을 조회할 권한이 없음
+        "404":
+          description: 사건 또는 아직 생성되지 않은 확률 결과
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: EYESONU_SESSION
+  schemas:
+    ApiResponseZoneProbabilityView:
+      type: object
+      additionalProperties: false
+      required: [timestamp, data]
+      properties:
+        timestamp: { type: string, format: date-time }
+        data: { $ref: "#/components/schemas/ZoneProbabilityView" }
+    ZoneProbabilityView:
+      type: object
+      additionalProperties: false
+      required:
+        - schemaVersion
+        - caseId
+        - routingRevision
+        - candidateAssessments
+        - candidatePoolStatus
+        - zonePosterior
+        - zoneCandidateSummaries
+        - mostLikelyZoneId
+        - mostLikelyZoneProbability
+        - posteriorEntropy
+        - outsideProbability
+        - unknownProbability
+        - rankedCameras
+        - nextCameraId
+        - cameraSelectionPolicy
+        - operatorReviewRequired
+        - autoMatchAllowed
+      properties:
+        schemaVersion: { const: eyesonu-zone-search-v1 }
+        caseId: { type: integer, format: int64, minimum: 1 }
+        routingRevision: { type: integer, minimum: 1 }
+        candidateAssessments:
+          type: array
+          items: { $ref: "#/components/schemas/CandidateAssessment" }
+        candidatePoolStatus:
+          enum: [candidate_found, review_required, search_broadly]
+        zonePosterior:
+          type: array
+          minItems: 4
+          maxItems: 4
+          prefixItems:
+            - { $ref: "#/components/schemas/ZonePosterior1" }
+            - { $ref: "#/components/schemas/ZonePosterior2" }
+            - { $ref: "#/components/schemas/ZonePosterior3" }
+            - { $ref: "#/components/schemas/ZonePosterior4" }
+          items: false
+        zoneCandidateSummaries:
+          type: array
+          minItems: 4
+          maxItems: 4
+          prefixItems:
+            - { $ref: "#/components/schemas/ZoneCandidateSummary1" }
+            - { $ref: "#/components/schemas/ZoneCandidateSummary2" }
+            - { $ref: "#/components/schemas/ZoneCandidateSummary3" }
+            - { $ref: "#/components/schemas/ZoneCandidateSummary4" }
+          items: false
+        mostLikelyZoneId: { type: integer, minimum: 1, maximum: 4 }
+        mostLikelyZoneProbability: { type: number, minimum: 0, maximum: 1 }
+        posteriorEntropy:
+          type: number
+          minimum: 0
+          maximum: 1.791759469228055
+          description: 자연로그 기반 6상태 entropy
+        outsideProbability: { type: number, minimum: 0, maximum: 1 }
+        unknownProbability: { type: number, minimum: 0, maximum: 1 }
+        rankedCameras:
+          type: array
+          minItems: 1
+          maxItems: 16
+          items: { $ref: "#/components/schemas/RankedCamera" }
+        nextCameraId: { type: string, pattern: "^[1-4]-[1-4]$" }
+        cameraSelectionPolicy:
+          const: posterior_weighted_coverage_with_eig_tiebreak
+        operatorReviewRequired: { const: true }
+        autoMatchAllowed: { const: false }
+    ZonePosterior:
+      type: object
+      additionalProperties: false
+      required: [zoneId, probability]
+      properties:
+        zoneId: { type: integer, minimum: 1, maximum: 4 }
+        probability: { type: number, minimum: 0, maximum: 1 }
+    ZonePosterior1:
+      allOf:
+        - { $ref: "#/components/schemas/ZonePosterior" }
+        - { type: object, properties: { zoneId: { const: 1 } } }
+    ZonePosterior2:
+      allOf:
+        - { $ref: "#/components/schemas/ZonePosterior" }
+        - { type: object, properties: { zoneId: { const: 2 } } }
+    ZonePosterior3:
+      allOf:
+        - { $ref: "#/components/schemas/ZonePosterior" }
+        - { type: object, properties: { zoneId: { const: 3 } } }
+    ZonePosterior4:
+      allOf:
+        - { $ref: "#/components/schemas/ZonePosterior" }
+        - { type: object, properties: { zoneId: { const: 4 } } }
+    ZoneCandidateSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - zoneId
+        - candidateCount
+        - topCandidateEventId
+        - topCandidateMatchProbability
+        - zonePresenceProbability
+      properties:
+        zoneId: { type: integer, minimum: 1, maximum: 4 }
+        candidateCount: { type: integer, minimum: 0 }
+        topCandidateEventId: { type: [string, "null"] }
+        topCandidateMatchProbability: { type: [number, "null"], minimum: 0, maximum: 1 }
+        zonePresenceProbability: { type: number, minimum: 0, maximum: 1 }
+    ZoneCandidateSummary1:
+      allOf:
+        - { $ref: "#/components/schemas/ZoneCandidateSummary" }
+        - { type: object, properties: { zoneId: { const: 1 } } }
+    ZoneCandidateSummary2:
+      allOf:
+        - { $ref: "#/components/schemas/ZoneCandidateSummary" }
+        - { type: object, properties: { zoneId: { const: 2 } } }
+    ZoneCandidateSummary3:
+      allOf:
+        - { $ref: "#/components/schemas/ZoneCandidateSummary" }
+        - { type: object, properties: { zoneId: { const: 3 } } }
+    ZoneCandidateSummary4:
+      allOf:
+        - { $ref: "#/components/schemas/ZoneCandidateSummary" }
+        - { type: object, properties: { zoneId: { const: 4 } } }
+    CandidateAssessment:
+      type: object
+      additionalProperties: false
+      required:
+        - eventId
+        - trackId
+        - zoneId
+        - cameraId
+        - observationGroupId
+        - observedAt
+        - matchProbability
+        - likelihoodRatio
+        - priorityBand
+        - signalCount
+        - usedForZoneUpdate
+      properties:
+        eventId: { type: string, minLength: 1 }
+        trackId: { type: string, minLength: 1 }
+        zoneId: { type: integer, minimum: 1, maximum: 4 }
+        cameraId: { type: string, pattern: "^[1-4]-[1-4]$" }
+        observationGroupId: { type: string, minLength: 1 }
+        observedAt: { type: string, format: date-time }
+        matchProbability: { type: number, minimum: 0, maximum: 1 }
+        likelihoodRatio: { type: number, exclusiveMinimum: 0 }
+        priorityBand: { enum: [high_priority, review, low_priority] }
+        signalCount: { type: integer, minimum: 1 }
+        usedForZoneUpdate: { type: boolean }
+    RankedCamera:
+      type: object
+      additionalProperties: false
+      required:
+        - cameraId
+        - zoneId
+        - position
+        - zoneProbability
+        - utility
+        - expectedInformationGain
+        - operationalFactor
+      properties:
+        cameraId: { type: string, pattern: "^[1-4]-[1-4]$" }
+        zoneId: { type: integer, minimum: 1, maximum: 4 }
+        position: { type: integer, minimum: 1, maximum: 4 }
+        zoneProbability: { type: number, minimum: 0, maximum: 1 }
+        utility: { type: number, minimum: 0 }
+        expectedInformationGain: { type: number, minimum: 0 }
+        operationalFactor: { type: number, minimum: 0, maximum: 1 }
+
