@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "cctv-reid-candidate-v1",
+  "status": "candidate_retriever_only",
+  "model": {
+    "name": "SOLIDER-ReID Swin-B MSMT17",
+    "checkpoint": "models/solider_reid/swin_base_msmt17.pth",
+    "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+    "galleryAggregation": "topk-mean",
+    "galleryTopK": 3,
+    "tta": "none",
+    "device": "cuda"
+  },
+  "runtimeRole": {
+    "enabled": true,
+    "useFor": [
+      "historical CCTV person crop embedding",
+      "Top-K candidate retrieval",
+      "candidate evidence supplied to deterministic decision fusion"
+    ],
+    "forbiddenFor": [
+      "unreviewed automatic missing-person identity confirmation",
+      "replacing a human-reviewed identity label with a Sonnet pseudo-label",
+      "treating same-track project accuracy as cross-camera generalization"
+    ],
+    "topK": 5,
+    "automaticMatchEnabled": false,
+    "reviewRequired": true,
+    "runtimeEnforcedBy": [
+      "src/qwen_backend/decision_gate.py",
+      "src/qwen_backend/main.py"
+    ]
+  },
+  "evidence": {
+    "strictProxy": "CHIRLA strict cross-camera and cross-sequence",
+    "identityCount": 11,
+    "queryCount": 95,
+    "rank1": 0.47368421052631576,
+    "rank1Ci95Low": 0.37894736842105264,
+    "rank1Ci95High": 0.5684210526315789,
+    "recallAt5": 0.7789473684210526,
+    "identityMrr": 0.6073688007898534,
+    "identityMrrSourceField": "metrics.map",
+    "identityMrrSemantics": "one score per gallery identity after aggregation; not standard image-level ReID mAP",
+    "queryRankingsArtifact": "experiments/results/gpu_raw_20260728/chirla_solider_strict_none_topk3.json",
+    "fairComparisonArtifact": "experiments/results/cctv_generalization_method_matrix_20260728.json",
+    "fairComparisonRawBundle": "experiments/results/gpu_raw_20260728/strict_all_10_bundle_20260728.tgz",
+    "fairComparisonRawBundleSha256": "74348fc08912bb516d9b1f4472e71d32e347c9cee35b8f84f94e0f61dc8a0371",
+    "protocolAuditArtifact": "experiments/results/chirla_protocol_audit_20260728.json",
+    "legacyOverlappingGalleryQueryRank1": 0.6421052631578947,
+    "legacyOverlapWarning": "29/95 queries had same-camera positives and 95/95 had same-sequence positives in the unfiltered gallery",
+    "projectTrackProxyIdentityCount": 10,
+    "projectTrackProxyQueryCount": 40,
+    "projectTrackProxyRank1": 1.0,
+    "projectTrackProxyScope": "same-camera-temporal-track-proxy"
+  },
+  "promotionGate": {
+    "rank1Minimum": 0.85,
+    "recallAt5Minimum": 0.95,
+    "rank1Ci95LowMinimum": 0.85,
+    "promotionEligible": false,
+    "reason": "strict cross-camera and cross-sequence Rank-1, Recall@5, and the Rank-1 confidence-interval lower bound are below threshold"
+  },
+  "teacherPolicy": {
+    "sonnetRole": "offline attribute annotation and hard-negative review only",
+    "distillationType": "black-box response-label distillation",
+    "identityGroundTruthAllowed": false
+  }
+}
+

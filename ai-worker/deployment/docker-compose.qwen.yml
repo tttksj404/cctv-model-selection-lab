@@ -1,0 +1,38 @@
+services:
+  qwen-vllm:
+    image: vllm/vllm-openai:latest
+    restart: unless-stopped
+    ipc: host
+    shm_size: "16gb"
+    ports:
+      - "${QWEN_BIND_HOST:-127.0.0.1}:${QWEN_PORT:-8000}:8000"
+    volumes:
+      - "${HF_CACHE_DIR:-./model-cache}:/root/.cache/huggingface"
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      HF_TOKEN: <redacted>
+    command:
+      - --model
+      - ${QWEN_MODEL_ID:-Qwen/Qwen3.5-9B}
+      - --served-model-name
+      - ${QWEN_SERVED_MODEL_NAME:-qwen-active}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --dtype
+      - auto
+      - --max-model-len
+      - "${QWEN_MAX_MODEL_LEN:-8192}"
+      - --gpu-memory-utilization
+      - "${QWEN_GPU_MEMORY_UTILIZATION:-0.90}"
+      - --max-num-seqs
+      - "${QWEN_MAX_NUM_SEQS:-2}"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+

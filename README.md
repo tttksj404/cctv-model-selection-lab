@@ -59,3 +59,15 @@ python -m nbconvert --to notebook --execute --inplace notebooks/model_selection_
 ## 공개 범위
 
 실제 CCTV 영상·프레임·개인 식별자·모델 가중치·내부 서버 경로·인증 정보는 포함하지 않습니다. 이 저장소는 원본 데이터를 재배포하지 않고, 어떤 증거가 있어야 모델 선택 또는 승격이 가능한지 재현 가능한 의사결정 구조만 공개합니다.
+
+
+## AI Worker 전체 자료 아카이브
+
+현재 프로젝트에서 진행한 CCTV 모델 비교, 파인튜닝·지식 증류, SOLIDER/CLIP/Qwen 역할 분리, RabbitMQ 작업 흐름, 구역 검색 정책, 발표용 도표와 쉬운 설명서를 한 곳에 모았습니다.
+
+- [AI Worker 자료실 색인](ai-worker/docs/PROJECT_AI_ARCHIVE_INDEX.md)
+- [AI Worker 코드와 문서](ai-worker/)
+- [발표용 도표·노트북·PDF](presentation/)
+- [기존 fail-closed 평가 하네스](src/cctv_eval_harness/)
+
+공개 저장소에는 원본 CCTV, 개인 식별 라벨, 모델 가중치, API key, private GPU/Jupyter 주소를 넣지 않았습니다. 발표용 Recall@5와 proxy 결과는 실제 프로젝트 전체 identity 일반화 정확도와 구분해서 읽어야 하며, 자동 동일인 확정은 독립 held-out 증거가 있을 때만 허용합니다.

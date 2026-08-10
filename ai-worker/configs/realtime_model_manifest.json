@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "eyesonu-realtime-model-manifest-v1",
+  "models": {
+    "yolo11n.pt": {
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+      "purpose": "Ultralytics YOLO11n person detector"
+    },
+    "yolo11x.pt": {
+      "sha256": "7bc158aa95c0ebfdd87f70f01653c1131b93e92522dbe15c228bcd742e773a24",
+      "purpose": "Ultralytics YOLO11x person detector for accuracy-first webcam inference"
+    },
+    "swin_base_msmt17.pth": {
+      "sha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+      "purpose": "SOLIDER-ReID Swin Base MSMT17 identity embedding"
+    }
+  }
+}
+

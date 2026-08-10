@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "attribute-head-v1",
+  "student": {
+    "name": "nanoowl-clip",
+    "runtime": "jetson-tensorrt",
+    "input": "person_crop_from_bbox_or_mask"
+  },
+  "heads": {
+    "color": {
+      "task": "single_label",
+      "classes": ["black", "white", "gray", "navy", "blue", "red", "green", "yellow", "brown", "beige", "pink", "purple", "unknown"]
+    },
+    "clothing": {
+      "task": "multi_label",
+      "classes": ["tshirt", "shirt", "jacket", "coat", "hoodie", "sweater", "dress", "skirt", "pants", "shorts", "uniform", "backpack", "hat", "unknown"]
+    },
+    "texture": {
+      "task": "multi_label",
+      "classes": ["solid", "striped", "plaid", "denim", "knit", "glossy", "slightly_glossy", "matte", "patterned", "unknown"]
+    },
+    "quality": {
+      "task": "regression",
+      "range": [0.0, 1.0]
+    },
+    "occlusion": {
+      "task": "regression",
+      "range": [0.0, 1.0]
+    }
+  },
+  "teacherSources": [
+    {
+      "name": "microsoft/Florence-2-large",
+      "role": "attribute_verifier",
+      "sourceKind": "florence",
+      "status": "configured"
+    },
+    {
+      "name": "claude-sonnet-5",
+      "role": "high_quality_attribute_reviewer",
+      "sourceKind": "sonnet",
+      "status": "pending_api_and_terms_review"
+    }
+  ],
+  "lossWeights": {
+    "retrieval": 1.0,
+    "color": 1.0,
+    "clothing": 1.0,
+    "texture": 1.0,
+    "quality": 0.5,
+    "teacherDistillation": 0.0
+  },
+  "selection": {
+    "defaultStrategy": "hard_label",
+    "studentScope": "embedded",
+    "softKdEnabled": false,
+    "featureFusionEnabled": false,
+    "reason": "Current proxy ablation found no reproducible gain over CLIP hard-label training; re-enable only after the same project-held-out test split shows a gain.",
+    "promotionGate": "identity and attribute labels from real project CCTV",
+    "trainingBoundary": "only approvalStatus=approved or teacherAgreement=true records may become Qwen training records"
+  },
+  "splitPolicy": {
+    "groupBy": ["caseId", "identityGroupId"],
+    "cameraTrackHoldout": true,
+    "timeEmbargo": "adjacent_frames_from_same_video_event",
+    "forbidAdjacentFramesAcrossSplits": true,
+    "holdoutRatio": 0.2
+  },
+  "labelPolicy": {
+    "textureIsMultiLabel": true,
+    "unknownIsAllowed": true,
+    "canonicalizeBeforeTraining": true,
+    "keepOnlyTeacherAgreementOrHumanReview": true
+  }
+}
+
