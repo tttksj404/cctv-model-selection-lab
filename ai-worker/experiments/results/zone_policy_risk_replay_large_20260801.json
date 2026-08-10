@@ -1,0 +1,2019 @@
+{
+  "episodesPerCellPerCohort": 500,
+  "pairedEpisodeCount": 6000,
+  "pairedOutcomeEvidence": {
+    "artifact": "experiments/results/evidence/zone_policy_paired_outcomes_20260801.jsonl.zlib",
+    "format": "jsonl-zlib-v1",
+    "recordCount": 144000,
+    "sha256": "cb9ab656127bc6d374d7e34f3985722c35f37ba9d235257b16e8993598752f3e"
+  },
+  "promotionDecision": {
+    "cameraUtilityCausalImprovementConfirmed": false,
+    "projectCctvGeneralization85Confirmed": false,
+    "proxyMaterialImprovementOverDeployedConfirmed": false,
+    "reason": "The public ReID artifact is a proxy and the four-zone topology replay is simulated; synchronized project-camera counterfactual observations are absent.",
+    "sealedTestPairedIntervalPassed": false,
+    "selectionPairedIntervalPassed": false
+  },
+  "publicReidEvidence": {
+    "artifact": "experiments/results/evidence/prid2011_solider_open_set_v3_revalidated_summary.json",
+    "automaticDecisionAccuracy": 0.7903225806451613,
+    "dataset": "PRID2011 public cross-camera proxy",
+    "distractorFalseMatchRate": 0.13513513513513514,
+    "distractorQueries": 148,
+    "knownQueries": 100,
+    "knownRank1": 0.9,
+    "knownRecallAt5": 0.95,
+    "projectCctvEvidence": false,
+    "sealedTestEvaluationCount": 1,
+    "sha256": "1b898f6d4a9bc6fe185e0e38c7cb971a5293df0e997f3b5738681f37b07df152"
+  },
+  "runtimeEvidence": {
+    "execution": "cpu-deterministic-policy-replay",
+    "python": "3.14.6"
+  },
+  "runtimeSafetyContract": {
+    "autoMatchAllowed": false,
+    "crossCameraCorrelationGroupRequired": true,
+    "operatorReviewRequired": true,
+    "probabilityProvenanceRequired": true,
+    "sameTrackEvidenceDeduplicated": true,
+    "staleProbabilityRevisionRejected": true,
+    "trustedRegistryAllowlistRequired": true
+  },
+  "schemaVersion": "eyesonu-zone-policy-replay-v3",
+  "seed": 20260806,
+  "selectedPolicy": "hybrid_eig_0_25",
+  "selectedRuntimePolicy": "lr_hmm_posterior_weighted_coverage_eig_tiebreak",
+  "selectionMetricOrder": [
+    "resolvedWithinBudgetRate descending",
+    "falseZoneActivationRate ascending",
+    "meanScansToResolution ascending"
+  ],
+  "status": "valid",
+  "topologyReplayEvidence": {
+    "kind": "deterministic Monte Carlo counterfactual proxy",
+    "maxScans": 8,
+    "operatingPoints": [
+      {
+        "false_positive_rate": 0.09,
+        "name": "validation_wilson_conservative",
+        "sensitivity": 0.84,
+        "unavailable_rate": 0.1
+      },
+      {
+        "false_positive_rate": 0.15,
+        "name": "degraded_camera",
+        "sensitivity": 0.7,
+        "unavailable_rate": 0.2
+      },
+      {
+        "false_positive_rate": 0.18,
+        "name": "occlusion_stress",
+        "sensitivity": 0.6,
+        "unavailable_rate": 0.25
+      }
+    ],
+    "projectCctvEvidence": false,
+    "scenarios": [
+      "location_certain",
+      "location_uncertain",
+      "currently_inside",
+      "recording_only_or_outside"
+    ],
+    "sealedTestCohort": {
+      "aggregateByPolicy": {
+        "deployed_runtime": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009333,
+          "finalTop1Accuracy": 0.792833,
+          "meanScansToResolution": 4.201667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.614333
+        },
+        "expected_bayes_accuracy": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009833,
+          "finalTop1Accuracy": 0.7915,
+          "meanScansToResolution": 4.271667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.600833
+        },
+        "expected_detection": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009833,
+          "finalTop1Accuracy": 0.792,
+          "meanScansToResolution": 4.197167,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.6145
+        },
+        "expected_resolution_0_55": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009,
+          "finalTop1Accuracy": 0.789333,
+          "meanScansToResolution": 4.210667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.610333
+        },
+        "hybrid_eig_0_25": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009667,
+          "finalTop1Accuracy": 0.794,
+          "meanScansToResolution": 4.201167,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.6145
+        },
+        "hybrid_eig_0_50": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.0095,
+          "finalTop1Accuracy": 0.794,
+          "meanScansToResolution": 4.199833,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.614333
+        },
+        "hybrid_eig_0_75": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009667,
+          "finalTop1Accuracy": 0.792167,
+          "meanScansToResolution": 4.202,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.613833
+        },
+        "pure_information_gain": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009833,
+          "finalTop1Accuracy": 0.789333,
+          "meanScansToResolution": 4.205167,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.613333
+        },
+        "risk_adjusted_detection_0_5": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009667,
+          "finalTop1Accuracy": 0.791167,
+          "meanScansToResolution": 4.198,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.614333
+        },
+        "risk_adjusted_detection_1_0": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009667,
+          "finalTop1Accuracy": 0.789167,
+          "meanScansToResolution": 4.1975,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.614667
+        },
+        "risk_adjusted_detection_2_0": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.009667,
+          "finalTop1Accuracy": 0.7865,
+          "meanScansToResolution": 4.203833,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.614
+        },
+        "static_representative": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008667,
+          "finalTop1Accuracy": 0.7785,
+          "meanScansToResolution": 4.3075,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.597167
+        }
+      },
+      "byScenarioAndOperatingPoint": {
+        "currently_inside/degraded_camera/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.886,
+          "meanScansToResolution": 3.072,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.77
+        },
+        "currently_inside/degraded_camera/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.894,
+          "meanScansToResolution": 3.306,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.72
+        },
+        "currently_inside/degraded_camera/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.888,
+          "meanScansToResolution": 3.084,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.766
+        },
+        "currently_inside/degraded_camera/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.894,
+          "meanScansToResolution": 3.252,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.742
+        },
+        "currently_inside/degraded_camera/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.89,
+          "meanScansToResolution": 3.074,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.772
+        },
+        "currently_inside/degraded_camera/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.892,
+          "meanScansToResolution": 3.074,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.77
+        },
+        "currently_inside/degraded_camera/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.896,
+          "meanScansToResolution": 3.1,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.766
+        },
+        "currently_inside/degraded_camera/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.896,
+          "meanScansToResolution": 3.124,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.762
+        },
+        "currently_inside/degraded_camera/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.886,
+          "meanScansToResolution": 3.078,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.768
+        },
+        "currently_inside/degraded_camera/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.878,
+          "meanScansToResolution": 3.078,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.768
+        },
+        "currently_inside/degraded_camera/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.88,
+          "meanScansToResolution": 3.094,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.764
+        },
+        "currently_inside/degraded_camera/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.88,
+          "meanScansToResolution": 3.316,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.714
+        },
+        "currently_inside/occlusion_stress/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.814,
+          "meanScansToResolution": 4.252,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.816,
+          "meanScansToResolution": 4.28,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.59
+        },
+        "currently_inside/occlusion_stress/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.808,
+          "meanScansToResolution": 4.25,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.816,
+          "meanScansToResolution": 4.276,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.592
+        },
+        "currently_inside/occlusion_stress/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.808,
+          "meanScansToResolution": 4.252,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.814,
+          "meanScansToResolution": 4.252,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.812,
+          "meanScansToResolution": 4.252,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.81,
+          "meanScansToResolution": 4.254,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.804,
+          "meanScansToResolution": 4.254,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.806,
+          "meanScansToResolution": 4.26,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.802,
+          "meanScansToResolution": 4.26,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.602
+        },
+        "currently_inside/occlusion_stress/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.782,
+          "meanScansToResolution": 4.276,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.592
+        },
+        "currently_inside/validation_wilson_conservative/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.966,
+          "meanScansToResolution": 1.976,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.914
+        },
+        "currently_inside/validation_wilson_conservative/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.972,
+          "meanScansToResolution": 2.178,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.894
+        },
+        "currently_inside/validation_wilson_conservative/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.97,
+          "meanScansToResolution": 1.948,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.926
+        },
+        "currently_inside/validation_wilson_conservative/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.97,
+          "meanScansToResolution": 1.962,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.918
+        },
+        "currently_inside/validation_wilson_conservative/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.964,
+          "meanScansToResolution": 1.986,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.914
+        },
+        "currently_inside/validation_wilson_conservative/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.958,
+          "meanScansToResolution": 1.952,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "currently_inside/validation_wilson_conservative/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.968,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "currently_inside/validation_wilson_conservative/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.966,
+          "meanScansToResolution": 1.958,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.924
+        },
+        "currently_inside/validation_wilson_conservative/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.97,
+          "meanScansToResolution": 1.944,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.928
+        },
+        "currently_inside/validation_wilson_conservative/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.97,
+          "meanScansToResolution": 1.948,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.926
+        },
+        "currently_inside/validation_wilson_conservative/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.962,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "currently_inside/validation_wilson_conservative/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.964,
+          "meanScansToResolution": 2.226,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.884
+        },
+        "location_certain/degraded_camera/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.446,
+          "p95ScansToResolution": 6.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.444,
+          "p95ScansToResolution": 5.0,
+          "resolvedWithinBudgetRate": 0.956
+        },
+        "location_certain/degraded_camera/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.42,
+          "p95ScansToResolution": 3.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.948,
+          "meanScansToResolution": 1.408,
+          "p95ScansToResolution": 3.0,
+          "resolvedWithinBudgetRate": 0.952
+        },
+        "location_certain/degraded_camera/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.434,
+          "p95ScansToResolution": 6.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.43,
+          "p95ScansToResolution": 6.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.416,
+          "p95ScansToResolution": 3.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.422,
+          "p95ScansToResolution": 3.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.422,
+          "p95ScansToResolution": 4.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.42,
+          "p95ScansToResolution": 4.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.962,
+          "meanScansToResolution": 1.422,
+          "p95ScansToResolution": 4.0,
+          "resolvedWithinBudgetRate": 0.954
+        },
+        "location_certain/degraded_camera/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.954,
+          "meanScansToResolution": 1.51,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.948
+        },
+        "location_certain/occlusion_stress/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.672,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.926
+        },
+        "location_certain/occlusion_stress/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.706,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.918
+        },
+        "location_certain/occlusion_stress/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.672,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "location_certain/occlusion_stress/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.602,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.93
+        },
+        "location_certain/occlusion_stress/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.67,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.924
+        },
+        "location_certain/occlusion_stress/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.676,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "location_certain/occlusion_stress/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.676,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "location_certain/occlusion_stress/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.024,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.672,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "location_certain/occlusion_stress/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.022,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.684,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.92
+        },
+        "location_certain/occlusion_stress/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.022,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.676,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.922
+        },
+        "location_certain/occlusion_stress/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.022,
+          "finalTop1Accuracy": 0.934,
+          "meanScansToResolution": 1.66,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.924
+        },
+        "location_certain/occlusion_stress/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.022,
+          "finalTop1Accuracy": 0.932,
+          "meanScansToResolution": 1.786,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.918
+        },
+        "location_certain/validation_wilson_conservative/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.982,
+          "meanScansToResolution": 1.236,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.984,
+          "meanScansToResolution": 1.226,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.982
+        },
+        "location_certain/validation_wilson_conservative/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.984,
+          "meanScansToResolution": 1.256,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.002,
+          "finalTop1Accuracy": 0.982,
+          "meanScansToResolution": 1.222,
+          "p95ScansToResolution": 1.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.986,
+          "meanScansToResolution": 1.238,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.986,
+          "meanScansToResolution": 1.256,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.986,
+          "meanScansToResolution": 1.248,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.986,
+          "meanScansToResolution": 1.256,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.984,
+          "meanScansToResolution": 1.26,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.984,
+          "meanScansToResolution": 1.262,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.98
+        },
+        "location_certain/validation_wilson_conservative/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.984,
+          "meanScansToResolution": 1.258,
+          "p95ScansToResolution": 2.0,
+          "resolvedWithinBudgetRate": 0.982
+        },
+        "location_certain/validation_wilson_conservative/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.982,
+          "meanScansToResolution": 1.34,
+          "p95ScansToResolution": 3.0,
+          "resolvedWithinBudgetRate": 0.974
+        },
+        "location_uncertain/degraded_camera/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.712,
+          "meanScansToResolution": 4.43,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.59
+        },
+        "location_uncertain/degraded_camera/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.708,
+          "meanScansToResolution": 4.596,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.552
+        },
+        "location_uncertain/degraded_camera/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.706,
+          "meanScansToResolution": 4.446,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.708,
+          "meanScansToResolution": 4.548,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.578
+        },
+        "location_uncertain/degraded_camera/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.712,
+          "meanScansToResolution": 4.426,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.59
+        },
+        "location_uncertain/degraded_camera/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.72,
+          "meanScansToResolution": 4.43,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.71,
+          "meanScansToResolution": 4.454,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.694,
+          "meanScansToResolution": 4.452,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.7,
+          "meanScansToResolution": 4.446,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.696,
+          "meanScansToResolution": 4.448,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.586
+        },
+        "location_uncertain/degraded_camera/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.678,
+          "meanScansToResolution": 4.468,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.588
+        },
+        "location_uncertain/degraded_camera/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.68,
+          "meanScansToResolution": 4.596,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.554
+        },
+        "location_uncertain/occlusion_stress/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.648,
+          "meanScansToResolution": 5.066,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.646,
+          "meanScansToResolution": 5.08,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.49
+        },
+        "location_uncertain/occlusion_stress/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.638,
+          "meanScansToResolution": 5.066,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.644,
+          "meanScansToResolution": 5.08,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.49
+        },
+        "location_uncertain/occlusion_stress/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.652,
+          "meanScansToResolution": 5.066,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.648,
+          "meanScansToResolution": 5.068,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.638,
+          "meanScansToResolution": 5.072,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.492
+        },
+        "location_uncertain/occlusion_stress/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.626,
+          "meanScansToResolution": 5.072,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.492
+        },
+        "location_uncertain/occlusion_stress/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.642,
+          "meanScansToResolution": 5.066,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.628,
+          "meanScansToResolution": 5.064,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.016,
+          "finalTop1Accuracy": 0.628,
+          "meanScansToResolution": 5.064,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.494
+        },
+        "location_uncertain/occlusion_stress/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.014,
+          "finalTop1Accuracy": 0.634,
+          "meanScansToResolution": 5.078,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.492
+        },
+        "location_uncertain/validation_wilson_conservative/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.806,
+          "meanScansToResolution": 3.384,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.738
+        },
+        "location_uncertain/validation_wilson_conservative/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.01,
+          "finalTop1Accuracy": 0.784,
+          "meanScansToResolution": 3.54,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.706
+        },
+        "location_uncertain/validation_wilson_conservative/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.808,
+          "meanScansToResolution": 3.358,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.738
+        },
+        "location_uncertain/validation_wilson_conservative/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.782,
+          "meanScansToResolution": 3.362,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.73
+        },
+        "location_uncertain/validation_wilson_conservative/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.812,
+          "meanScansToResolution": 3.374,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.74
+        },
+        "location_uncertain/validation_wilson_conservative/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.804,
+          "meanScansToResolution": 3.364,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.738
+        },
+        "location_uncertain/validation_wilson_conservative/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.8,
+          "meanScansToResolution": 3.362,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.736
+        },
+        "location_uncertain/validation_wilson_conservative/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.798,
+          "meanScansToResolution": 3.37,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.732
+        },
+        "location_uncertain/validation_wilson_conservative/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.808,
+          "meanScansToResolution": 3.354,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.736
+        },
+        "location_uncertain/validation_wilson_conservative/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.808,
+          "meanScansToResolution": 3.356,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.736
+        },
+        "location_uncertain/validation_wilson_conservative/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.012,
+          "finalTop1Accuracy": 0.804,
+          "meanScansToResolution": 3.37,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.73
+        },
+        "location_uncertain/validation_wilson_conservative/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.764,
+          "meanScansToResolution": 3.562,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.71
+        },
+        "recording_only_or_outside/degraded_camera/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.996,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.128
+        },
+        "recording_only_or_outside/degraded_camera/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.996,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.126
+        },
+        "recording_only_or_outside/degraded_camera/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.974,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.594,
+          "meanScansToResolution": 7.972,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.996,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.13
+        },
+        "recording_only_or_outside/degraded_camera/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.594,
+          "meanScansToResolution": 7.996,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.13
+        },
+        "recording_only_or_outside/degraded_camera/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.594,
+          "meanScansToResolution": 7.976,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.594,
+          "meanScansToResolution": 7.976,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.976,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.13
+        },
+        "recording_only_or_outside/degraded_camera/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.968,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 7.968,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.132
+        },
+        "recording_only_or_outside/degraded_camera/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.592,
+          "meanScansToResolution": 8.024,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.124
+        },
+        "recording_only_or_outside/occlusion_stress/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.27,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.532,
+          "meanScansToResolution": 8.28,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.27,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.532,
+          "meanScansToResolution": 8.254,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.094
+        },
+        "recording_only_or_outside/occlusion_stress/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.268,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.268,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.268,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.536,
+          "meanScansToResolution": 8.272,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.27,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.27,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.54,
+          "meanScansToResolution": 8.27,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/occlusion_stress/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.526,
+          "meanScansToResolution": 8.278,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.092
+        },
+        "recording_only_or_outside/validation_wilson_conservative/deployed_runtime": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.672,
+          "meanScansToResolution": 7.62,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.184
+        },
+        "recording_only_or_outside/validation_wilson_conservative/expected_bayes_accuracy": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.674,
+          "meanScansToResolution": 7.628,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.184
+        },
+        "recording_only_or_outside/validation_wilson_conservative/expected_detection": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.674,
+          "meanScansToResolution": 7.622,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/expected_resolution_0_55": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.004,
+          "finalTop1Accuracy": 0.668,
+          "meanScansToResolution": 7.59,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.186
+        },
+        "recording_only_or_outside/validation_wilson_conservative/hybrid_eig_0_25": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.676,
+          "meanScansToResolution": 7.63,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/hybrid_eig_0_50": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.676,
+          "meanScansToResolution": 7.632,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/hybrid_eig_0_75": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.672,
+          "meanScansToResolution": 7.632,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/pure_information_gain": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.67,
+          "meanScansToResolution": 7.634,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/risk_adjusted_detection_0_5": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.672,
+          "meanScansToResolution": 7.622,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.182
+        },
+        "recording_only_or_outside/validation_wilson_conservative/risk_adjusted_detection_1_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.672,
+          "meanScansToResolution": 7.62,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.184
+        },
+        "recording_only_or_outside/validation_wilson_conservative/risk_adjusted_detection_2_0": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.672,
+          "meanScansToResolution": 7.65,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.184
+        },
+        "recording_only_or_outside/validation_wilson_conservative/static_representative": {
+          "episodes": 500,
+          "falseZoneActivationRate": 0.006,
+          "finalTop1Accuracy": 0.652,
+          "meanScansToResolution": 7.698,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.164
+        }
+      },
+      "pairedComparisonsAgainstDeployed": {
+        "expected_bayes_accuracy": {
+          "falseZoneActivationRate": {
+            "delta": 0.0005,
+            "delta95Lower": -0.00047999999999999996,
+            "delta95Upper": 0.00148,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0013333333333333333,
+            "delta95Lower": -0.00519868033650733,
+            "delta95Upper": 0.0025320136698406635,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.07,
+            "delta95Lower": 0.052779171927965225,
+            "delta95Upper": 0.0872208280720348,
+            "includesZero": false
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0135,
+            "delta95Lower": -0.016924937921572854,
+            "delta95Upper": -0.010075062078427148,
+            "includesZero": false
+          }
+        },
+        "expected_detection": {
+          "falseZoneActivationRate": {
+            "delta": 0.0005,
+            "delta95Lower": -0.0003642581798733664,
+            "delta95Upper": 0.0013642581798733663,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0008333333333333334,
+            "delta95Lower": -0.003983784559352387,
+            "delta95Upper": 0.00231711789268572,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0045,
+            "delta95Lower": -0.01491778877627899,
+            "delta95Upper": 0.005917788776278992,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.0016522830547222311,
+            "delta95Upper": 0.0019856163880555646,
+            "includesZero": true
+          }
+        },
+        "expected_resolution_0_55": {
+          "falseZoneActivationRate": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.0013663956935083483,
+            "delta95Upper": 0.0006997290268416817,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0035,
+            "delta95Lower": -0.0074868234743704805,
+            "delta95Upper": 0.0004868234743704808,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.009,
+            "delta95Lower": -0.006672844536131704,
+            "delta95Upper": 0.0246728445361317,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.004,
+            "delta95Lower": -0.006920285254311637,
+            "delta95Upper": -0.0010797147456883633,
+            "includesZero": false
+          }
+        },
+        "hybrid_eig_0_25": {
+          "falseZoneActivationRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.00012860459098385082,
+            "delta95Upper": 0.0007952712576505174,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": 0.0011666666666666668,
+            "delta95Lower": -0.0009249865671071683,
+            "delta95Upper": 0.0032583199004405016,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0005,
+            "delta95Lower": -0.005062014386490222,
+            "delta95Upper": 0.004062014386490221,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.0006976738372304022,
+            "delta95Upper": 0.0010310071705637355,
+            "includesZero": true
+          }
+        },
+        "hybrid_eig_0_50": {
+          "falseZoneActivationRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.000399168035020219,
+            "delta95Upper": 0.0007325013683535523,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": 0.0011666666666666668,
+            "delta95Lower": -0.0017734301379974343,
+            "delta95Upper": 0.004106763471330768,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0018333333333333333,
+            "delta95Lower": -0.009203737484918763,
+            "delta95Upper": 0.005537070818252097,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.0,
+            "delta95Lower": -0.0015323301810451083,
+            "delta95Upper": 0.0015323301810451083,
+            "includesZero": true
+          }
+        },
+        "hybrid_eig_0_75": {
+          "falseZoneActivationRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.00032,
+            "delta95Upper": 0.0009866666666666667,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0006666666666666666,
+            "delta95Lower": -0.004124028682254942,
+            "delta95Upper": 0.0027906953489216088,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.009714824087223685,
+            "delta95Upper": 0.010381490753890351,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0005,
+            "delta95Lower": -0.002432705714997937,
+            "delta95Upper": 0.0014327057149979368,
+            "includesZero": true
+          }
+        },
+        "pure_information_gain": {
+          "falseZoneActivationRate": {
+            "delta": 0.0005,
+            "delta95Lower": -0.0003642581798733664,
+            "delta95Upper": 0.0013642581798733663,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0035,
+            "delta95Lower": -0.007322828092480705,
+            "delta95Upper": 0.0003228280924807052,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.0035,
+            "delta95Lower": -0.007181074324987184,
+            "delta95Upper": 0.014181074324987183,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.001,
+            "delta95Lower": -0.003066038624286572,
+            "delta95Upper": 0.0010660386242865721,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_0_5": {
+          "falseZoneActivationRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.0005906580310680858,
+            "delta95Upper": 0.0012573246977347526,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0016666666666666668,
+            "delta95Lower": -0.0048673221486058215,
+            "delta95Upper": 0.0015339888152724878,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0036666666666666666,
+            "delta95Lower": -0.014392576601903148,
+            "delta95Upper": 0.007059243268569814,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.0,
+            "delta95Lower": -0.0017893761420756781,
+            "delta95Upper": 0.0017893761420756781,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_1_0": {
+          "falseZoneActivationRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.0005906580310680858,
+            "delta95Upper": 0.0012573246977347526,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0036666666666666666,
+            "delta95Lower": -0.0076667573437148515,
+            "delta95Upper": 0.00033342401038151783,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.004166666666666667,
+            "delta95Lower": -0.01479750796562853,
+            "delta95Upper": 0.006464174632295198,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.0014560229266747545,
+            "delta95Upper": 0.0021226895933414212,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_2_0": {
+          "falseZoneActivationRate": {
+            "delta": 0.0003333333333333333,
+            "delta95Lower": -0.0005906580310680858,
+            "delta95Upper": 0.0012573246977347526,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.006333333333333333,
+            "delta95Lower": -0.010880829388110018,
+            "delta95Upper": -0.0017858372785566484,
+            "includesZero": false
+          },
+          "meanScansToResolution": {
+            "delta": 0.0021666666666666666,
+            "delta95Lower": -0.010217453085689998,
+            "delta95Upper": 0.01455078641902333,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.0022382510276902534,
+            "delta95Upper": 0.0015715843610235867,
+            "includesZero": true
+          }
+        },
+        "static_representative": {
+          "falseZoneActivationRate": {
+            "delta": -0.0006666666666666666,
+            "delta95Lower": -0.002332399769653954,
+            "delta95Upper": 0.0009990664363206205,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.014333333333333333,
+            "delta95Lower": -0.019402537655973134,
+            "delta95Upper": -0.009264129010693534,
+            "includesZero": false
+          },
+          "meanScansToResolution": {
+            "delta": 0.10583333333333333,
+            "delta95Lower": 0.08567921712587534,
+            "delta95Upper": 0.12598744954079133,
+            "includesZero": false
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.017166666666666667,
+            "delta95Lower": -0.020880528715955266,
+            "delta95Upper": -0.013452804617378068,
+            "includesZero": false
+          }
+        }
+      },
+      "seedOffset": 10000000
+    },
+    "selectionCohort": {
+      "aggregateByPolicy": {
+        "deployed_runtime": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008167,
+          "finalTop1Accuracy": 0.801333,
+          "meanScansToResolution": 4.132333,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.622833
+        },
+        "expected_bayes_accuracy": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008167,
+          "finalTop1Accuracy": 0.801333,
+          "meanScansToResolution": 4.200167,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.609167
+        },
+        "expected_detection": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008333,
+          "finalTop1Accuracy": 0.802667,
+          "meanScansToResolution": 4.125667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.622667
+        },
+        "expected_resolution_0_55": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.007667,
+          "finalTop1Accuracy": 0.801,
+          "meanScansToResolution": 4.1325,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.618333
+        },
+        "hybrid_eig_0_25": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008167,
+          "finalTop1Accuracy": 0.799833,
+          "meanScansToResolution": 4.129833,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.623
+        },
+        "hybrid_eig_0_50": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008333,
+          "finalTop1Accuracy": 0.800833,
+          "meanScansToResolution": 4.126833,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.6225
+        },
+        "hybrid_eig_0_75": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008167,
+          "finalTop1Accuracy": 0.800833,
+          "meanScansToResolution": 4.129,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.6225
+        },
+        "pure_information_gain": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008333,
+          "finalTop1Accuracy": 0.798667,
+          "meanScansToResolution": 4.133333,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.621833
+        },
+        "risk_adjusted_detection_0_5": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008167,
+          "finalTop1Accuracy": 0.802,
+          "meanScansToResolution": 4.126333,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.6225
+        },
+        "risk_adjusted_detection_1_0": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.801,
+          "meanScansToResolution": 4.128667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.622
+        },
+        "risk_adjusted_detection_2_0": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.008,
+          "finalTop1Accuracy": 0.798,
+          "meanScansToResolution": 4.135667,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.620667
+        },
+        "static_representative": {
+          "episodes": 6000,
+          "falseZoneActivationRate": 0.007667,
+          "finalTop1Accuracy": 0.788667,
+          "meanScansToResolution": 4.229167,
+          "p95ScansToResolution": 9.0,
+          "resolvedWithinBudgetRate": 0.607
+        }
+      },
+      "pairedComparisonsAgainstDeployed": {
+        "expected_bayes_accuracy": {
+          "falseZoneActivationRate": {
+            "delta": 0.0,
+            "delta95Lower": -0.0006533877845842787,
+            "delta95Upper": 0.0006533877845842787,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": 0.0,
+            "delta95Lower": -0.004001166690997538,
+            "delta95Upper": 0.004001166690997538,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.06783333333333333,
+            "delta95Lower": 0.05022398149138496,
+            "delta95Upper": 0.0854426851752817,
+            "includesZero": false
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.013666666666666667,
+            "delta95Lower": -0.017012358792653892,
+            "delta95Upper": -0.010320974540679444,
+            "includesZero": false
+          }
+        },
+        "expected_detection": {
+          "falseZoneActivationRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.000399168035020219,
+            "delta95Upper": 0.0007325013683535523,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": 0.0013333333333333333,
+            "delta95Lower": -0.0020616015229775473,
+            "delta95Upper": 0.004728268189644213,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.006666666666666667,
+            "delta95Lower": -0.016734635342528528,
+            "delta95Upper": 0.0034013020091951925,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.00016666666666666666,
+            "delta95Lower": -0.0019259620626757546,
+            "delta95Upper": 0.001592628729342421,
+            "includesZero": true
+          }
+        },
+        "expected_resolution_0_55": {
+          "falseZoneActivationRate": {
+            "delta": -0.0005,
+            "delta95Lower": -0.00148,
+            "delta95Upper": 0.00047999999999999996,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.00441373002141583,
+            "delta95Upper": 0.0037470633547491638,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.016118949590491215,
+            "delta95Upper": 0.016452282923824547,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0045,
+            "delta95Lower": -0.007474143755335607,
+            "delta95Upper": -0.0015258562446643924,
+            "includesZero": false
+          }
+        },
+        "hybrid_eig_0_25": {
+          "falseZoneActivationRate": {
+            "delta": 0.0,
+            "delta95Lower": 0.0,
+            "delta95Upper": 0.0,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0015,
+            "delta95Lower": -0.003432374351411898,
+            "delta95Upper": 0.0004323743514118982,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0025,
+            "delta95Lower": -0.007131253223236265,
+            "delta95Upper": 0.0021312532232362646,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.0006976738372304022,
+            "delta95Upper": 0.0010310071705637355,
+            "includesZero": true
+          }
+        },
+        "hybrid_eig_0_50": {
+          "falseZoneActivationRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.00016,
+            "delta95Upper": 0.0004933333333333334,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0005,
+            "delta95Lower": -0.0034036912625603224,
+            "delta95Upper": 0.0024036912625603223,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0055,
+            "delta95Lower": -0.013600549472121736,
+            "delta95Upper": 0.0026005494721217364,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.0017943284848038136,
+            "delta95Upper": 0.001127661818137147,
+            "includesZero": true
+          }
+        },
+        "hybrid_eig_0_75": {
+          "falseZoneActivationRate": {
+            "delta": 0.0,
+            "delta95Lower": -0.00046201493322399863,
+            "delta95Upper": 0.00046201493322399863,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0005,
+            "delta95Lower": -0.004033712087902281,
+            "delta95Upper": 0.0030337120879022805,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0033333333333333335,
+            "delta95Lower": -0.012607834804809068,
+            "delta95Upper": 0.0059411681381424004,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.0019337777808741414,
+            "delta95Upper": 0.0012671111142074749,
+            "includesZero": true
+          }
+        },
+        "pure_information_gain": {
+          "falseZoneActivationRate": {
+            "delta": 0.00016666666666666666,
+            "delta95Lower": -0.000399168035020219,
+            "delta95Upper": 0.0007325013683535523,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0026666666666666666,
+            "delta95Lower": -0.006362170061204139,
+            "delta95Upper": 0.0010288367278708066,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.001,
+            "delta95Lower": -0.009174791983611395,
+            "delta95Upper": 0.011174791983611394,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.001,
+            "delta95Lower": -0.002789197195513695,
+            "delta95Upper": 0.000789197195513695,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_0_5": {
+          "falseZoneActivationRate": {
+            "delta": 0.0,
+            "delta95Lower": -0.0008002333381995078,
+            "delta95Upper": 0.0008002333381995078,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": 0.0006666666666666666,
+            "delta95Lower": -0.0026649276833022365,
+            "delta95Upper": 0.00399826101663557,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.006,
+            "delta95Lower": -0.01604701374830622,
+            "delta95Upper": 0.004047013748306221,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.0021813738155068456,
+            "delta95Upper": 0.0015147071488401788,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_1_0": {
+          "falseZoneActivationRate": {
+            "delta": -0.00016666666666666666,
+            "delta95Lower": -0.0010310071705637355,
+            "delta95Upper": 0.0006976738372304022,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0003333333333333333,
+            "delta95Lower": -0.004617875259874654,
+            "delta95Upper": 0.003951208593207988,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": -0.0036666666666666666,
+            "delta95Lower": -0.01396617715993195,
+            "delta95Upper": 0.006632843826598615,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0008333333333333334,
+            "delta95Lower": -0.0027659654168887254,
+            "delta95Upper": 0.0010992987502220588,
+            "includesZero": true
+          }
+        },
+        "risk_adjusted_detection_2_0": {
+          "falseZoneActivationRate": {
+            "delta": -0.00016666666666666666,
+            "delta95Lower": -0.0010310071705637355,
+            "delta95Upper": 0.0006976738372304022,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.0033333333333333335,
+            "delta95Lower": -0.008021514002613559,
+            "delta95Upper": 0.0013548473359468916,
+            "includesZero": true
+          },
+          "meanScansToResolution": {
+            "delta": 0.0033333333333333335,
+            "delta95Lower": -0.00833624078901877,
+            "delta95Upper": 0.015002907455685438,
+            "includesZero": true
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.0021666666666666666,
+            "delta95Lower": -0.004308240030082755,
+            "delta95Upper": -2.5093303250578198e-05,
+            "includesZero": false
+          }
+        },
+        "static_representative": {
+          "falseZoneActivationRate": {
+            "delta": -0.0005,
+            "delta95Lower": -0.0018469339976731982,
+            "delta95Upper": 0.0008469339976731982,
+            "includesZero": true
+          },
+          "finalTop1Accuracy": {
+            "delta": -0.012666666666666666,
+            "delta95Lower": -0.01750170684061856,
+            "delta95Upper": -0.007831626492714771,
+            "includesZero": false
+          },
+          "meanScansToResolution": {
+            "delta": 0.09683333333333333,
+            "delta95Lower": 0.0758924336448901,
+            "delta95Upper": 0.11777423302177656,
+            "includesZero": false
+          },
+          "resolvedWithinBudgetRate": {
+            "delta": -0.015833333333333335,
+            "delta95Lower": -0.019691861128122545,
+            "delta95Upper": -0.011974805538544122,
+            "includesZero": false
+          }
+        }
+      },
+      "seedOffset": 0
+    },
+    "synchronizedMultiCameraObservation": false
+  }
+}
+

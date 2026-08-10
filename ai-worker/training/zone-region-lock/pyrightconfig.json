@@ -1,0 +1,16 @@
+{
+  "include": [
+    "../../scripts/build_zone_region_dataset.py",
+    "../../scripts/train_zone_region_models.py",
+    "../../scripts/zone_region_metrics.py",
+    "../../src/qwen_backend/zone_probability.py",
+    "../../src/qwen_backend/zone_probability_schemas.py",
+    "../../src/qwen_backend/zone_search_schemas.py",
+    "../../tests/test_zone_region_metrics.py"
+  ],
+  "extraPaths": ["../..", "../../src"],
+  "stubPath": "typings",
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.11"
+}
+

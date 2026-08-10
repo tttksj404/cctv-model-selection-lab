@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "eyesonu-zone-region-evidence-bundle-v1",
+  "artifacts": [
+    {
+      "role": "comparison_result",
+      "compression": "none",
+      "uri": "experiments/results/zone_region_model_comparison_20260802.json",
+      "contentBytes": 21462,
+      "contentSha256": "cd35d7393cff99e3bedbbc8c05bbd23eabb893f35e813c0a7446e06508fdd178",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/zone_region_model_comparison_20260802_v6.json"
+    },
+    {
+      "role": "gpu_safe_generation_comparison_result",
+      "compression": "none",
+      "uri": "experiments/results/evidence/zone_region_model_comparison_20260802_v7_safe.json",
+      "contentBytes": 23663,
+      "contentSha256": "41266140874a4964457e07bf9b57a9364fdae57b01d87abe0e74db97aade8bee",
+      "canonicalization": "remote_bytes_plus_single_terminal_lf",
+      "remoteContentBytes": 23662,
+      "remoteContentSha256": "eb7c58134d0b25253e760135feb1a3cdb39876460fc3c889b1f2fd0844d7f5c6",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/zone_region_model_comparison_20260802_v7_safe_retry.json"
+    },
+    {
+      "role": "dataset_manifest",
+      "compression": "none",
+      "uri": "experiments/results/evidence/zone_region_dataset_manifest_20260802.json",
+      "contentBytes": 2537,
+      "contentSha256": "f4dfed92c98410ea03853e74619fbf9e8e99336125696d70b17b0254986a657a",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/zone_region_dataset_manifest_20260802_v2.json"
+    },
+    {
+      "role": "selection_dataset",
+      "compression": "gzip",
+      "uri": "experiments/results/evidence/zone_region_selection_20260802_v2.jsonl.gz",
+      "compressedBytes": 1544905,
+      "compressedSha256": "5b99b3d212d09cf9a3fce2fbfe8e7bd6e32075923346030afd27148283058438",
+      "contentBytes": 7269843,
+      "contentSha256": "0886d90611427e51ccfea7a099b73856ea0369ca325073513df3d346ca67aa8f",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/zone_region_selection_20260802_v2.jsonl"
+    },
+    {
+      "role": "sealed_dataset",
+      "compression": "gzip",
+      "uri": "experiments/results/evidence/zone_region_sealed_20260802_v2.jsonl.gz",
+      "compressedBytes": 1531358,
+      "compressedSha256": "e8c4b46e05229619944808cf169947586b9da919589951639d22933f0d5b4caa",
+      "contentBytes": 7221179,
+      "contentSha256": "021eed574fdeff6a7c2c38d577e694ac0f19a20a43d8de53beb110483dbb742a",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/zone_region_sealed_20260802_v2.jsonl"
+    },
+    {
+      "role": "selection_commitment",
+      "compression": "gzip",
+      "uri": "experiments/results/evidence/selection_commitment_20260802.json.gz",
+      "compressedBytes": 473,
+      "compressedSha256": "426259c2004e3cb65c52a926816e144799bb0c13cbd4a21d87408158aea38886",
+      "contentBytes": 715,
+      "contentSha256": "76d3139c2e1dd88a7b43362da1459928fc909d59f13224c7ed3dc6c3e7c05b2b",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/models_v6/selection_commitment.json"
+    },
+    {
+      "role": "selected_model",
+      "compression": "gzip",
+      "uri": "experiments/results/evidence/zone_region_logistic_20260802.joblib.gz",
+      "compressedBytes": 1384,
+      "compressedSha256": "4f333fa7d9337f8b4e18728a4d58906fe08646165c2346cbc506e1bd27fcb610",
+      "contentBytes": 1655,
+      "contentSha256": "75cd8bcaa07f6312a39fe5422f7bf2c49a58bada89be607d16e63b717d55e11f",
+      "remoteUri": "codex-zone-region-20260802-final/artifacts/models_v6/sealed_selected/expected_bayes_8/logistic/logistic.joblib"
+    },
+    {
+      "role": "selected_model_safe_replay",
+      "compression": "none",
+      "uri": "experiments/results/evidence/zone_region_logistic_20260802.safe.json",
+      "contentBytes": 7239,
+      "contentSha256": "1ea1e3e8a8f0f78fd2ca794ff9fd77fef273e43b7275805846ed3efc457903ee",
+      "derivedFromRole": "selected_model",
+      "derivedFromContentSha256": "75cd8bcaa07f6312a39fe5422f7bf2c49a58bada89be607d16e63b717d55e11f",
+      "predictionCount": 4484,
+      "predictionSha256": "be68d1bd5de9eec50d1c21ff499ce763da17dda5d2c0e1ec0ca768c88aa14dff",
+      "gpuGenerationAttestation": {
+        "remoteResultUri": "codex-zone-region-20260802-final/artifacts/zone_region_model_comparison_20260802_v7_safe_retry.json",
+        "remoteResultBytes": 23662,
+        "remoteResultSha256": "eb7c58134d0b25253e760135feb1a3cdb39876460fc3c889b1f2fd0844d7f5c6",
+        "sourceArtifactRemoteUri": "codex-zone-region-20260802-final/artifacts/models_v7_safe_attested_retry/sealed_selected/expected_bayes_8/logistic/logistic.joblib",
+        "sourceArtifactSha256": "75cd8bcaa07f6312a39fe5422f7bf2c49a58bada89be607d16e63b717d55e11f",
+        "safeArtifactRemoteUri": "codex-zone-region-20260802-final/artifacts/models_v7_safe_attested_retry/sealed_selected/expected_bayes_8/logistic/logistic.safe.json",
+        "safeArtifactSha256": "1ea1e3e8a8f0f78fd2ca794ff9fd77fef273e43b7275805846ed3efc457903ee",
+        "sealedCorrect": 4120,
+        "sealedTotal": 4484,
+        "predictionSha256": "be68d1bd5de9eec50d1c21ff499ce763da17dda5d2c0e1ec0ca768c88aa14dff"
+      }
+    }
+  ]
+}
+

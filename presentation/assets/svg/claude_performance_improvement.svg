@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2f6fba"/></marker>
+</defs>
+<rect x="0" y="0" width="1920" height="1080" rx="0" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="0"/>
+<text x="80" y="78" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="46px" font-weight="750" fill="#252b36">AI Worker 최종 성능</text>
+<text x="80" y="120" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="22px" font-weight="400" fill="#687386">동일 strict Rank-1/Recall@5 평가에서 후보 검색 성능과 선택 runtime을 분리해 표시</text>
+<rect x="1430" y="48" width="410" height="54" rx="12" fill="#eaf2fb" stroke="#d9e0ea" stroke-width="1"/>
+<text x="1635" y="82" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="19px" font-weight="750" fill="#2f6fba">STRICT TOP-K · Recall@5 77.89%</text>
+<line x1="80" y1="154" x2="1840" y2="154" stroke="#d9e0ea" stroke-width="1"/>
+<rect x="80" y="204" width="1160" height="570" rx="18" fill="#ffffff" stroke="#d9e0ea" stroke-width="1"/>
+<text x="120" y="254" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="750" fill="#252b36">최종 서비스 지표</text>
+<text x="120" y="286" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="19px" font-weight="500" fill="#687386">정답 identity를 Top-K 후보 안에 넣고 관리자 검토로 연결</text>
+<text x="500" y="328" text-anchor="middle" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#687386">strict 기준선</text>
+<text x="805" y="328" text-anchor="middle" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#2f6fba">strict 최고 후보</text>
+<text x="1080" y="328" text-anchor="middle" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#687386">개선폭</text>
+<text x="120" y="374" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="29px" font-weight="750" fill="#252b36">Recall@5</text><text x="120" y="409" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#687386">최종 후보 포함률 · 서비스 주지표</text><text x="500" y="378" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="26px" font-weight="700" fill="#252b36">58.95%</text><text x="805" y="378" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="30px" font-weight="750" fill="#2f6fba">77.89%</text><text x="1080" y="378" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="27px" font-weight="750" fill="#2f6fba">+18.95%p</text><rect x="120" y="436" width="900" height="20" rx="10" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/><rect x="120" y="436" width="530" height="20" rx="10" fill="#ffffff" stroke="#b8c3d2" stroke-width="1"/><rect x="120" y="466" width="900" height="20" rx="10" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/><rect x="120" y="466" width="701" height="20" rx="10" fill="#eaf2fb" stroke="#2f6fba" stroke-width="1"/>
+<text x="120" y="558" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="29px" font-weight="750" fill="#252b36">Rank-1</text><text x="120" y="593" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#687386">1위 후보가 정답인 비율 · 보조 지표</text><text x="500" y="562" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="26px" font-weight="700" fill="#252b36">16.84%</text><text x="805" y="562" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="30px" font-weight="750" fill="#2f6fba">47.37%</text><text x="1080" y="562" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="27px" font-weight="750" fill="#2f6fba">+30.53%p</text><rect x="120" y="620" width="900" height="20" rx="10" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/><rect x="120" y="620" width="151" height="20" rx="10" fill="#ffffff" stroke="#b8c3d2" stroke-width="1"/><rect x="120" y="650" width="900" height="20" rx="10" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/><rect x="120" y="650" width="426" height="20" rx="10" fill="#eaf2fb" stroke="#2f6fba" stroke-width="1"/>
+<text x="120" y="742" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="600" fill="#687386">baseline = CLIP ViT-B/32</text>
+<text x="1080" y="742" text-anchor="end" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="650" fill="#2f6fba">selected runtime = hybrid-solider-clip-v1</text>
+<rect x="1280" y="204" width="560" height="570" rx="2" fill="#eaf2fb" stroke="#2f6fba" stroke-width="1"/>
+<rect x="1280" y="204" width="10" height="570" rx="5" fill="#2f6fba" stroke="#2f6fba" stroke-width="0"/>
+<text x="1320" y="260" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="24px" font-weight="750" fill="#2f6fba">strict 최고 후보 검색</text>
+<text x="1320" y="304" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="28px" font-weight="750" fill="#252b36">SOLIDER top-3</text>
+<text x="1320" y="356" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="21px" font-weight="600" fill="#687386">strict 후보 포함률</text>
+<text x="1320" y="445" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="78px" font-weight="750" fill="#2f6fba">77.89%</text>
+<text x="1320" y="488" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="24px" font-weight="700" fill="#2f6fba">Recall@5</text>
+<line x1="1320" y1="520" x2="1790" y2="520" stroke="#d9e0ea" stroke-width="1"/>
+<text x="1320" y="570" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="28px" font-weight="700" fill="#252b36">Rank-1  47.37%</text>
+<text x="1320" y="615" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="24px" font-weight="700" fill="#2f6fba">+30.53%p · 약 2.8배</text>
+<text x="1320" y="675" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="650" fill="#2f6fba">strict metric row = SOLIDER top-3</text>
+<text x="1320" y="705" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="550" fill="#687386">runtime selected = hybrid-solider-clip-v1</text>
+<rect x="80" y="814" width="840" height="126" rx="14" fill="#ffffff" stroke="#d9e0ea" stroke-width="1"/>
+<text x="112" y="854" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="22px" font-weight="700" fill="#687386">별도 속성 분류 보조 지표</text>
+<text x="112" y="898" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="26px" font-weight="700" fill="#252b36">SOLIDER PAR fine-tune  77.59%</text>
+<text x="112" y="925" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#687386">identity retrieval 정확도와 다른 평가 축</text>
+<rect x="960" y="814" width="880" height="126" rx="14" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/>
+<text x="992" y="854" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="22px" font-weight="700" fill="#252b36">평가 범위</text>
+<text x="992" y="898" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="23px" font-weight="700" fill="#2f6fba">CHIRLA strict · 11 identities · 95 queries</text>
+<text x="992" y="925" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#687386">camera/sequence overlap 제거</text>
+<rect x="80" y="968" width="1760" height="64" rx="12" fill="#f1f4f8" stroke="#d9e0ea" stroke-width="1"/>
+<text x="112" y="1009" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="23px" font-weight="650" fill="#687386">Qwen3-VL은 후보 설명·속성 충돌 검토 보조 계층이며, 77.89%는 Qwen 단독 상승이 아닌 최종 후보 검색 Recall@5</text>
+</svg>
+

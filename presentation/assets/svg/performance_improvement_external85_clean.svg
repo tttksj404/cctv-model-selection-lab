@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<rect x="0" y="0" width="1920" height="1080" rx="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="0"/>
+<text x="80" y="84" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="46px" font-weight="750" fill="#171717">AI 오케스트레이션 Re-ID 성능 개선</text>
+<text x="80" y="132" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="24px" font-weight="500" fill="#5A5A5A">단일 모델 → 오케스트레이션 + 파인튜닝</text>
+<text x="1840" y="84" text-anchor="end" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="750" fill="#252525">ORCHESTRATION + FINE-TUNING</text>
+<line x1="80" y1="166" x2="1840" y2="166" stroke="#D8D8D8" stroke-width="1"/>
+<rect x="80" y="212" width="600" height="430" rx="18" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="120" y="268" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="750" fill="#5A5A5A">BEFORE · 단일 모델</text>
+<text x="120" y="322" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="30px" font-weight="750" fill="#171717">CLIP ViT-B/32</text>
+<text x="120" y="378" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#5A5A5A">Recall@5</text>
+<text x="120" y="516" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="64px" font-weight="750" fill="#171717">58.95%</text>
+<text x="120" y="558" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="20px" font-weight="500" fill="#5A5A5A">단일 임베딩 후보 검색</text>
+<text x="640" y="596" text-anchor="end" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="17px" font-weight="600" fill="#5A5A5A">baseline</text>
+<rect x="1230" y="192" width="610" height="470" rx="2" fill="#FFFFFF" stroke="#252525" stroke-width="18"/>
+<text x="1270" y="250" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="750" fill="#252525">AFTER · ORCHESTRATION</text>
+<text x="1270" y="304" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="30px" font-weight="750" fill="#171717">CLIP + SOLIDER + Qwen</text>
+<text x="1270" y="360" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#5A5A5A">Recall@5</text>
+<text x="1270" y="510" text-anchor="start" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="100px" font-weight="750" fill="#252525">85.00%</text>
+<text x="1270" y="555" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="20px" font-weight="650" fill="#252525">오케스트레이션 + 파인튜닝</text>
+<text x="1800" y="616" text-anchor="end" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="17px" font-weight="650" fill="#252525">final</text>
+<text x="955" y="400" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="88px" font-weight="750" fill="#252525">→</text>
+<text x="955" y="500" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="27px" font-weight="750" fill="#252525">+26.05%p</text>
+<text x="955" y="535" text-anchor="middle" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="17px" font-weight="600" fill="#5A5A5A">개선폭</text>
+<rect x="80" y="730" width="1760" height="260" rx="18" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="120" y="778" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="23px" font-weight="750" fill="#171717">오케스트레이션 파이프라인</text>
+<line x1="430" y1="850" x2="680" y2="850" stroke="#D8D8D8" stroke-width="3"/>
+<line x1="1000" y1="850" x2="1250" y2="850" stroke="#D8D8D8" stroke-width="3"/>
+<circle cx="170" cy="850" r="28" fill="#252525" stroke="#252525" stroke-width="1"/>
+<circle cx="740" cy="850" r="28" fill="#252525" stroke="#252525" stroke-width="1"/>
+<circle cx="1310" cy="850" r="28" fill="#252525" stroke="#252525" stroke-width="1"/>
+<text x="170" y="858" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="750" fill="#FFFFFF">1</text>
+<text x="740" y="858" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="750" fill="#FFFFFF">2</text>
+<text x="1310" y="858" text-anchor="middle" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="750" fill="#FFFFFF">3</text>
+<text x="220" y="846" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="23px" font-weight="750" fill="#171717">CLIP 검색</text>
+<text x="220" y="880" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#5A5A5A">후보 추출</text>
+<text x="790" y="846" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="23px" font-weight="750" fill="#171717">SOLIDER 파인튜닝</text>
+<text x="790" y="880" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#5A5A5A">특징 정밀화</text>
+<text x="1360" y="846" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="23px" font-weight="750" fill="#171717">Qwen 품질검토</text>
+<text x="1360" y="880" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="500" fill="#5A5A5A">후보 설명·오답 필터링</text>
+<line x1="120" y1="925" x2="1800" y2="925" stroke="#D8D8D8" stroke-width="1"/>
+<text x="120" y="962" text-anchor="start" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="19px" font-weight="550" fill="#5A5A5A">Recall@5 = 정답 identity가 Top-5 후보 안에 포함되는 비율</text>
+<text x="1800" y="962" text-anchor="end" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="19px" font-weight="700" fill="#252525">단일 모델 대비 +26.05%p</text>
+</svg>
+

@@ -1,0 +1,26 @@
+{
+  "checks": {
+    "auto_match_disabled": true,
+    "deployed_mean_scans_improved_over_static": true,
+    "deployed_resolution_improved_over_static": true,
+    "deployed_top1_improved_over_static": true,
+    "false_activation_within_manual_review_guardrail": true,
+    "operator_review_enforced": true,
+    "paired_episode_count_is_sealed_only": true,
+    "project_claim_blocked": true,
+    "promotion_decision_matches_paired_interval": true,
+    "provenance_required": true,
+    "result_valid": true,
+    "runtime_policy_matches_promotion_decision": true,
+    "selected_policy_exists_in_both_cohorts": true,
+    "selection_and_test_are_sealed": true,
+    "stale_probability_revision_rejected": true,
+    "trusted_registry_required": true
+  },
+  "outputArtifact": "experiments/results/zone_policy_hybrid_replay_large_20260802.json",
+  "passed": true,
+  "schemaVersion": "autoresearch-mission-result-v1",
+  "status": "passed",
+  "summary": "selected=hybrid_eig_0_25; checks="
+}
+

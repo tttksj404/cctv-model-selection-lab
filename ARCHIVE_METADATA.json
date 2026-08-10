@@ -1,0 +1,20 @@
+{
+  "archiveVersion": "eyesonu-ai-worker-archive-v1",
+  "generatedOn": "2026-08-10",
+  "sourceScope": "AI Worker checkout materials and public-safe presentation assets",
+  "filesFromCheckout": 403,
+  "preservedExistingRepository": true,
+  "publishedBranch": "archive/ai-worker-materials-20260810",
+  "excluded": [
+    "raw CCTV videos, frames, crops, and personal identity labels",
+    "model checkpoints and weight files",
+    "API keys, .env files, RabbitMQ/S3/MinIO credentials",
+    "private GPU/Jupyter URLs and internal server paths",
+    "temporary caches, browser profiles, __pycache__, and tmp outputs"
+  ],
+  "interpretation": {
+    "recallAt5": "candidate retrieval metric; not Rank-1 automatic identity confirmation",
+    "proxyResults": "kept with their original scope; not project-wide CCTV generalization evidence",
+    "promotion": "fail-closed until independent identity and track-heldout evidence exists"
+  }
+}
