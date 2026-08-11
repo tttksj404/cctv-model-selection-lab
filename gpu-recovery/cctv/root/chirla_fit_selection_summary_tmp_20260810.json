@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "chirla-fit-selection-manifest-v1",
+  "source": "tmp\\chirla_solider_trainval_20260810.jsonl",
+  "output": "tmp\\chirla_fit_selection_20260810.jsonl",
+  "sha256": "19b18ae27aa24fdf4b084dc3f6cd431e1f32e32220e0b2fc8e7b61373b053f8e",
+  "rows": 72,
+  "galleryRows": 31,
+  "queryRows": 41,
+  "identities": [
+    "-1",
+    "-12",
+    "-13",
+    "-15",
+    "-16",
+    "-2",
+    "-5",
+    "-6",
+    "-8",
+    "11",
+    "18",
+    "19"
+  ],
+  "identityCount": 12,
+  "identityTrackCounts": {
+    "-1": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-12": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-13": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-15": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-16": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-2": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    },
+    "-5": {
+      "trackCount": 2,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 1
+    },
+    "-6": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    },
+    "-8": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    },
+    "11": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    },
+    "18": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    },
+    "19": {
+      "trackCount": 3,
+      "galleryTrackCount": 1,
+      "queryTrackCount": 2
+    }
+  },
+  "selectionRule": "fit train rows only; first track per identity gallery; remaining tracks query",
+  "sealedEvalExcluded": true
+}

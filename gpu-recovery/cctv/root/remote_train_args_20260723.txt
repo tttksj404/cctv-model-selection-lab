@@ -1,0 +1,73 @@
+13:# run: uv run scripts/train_clip_vitl14_distill.py --output results.json
+25:import pyarrow.parquet as parquet
+73:    output = model.get_image_features(pixel_values=pixels)
+74:    features = output.pooler_output
+83:    batch_size: int,
+90:        batches = parquet.ParquetFile(path).iter_batches(
+91:            batch_size=batch_size, columns=IMAGE_COLUMNS
+93:        for batch in batches:
+94:            rows = batch.to_pydict()
+117:def train_head(
+121:    epochs: int,
+122:    batch_size: int,
+129:    for _ in range(epochs):
+131:        for start in range(0, len(order), batch_size):
+132:            indices = order[start : start + batch_size]
+202:    batch_size: int,
+203:    epochs: int,
+206:    from run_solider_pa100k_parquet import _extract_split, _official_bce_loss
+212:    train_features, train_labels = _extract_split(
+213:        data_root / "train.parquet", teacher, device, batch_size, rows[0]
+216:        data_root / "val.parquet", teacher, device, batch_size, rows[1]
+219:        data_root / "test.parquet", teacher, device, batch_size, rows[2]
+221:    head = nn.Linear(train_features.shape[1], len(ATTRIBUTES)).to(device)
+223:    ratio = train_labels.mean(dim=0)
+224:    for _ in range(epochs):
+225:        order = torch.randperm(train_features.shape[0])
+228:            logits = head(train_features[index].to(device))
+229:            loss = _official_bce_loss(logits, train_labels[index].to(device), ratio)
+235:            SplitTensors(train_features, train_labels),
+241:        ("train", "val", "test"), logits, (train_labels, val_labels, test_labels), strict=True
+243:    del teacher, head, train_features, val_features, test_features, optimizer
+249:    output: Path = Path("experiments/results/clip-vit-l14-distillation.json"),
+254:    train_rows: int = 80_000,
+257:    extract_batch_size: int = 2,
+258:    head_batch_size: int = 512,
+259:    head_epochs: int = 15,
+260:    teacher_epochs: int = 12,
+277:        (train_rows, val_rows, test_rows), extract_batch_size, teacher_epochs,
+279:    processor = CLIPProcessor.from_pretrained(clip_checkpoint, local_files_only=True)
+280:    clip = CLIPModel.from_pretrained(clip_checkpoint, local_files_only=True).to(device).eval()
+282:        data_root / name, clip, processor, device, extract_batch_size, limit
+283:    ) for name, limit in zip(("train.parquet", "val.parquet", "test.parquet"),
+284:                             (train_rows, val_rows, test_rows), strict=True))
+287:    hard_head = train_head(splits[0], None, device, head_epochs, head_batch_size, 0, temperature)
+288:    kd_head = train_head(
+289:        splits[0], teacher_logits[0], device, head_epochs, head_batch_size,
+304:                ("train", "val", "test"), logits, splits, strict=True
+307:        checkpoint_path = models_root / f"{output.stem}-{name}.pt"
+322:        "dataset": "tuandunghcmut/PA-100K official parquet split",
+323:        "split": "official train/val/test; no identity or track IDs",
+326:        "rows": {"train": train_rows, "val": val_rows, "test": test_rows},
+332:            "teacher_epochs": teacher_epochs,
+353:                for name in ("train.parquet", "val.parquet", "test.parquet")
+357:    output = output.resolve()
+358:    if Path.cwd().resolve() not in output.parents:
+359:        raise ValueError("output must be inside workspace")
+360:    output.parent.mkdir(parents=True, exist_ok=True)
+361:    output.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+362:    summary = {"output": str(output), "best": best_name, "test": best_test}
+PROBE
+3:import pyarrow.parquet as parquet
+10: t=parquet.read_table(p,columns=["image",*A]).to_pydict()
+25: return m.visual_projection(m.vision_model(pixel_values=x).pooler_output)
+52:def main():
+54: ap.add_argument("--root",type=Path,required=True);ap.add_argument("--checkpoint",required=True)
+55: ap.add_argument("--train",type=int,default=20000);ap.add_argument("--val",type=int,default=5000);ap.add_argument("--test",type=int,default=5000)
+56: ap.add_argument("--bs",type=int,default=128);ap.add_argument("--epochs",type=int,default=3);ap.add_argument("--out",type=Path,required=True)
+59: pr=CLIPProcessor.from_pretrained(a.checkpoint,local_files_only=True)
+60: ti,ty=load(a.root/"train.parquet",a.train);vi,vy=load(a.root/"val.parquet",a.val);xi,xy=load(a.root/"test.parquet",a.test)
+61: m=CLIPModel.from_pretrained(a.checkpoint,local_files_only=True).to(dev)
+70: for ep in range(a.epochs):
+71:  m.train();h.train()
+80: a.out.parent.mkdir(parents=True,exist_ok=True);a.out.write_text(json.dumps({"status":"valid","model":"CLIP ViT-L/14 last-two-block partial fine-tune","train":a.train,"val":a.val,"test":a.test,"best_val_mA":bv,"best_test":bt,"target":.85,"passed":bt.get("mA",0)>=.85,"history":hist,"gpu":torch.cuda.get_device_name(0)},indent=2))

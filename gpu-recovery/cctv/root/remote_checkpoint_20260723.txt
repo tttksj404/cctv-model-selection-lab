@@ -1,0 +1,26 @@
+5:  "student_base": "openai/clip-vit-large-patch14",
+98:      "checkpoint": "<redacted-local-path>",
+99:      "checkpoint_sha256": "8f20fbeaeaf4aeb17cbf9998b23759f60e15345cd96a22a0397d5047a36dad13"
+153:      "checkpoint": "<redacted-local-path>",
+154:      "checkpoint_sha256": "3a8923b8b949ea88466b42a0867b46afa952370f5b5d708293f77c5a72a923d3"
+166:    "clip_checkpoint": "openai/clip-vit-large-patch14",
+167:    "teacher_checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>

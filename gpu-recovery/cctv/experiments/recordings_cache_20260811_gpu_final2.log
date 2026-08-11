@@ -1,0 +1,43 @@
+[31m[1mrequirements:[0m Ultralytics requirement ['lap>=0.5.12'] not found, attempting AutoUpdate...
+[2mUsing Python 3.12.6 environment at: .cache/uv/environments-v2/build-cctv-multitrack-draft-e32988cda4655db1[0m
+[2mResolved [1m2 packages[0m [2min 1.08s[0m[0m
+[36m[1mDownloading[0m[39m lap [2m(1.7MiB)[0m
+ [36m[1mDownloaded[0m[39m lap
+[2mPrepared [1m1 package[0m [2min 12.67s[0m[0m
+[1m[33mwarning[39m[0m[1m:[0m [1mFailed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.[0m
+[2mInstalled [1m1 package[0m [2min 16ms[0m[0m
+ [32m+[39m [1mlap[0m[2m==0.5.13[0m
+
+[31m[1mrequirements:[0m AutoUpdate success ✅ 13.8s
+WARNING ⚠️ [31m[1mrequirements:[0m [1mRestart runtime or rerun command for updates to take effect[0m
+
+<redacted-local-path> UserWarning: CUDA initialization: The NVIDIA driver on your system is too old (found version 12080). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+Ultralytics 8.4.117 🚀 Python-3.12.6 torch-2.13.0+cu130 
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 243, in <module>
+    main()
+  File "<redacted-local-path>", line 216, in main
+    video_summary, rows = _process_video(model, Path(raw_video).resolve(), args, root)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 109, in _process_video
+    results = model.track(
+              ^^^^^^^^^^^^
+  File "<redacted-local-path>", line 562, in track
+    return self.predict(source=source, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 513, in predict
+    self.predictor.setup_model(model=self.model, verbose=is_cli)
+  File "<redacted-local-path>", line 429, in setup_model
+    device=select_device(self.args.device, verbose=verbose),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 301, in select_device
+    raise ValueError(
+ValueError: Invalid CUDA 'device=0' requested. Use 'device=cpu' or pass valid CUDA device(s) if available, i.e. 'device=0' or 'device=0,1,2,3' for Multi-GPU.
+
+torch.cuda.is_available(): False
+torch.cuda.device_count(): 4
+os.environ['CUDA_VISIBLE_DEVICES']: None
+

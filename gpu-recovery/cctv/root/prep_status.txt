@@ -1,0 +1,25 @@
+<redacted-local-path>
+total 421M
+-rw-r--r-- 1 <gpu-user> <gpu-user>  36M Jul 23 14:29 test.parquet
+-rw-r--r-- 1 <gpu-user> <gpu-user> 340M Jul 23 14:29 train.parquet
+-rw-r--r-- 1 <gpu-user> <gpu-user>  47M Jul 23 14:29 val.parquet
+
+<redacted-local-path>
+total 100K
+-rwxr-xr-x 1 <gpu-user> <gpu-user> 5.5K Jul 23 14:29 batch_engine.py
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 configs
+drwxr-xr-x 7 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 data
+drwxr-xr-x 4 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 dataset
+-rwxr-xr-x 1 <gpu-user> <gpu-user> 5.8K Jul 23 14:29 infer.py
+-rwxr-xr-x 1 <gpu-user> <gpu-user>  12K Jul 23 14:29 LICENSE
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 losses
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 metrics
+drwxr-xr-x 4 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 models
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 optim
+drwxr-xr-x 2 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 __pycache__
+-rw-r--r-- 1 <gpu-user> <gpu-user> 1.8K Jul 23 14:29 README.md
+-rwxr-xr-x 1 <gpu-user> <gpu-user>  100 Jul 23 14:29 requirements.txt
+-rwxr-xr-x 1 <gpu-user> <gpu-user>  237 Jul 23 14:29 run.sh
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 scheduler
+drwxr-xr-x 3 <gpu-user> <gpu-user> 4.0K Jul 23 14:29 tools
+-rwxr-xr-x 1 <gpu-user> <gpu-user>  19K Jul 23 14:29 train.py

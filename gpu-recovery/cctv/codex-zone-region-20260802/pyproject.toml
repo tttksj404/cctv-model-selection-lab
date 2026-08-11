@@ -1,0 +1,93 @@
+[project]
+name = "qwen3vl-backend"
+version = "0.1.0"
+description = "Typed candidate-attribute inference boundary for the GPU server"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "orjson>=3.10,<4",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+realtime = [
+  "lap>=0.5.12",
+  "opencv-python>=4.11,<5",
+  "rich>=13.9,<15",
+  "torch==2.11.0",
+  "torchvision==0.26.0",
+  "transformers>=4.52,<5",
+  "typer>=0.15,<1",
+  "ultralytics>=8.4,<9",
+  "yacs>=0.1.8,<1",
+]
+
+[project.scripts]
+eyesonu-realtime = "qwen_backend.realtime_demo:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qwen_backend"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.venv",
+  "/artifacts",
+  "/data",
+  "/datasets",
+  "/dist",
+  "/external",
+  "/models",
+  "/tmp",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+
+[dependency-groups]
+dev = [
+  "basedpyright>=1.28,<2",
+  "httpx>=0.28,<1",
+  "pillow>=11,<12",
+  "pytest>=8.3,<9",
+  "ruff>=0.9,<1",
+]
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not external_research_artifact'"
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+markers = [
+  "external_research_artifact: requires the separately managed CCTV research-data bundle",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.basedpyright]
+include = ["src"]
+exclude = [
+  "src/qwen_backend/providers.py",
+  "src/qwen_backend/solider_clip_engine.py",
+  "src/qwen_backend/video_tracks.py",
+]
+typeCheckingMode = "strict"
+reportMissingImports = "none"
+reportUnusedFunction = "none"

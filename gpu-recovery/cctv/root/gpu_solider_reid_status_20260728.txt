@@ -1,0 +1,13 @@
+RUNNING=0
+Installed 57 packages in 182ms
+<redacted-local-path> UserWarning: CUDA initialization: The NVIDIA driver on your system is too old (found version 12080). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver. (Triggered internally at /__w/pytorch/pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 549, in <module>
+    main()
+  File "<redacted-local-path>", line 526, in main
+    _device(args.device),
+    ^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 114, in _device
+    raise RuntimeError("--device cuda was requested but CUDA is unavailable")
+RuntimeError: --device cuda was requested but CUDA is unavailable

@@ -1,0 +1,5 @@
+nohup: ignoring input
+
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 590/590 [00:00<00:00, 10881.36it/s]
+

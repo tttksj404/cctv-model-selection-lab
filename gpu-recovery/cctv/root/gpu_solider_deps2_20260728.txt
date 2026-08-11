@@ -1,0 +1,4 @@
+timm 1.0.28
+cuda True NVIDIA L40S
+deps_ok
+

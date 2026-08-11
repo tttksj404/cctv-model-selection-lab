@@ -1,0 +1,14 @@
+STAMP=2026-07-23T22:51:36+09:00
+2448549 2448547       12:21  0.0  0.0 S    /opt/tljh/user/bin/python /opt/tljh/user/bin/conda run -n qwen3vl --no-capture-output python scripts/clip_vitl14_fine
+2448558 2448550       12:21  790  0.4 Rl   python scripts/clip_vitl14_finetune_probe.py --root experiments/data/pa100k_full --checkpoint openai/clip-vit-large-p
+RESULT=RUNNING_OR_MISSING
+LOG
+nohup: ignoring input
+
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 590/590 [00:00<00:00, 6864.01it/s]
+GPU
+0, NVIDIA L40S, 76 %, 11728 MiB
+1, NVIDIA L40S, 0 %, 4955 MiB
+2, NVIDIA L40S, 0 %, 4955 MiB
+3, NVIDIA L40S, 0 %, 5037 MiB

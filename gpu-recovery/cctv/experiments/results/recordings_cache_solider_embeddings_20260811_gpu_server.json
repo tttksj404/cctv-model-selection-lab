@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "project-cctv-manifest-solider-embeddings-v1",
+  "manifest": "<redacted-local-path>",
+  "manifestSha256": "6a647f8143c1b245f54776c7c74449bc40889b8e5bd4b3c563e9b5e5b133a071",
+  "root": "<redacted-local-path>",
+  "model": "solider-reid-swin-base-msmt17",
+  "checkpoint": "<redacted-local-path>",
+  "soliderRoot": "<redacted-local-path>",
+  "device": "cuda",
+  "tta": "hflip",
+  "neckFeat": "before",
+  "trackCount": 456,
+  "frameCount": 3541,
+  "featureShape": [
+    456,
+    1024
+  ],
+  "frameFeatureShape": [
+    3541,
+    1024
+  ],
+  "maxFramesPerTrack": 16,
+  "identityLabelsCreated": false,
+  "outputSha256": "f2e96788b4b31cce7f9029ab4ab16041158dc6db9ad03ef2b0edaeec0ea2b8cd"
+}

@@ -1,0 +1,35 @@
+usage: clip_vitl14_finetune_probe.py [-h] --root ROOT --checkpoint CHECKPOINT [--train TRAIN] [--val VAL] [--test TEST]
+                                     [--bs BS] [--epochs EPOCHS] --out OUT
+
+options:
+  -h, --help            show this help message and exit
+  --root ROOT
+  --checkpoint CHECKPOINT
+  --train TRAIN
+  --val VAL
+  --test TEST
+  --bs BS
+  --epochs EPOCHS
+  --out OUT
+DISTILL_HELP
+                                                                                                                            
+ Usage: train_clip_vitl14_distill.py [OPTIONS]                                                                              
+                                                                                                                            
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output                    <path>   [default: experiments/results/clip-vit-l14-distillation.json]                       │
+│ --data-root                 <path>   [default: experiments/data/pa100k_full]                                             │
+│ --clip-checkpoint           <str>    [default: openai/clip-vit-large-patch14]                                            │
+│ --vendor-root               <path>   [default: experiments/vendor/SOLIDER-PersonAttributeRecognition]                    │
+│ --teacher-checkpoint        <path>   [default: experiments/models/solider_swin_base.pth]                                 │
+│ --train-rows                <int>    [default: 80000]                                                                    │
+│ --val-rows                  <int>    [default: 10000]                                                                    │
+│ --test-rows                 <int>    [default: 10000]                                                                    │
+│ --extract-batch-size        <int>    [default: 2]                                                                        │
+│ --head-batch-size           <int>    [default: 512]                                                                      │
+│ --head-epochs               <int>    [default: 15]                                                                       │
+│ --teacher-epochs            <int>    [default: 12]                                                                       │
+│ --distill-alpha             <float>  [default: 0.35]                                                                     │
+│ --temperature               <float>  [default: 2.0]                                                                      │
+│ --help                               Show this message and exit.                                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+

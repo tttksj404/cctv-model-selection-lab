@@ -1,0 +1,7 @@
+# conda environments:
+#
+qwen3vl                  <redacted-local-path>
+                         <redacted-local-path>
+                         <redacted-local-path>
+base                     /opt/tljh/user
+

@@ -1,0 +1,19 @@
+nohup: ignoring input
+<redacted-local-path> UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+╭─────────────────────────────────────────── Traceback (most recent call last) ────────────────────────────────────────────╮
+│ <redacted-local-path> in run                         │
+│                                                                                                                          │
+│   453 │   output = output.resolve()                                                                                      │
+│   454 │   workspace = Path.cwd().resolve()                                                                               │
+│   455 │   if workspace not in output.parents:                                                                            │
+│ ❱ 456 │   │   raise ExperimentOutputError("output must be inside workspace")                                             │
+│   457 │   head_path = workspace / "experiments/models/solider_sonnet_head_pilot.pt"                                      │
+│   458 │   torch.save(                                                                                                    │
+│   459 │   │   {                                                                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+ExperimentOutputError: output must be inside workspace
+
+ERROR conda.cli.main_run:execute(125): `conda run python run_solider_sonnet_head_pilot.py --output <redacted-local-path> --sonnet-result <redacted-local-path> --image-root <redacted-local-path> --data-root <redacted-local-path> --checkpoint <redacted-local-path> --vendor-root <redacted-local-path> --pa-train-rows 2000 --pa-val-rows 500 --pa-test-rows 500 --pa-epochs 1 --sonnet-epochs 12 --seed 20260723` failed. (See above for error)
+unloaded parameters: <All keys matched successfully>
+

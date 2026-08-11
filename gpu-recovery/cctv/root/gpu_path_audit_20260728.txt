@@ -1,0 +1,8 @@
+CURRENT
+<redacted-local-path>
+ABS_DIR
+drwxr-xr-x 40 <gpu-user> <gpu-user> 4096 Jul 28 10:47 <redacted-local-path>
+drwxr-xr-x  3 <gpu-user> <gpu-user> 4096 Jul 28 09:16 <redacted-local-path>
+FOUND
+<redacted-local-path>
+<redacted-local-path>

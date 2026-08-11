@@ -1,0 +1,11 @@
+{
+  "expected_records": 8950,
+  "skipped_metadata_directories": 1,
+  "verified_files": 8949,
+  "verified_bytes": 6323430683,
+  "verified_gib": 5.889,
+  "missing_files": 0,
+  "size_mismatch": 0,
+  "hash_mismatch": 0,
+  "partial_files": 0
+}

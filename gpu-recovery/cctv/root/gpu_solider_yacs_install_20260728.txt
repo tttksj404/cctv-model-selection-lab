@@ -1,0 +1,7 @@
+Collecting yacs==0.1.8
+  Using cached yacs-0.1.8-py3-none-any.whl.metadata (639 bytes)
+Requirement already satisfied: PyYAML in <redacted-local-path> (from yacs==0.1.8) (6.0.3)
+Using cached yacs-0.1.8-py3-none-any.whl (14 kB)
+Installing collected packages: yacs
+Successfully installed yacs-0.1.8
+

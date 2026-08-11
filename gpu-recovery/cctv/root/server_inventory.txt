@@ -1,0 +1,12 @@
+<redacted-local-path>
+===DIRS===
+.
+./crop_eval
+./.ipynb_checkpoints
+./__pycache__
+./qwen35-27b-lora-pilot
+./qwen3vl-lora-pilot
+===FILES===
+===DU===
+131M	.
+===CHECKSUM===

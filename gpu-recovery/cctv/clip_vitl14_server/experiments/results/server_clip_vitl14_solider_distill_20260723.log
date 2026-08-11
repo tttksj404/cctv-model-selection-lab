@@ -1,0 +1,8 @@
+nohup: ignoring input
+<redacted-local-path> UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 590/590 [00:00<00:00, 9088.72it/s]
+{"output": "<redacted-local-path>", "best": "clip_vitl14_hard", "test": {"mA": 0.736262321472168, "micro_attribute_accuracy": 0.7690615653991699, "label_macro_f1": 0.43832819092159087, "InsF1": 0.5983728766441345, "instance_iou": 0.4431147575378418}}

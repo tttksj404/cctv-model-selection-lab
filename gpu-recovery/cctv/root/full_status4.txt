@@ -1,0 +1,4 @@
+    PID     ELAPSED %CPU %MEM CMD
+2372779       04:27 3287  0.3 python scripts/train_clip_vitl14_distill.py --train-rows 80000 --val-rows 10000 --test-rows 10000 --extract-batch-size 64 --
+nohup: ignoring input
+ls: cannot access '<redacted-local-path>': No such file or directory

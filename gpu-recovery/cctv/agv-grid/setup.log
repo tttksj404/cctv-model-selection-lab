@@ -1,0 +1,230 @@
+Cloning into 'yolov5'...
+Note: switching to '915bbf294bb74c859f0b41f1c23bc395014ea679'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+Looking in indexes: https://download.pytorch.org/whl/cu121
+Collecting torchvision==0.18.1
+  Downloading https://download-r2.pytorch.org/whl/cu121/torchvision-0.18.1%2Bcu121-cp311-cp311-linux_x86_64.whl (7.0 MB)
+[?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/7.0 MB[0m [31m?[0m eta [36m-:--:--[0m
+[2K     [91m━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.1/7.0 MB[0m [31m94.7 MB/s[0m eta [36m0:00:01[0m
+[2K     [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━[0m [32m6.7/7.0 MB[0m [31m98.7 MB/s[0m eta [36m0:00:01[0m
+[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m7.0/7.0 MB[0m [31m84.4 MB/s[0m eta [36m0:00:00[0m
+[?25hRequirement already satisfied: numpy in <redacted-local-path> (from torchvision==0.18.1) (1.26.4)
+Requirement already satisfied: torch==2.3.1 in <redacted-local-path> (from torchvision==0.18.1) (2.3.1)
+Requirement already satisfied: pillow!=8.3.*,>=5.3.0 in <redacted-local-path> (from torchvision==0.18.1) (12.2.0)
+Requirement already satisfied: filelock in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (3.29.0)
+Requirement already satisfied: typing-extensions>=4.8.0 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (4.15.0)
+Requirement already satisfied: sympy in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (1.13.1)
+Requirement already satisfied: networkx in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (3.6.1)
+Requirement already satisfied: jinja2 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (3.1.6)
+Requirement already satisfied: fsspec in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (2026.4.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.1.105 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.105)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.1.105 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.105)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.1.105 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.105)
+Requirement already satisfied: nvidia-cudnn-cu12==8.9.2.26 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (8.9.2.26)
+Requirement already satisfied: nvidia-cublas-cu12==12.1.3.1 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.3.1)
+Requirement already satisfied: nvidia-cufft-cu12==11.0.2.54 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (11.0.2.54)
+Requirement already satisfied: nvidia-curand-cu12==10.3.2.106 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (10.3.2.106)
+Requirement already satisfied: nvidia-cusolver-cu12==11.4.5.107 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (11.4.5.107)
+Requirement already satisfied: nvidia-cusparse-cu12==12.1.0.106 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.0.106)
+Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (2.20.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.1.105 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (12.1.105)
+Requirement already satisfied: triton==2.3.1 in <redacted-local-path> (from torch==2.3.1->torchvision==0.18.1) (2.3.1)
+Requirement already satisfied: nvidia-nvjitlink-cu12 in <redacted-local-path> (from nvidia-cusolver-cu12==11.4.5.107->torch==2.3.1->torchvision==0.18.1) (12.4.127)
+Requirement already satisfied: MarkupSafe>=2.0 in <redacted-local-path> (from jinja2->torch==2.3.1->torchvision==0.18.1) (3.0.3)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in <redacted-local-path> (from sympy->torch==2.3.1->torchvision==0.18.1) (1.3.0)
+Installing collected packages: torchvision
+[31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+ultralytics 8.4.117 requires nvidia-ml-py>=12.0.0, which is not installed.
+ultralytics 8.4.117 requires opencv-python!=4.13.0.90,>=4.7.0, which is not installed.
+ultralytics 8.4.117 requires ultralytics-thop>=2.1.6, which is not installed.[0m[31m
+[0mSuccessfully installed torchvision-0.18.1+cu121
+Collecting onnx
+  Downloading onnx-1.22.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.5 kB)
+Collecting onnx-simplifier
+  Downloading onnx_simplifier-0.5.0.tar.gz (728 bytes)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting gitpython (from -r yolov5/requirements.txt (line 5))
+  Downloading gitpython-3.1.59-py3-none-any.whl.metadata (13 kB)
+Requirement already satisfied: ipython in <redacted-local-path> (from -r yolov5/requirements.txt (line 6)) (9.15.0)
+Requirement already satisfied: matplotlib>=3.2.2 in <redacted-local-path> (from -r yolov5/requirements.txt (line 7)) (3.11.1)
+Requirement already satisfied: numpy>=1.18.5 in <redacted-local-path> (from -r yolov5/requirements.txt (line 8)) (1.26.4)
+Collecting opencv-python>=4.1.1 (from -r yolov5/requirements.txt (line 9))
+  Downloading opencv_python-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (19 kB)
+Requirement already satisfied: Pillow>=7.1.2 in <redacted-local-path> (from -r yolov5/requirements.txt (line 10)) (12.2.0)
+Requirement already satisfied: psutil in <redacted-local-path> (from -r yolov5/requirements.txt (line 11)) (7.2.2)
+Requirement already satisfied: PyYAML>=5.3.1 in <redacted-local-path> (from -r yolov5/requirements.txt (line 12)) (6.0.3)
+Requirement already satisfied: requests>=2.23.0 in <redacted-local-path> (from -r yolov5/requirements.txt (line 13)) (2.34.2)
+Requirement already satisfied: scipy>=1.4.1 in <redacted-local-path> (from -r yolov5/requirements.txt (line 14)) (1.17.1)
+Collecting thop>=0.1.1 (from -r yolov5/requirements.txt (line 15))
+  Downloading thop-0.1.1.post2209072238-py3-none-any.whl.metadata (2.7 kB)
+Requirement already satisfied: torch>=1.7.0 in <redacted-local-path> (from -r yolov5/requirements.txt (line 16)) (2.3.1)
+Requirement already satisfied: torchvision>=0.8.1 in ./venv/lib/python3.11/site-packages (from -r yolov5/requirements.txt (line 17)) (0.18.1+cu121)
+Requirement already satisfied: tqdm>=4.64.0 in <redacted-local-path> (from -r yolov5/requirements.txt (line 18)) (4.69.0)
+Requirement already satisfied: tensorboard>=2.4.1 in <redacted-local-path> (from -r yolov5/requirements.txt (line 22)) (2.21.0)
+Requirement already satisfied: pandas>=1.1.4 in <redacted-local-path> (from -r yolov5/requirements.txt (line 27)) (3.0.3)
+Collecting seaborn>=0.11.0 (from -r yolov5/requirements.txt (line 28))
+  Downloading seaborn-0.13.2-py3-none-any.whl.metadata (5.4 kB)
+Requirement already satisfied: protobuf>=4.25.1 in <redacted-local-path> (from onnx) (7.35.1)
+Requirement already satisfied: typing_extensions>=4.15.0 in <redacted-local-path> (from onnx) (4.15.0)
+Collecting ml_dtypes>=0.5.4 (from onnx)
+  Downloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.9 kB)
+Collecting onnxsim (from onnx-simplifier)
+  Downloading onnxsim-0.7.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (29 kB)
+Collecting gitdb<5,>=4.0.1 (from gitpython->-r yolov5/requirements.txt (line 5))
+  Downloading gitdb-4.0.12-py3-none-any.whl.metadata (1.2 kB)
+Requirement already satisfied: decorator>=5.1.0 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (5.3.1)
+Requirement already satisfied: ipython-pygments-lexers>=1.0.0 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (1.1.1)
+Requirement already satisfied: jedi>=0.18.2 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (0.20.0)
+Requirement already satisfied: matplotlib-inline>=0.1.6 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (0.2.2)
+Requirement already satisfied: pexpect>4.6 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (4.9.0)
+Requirement already satisfied: prompt_toolkit<3.1.0,>=3.0.41 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (3.0.52)
+Requirement already satisfied: pygments>=2.14.0 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (2.20.0)
+Requirement already satisfied: stack_data>=0.6.0 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (0.6.3)
+Requirement already satisfied: traitlets>=5.13.0 in <redacted-local-path> (from ipython->-r yolov5/requirements.txt (line 6)) (5.15.1)
+Requirement already satisfied: contourpy>=1.0.1 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (1.3.3)
+Requirement already satisfied: cycler>=0.10 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (0.12.1)
+Requirement already satisfied: fonttools>=4.28.2 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (4.63.0)
+Requirement already satisfied: kiwisolver>=1.3.1 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (1.5.0)
+Requirement already satisfied: packaging>=20.0 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (26.2)
+Requirement already satisfied: pyparsing>=3 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.7 in <redacted-local-path> (from matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (2.9.0.post0)
+Collecting numpy>=1.18.5 (from -r yolov5/requirements.txt (line 8))
+  Using cached numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Requirement already satisfied: charset_normalizer<4,>=2 in <redacted-local-path> (from requests>=2.23.0->-r yolov5/requirements.txt (line 13)) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in <redacted-local-path> (from requests>=2.23.0->-r yolov5/requirements.txt (line 13)) (3.18)
+Requirement already satisfied: urllib3<3,>=1.26 in <redacted-local-path> (from requests>=2.23.0->-r yolov5/requirements.txt (line 13)) (2.7.0)
+Requirement already satisfied: certifi>=2023.5.7 in <redacted-local-path> (from requests>=2.23.0->-r yolov5/requirements.txt (line 13)) (2026.6.17)
+Requirement already satisfied: filelock in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (3.29.0)
+Requirement already satisfied: sympy in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (1.13.1)
+Requirement already satisfied: networkx in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (3.6.1)
+Requirement already satisfied: jinja2 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (3.1.6)
+Requirement already satisfied: fsspec in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (2026.4.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.1.105 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.105)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.1.105 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.105)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.1.105 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.105)
+Requirement already satisfied: nvidia-cudnn-cu12==8.9.2.26 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (8.9.2.26)
+Requirement already satisfied: nvidia-cublas-cu12==12.1.3.1 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.3.1)
+Requirement already satisfied: nvidia-cufft-cu12==11.0.2.54 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (11.0.2.54)
+Requirement already satisfied: nvidia-curand-cu12==10.3.2.106 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (10.3.2.106)
+Requirement already satisfied: nvidia-cusolver-cu12==11.4.5.107 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (11.4.5.107)
+Requirement already satisfied: nvidia-cusparse-cu12==12.1.0.106 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.0.106)
+Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (2.20.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.1.105 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.1.105)
+Requirement already satisfied: triton==2.3.1 in <redacted-local-path> (from torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (2.3.1)
+Requirement already satisfied: nvidia-nvjitlink-cu12 in <redacted-local-path> (from nvidia-cusolver-cu12==11.4.5.107->torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (12.4.127)
+Requirement already satisfied: absl-py>=0.4 in <redacted-local-path> (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (2.5.0)
+Requirement already satisfied: grpcio<2.0,>=1.74.0 in <redacted-local-path> (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (1.83.0)
+Requirement already satisfied: markdown>=2.6.8 in <redacted-local-path> (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (3.10.2)
+Requirement already satisfied: setuptools>=41.0.0 in ./venv/lib/python3.11/site-packages (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (79.0.1)
+Requirement already satisfied: tensorboard-data-server<0.8.0,>=0.7.0 in <redacted-local-path> (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (0.7.2)
+Requirement already satisfied: werkzeug>=1.0.1 in <redacted-local-path> (from tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (3.1.8)
+Collecting smmap<6,>=3.0.1 (from gitdb<5,>=4.0.1->gitpython->-r yolov5/requirements.txt (line 5))
+  Downloading smmap-5.0.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: parso<0.9.0,>=0.8.6 in <redacted-local-path> (from jedi>=0.18.2->ipython->-r yolov5/requirements.txt (line 6)) (0.8.7)
+Requirement already satisfied: ptyprocess>=0.5 in <redacted-local-path> (from pexpect>4.6->ipython->-r yolov5/requirements.txt (line 6)) (0.7.0)
+Requirement already satisfied: wcwidth in <redacted-local-path> (from prompt_toolkit<3.1.0,>=3.0.41->ipython->-r yolov5/requirements.txt (line 6)) (0.8.2)
+Requirement already satisfied: six>=1.5 in <redacted-local-path> (from python-dateutil>=2.7->matplotlib>=3.2.2->-r yolov5/requirements.txt (line 7)) (1.17.0)
+Requirement already satisfied: executing>=1.2.0 in <redacted-local-path> (from stack_data>=0.6.0->ipython->-r yolov5/requirements.txt (line 6)) (2.2.1)
+Requirement already satisfied: asttokens>=2.1.0 in <redacted-local-path> (from stack_data>=0.6.0->ipython->-r yolov5/requirements.txt (line 6)) (3.0.2)
+Requirement already satisfied: pure-eval in <redacted-local-path> (from stack_data>=0.6.0->ipython->-r yolov5/requirements.txt (line 6)) (0.2.3)
+Requirement already satisfied: markupsafe>=2.1.1 in <redacted-local-path> (from werkzeug>=1.0.1->tensorboard>=2.4.1->-r yolov5/requirements.txt (line 22)) (3.0.3)
+Requirement already satisfied: rich in <redacted-local-path> (from onnxsim->onnx-simplifier) (15.0.0)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in <redacted-local-path> (from sympy->torch>=1.7.0->-r yolov5/requirements.txt (line 16)) (1.3.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in <redacted-local-path> (from rich->onnxsim->onnx-simplifier) (4.2.0)
+Requirement already satisfied: mdurl~=0.1 in <redacted-local-path> (from markdown-it-py>=2.2.0->rich->onnxsim->onnx-simplifier) (0.1.2)
+Downloading onnx-1.22.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (19.1 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/19.1 MB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [91m━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.8/19.1 MB[0m [31m115.0 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m7.8/19.1 MB[0m [31m113.6 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m11.0/19.1 MB[0m [31m105.2 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━[0m [32m14.5/19.1 MB[0m [31m100.8 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━[0m [32m18.2/19.1 MB[0m [31m98.8 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m19.1/19.1 MB[0m [31m98.8 MB/s[0m eta [36m0:00:01[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m19.1/19.1 MB[0m [31m76.3 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading gitpython-3.1.59-py3-none-any.whl (220 kB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/221.0 kB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m221.0/221.0 kB[0m [31m54.6 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading opencv_python-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl (73.8 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/73.8 MB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.0/73.8 MB[0m [31m72.3 MB/s[0m eta [36m0:00:02[0m
+[2K   [91m━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m5.6/73.8 MB[0m [31m82.1 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m9.1/73.8 MB[0m [31m89.1 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m12.3/73.8 MB[0m [31m104.9 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m15.1/73.8 MB[0m [31m91.5 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m17.9/73.8 MB[0m [31m84.4 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21.5/73.8 MB[0m [31m84.0 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m25.0/73.8 MB[0m [31m91.0 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m28.4/73.8 MB[0m [31m99.2 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━[0m [32m32.1/73.8 MB[0m [31m98.9 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━[0m [32m35.5/73.8 MB[0m [31m98.4 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━[0m [32m38.5/73.8 MB[0m [31m92.6 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m38.8/73.8 MB[0m [31m93.0 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m40.3/73.8 MB[0m [31m62.2 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m44.0/73.8 MB[0m [31m62.7 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━[0m [32m47.7/73.8 MB[0m [31m65.8 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━[0m [32m51.2/73.8 MB[0m [31m99.7 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━[0m [32m54.1/73.8 MB[0m [31m93.2 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━[0m [32m57.9/73.8 MB[0m [31m96.9 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━[0m [32m61.6/73.8 MB[0m [31m97.4 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━[0m [32m65.0/73.8 MB[0m [31m99.8 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m68.6/73.8 MB[0m [31m98.6 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━[0m [32m71.1/73.8 MB[0m [31m88.2 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m73.8/73.8 MB[0m [31m89.6 MB/s[0m eta [36m0:00:01[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m73.8/73.8 MB[0m [31m89.6 MB/s[0m eta [36m0:00:01[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m73.8/73.8 MB[0m [31m54.0 MB/s[0m eta [36m0:00:00[0m
+[?25hUsing cached numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+Downloading thop-0.1.1.post2209072238-py3-none-any.whl (15 kB)
+Downloading seaborn-0.13.2-py3-none-any.whl (294 kB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/294.9 kB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m294.9/294.9 kB[0m [31m125.8 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading gitdb-4.0.12-py3-none-any.whl (62 kB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/62.8 kB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m62.8/62.8 kB[0m [31m41.8 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (5.0 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/5.0 MB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━[0m [32m3.7/5.0 MB[0m [31m110.5 MB/s[0m eta [36m0:00:01[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m5.0/5.0 MB[0m [31m91.1 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading onnxsim-0.7.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (3.2 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/3.2 MB[0m [31m?[0m eta [36m-:--:--[0m
+[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━[0m [32m2.5/3.2 MB[0m [31m76.5 MB/s[0m eta [36m0:00:01[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.2/3.2 MB[0m [31m68.3 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading smmap-5.0.3-py3-none-any.whl (24 kB)
+Building wheels for collected packages: onnx-simplifier
+  Building wheel for onnx-simplifier (pyproject.toml): started
+  Building wheel for onnx-simplifier (pyproject.toml): finished with status 'done'
+  Created wheel for onnx-simplifier: filename=onnx_simplifier-0.5.0-py3-none-any.whl size=1020 sha256=9f4f4a42a4dba8e847a27f23a20b44036d90dfc8fe05f57999da705c1b972ed0
+  Stored in directory: <redacted-local-path>
+Successfully built onnx-simplifier
+Installing collected packages: smmap, numpy, opencv-python, ml_dtypes, gitdb, onnx, gitpython, thop, seaborn, onnxsim, onnx-simplifier
+  Attempting uninstall: numpy
+    Found existing installation: numpy 1.26.4
+    Not uninstalling numpy at <redacted-local-path> outside environment <redacted-local-path>
+    Can't uninstall 'numpy'. No files were found to uninstall.
+[31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+ultralytics 8.4.117 requires nvidia-ml-py>=12.0.0, which is not installed.
+ultralytics 8.4.117 requires ultralytics-thop>=2.1.6, which is not installed.[0m[31m
+[0mSuccessfully installed gitdb-4.0.12 gitpython-3.1.59 ml_dtypes-0.5.4 numpy-2.4.6 onnx-1.22.0 onnx-simplifier-0.5.0 onnxsim-0.7.1 opencv-python-5.0.0.93 seaborn-0.13.2 smmap-5.0.3 thop-0.1.1.post2209072238
+
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m24.0[0m[39;49m -> [0m[32;49m26.2.1[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49m<redacted-local-path> -m pip install --upgrade pip[0m
+SETUP_DONE

@@ -1,0 +1,6 @@
+<redacted-local-path> UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+===========building transformer===========
+Loading pretrained model from <redacted-local-path>
+{"output": "<redacted-local-path>", "metadata": "<redacted-local-path>", "tracks": 456, "frames": 3541, "sha256": "f2e96788b4b31cce7f9029ab4ab16041158dc6db9ad03ef2b0edaeec0ea2b8cd"}

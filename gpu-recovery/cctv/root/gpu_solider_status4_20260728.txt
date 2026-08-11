@@ -1,0 +1,8 @@
+DONE_RC=0
+nohup: ignoring input
+<redacted-local-path> UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+using Transformer_type: swin_base_patch4_window7_224 as a backbone
+===========building transformer===========
+Loading pretrained model from <redacted-local-path>
+{"gallery_identity_count": 11, "map": 0.7100710108604846, "minp": 0.7100710108604846, "query_count": 95, "rank1": 0.5684210526315789, "rank1_ci95_high": 0.6631578947368421, "rank1_ci95_low": 0.47368421052631576, "recall_at_10": 1.0, "recall_at_5": 0.9368421052631579}

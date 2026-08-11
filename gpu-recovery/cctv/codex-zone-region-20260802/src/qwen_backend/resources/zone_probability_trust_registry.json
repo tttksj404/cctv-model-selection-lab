@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "eyesonu-probability-trust-v1",
+  "registryId": "public-prid2011-proxy-20260801",
+  "signals": [
+    {
+      "signalKind": "reid",
+      "modelId": "solider-swin-b-msmt17",
+      "modelSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+      "calibratorId": "prid2011-open-set-v3-proxy-lr-v1",
+      "calibratorSha256": "2ae983f7d3d124c87f48063c6f00fd313e96e14d8db1f4d04f0d3bb28e342c6c",
+      "calibrationManifestSha256": "86b8f48bd4ad2e8b28ffbece11ac61796ce0653d636170f947c044bbdd4b0d6d",
+      "calibrationBaseRate": 0.1,
+      "maximumReliability": 1.0,
+      "minimumSampleCount": 57,
+      "allowedEnvironments": ["development", "test"]
+    }
+  ],
+  "cameraOperatingPoints": [
+    {
+      "operatingPointId": "prid2011-conservative-wilson-v1",
+      "operatingPointSha256": "2ae983f7d3d124c87f48063c6f00fd313e96e14d8db1f4d04f0d3bb28e342c6c",
+      "sensitivity": 0.84,
+      "falsePositiveRate": 0.09,
+      "minimumSampleCount": 57,
+      "allowedEnvironments": ["development", "test"]
+    }
+  ]
+}

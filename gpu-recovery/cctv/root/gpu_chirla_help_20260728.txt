@@ -1,0 +1,26 @@
+Installed 54 packages in 151ms
+usage: run_chirla_reid_adapter.py [-h] --root ROOT --manifest MANIFEST [--checkpoint CHECKPOINT] --output OUTPUT [--device {cuda,cpu}]
+                                  [--batch-size BATCH_SIZE] [--epochs EPOCHS] [--seed SEED]
+                                  [--objective {supcon,supcon_ce,supcon_ce_triplet,supcon_ce_triplet_kd,supcon_arcface_triplet,supcon_arcface_triplet_kd,supcon_cosface_triplet,supcon_cosface_triplet_kd,supcon_circle_triplet,supcon_circle_triplet_kd}]
+                                  [--teacher-checkpoint TEACHER_CHECKPOINT] [--target-identities TARGET_IDENTITIES]
+                                  [--distractor-identities DISTRACTOR_IDENTITIES] [--gallery-aggregation {prototype,max,hybrid}]
+                                  [--track-pooling {mean,quality}]
+
+Train an identity-disjoint CHIRLA ReID adapter
+
+options:
+  -h, --help            show this help message and exit
+  --root ROOT
+  --manifest MANIFEST
+  --checkpoint CHECKPOINT
+  --output OUTPUT
+  --device {cuda,cpu}
+  --batch-size BATCH_SIZE
+  --epochs EPOCHS
+  --seed SEED
+  --objective {supcon,supcon_ce,supcon_ce_triplet,supcon_ce_triplet_kd,supcon_arcface_triplet,supcon_arcface_triplet_kd,supcon_cosface_triplet,supcon_cosface_triplet_kd,supcon_circle_triplet,supcon_circle_triplet_kd}
+  --teacher-checkpoint TEACHER_CHECKPOINT
+  --target-identities TARGET_IDENTITIES
+  --distractor-identities DISTRACTOR_IDENTITIES
+  --gallery-aggregation {prototype,max,hybrid}
+  --track-pooling {mean,quality}

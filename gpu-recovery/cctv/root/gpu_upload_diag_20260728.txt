@@ -1,0 +1,5 @@
+-rw-r--r-- 1 <gpu-user> <gpu-user> 7920 Jul 28 14:40 <redacted-temp-path>
+7920 <redacted-temp-path>
+BASE64_RC=0
+GZIP_RC=0
+lrwxrwxrwx 1 <gpu-user> <gpu-user> 46 Jul 28 14:27 <redacted-local-path> -> <redacted-local-path>

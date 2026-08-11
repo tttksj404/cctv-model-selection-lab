@@ -1,0 +1,7 @@
+STAMP=2026-07-23T22:49:58+09:00
+2448549 2448547       10:44  0.0  0.0 S    /opt/tljh/user/bin/python /opt/tljh/user/bin/conda run -n qwen3vl --no-capture-ou
+2448558 2448550       10:44  787  0.4 Rl   python scripts/clip_vitl14_finetune_probe.py --root experiments/data/pa100k_full 
+FILES
+-rw-r--r-- 1 <gpu-user> <gpu-user> 169 Jul 23 22:39 experiments/results/server_recheck_finetune_20260723.log
+-rw-r--r-- 1 <gpu-user> <gpu-user>   8 Jul 23 22:39 experiments/results/server_recheck_finetune_20260723.pid
+LOG_BYTES=169

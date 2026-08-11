@@ -1,0 +1,14 @@
+FASTREID_DIRS
+<redacted-local-path>
+<redacted-local-path>
+CONFIGS
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+<redacted-local-path>
+PYIMPORT
+fastreid None
+torchreid None

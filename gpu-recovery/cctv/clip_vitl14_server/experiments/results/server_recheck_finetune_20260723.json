@@ -1,0 +1,33 @@
+{
+  "status": "valid",
+  "model": "CLIP ViT-L/14 last-two-block partial fine-tune",
+  "train": 80000,
+  "val": 10000,
+  "test": 10000,
+  "best_val_mA": 0.8058725595474243,
+  "best_test": {
+    "mA": 0.7824171781539917,
+    "micro": 0.8332769274711609,
+    "iou": 0.5476951003074646
+  },
+  "target": 0.85,
+  "passed": false,
+  "history": [
+    {
+      "epoch": 1,
+      "val": 0.8044247031211853,
+      "test": 0.7788624167442322
+    },
+    {
+      "epoch": 2,
+      "val": 0.8058725595474243,
+      "test": 0.7824171781539917
+    },
+    {
+      "epoch": 3,
+      "val": 0.7998939156532288,
+      "test": 0.7807010412216187
+    }
+  ],
+  "gpu": "NVIDIA L40S"
+}

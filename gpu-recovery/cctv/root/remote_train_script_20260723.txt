@@ -1,0 +1,258 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "numpy>=2.0",
+#   "pillow>=10",
+#   "pyarrow>=18",
+#   "torch==2.11.0+cu128",
+#   "transformers==5.14.1",
+#   "typer>=0.15,<1",
+# ]
+# ///
+# How to run:
+# run: uv run scripts/train_clip_vitl14_distill.py --output results.json
+
+from __future__ import annotations
+
+import hashlib
+import io
+import json
+import platform
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import pyarrow.parquet as parquet
+import torch
+import typer
+from PIL import Image
+from torch import Tensor, nn
+from torch.nn import functional
+from transformers import CLIPModel, CLIPProcessor
+
+ATTRIBUTES = (
+    "Female", "AgeOver60", "Age18-60", "AgeLess18", "Front", "Side", "Back",
+    "Hat", "Glasses", "HandBag", "ShoulderBag", "Backpack", "HoldObjectsInFront",
+    "ShortSleeve", "LongSleeve", "UpperStride", "UpperLogo", "UpperPlaid", "UpperSplice",
+    "LowerStripe", "LowerPattern", "LongCoat", "Trousers", "Shorts", "Skirt&Dress", "boots",
+)
+IMAGE_COLUMNS = ["image", *ATTRIBUTES]
+DEFAULT_DATA_ROOT = Path("experiments/data/pa100k_full")
+DEFAULT_CLIP = "openai/clip-vit-large-patch14"
+
+
+@dataclass(frozen=True, slots=True)
+class SplitTensors:
+    features: Tensor
+    labels: Tensor
+
+
+class BinaryAttributeHead(nn.Module):
+    def __init__(self, input_dim: int) -> None:
+        super().__init__()
+        self.linear = nn.Linear(input_dim, len(ATTRIBUTES))
+
+    def forward(self, features: Tensor) -> Tensor:
+        return self.linear(features)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _decode(raw: bytes) -> Image.Image:
+    with Image.open(io.BytesIO(raw)) as image:
+        return image.convert("RGB")
+
+
+def _clip_features(model: CLIPModel, pixels: Tensor) -> Tensor:
+    output = model.get_image_features(pixel_values=pixels)
+    features = output.pooler_output
+    return features / features.norm(dim=1, keepdim=True).clamp_min(1e-6)
+
+
+def extract_clip_split(
+    path: Path,
+    model: CLIPModel,
+    processor: CLIPProcessor,
+    device: torch.device,
+    batch_size: int,
+    limit: int,
+) -> SplitTensors:
+    features: list[Tensor] = []
+    labels: list[Tensor] = []
+    seen = 0
+    with torch.inference_mode():
+        batches = parquet.ParquetFile(path).iter_batches(
+            batch_size=batch_size, columns=IMAGE_COLUMNS
+        )
+        for batch in batches:
+            rows = batch.to_pydict()
+            count = min(len(rows["image"]), limit - seen)
+            images = [_decode(rows["image"][index]["bytes"]) for index in range(count)]
+            encoded = processor(images=images, return_tensors="pt")["pixel_values"].to(device)
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                features.append(_clip_features(model, encoded).float().cpu())
+            labels.append(torch.tensor(
+                [[int(rows[name][index]) for name in ATTRIBUTES] for index in range(count)],
+                dtype=torch.float32,
+            ))
+            seen += count
+            if seen >= limit:
+                break
+    if not features:
+        raise RuntimeError(f"no rows extracted from {path}")
+    return SplitTensors(torch.cat(features), torch.cat(labels))
+
+
+def _weighted_bce(logits: Tensor, labels: Tensor, positive_ratio: Tensor) -> Tensor:
+    weights = ((1 - positive_ratio) / positive_ratio.clamp_min(1e-4)).to(logits.device)
+    return functional.binary_cross_entropy_with_logits(logits, labels, pos_weight=weights)
+
+
+def train_head(
+    data: SplitTensors,
+    teacher_logits: Tensor | None,
+    device: torch.device,
+    epochs: int,
+    batch_size: int,
+    distill_alpha: float,
+    temperature: float,
+) -> BinaryAttributeHead:
+    head = BinaryAttributeHead(data.features.shape[1]).to(device)
+    optimizer = torch.optim.AdamW(head.parameters(), lr=2e-3, weight_decay=1e-4)
+    positive_ratio = data.labels.mean(dim=0)
+    for _ in range(epochs):
+        order = torch.randperm(data.features.shape[0])
+        for start in range(0, len(order), batch_size):
+            indices = order[start : start + batch_size]
+            logits = head(data.features[indices].to(device))
+            hard_loss = _weighted_bce(logits, data.labels[indices].to(device), positive_ratio)
+            loss = hard_loss
+            if teacher_logits is not None and distill_alpha > 0:
+                soft_target = (teacher_logits[indices].to(device) / temperature).sigmoid()
+                soft_loss = functional.binary_cross_entropy_with_logits(
+                    logits / temperature, soft_target
+                ) * temperature**2
+                loss = (1 - distill_alpha) * hard_loss + distill_alpha * soft_loss
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            optimizer.step()
+    return head.eval()
+
+
+def choose_thresholds(logits: Tensor, labels: Tensor) -> Tensor:
+    candidates = torch.arange(0.20, 0.81, 0.05)
+    probabilities = logits.sigmoid()
+    thresholds: list[float] = []
+    for index in range(labels.shape[1]):
+        best = (0.5, -1.0)
+        for candidate in candidates:
+            predicted = probabilities[:, index] >= candidate
+            actual = labels[:, index] >= 0.5
+            positive = actual.sum().clamp_min(1)
+            negative = (~actual).sum().clamp_min(1)
+            true_positive_rate = (predicted & actual).sum() / positive
+            true_negative_rate = ((~predicted) & (~actual)).sum() / negative
+            score = float(((true_positive_rate + true_negative_rate) / 2).item())
+            if score > best[1] or (
+                score == best[1] and abs(float(candidate) - 0.5) < abs(best[0] - 0.5)
+            ):
+                best = (float(candidate), score)
+        thresholds.append(best[0])
+    return torch.tensor(thresholds)
+
+
+def metrics(logits: Tensor, labels: Tensor, thresholds: Tensor) -> dict[str, float]:
+    predicted = logits.sigmoid().ge(thresholds.view(1, -1))
+    actual = labels.ge(0.5)
+    positive = actual
+    negative = ~actual
+    balanced = (
+        ((predicted & positive).sum(0) / positive.sum(0).clamp_min(1))
+        + ((~predicted & negative).sum(0) / negative.sum(0).clamp_min(1))
+    ) / 2
+    label_f1: list[float] = []
+    for index in range(labels.shape[1]):
+        tp = (predicted[:, index] & actual[:, index]).sum().float()
+        fp = (predicted[:, index] & ~actual[:, index]).sum().float()
+        fn = (~predicted[:, index] & actual[:, index]).sum().float()
+        label_f1.append(float((2 * tp / (2 * tp + fp + fn).clamp_min(1)).item()))
+    intersection = (predicted & actual).sum(1).float()
+    union = (predicted | actual).sum(1).float()
+    return {
+        "mA": float(balanced.mean().item()),
+        "micro_attribute_accuracy": float((predicted == actual).float().mean().item()),
+        "label_macro_f1": sum(label_f1) / len(label_f1),
+        "InsF1": float((2 * intersection / (predicted.sum(1) + actual.sum(1)).clamp_min(1)).mean()),
+        "instance_iou": float((intersection / union.clamp_min(1)).mean()),
+    }
+
+
+def _teacher_logits(
+    data_root: Path,
+    vendor_root: Path,
+    checkpoint: Path,
+    device: torch.device,
+    rows: tuple[int, int, int],
+    batch_size: int,
+    epochs: int,
+) -> tuple[tuple[Tensor, Tensor, Tensor], dict[str, dict[str, float]]]:
+    sys.path.insert(0, str(Path(__file__).parent.resolve()))
+    from run_solider_pa100k_parquet import _extract_split, _official_bce_loss
+    from run_solider_proxy_experiment import _load_backbone
+
+    teacher = _load_backbone(vendor_root.resolve(), checkpoint.resolve())
+    teacher = teacher.to(device)
+    teacher.eval()
+    train_features, train_labels = _extract_split(
+        data_root / "train.parquet", teacher, device, batch_size, rows[0]
+    )
+    val_features, val_labels = _extract_split(
+        data_root / "val.parquet", teacher, device, batch_size, rows[1]
+    )
+    test_features, test_labels = _extract_split(
+        data_root / "test.parquet", teacher, device, batch_size, rows[2]
+    )
+ARGPARSE
+13:# run: uv run scripts/train_clip_vitl14_distill.py --output results.json
+73:    output = model.get_image_features(pixel_values=pixels)
+74:    features = output.pooler_output
+83:    batch_size: int,
+90:        batches = parquet.ParquetFile(path).iter_batches(
+91:            batch_size=batch_size, columns=IMAGE_COLUMNS
+93:        for batch in batches:
+94:            rows = batch.to_pydict()
+121:    epochs: int,
+122:    batch_size: int,
+129:    for _ in range(epochs):
+131:        for start in range(0, len(order), batch_size):
+132:            indices = order[start : start + batch_size]
+202:    batch_size: int,
+203:    epochs: int,
+213:        data_root / "train.parquet", teacher, device, batch_size, rows[0]
+216:        data_root / "val.parquet", teacher, device, batch_size, rows[1]
+219:        data_root / "test.parquet", teacher, device, batch_size, rows[2]
+224:    for _ in range(epochs):
+249:    output: Path = Path("experiments/results/clip-vit-l14-distillation.json"),
+257:    extract_batch_size: int = 2,
+258:    head_batch_size: int = 512,
+259:    head_epochs: int = 15,
+260:    teacher_epochs: int = 12,
+277:        (train_rows, val_rows, test_rows), extract_batch_size, teacher_epochs,
+282:        data_root / name, clip, processor, device, extract_batch_size, limit
+287:    hard_head = train_head(splits[0], None, device, head_epochs, head_batch_size, 0, temperature)
+289:        splits[0], teacher_logits[0], device, head_epochs, head_batch_size,
+307:        checkpoint_path = models_root / f"{output.stem}-{name}.pt"
+332:            "teacher_epochs": teacher_epochs,
+357:    output = output.resolve()
+358:    if Path.cwd().resolve() not in output.parents:
+359:        raise ValueError("output must be inside workspace")
+360:    output.parent.mkdir(parents=True, exist_ok=True)
+361:    output.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+362:    summary = {"output": str(output), "best": best_name, "test": best_test}
+366:if __name__ == "__main__":

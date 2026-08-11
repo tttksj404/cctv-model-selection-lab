@@ -1,0 +1,4 @@
+j-i15a2+ 2372770 2372727  3 14:36 pts/19   00:00:00 /opt/tljh/user/bin/python /opt/tljh/user/bin/conda run -n qwen3vl python scripts/train_clip_vitl14_dis
+j-i15a2+ 2372779 2372771 99 14:36 pts/19   00:00:45 python scripts/train_clip_vitl14_distill.py --train-rows 80000 --val-rows 10000 --test-rows 10000 --ex
+nohup: ignoring input
+ls: cannot access '<redacted-local-path>': No such file or directory

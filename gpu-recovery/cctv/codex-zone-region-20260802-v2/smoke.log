@@ -1,0 +1,30 @@
+nohup: ignoring input
+<redacted-local-path> UserWarning: [21:58:54] WARNING: /__w/xgboost/xgboost/src/common/error_msg.cc:62: Falling back to prediction using DMatrix due to mismatched devices. This might lead to higher memory usage and slower performance. XGBoost is running on: cuda:0, while the input data is on: cpu.
+Potential solutions:
+- Use a data structure that matches the device ordinal in the booster.
+- Set the device for booster before call to inplace_predict.
+
+This warning will only be shown once.
+
+  return func(**kwargs)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "<redacted-local-path>", line 351, in <module>
+    main()
+  File "<redacted-local-path>", line 314, in main
+    route_results[name] = runner(train_x, train_y, test_x, test_y, route_dir)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 240, in _run_catboost
+    result = _run_sklearn("gpu_catboost", model, train_x, train_y, test_x, test_y, output_dir)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 102, in _run_sklearn
+    **_metrics(
+      ^^^^^^^^^
+  File "<redacted-local-path>", line 73, in _metrics
+    tuple(int(value) + 1 for value in predictions),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 73, in <genexpr>
+    tuple(int(value) + 1 for value in predictions),
+          ^^^^^^^^^^
+TypeError: only 0-dimensional arrays can be converted to Python scalars

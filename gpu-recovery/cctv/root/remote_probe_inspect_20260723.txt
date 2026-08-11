@@ -1,0 +1,61 @@
+27- p=r.sigmoid()
+28- out=[]
+29- for c in range(y.shape[1]):
+30-  t=y[:,c].bool()
+31-  bv=.5
+32-  bs=-1.
+33-  for v in torch.arange(.1,.91,.05):
+34-   q=p[:,c].ge(v)
+35-   sc=float(((q&t).sum()/t.sum().clamp_min(1)+(~q&~t).sum()/(~t).sum().clamp_min(1))/2)
+36-   if sc>bs: bs=sc; bv=float(v)
+37-  out.append(bv)
+38- return torch.tensor(out)
+39-def met(r,y,t):
+40- q=r.sigmoid().ge(t.view(1,-1)); z=y.bool()
+41- po=z.sum(0).clamp_min(1); ne=(~z).sum(0).clamp_min(1)
+42- ma=(((q&z).sum(0)/po+((~q)&(~z)).sum(0)/ne)/2).mean()
+43- ins=((q&z).sum(1).float()/(q|z).sum(1).float().clamp_min(1)).mean()
+44- return {"mA":float(ma),"micro":float((q==z).float().mean()),"iou":float(ins)}
+45-def ev(m,h,bs):
+46- rr=[]; yy=[]
+47- with torch.inference_mode():
+48-  for x,y in itb(m[0],m[1],m[2],bs,0,False):
+49-   with torch.autocast(device_type="cuda",dtype=torch.float16): rr.append(h(feat(m[3],x.to(m[4]))).float().cpu())
+50-   yy.append(y)
+51- return torch.cat(rr),torch.cat(yy)
+52:def main():
+53- ap=argparse.ArgumentParser()
+54- ap.add_argument("--root",type=Path,required=True);ap.add_argument("--checkpoint",required=True)
+55- ap.add_argument("--train",type=int,default=20000);ap.add_argument("--val",type=int,default=5000);ap.add_argument("--test",type=int,default=5000)
+56- ap.add_argument("--bs",type=int,default=128);ap.add_argument("--epochs",type=int,default=3);ap.add_argument("--out",type=Path,required=True)
+57- a=ap.parse_args()
+58- torch.manual_seed(20260723);random.seed(20260723);dev=torch.device("cuda")
+59- pr=CLIPProcessor.from_pretrained(a.checkpoint,local_files_only=True)
+60- ti,ty=load(a.root/"train.parquet",a.train);vi,vy=load(a.root/"val.parquet",a.val);xi,xy=load(a.root/"test.parquet",a.test)
+61- m=CLIPModel.from_pretrained(a.checkpoint,local_files_only=True).to(dev)
+62- for p in m.parameters(): p.requires_grad=False
+63- for p in m.vision_model.encoder.layers[-2:].parameters(): p.requires_grad=True
+64- m.visual_projection.weight.requires_grad=True
+65- h=nn.Linear(m.config.projection_dim,len(A)).to(dev)
+66- ratio=ty.mean(0).to(dev);pw=((1-ratio)/ratio.clamp_min(.001)).clamp(.5,20)
+67- ps=[p for p in m.parameters() if p.requires_grad]
+68- opt=torch.optim.AdamW([{"params":ps,"lr":1e-5},{"params":h.parameters(),"lr":1e-3}],weight_decay=.01)
+69- sca=torch.amp.GradScaler("cuda"); hist=[];bv=-1.;bt={}
+70- for ep in range(a.epochs):
+71-  m.train();h.train()
+72-  for x,y in itb(ti,ty,pr,a.bs,20260723+ep,True):
+73-   x=x.to(dev);y=y.to(dev)
+74-   with torch.autocast(device_type="cuda",dtype=torch.float16): loss=nn.functional.binary_cross_entropy_with_logits(h(feat(m,x)),y,pos_weight=pw)
+75-   opt.zero_grad(set_to_none=True);sca.scale(loss).backward();sca.step(opt);sca.update()
+76-  m.eval();h.eval()
+77-  rv,yv=ev((vi,vy,pr,m,dev),h,a.bs);rt,yt=ev((xi,xy,pr,m,dev),h,a.bs)
+78-  tt=th(rv,yv);mv=met(rv,yv,tt);mt=met(rt,yt,tt);hist.append({"epoch":ep+1,"val":mv["mA"],"test":mt["mA"]})
+79-  if mv["mA"]>bv: bv=mv["mA"];bt=mt
+80- a.out.parent.mkdir(parents=True,exist_ok=True);a.out.write_text(json.dumps({"status":"valid","model":"CLIP ViT-L/14 last-two-block partial fine-tune","train":a.train,"val":a.val,"test":a.test,"best_val_mA":bv,"best_test":bt,"target":.85,"passed":bt.get("mA",0)>=.85,"history":hist,"gpu":torch.cuda.get_device_name(0)},indent=2))
+81-if __name__=="__main__": main()
+CHECKPOINTS
+.cache/huggingface/CACHEDIR.TAG
+.cache/huggingface/.gitignore
+.cache/huggingface/download/data/val-00000-of-00001.parquet.metadata
+.cache/huggingface/download/data/test-00000-of-00001.parquet.metadata
+.cache/huggingface/download/data/train-00000-of-00001.parquet.metadata

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "cctv-frozen-reid-fusion-gpu-v1",
+  "gpu": "0, NVIDIA L40S, 0 MiB, 46068 MiB\n1, NVIDIA L40S, 0 MiB, 46068 MiB\n2, NVIDIA L40S, 0 MiB, 46068 MiB\n3, NVIDIA L40S, 5855 MiB, 46068 MiB",
+  "queryRows": 107,
+  "trackCount": 42,
+  "identityCount": 11,
+  "metrics": {
+    "tracks": 42,
+    "rank1": 0.40476190476190477,
+    "recallAt5": 0.9047619047619048,
+    "mrr": 0.5848072562358277,
+    "worstRank": 10,
+    "correctTop5": 38
+  },
+  "rule": {
+    "perFrameNormalization": "rank-before-pooling",
+    "pool": "top2-mean",
+    "rankFusion": {
+      "solider": 0.7,
+      "siglip2": 0.3
+    },
+    "topK": 5
+  },
+  "scoreFinite": true,
+  "scoreSha256": "ef600baeddaf338a9806548761da6e250d03a0ff9bccc66ffca031d7d19af6b0",
+  "manifestSha256": "7c175eb9398b7a77a659c8759f4765fdb8a63c3ed149ee2e9afa3bd61574fa30",
+  "sealedUsedForSelection": false
+}

@@ -1,0 +1,318 @@
+===HOME===
+.
+./.cache
+./.cache/conda
+./.cache/huggingface
+./.cache/pip
+./.cache/torch
+./.conda
+./.conda/envs
+./.conda/pkgs
+./ENV_CONDA_COMMAND
+./ENV_CONDA_RUN_OK
+./ENV_COUNT_0
+./ENV_QWEN3VL_LISTED
+./ENV_SYSTEM_PYTHON
+./.ipynb_checkpoints
+./.ipython
+./.ipython/profile_default
+./.jupyter
+./.jupyter/lab
+./.local
+./.local/share
+./LOG_xecute125condarunpythonmuvicornqwen_backendmainappappdirsrchost127001port18080failedSeeaboveforerror
+./models
+./models/gemma-4-12B
+./models/gemma-4-12B-it
+./models/InternVL3_5-8B
+./models/MiniCPM-V-4_5
+./models/Molmo2-8B
+./models/Qwen2.5-VL-7B-Instruct
+./models/Qwen3.5-27B
+./models/Qwen3.5-9B
+./models/Qwen3-VL-32B-Thinking
+./models/Qwen3-VL-32B-Thinking-FP8
+./models/Qwen3-VL-8B-Instruct
+./.nv
+./.nv/ComputeCache
+./PY_DIRECT_
+./PY_FIND_
+./PY_FOUND_
+./qwen3-vl
+./qwen3vl-backend
+./qwen3vl-backend2
+./qwen3vl-backend3
+./qwen3vl-backend3/docs
+./qwen3vl-backend3/fixtures
+./qwen3vl-backend3/src
+./qwen3vl-backend3/tests
+./qwen3vl-backend/crop_eval
+./qwen3vl-backend-final
+./qwen3vl-backend-final/docs
+./qwen3vl-backend-final/fixtures
+./qwen3vl-backend-final/src
+./qwen3vl-backend-final/tests
+./qwen3vl-backend-hardened
+./qwen3vl-backend-hardened/docs
+./qwen3vl-backend-hardened/fixtures
+./qwen3vl-backend-hardened/src
+./qwen3vl-backend-hardened/tests
+./qwen3vl-backend/.ipynb_checkpoints
+./qwen3vl-backend/__pycache__
+./qwen3vl-backend/qwen35-27b-lora-pilot
+./qwen3vl-backend/qwen3vl-lora-pilot
+./qwen3-vl/cookbooks
+./qwen3-vl/docker
+./qwen3-vl/evaluation
+./qwen3-vl/.git
+./qwen3-vl/qwen-vl-finetune
+./qwen3-vl/qwen-vl-utils
+./status-B64_SIZE_BAD
+./status-CHECKEXEC
+./status-DEPS_FAIL
+./status-DEPS_OK2
+./status-DIAG_DONE
+./status-ERR_CASE_CAMEL
+./status-ERR_CASE_SNAKE
+./status-ERRLOC_camera_id
+./status-ERRLOC_cameraId
+./status-ERRLOC_case_id
+./status-ERRLOC_caseId
+./status-ERRLOC_image_path
+./status-ERRLOC_imagePath
+./status-ERRLOC_searchCondition
+./status-ERRLOC_track_id
+./status-ERRLOC_trackId
+./status-ERR_QWEN_BACKEND
+./status-ERR_REQUIRED
+./status-ERR_SEARCH_CAMEL
+./status-FILES2_FOUND
+./status-FILES_FOUND
+./status-FINAL2_ANALYZE_OK
+./status-FINAL2_HEALTH_OK
+./status-FINAL_BODY_DETAIL
+./status-FINAL_BODY_NOMATCH
+./status-FINAL_HASH_OK
+./status-FINAL_IMAGE_OK
+./status-FINAL_LAYOUT_OK
+./status-FINAL_LOG_NOTRACE
+./status-FINAL_LOG_NOVALIDATION
+./status-FINAL_MOCK_422_OK
+./status-FINAL_MOCK_ANALYZE_BAD
+./status-FINAL_MOCK_HEALTH_OK
+./status-FINAL_PACKAGE_HASH_OK
+./status-FLAT_FAIL
+./status-HARDENED_HASH_OK
+./status-HARDENED_LAYOUT_OK
+./status-HARD_MOCK_422_OK
+./status-HARD_MOCK_ANALYZE_OK
+./status-HARD_MOCK_HEALTH_OK
+./status-HARD_REAL_ANALYZE_OK
+./status-HARD_REAL_DONE
+./status-HARD_REAL_LAZY_OK
+./status-HARD_REAL_LOADED_OK
+./status-HARD_SMOKE_STOPPED
+./status-HASH_MATCH
+./status-IMAGE_PATH_OK
+./status-LOG_NO_SUCH_FILE
+./status-MAIN2_BAD
+./status-MAIN2_SCAN
+./status-MAIN3_OK
+./status-MAINLIKE
+./status-MAIN_MISSING
+./status-MAIN_NOEXIST
+./status-MAIN_NONE
+./status-MAIN_NONE2
+./status-MAIN_NOTFILE
+./status-MAIN_NOT_READY
+./status-MAIN_NOT_READY2
+./status-MOCK2_LOGERROR
+./status-MOCK_ACTIVATE_FAIL
+./status-MOCK_BODY_IMAGE
+./status-MOCK_BODY_NOMATCH
+./status-MOCK_CODE_NOT200
+./status-MOCK_DETAIL
+./status-MOCK_DIRECT_FAIL
+./status-MOCK_ERR_IMPORT
+./status-MOCK_FAIL
+./status-MOCK_HEALTH2_OK
+./status-MOCK_INLINE_FAIL
+./status-MOCK_MOD
+./status-MOCK_NO422BODY
+./status-MOCK_PY000
+./status-NESTED_FAIL
+./status-PACKAGE_FAIL
+./status-PACKAGE_FAIL4
+./status-PATH_PROBE
+./status-PING_X
+./status-PING_Y
+./status-PING_Z
+./status-PYEXTRACT_OK
+./status-PYFILES
+./status-PY_NOMAIN2
+./status-PY_PATH_MISSING
+./status-PYPROJECT
+./status-PYZIP_OK
+./status-README_ANY
+./status-REAL256_DECISION_OK
+./status-REAL256_DONE
+./status-REAL256_HEALTH_OK
+./status-REAL256_HTTP200
+./status-REAL256_LOADED_OK
+./status-REAL256_PROVIDER_NOTBAD
+./status-REAL_BODY_ERROR
+./status-REAL_BODY_NO_DECISION
+./status-REAL_HEALTH_DEGRADED
+./status-REAL_HEALTH_OK
+./status-REAL_HTTP_502
+./status-REAL_INFER_DONE
+./status-REAL_INFER_NON200
+./status-REAL_LOG_NOTRACE
+./status-REAL_MODEL_LAZY
+./status-REAL_MSG_Qwen_inference_did_not_produce_a_valid_response
+./status-REAL_NO_FLASH
+./status-REAL_NO_OOM
+./status-REAL_NO_TYPE
+./status-REAL_NO_VALUE
+./status-REAL_NO_VISION_UTIL
+./status-REAL_PROVIDER_ERROR
+./status-RESP_detail_list
+./status-SERVER_MOCK_ANALYZE_BAD
+./status-SERVER_MOCK_HEALTH_OK
+./status-SIZE_BAD
+./status-SIZE_CLIP_OK
+./status-SMOKE_PROCESSES_STOPPED
+./status-SRC_MISSING
+./status-SRC_MISSING2
+./status-UPLOAD_CLIP_OK
+./status-UPLOAD_OK
+./status-ZIP2_BAD
+./status-ZIP2_LAYOUT_BAD
+./status-ZIP3_BAD
+./status-ZIP_BAD
+./status-ZIP_LAYOUT_BAD
+./status-ZIP_MAIN
+./.triton
+./.triton/autotune
+./.triton/cache
+===LARGE_FILES===
+23919549408 ./models/gemma-4-12B/model.safetensors
+23919549408 ./models/gemma-4-12B-it/model.safetensors
+5368717440 ./models/Qwen3.5-9B/model.safetensors-00003-of-00004.safetensors
+5368714128 ./models/Qwen3.5-27B/model.safetensors-00008-of-00011.safetensors
+5365032312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00006-of-00007.safetensors
+5365032312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00005-of-00007.safetensors
+5365032312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00004-of-00007.safetensors
+5365032312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00003-of-00007.safetensors
+5365032312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00002-of-00007.safetensors
+5347749200 ./models/Qwen3.5-27B/model.safetensors-00010-of-00011.safetensors
+5347745520 ./models/Qwen3.5-27B/model.safetensors-00009-of-00011.safetensors
+5347741504 ./models/Qwen3.5-27B/model.safetensors-00006-of-00011.safetensors
+5347741504 ./models/Qwen3.5-27B/model.safetensors-00005-of-00011.safetensors
+5347741504 ./models/Qwen3.5-27B/model.safetensors-00004-of-00011.safetensors
+5347741504 ./models/Qwen3.5-27B/model.safetensors-00003-of-00011.safetensors
+5347741496 ./models/Qwen3.5-27B/model.safetensors-00007-of-00011.safetensors
+5347741440 ./models/Qwen3.5-27B/model.safetensors-00002-of-00011.safetensors
+5335161512 ./models/Qwen3.5-9B/model.safetensors-00002-of-00004.safetensors
+5324789312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00001-of-00007.safetensors
+5301855088 ./models/MiniCPM-V-4_5/model-00002-of-00004.safetensors
+5286612176 ./models/MiniCPM-V-4_5/model-00001-of-00004.safetensors
+5276436216 ./models/Qwen3.5-9B/model.safetensors-00001-of-00004.safetensors
+5263851872 ./models/Qwen3.5-27B/model.safetensors-00001-of-00011.safetensors
+4999903176 ./models/InternVL3_5-8B/model-00003-of-00004.safetensors
+4999831048 ./models/Qwen3-VL-8B-Instruct/model-00003-of-00004.safetensors
+4982437672 ./models/InternVL3_5-8B/model-00001-of-00004.safetensors
+4974567112 ./models/Molmo2-8B/model-00001-of-00008.safetensors
+4932328944 ./models/Qwen3-VL-32B-Thinking/model-00001-of-00014.safetensors
+4915962496 ./models/Qwen3-VL-8B-Instruct/model-00002-of-00004.safetensors
+4902275944 ./models/Qwen3-VL-8B-Instruct/model-00001-of-00004.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00013-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00012-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00011-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00010-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00009-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00008-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00007-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00006-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00005-of-00014.safetensors
+4875990584 ./models/Qwen3-VL-32B-Thinking/model-00004-of-00014.safetensors
+4875990552 ./models/Qwen3-VL-32B-Thinking/model-00003-of-00014.safetensors
+4875990528 ./models/Qwen3-VL-32B-Thinking/model-00002-of-00014.safetensors
+4630720320 ./models/Molmo2-8B/model-00006-of-00008.safetensors
+4630720320 ./models/Molmo2-8B/model-00005-of-00008.safetensors
+4630720320 ./models/Molmo2-8B/model-00004-of-00008.safetensors
+4630720296 ./models/Molmo2-8B/model-00003-of-00008.safetensors
+4630720272 ./models/Molmo2-8B/model-00002-of-00008.safetensors
+4546851120 ./models/MiniCPM-V-4_5/model-00003-of-00004.safetensors
+4029422080 ./models/Molmo2-8B/model-00007-of-00008.safetensors
+3900233256 ./models/Qwen2.5-VL-7B-Instruct/model-00001-of-00005.safetensors
+3864733680 ./models/Qwen2.5-VL-7B-Instruct/model-00004-of-00005.safetensors
+3864726424 ./models/Qwen2.5-VL-7B-Instruct/model-00003-of-00005.safetensors
+3864726320 ./models/Qwen2.5-VL-7B-Instruct/model-00002-of-00005.safetensors
+3848612416 ./models/InternVL3_5-8B/model-00002-of-00004.safetensors
+3367015312 ./models/Qwen3-VL-32B-Thinking-FP8/model-00007-of-00007.safetensors
+3325995712 ./models/Qwen3.5-9B/model.safetensors-00004-of-00004.safetensors
+3270697008 ./models/Qwen3-VL-32B-Thinking/model-00014-of-00014.safetensors
+3225776168 ./models/InternVL3_5-8B/model-00004-of-00004.safetensors
+2716270024 ./models/Qwen3-VL-8B-Instruct/model-00004-of-00004.safetensors
+2489319552 ./models/Molmo2-8B/model-00008-of-00008.safetensors
+2256571800 ./models/MiniCPM-V-4_5/model-00004-of-00004.safetensors
+2148512760 ./models/Qwen3.5-27B/model.safetensors-00011-of-00011.safetensors
+1089994880 ./models/Qwen2.5-VL-7B-Instruct/model-00005-of-00005.safetensors
+61384752 ./qwen3vl-backend/qwen3vl-lora-pilot/adapter_model.safetensors
+41962216 ./qwen3vl-backend/qwen35-27b-lora-pilot/adapter_model.safetensors
+32170070 ./models/gemma-4-12B/tokenizer.json
+32169626 ./models/gemma-4-12B-it/tokenizer.json
+30907259 ./.conda/pkgs/python-3.11.15-h7508c33_1_cpython.conda
+19989493 ./qwen3vl-backend/qwen35-27b-lora-pilot/tokenizer.json
+12807982 ./models/Qwen3.5-9B/tokenizer.json
+12807982 ./models/Qwen3.5-27B/tokenizer.json
+11477017 ./models/Molmo2-8B/tokenizer.json
+11437868 ./models/MiniCPM-V-4_5/tokenizer.json
+11424300 ./models/InternVL3_5-8B/tokenizer.json
+11422818 ./qwen3vl-backend/qwen3vl-lora-pilot/tokenizer.json
+10179867 ./models/Qwen3-VL-32B-Thinking-FP8/tokenizer.json
+9500470 ./qwen3-vl/cookbooks/computer_use.ipynb
+8691442 ./qwen3-vl/cookbooks/2d_grounding.ipynb
+7032403 ./models/Qwen3-VL-8B-Instruct/tokenizer.json
+7032403 ./models/Qwen3-VL-32B-Thinking/tokenizer.json
+7031645 ./models/Qwen2.5-VL-7B-Instruct/tokenizer.json
+6917660 ./qwen3-vl/cookbooks/document_parsing.ipynb
+6722759 ./models/Qwen3.5-9B/vocab.json
+6722759 ./models/Qwen3.5-27B/vocab.json
+4957462 ./models/Qwen3-VL-32B-Thinking-FP8/vocab.json
+4229844 ./qwen3-vl/cookbooks/ocr.ipynb
+3941592 ./qwen3-vl/cookbooks/mobile_agent.ipynb
+3550916 ./.conda/pkgs/tk-8.6.13-noxft_hd70dff1_3.conda
+3353259 ./models/Qwen3.5-9B/merges.txt
+3353259 ./models/Qwen3.5-27B/merges.txt
+3159683 ./.conda/pkgs/openssl-3.6.3-h35e630c_0.conda
+3022148 ./qwen3-vl/cookbooks/video_understanding.ipynb
+2862243 ./qwen3-vl/cookbooks/spatial_understanding.ipynb
+2776833 ./models/Qwen3-VL-8B-Instruct/vocab.json
+2776833 ./models/Qwen3-VL-32B-Thinking/vocab.json
+2776833 ./models/Qwen2.5-VL-7B-Instruct/vocab.json
+2776833 ./models/Molmo2-8B/vocab.json
+2776833 ./models/MiniCPM-V-4_5/vocab.json
+2776833 ./models/InternVL3_5-8B/vocab.json
+2574737 ./qwen3-vl/cookbooks/think_with_images.ipynb
+2509861 ./model_comparison_experiment.ipynb
+2509861 ./.ipynb_checkpoints/model_comparison_experiment-checkpoint.ipynb
+2494917 ./qwen3-vl/cookbooks/3d_grounding.ipynb
+2098724 ./qwen3-vl/cookbooks/omni_recognition.ipynb
+1671853 ./models/Molmo2-8B/merges.txt
+1671853 ./models/MiniCPM-V-4_5/merges.txt
+1671853 ./models/InternVL3_5-8B/merges.txt
+1671839 ./models/Qwen3-VL-8B-Instruct/merges.txt
+1671839 ./models/Qwen3-VL-32B-Thinking/merges.txt
+1671839 ./models/Qwen2.5-VL-7B-Instruct/merges.txt
+1489514 ./qwen3-vl/cookbooks/long_document_understanding.ipynb
+1203173 ./.conda/pkgs/pip-26.1.2-pyh8b19718_0.conda
+1041084 ./.conda/pkgs/libgcc-15.2.0-he0feb66_19.conda
+969974 ./qwen3-vl/cookbooks/mmcode.ipynb
+962119 ./.conda/pkgs/libsqlite-3.53.3-h0c1763c_0.conda
+918956 ./.conda/pkgs/ncurses-6.6-hdb14827_0.conda
+745303 ./.conda/pkgs/ld_impl_linux-64-2.46.1-default_hbd61a6d_102.conda
+642081 ./.conda/pkgs/setuptools-83.0.0-pyh332efcf_0.conda
+603817 ./.conda/pkgs/libgomp-15.2.0-he0feb66_19.conda
+601375 ./.conda/pkgs/zstd-1.5.7-hb78ec9c_6.conda

@@ -1,0 +1,18 @@
+DONE_RC=1
+2590705, 21666 MiB
+nohup: ignoring input
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 573, in <module>
+    main()
+  File "<redacted-local-path>", line 546, in main
+    encoder = ImageEncoder(
+              ^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 246, in __init__
+    from model import make_model
+  File "<redacted-local-path>", line 1, in <module>
+    from .make_model import make_model
+  File "<redacted-local-path>", line 6, in <module>
+    from .backbones.swin_transformer import swin_base_patch4_window7_224, swin_small_patch4_window7_224, swin_tiny_patch4_window7_224
+  File "<redacted-local-path>", line 20, in <module>
+    from mmcv.runner import load_checkpoint as _load_checkpoint
+ModuleNotFoundError: No module named 'mmcv'

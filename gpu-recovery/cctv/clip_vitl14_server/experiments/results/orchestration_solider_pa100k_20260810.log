@@ -1,0 +1,5 @@
+nohup: ignoring input
+<redacted-local-path> UserWarning: DeprecationWarning: pretrained is deprecated, please use "init_cfg" instead
+  warnings.warn('DeprecationWarning: pretrained is deprecated, '
+unloaded parameters: <All keys matched successfully>
+{"output": "<redacted-local-path>", "metrics": {"train": {"mA": 0.8250130414962769, "instance_acc": 0.8087112903594971, "instance_precision": 0.89141446352005, "instance_recall": 0.8831183314323425, "InsF1": 0.8872470259666443, "label_macro_f1": 0.7164832746180204}, "val": {"mA": 0.7853999733924866, "instance_acc": 0.7601240277290344, "instance_precision": 0.8642004132270813, "instance_recall": 0.8491088151931763, "InsF1": 0.8565881252288818, "label_macro_f1": 0.6381481653795793}, "test": {"mA": 0.7567232847213745, "instance_acc": 0.7631093859672546, "instance_precision": 0.8662230372428894, "instance_recall": 0.8507527112960815, "InsF1": 0.8584181666374207, "label_macro_f1": 0.6079384786649965}}, "rows": {"train": 80000, "val": 10000, "test": 10000}}

@@ -1,0 +1,1116 @@
+{
+ "agv_20260602_160807_jpg.rf.3cc2b7952f2d9e92502198649c482358.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "AGV",
+    "conf": 0.703,
+    "cell": [
+     4,
+     1,
+     33
+    ]
+   }
+  ]
+ },
+ "agv_20260602_160829_jpg.rf.90cbab4425c0a5e464ef1e05e9f4e0c3.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "AGV",
+    "conf": 0.88,
+    "cell": null
+   }
+  ]
+ },
+ "agv_20260602_160844_jpg.rf.6c942783ff1e051a13741428d00160b6.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "AGV",
+    "conf": 0.944,
+    "cell": [
+     3,
+     1,
+     25
+    ]
+   }
+  ]
+ },
+ "agv_20260602_161729_jpg.rf.0b58bf06429e7b220bd519fc2e0dfe6e.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "AGV",
+    "conf": 0.887,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00048_c970b640-55b3-11f1-bd5b-30894aa784b5_jpg.rf.8c386df32dd233f95084b03e039eb02a.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.899,
+    "cell": [
+     3,
+     3,
+     27
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.876,
+    "cell": [
+     3,
+     5,
+     29
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.87,
+    "cell": [
+     1,
+     4,
+     12
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.843,
+    "cell": [
+     5,
+     7,
+     47
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.84,
+    "cell": [
+     2,
+     3,
+     19
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.779,
+    "cell": [
+     7,
+     5,
+     61
+    ]
+   }
+  ]
+ },
+ "doll_image_00066_dd85e2cc-55b3-11f1-bd5b-30894aa784b5_jpg.rf.695337db765248ac6be647a3703ade64.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.9,
+    "cell": [
+     5,
+     2,
+     42
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.862,
+    "cell": [
+     2,
+     1,
+     17
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.855,
+    "cell": [
+     7,
+     5,
+     61
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.851,
+    "cell": [
+     6,
+     4,
+     52
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.845,
+    "cell": [
+     0,
+     7,
+     7
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.839,
+    "cell": [
+     5,
+     6,
+     46
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.807,
+    "cell": [
+     2,
+     2,
+     18
+    ]
+   }
+  ]
+ },
+ "doll_image_00080_ed2a88b8-55b3-11f1-bd5b-30894aa784b5_jpg.rf.0a633c808135c31c66be02edd3d01046.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "BLACK",
+    "conf": 0.907,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.899,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.868,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.854,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.849,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.844,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.794,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00085_f2c2cdee-55b3-11f1-bd5b-30894aa784b5_jpg.rf.a54526cb37bd68f28656a7f399752e8b.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.901,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.872,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.871,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.866,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.825,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.815,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.771,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00088_f5bf19d0-55b3-11f1-bd5b-30894aa784b5_jpg.rf.4227144446f2084beba541d9fe337281.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.896,
+    "cell": [
+     6,
+     6,
+     54
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.887,
+    "cell": [
+     0,
+     6,
+     6
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.881,
+    "cell": [
+     6,
+     3,
+     51
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.881,
+    "cell": [
+     4,
+     4,
+     36
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.872,
+    "cell": [
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.841,
+    "cell": [
+     5,
+     5,
+     45
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.833,
+    "cell": [
+     4,
+     7,
+     39
+    ]
+   }
+  ]
+ },
+ "doll_image_00112_1587f87c-55b4-11f1-bd5b-30894aa784b5_jpg.rf.bdf8fc5619b3b3060207ee426db379c4.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.896,
+    "cell": [
+     3,
+     1,
+     25
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.895,
+    "cell": [
+     0,
+     2,
+     2
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.883,
+    "cell": [
+     1,
+     4,
+     12
+    ]
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.879,
+    "cell": [
+     7,
+     1,
+     57
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.856,
+    "cell": [
+     4,
+     1,
+     33
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.834,
+    "cell": [
+     0,
+     7,
+     7
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.819,
+    "cell": [
+     2,
+     6,
+     22
+    ]
+   }
+  ]
+ },
+ "doll_image_00121_1ee37c84-55b4-11f1-bd5b-30894aa784b5_jpg.rf.12d88ce17ba4612a625e362d1a9127e9.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "BLACK",
+    "conf": 0.892,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.88,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.879,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.864,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.86,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.826,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.754,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00128_262c1e60-55b4-11f1-bd5b-30894aa784b5_jpg.rf.7a7eb2c6b8fcca2fde7aafe7205ca1c0.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.884,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.872,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.869,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.862,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.847,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.786,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00133_2bd499a0-55b4-11f1-bd5b-30894aa784b5_jpg.rf.251847a362741fa2187059bf5e502c6d.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.878,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.869,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.861,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.855,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.846,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.78,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.761,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00141_3714f7ce-55b4-11f1-bd5b-30894aa784b5_jpg.rf.7bcf7c5663a0e35f745e01eeb1524c64.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "BLACK",
+    "conf": 0.888,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.879,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.875,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.863,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.862,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.859,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.751,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00162_53defbc0-55b4-11f1-bd5b-30894aa784b5_jpg.rf.14fcc043a5e185617c2b8e1b1ff25642.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.889,
+    "cell": [
+     0,
+     7,
+     7
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.887,
+    "cell": [
+     4,
+     4,
+     36
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.867,
+    "cell": [
+     1,
+     4,
+     12
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.863,
+    "cell": [
+     2,
+     1,
+     17
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.855,
+    "cell": [
+     1,
+     6,
+     14
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.852,
+    "cell": [
+     1,
+     2,
+     10
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.755,
+    "cell": [
+     0,
+     7,
+     7
+    ]
+   }
+  ]
+ },
+ "doll_image_00172_6943b5aa-55b4-11f1-bd5b-30894aa784b5_jpg.rf.194d97c2a9e8e43cbef720f496c0c853.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.875,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.875,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.87,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.848,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.844,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.827,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.779,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00173_6a8033bc-55b4-11f1-bd5b-30894aa784b5_jpg.rf.e02e928fb205dc50bd507ea4c3851fe2.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.899,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.892,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.88,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.866,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.86,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.818,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.791,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00176_6df31bc2-55b4-11f1-bd5b-30894aa784b5_jpg.rf.ed6ec15d23235d438ea1b086b5141e0e.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.898,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.883,
+    "cell": null
+   },
+   {
+    "class": "PINK",
+    "conf": 0.87,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.87,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.838,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.807,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.779,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00181_74316b4c-55b4-11f1-bd5b-30894aa784b5_jpg.rf.76edbebf026cfd5942482088f15d727c.jpg": {
+  "plate": false,
+  "objects": [
+   {
+    "class": "PINK",
+    "conf": 0.918,
+    "cell": null
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.892,
+    "cell": null
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.873,
+    "cell": null
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.855,
+    "cell": null
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.84,
+    "cell": null
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.818,
+    "cell": null
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.768,
+    "cell": null
+   }
+  ]
+ },
+ "doll_image_00183_7698d73a-55b4-11f1-bd5b-30894aa784b5_jpg.rf.1a7997fc4df10b978d3b0d720dd329b4.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "PINK",
+    "conf": 0.919,
+    "cell": [
+     7,
+     2,
+     58
+    ]
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.884,
+    "cell": [
+     4,
+     4,
+     36
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.882,
+    "cell": [
+     5,
+     5,
+     45
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.86,
+    "cell": [
+     7,
+     6,
+     62
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.854,
+    "cell": [
+     7,
+     4,
+     60
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.794,
+    "cell": [
+     6,
+     0,
+     48
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.762,
+    "cell": [
+     7,
+     5,
+     61
+    ]
+   }
+  ]
+ },
+ "doll_image_00185_790f2226-55b4-11f1-bd5b-30894aa784b5_jpg.rf.58191e015d27c4e3ee22e6d6291a1a1a.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "PINK",
+    "conf": 0.917,
+    "cell": [
+     7,
+     2,
+     58
+    ]
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.907,
+    "cell": [
+     5,
+     2,
+     42
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.896,
+    "cell": [
+     6,
+     4,
+     52
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.886,
+    "cell": [
+     4,
+     4,
+     36
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.84,
+    "cell": [
+     7,
+     4,
+     60
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.825,
+    "cell": [
+     7,
+     0,
+     56
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.802,
+    "cell": [
+     7,
+     5,
+     61
+    ]
+   }
+  ]
+ },
+ "doll_image_00187_7b5ee674-55b4-11f1-bd5b-30894aa784b5_jpg.rf.cfa6d9d5b7bb0e9e6edda726eefa6296.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "PINK",
+    "conf": 0.917,
+    "cell": [
+     7,
+     2,
+     58
+    ]
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.901,
+    "cell": [
+     5,
+     2,
+     42
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.889,
+    "cell": [
+     3,
+     2,
+     26
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.884,
+    "cell": [
+     3,
+     1,
+     25
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.862,
+    "cell": [
+     6,
+     3,
+     51
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.813,
+    "cell": [
+     7,
+     0,
+     56
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.791,
+    "cell": [
+     5,
+     4,
+     44
+    ]
+   }
+  ]
+ },
+ "doll_image_00191_8073c166-55b4-11f1-bd5b-30894aa784b5_jpg.rf.bc1b370c22b24a633a3e5df1e90d927b.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.887,
+    "cell": [
+     5,
+     2,
+     42
+    ]
+   },
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.87,
+    "cell": [
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.868,
+    "cell": [
+     6,
+     3,
+     51
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.863,
+    "cell": [
+     7,
+     2,
+     58
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.836,
+    "cell": [
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.768,
+    "cell": [
+     5,
+     3,
+     43
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.728,
+    "cell": [
+     5,
+     0,
+     40
+    ]
+   }
+  ]
+ },
+ "doll_image_00192_81d626f2-55b4-11f1-bd5b-30894aa784b5_jpg.rf.cb768f3d1ab73c7abb2187201363ee04.jpg": {
+  "plate": true,
+  "objects": [
+   {
+    "class": "GRAY_SMALL",
+    "conf": 0.877,
+    "cell": [
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "class": "PINK",
+    "conf": 0.87,
+    "cell": [
+     7,
+     2,
+     58
+    ]
+   },
+   {
+    "class": "DARK_GRAY",
+    "conf": 0.856,
+    "cell": [
+     7,
+     3,
+     59
+    ]
+   },
+   {
+    "class": "BLACK",
+    "conf": 0.839,
+    "cell": [
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "class": "GRAY_BIG",
+    "conf": 0.791,
+    "cell": [
+     2,
+     3,
+     19
+    ]
+   },
+   {
+    "class": "WHITE",
+    "conf": 0.764,
+    "cell": [
+     5,
+     3,
+     43
+    ]
+   },
+   {
+    "class": "SKYBLUE",
+    "conf": 0.716,
+    "cell": [
+     5,
+     0,
+     40
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,9 @@
+STAMP=2026-07-23T22:20:15+09:00
+PWD=<redacted-local-path>
+GPU=NVIDIA L40S, 46068 MiB;NVIDIA L40S, 46068 MiB;NVIDIA L40S, 46068 MiB;NVIDIA L40S, 46068 MiB;
+DIR_OK <redacted-local-path>
+DIR_OK <redacted-local-path>
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'TORCH' is not defined
+ERROR conda.cli.main_run:execute(125): `conda run python -c import torch; print(TORCH,torch.__version__,CUDA,torch.cuda.is_available(),COUNT,torch.cuda.device_count())` failed. (See above for error)

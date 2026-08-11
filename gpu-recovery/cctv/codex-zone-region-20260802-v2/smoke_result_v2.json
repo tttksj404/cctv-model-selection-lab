@@ -1,0 +1,878 @@
+{
+  "datasetSha256": "36b82c05fec8b07fd6374744256e7e8a906020cdfc62fadad29494b7f9f12743",
+  "results": {
+    "deployed_runtime_8": {
+      "extra_trees": {
+        "accuracy": 0.9129955947136564,
+        "artifact": "extra_trees.joblib",
+        "confusionMatrix": [
+          [
+            198,
+            8,
+            8,
+            6
+          ],
+          [
+            7,
+            190,
+            7,
+            7
+          ],
+          [
+            8,
+            10,
+            237,
+            1
+          ],
+          [
+            7,
+            7,
+            3,
+            204
+          ]
+        ],
+        "correct": 829,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.3319962282505067,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 1.6138608735054731,
+        "wilson95_lower": 0.892879792011584,
+        "wilson95_upper": 0.9296316136114864
+      },
+      "gpu_catboost": {
+        "accuracy": 0.9129955947136564,
+        "artifact": "gpu_catboost.joblib",
+        "confusionMatrix": [
+          [
+            198,
+            8,
+            7,
+            7
+          ],
+          [
+            6,
+            191,
+            6,
+            8
+          ],
+          [
+            10,
+            7,
+            237,
+            2
+          ],
+          [
+            9,
+            6,
+            3,
+            203
+          ]
+        ],
+        "correct": 829,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0057248090955917,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 3.4163654018193483,
+        "wilson95_lower": 0.892879792011584,
+        "wilson95_upper": 0.9296316136114864
+      },
+      "gpu_mlp": {
+        "accuracy": 0.9019823788546255,
+        "artifact": "gpu_mlp.pt",
+        "confusionMatrix": [
+          [
+            196,
+            6,
+            11,
+            7
+          ],
+          [
+            8,
+            189,
+            11,
+            3
+          ],
+          [
+            8,
+            9,
+            237,
+            2
+          ],
+          [
+            9,
+            10,
+            5,
+            197
+          ]
+        ],
+        "correct": 819,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0003854567718400829,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.10698466002941132,
+        "wilson95_lower": 0.8809155150497046,
+        "wilson95_upper": 0.9196622530900838
+      },
+      "gpu_xgboost": {
+        "accuracy": 0.9107929515418502,
+        "artifact": "gpu_xgboost.joblib",
+        "confusionMatrix": [
+          [
+            200,
+            7,
+            8,
+            5
+          ],
+          [
+            7,
+            190,
+            8,
+            6
+          ],
+          [
+            11,
+            5,
+            237,
+            3
+          ],
+          [
+            8,
+            7,
+            6,
+            200
+          ]
+        ],
+        "correct": 827,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.051964238482950016,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 1.4293879196047783,
+        "wilson95_lower": 0.8904804614340505,
+        "wilson95_upper": 0.9276442166923635
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.9096916299559471,
+        "artifact": "hist_gradient_boosting.joblib",
+        "confusionMatrix": [
+          [
+            203,
+            7,
+            7,
+            3
+          ],
+          [
+            7,
+            191,
+            6,
+            7
+          ],
+          [
+            12,
+            8,
+            234,
+            2
+          ],
+          [
+            9,
+            7,
+            7,
+            198
+          ]
+        ],
+        "correct": 826,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.03789147230825235,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 4.365516887977719,
+        "wilson95_lower": 0.8892820560744225,
+        "wilson95_upper": 0.9266492583036632
+      },
+      "logistic": {
+        "accuracy": 0.9107929515418502,
+        "artifact": "logistic.joblib",
+        "confusionMatrix": [
+          [
+            197,
+            7,
+            10,
+            6
+          ],
+          [
+            6,
+            194,
+            7,
+            4
+          ],
+          [
+            12,
+            8,
+            235,
+            1
+          ],
+          [
+            5,
+            9,
+            6,
+            201
+          ]
+        ],
+        "correct": 827,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0005949448613605836,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.036952439695596695,
+        "wilson95_lower": 0.8904804614340505,
+        "wilson95_upper": 0.9276442166923635
+      },
+      "posterior_argmax": {
+        "accuracy": 0.9185022026431718,
+        "confusionMatrix": [
+          [
+            201,
+            6,
+            8,
+            5
+          ],
+          [
+            7,
+            190,
+            8,
+            6
+          ],
+          [
+            6,
+            6,
+            239,
+            5
+          ],
+          [
+            8,
+            7,
+            2,
+            204
+          ]
+        ],
+        "correct": 834,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0001355464106614369,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.0,
+        "wilson95_lower": 0.8988935017581361,
+        "wilson95_upper": 0.9345847226065752
+      }
+    },
+    "expected_bayes_8": {
+      "extra_trees": {
+        "accuracy": 0.9085903083700441,
+        "artifact": "extra_trees.joblib",
+        "confusionMatrix": [
+          [
+            199,
+            8,
+            7,
+            6
+          ],
+          [
+            6,
+            193,
+            4,
+            8
+          ],
+          [
+            10,
+            11,
+            231,
+            4
+          ],
+          [
+            4,
+            12,
+            3,
+            202
+          ]
+        ],
+        "correct": 825,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.45852305055780557,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 2.764620842412114,
+        "wilson95_lower": 0.8880844724356433,
+        "wilson95_upper": 0.9256534781941143
+      },
+      "gpu_catboost": {
+        "accuracy": 0.9085903083700441,
+        "artifact": "gpu_catboost.joblib",
+        "confusionMatrix": [
+          [
+            200,
+            8,
+            6,
+            6
+          ],
+          [
+            5,
+            194,
+            5,
+            7
+          ],
+          [
+            11,
+            10,
+            231,
+            4
+          ],
+          [
+            7,
+            8,
+            6,
+            200
+          ]
+        ],
+        "correct": 825,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.005904976934982291,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 2.9667370542883873,
+        "wilson95_lower": 0.8880844724356433,
+        "wilson95_upper": 0.9256534781941143
+      },
+      "gpu_mlp": {
+        "accuracy": 0.8843612334801763,
+        "artifact": "gpu_mlp.pt",
+        "confusionMatrix": [
+          [
+            193,
+            6,
+            15,
+            6
+          ],
+          [
+            10,
+            185,
+            13,
+            3
+          ],
+          [
+            16,
+            5,
+            231,
+            4
+          ],
+          [
+            11,
+            9,
+            7,
+            194
+          ]
+        ],
+        "correct": 803,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0003086185566916865,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.10264122486114502,
+        "wilson95_lower": 0.8619223672996266,
+        "wilson95_upper": 0.9035615808669109
+      },
+      "gpu_xgboost": {
+        "accuracy": 0.8986784140969163,
+        "artifact": "gpu_xgboost.joblib",
+        "confusionMatrix": [
+          [
+            197,
+            8,
+            7,
+            8
+          ],
+          [
+            5,
+            191,
+            6,
+            9
+          ],
+          [
+            11,
+            10,
+            230,
+            5
+          ],
+          [
+            8,
+            10,
+            5,
+            198
+          ]
+        ],
+        "correct": 816,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.06759596274681554,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 1.4406978692859411,
+        "wilson95_lower": 0.8773411431906077,
+        "wilson95_upper": 0.9166565337041961
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.9008810572687225,
+        "artifact": "hist_gradient_boosting.joblib",
+        "confusionMatrix": [
+          [
+            199,
+            5,
+            11,
+            5
+          ],
+          [
+            5,
+            193,
+            6,
+            7
+          ],
+          [
+            8,
+            10,
+            230,
+            8
+          ],
+          [
+            8,
+            11,
+            6,
+            196
+          ]
+        ],
+        "correct": 818,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.1409555075583479,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 3.9753756560385227,
+        "wilson95_lower": 0.8797233350234088,
+        "wilson95_upper": 0.9186610693680514
+      },
+      "logistic": {
+        "accuracy": 0.9196035242290749,
+        "artifact": "logistic.joblib",
+        "confusionMatrix": [
+          [
+            199,
+            3,
+            10,
+            8
+          ],
+          [
+            4,
+            194,
+            6,
+            7
+          ],
+          [
+            9,
+            7,
+            238,
+            2
+          ],
+          [
+            6,
+            8,
+            3,
+            204
+          ]
+        ],
+        "correct": 835,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.000466994678659061,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.023888984695076942,
+        "wilson95_lower": 0.9000990067368422,
+        "wilson95_upper": 0.9355725813761971
+      },
+      "posterior_argmax": {
+        "accuracy": 0.9240088105726872,
+        "confusionMatrix": [
+          [
+            201,
+            5,
+            9,
+            5
+          ],
+          [
+            5,
+            193,
+            5,
+            8
+          ],
+          [
+            5,
+            7,
+            243,
+            1
+          ],
+          [
+            7,
+            7,
+            5,
+            202
+          ]
+        ],
+        "correct": 839,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 8.587040302511879e-05,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.0,
+        "wilson95_lower": 0.9049308151391177,
+        "wilson95_upper": 0.9395142279672346
+      }
+    },
+    "representative_4": {
+      "extra_trees": {
+        "accuracy": 0.8799559471365639,
+        "artifact": "extra_trees.joblib",
+        "confusionMatrix": [
+          [
+            186,
+            12,
+            12,
+            10
+          ],
+          [
+            8,
+            187,
+            9,
+            7
+          ],
+          [
+            14,
+            10,
+            229,
+            3
+          ],
+          [
+            6,
+            10,
+            8,
+            197
+          ]
+        ],
+        "correct": 799,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.6662057610105575,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 2.384490581229329,
+        "wilson95_lower": 0.8571991336765691,
+        "wilson95_upper": 0.8995113594966555
+      },
+      "gpu_catboost": {
+        "accuracy": 0.8733480176211453,
+        "artifact": "gpu_catboost.joblib",
+        "confusionMatrix": [
+          [
+            191,
+            9,
+            10,
+            10
+          ],
+          [
+            8,
+            187,
+            4,
+            12
+          ],
+          [
+            15,
+            13,
+            221,
+            7
+          ],
+          [
+            11,
+            10,
+            6,
+            194
+          ]
+        ],
+        "correct": 793,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.01303566463849618,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 4.119745058938861,
+        "wilson95_lower": 0.8501311389294158,
+        "wilson95_upper": 0.8934191717538396
+      },
+      "gpu_mlp": {
+        "accuracy": 0.8590308370044053,
+        "artifact": "gpu_mlp.pt",
+        "confusionMatrix": [
+          [
+            186,
+            9,
+            6,
+            19
+          ],
+          [
+            8,
+            188,
+            7,
+            8
+          ],
+          [
+            11,
+            15,
+            218,
+            12
+          ],
+          [
+            13,
+            12,
+            8,
+            188
+          ]
+        ],
+        "correct": 780,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.007244826003187028,
+        "passed": false,
+        "total": 908,
+        "trainSeconds": 0.4024242963641882,
+        "wilson95_lower": 0.8348808950542702,
+        "wilson95_upper": 0.8801556869007189
+      },
+      "gpu_xgboost": {
+        "accuracy": 0.8700440528634361,
+        "artifact": "gpu_xgboost.joblib",
+        "confusionMatrix": [
+          [
+            190,
+            9,
+            9,
+            12
+          ],
+          [
+            8,
+            190,
+            7,
+            6
+          ],
+          [
+            17,
+            14,
+            218,
+            7
+          ],
+          [
+            10,
+            11,
+            8,
+            192
+          ]
+        ],
+        "correct": 790,
+        "device": "cuda",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.05508435167995843,
+        "passed": false,
+        "total": 908,
+        "trainSeconds": 1.6376336514949799,
+        "wilson95_lower": 0.8466043595222792,
+        "wilson95_upper": 0.8903658599159917
+      },
+      "hist_gradient_boosting": {
+        "accuracy": 0.8623348017621145,
+        "artifact": "hist_gradient_boosting.joblib",
+        "confusionMatrix": [
+          [
+            188,
+            10,
+            11,
+            11
+          ],
+          [
+            10,
+            185,
+            6,
+            10
+          ],
+          [
+            19,
+            13,
+            218,
+            6
+          ],
+          [
+            10,
+            11,
+            8,
+            192
+          ]
+        ],
+        "correct": 783,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.24415554257216432,
+        "passed": false,
+        "total": 908,
+        "trainSeconds": 4.167471509426832,
+        "wilson95_lower": 0.8383928685315833,
+        "wilson95_upper": 0.8832238046683902
+      },
+      "logistic": {
+        "accuracy": 0.8821585903083701,
+        "artifact": "logistic.joblib",
+        "confusionMatrix": [
+          [
+            189,
+            9,
+            10,
+            12
+          ],
+          [
+            6,
+            191,
+            10,
+            4
+          ],
+          [
+            10,
+            14,
+            226,
+            6
+          ],
+          [
+            8,
+            12,
+            6,
+            195
+          ]
+        ],
+        "correct": 801,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 0.0003940130415729489,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.019436797127127647,
+        "wilson95_lower": 0.8595595912250571,
+        "wilson95_upper": 0.901537629444824
+      },
+      "posterior_argmax": {
+        "accuracy": 0.8832599118942731,
+        "confusionMatrix": [
+          [
+            197,
+            9,
+            5,
+            9
+          ],
+          [
+            7,
+            185,
+            6,
+            13
+          ],
+          [
+            11,
+            12,
+            227,
+            6
+          ],
+          [
+            13,
+            11,
+            4,
+            193
+          ]
+        ],
+        "correct": 802,
+        "device": "cpu",
+        "gate": 0.85,
+        "inferenceMillisecondsPerSample": 9.110139986491938e-05,
+        "passed": true,
+        "total": 908,
+        "trainSeconds": 0.0,
+        "wilson95_lower": 0.8607406859416327,
+        "wilson95_upper": 0.9025498984765765
+      }
+    }
+  },
+  "runtime": {
+    "cudaAvailable": true,
+    "gpuCount": 4,
+    "gpuName": "NVIDIA L40S",
+    "python": "3.11.15",
+    "torch": "2.6.0+cu124"
+  },
+  "schemaVersion": "eyesonu-zone-region-model-comparison-v1",
+  "selected": {
+    "metrics": {
+      "accuracy": 0.9240088105726872,
+      "confusionMatrix": [
+        [
+          201,
+          5,
+          9,
+          5
+        ],
+        [
+          5,
+          193,
+          5,
+          8
+        ],
+        [
+          5,
+          7,
+          243,
+          1
+        ],
+        [
+          7,
+          7,
+          5,
+          202
+        ]
+      ],
+      "correct": 839,
+      "device": "cpu",
+      "gate": 0.85,
+      "inferenceMillisecondsPerSample": 8.587040302511879e-05,
+      "passed": true,
+      "total": 908,
+      "trainSeconds": 0.0,
+      "wilson95_lower": 0.9049308151391177,
+      "wilson95_upper": 0.9395142279672346
+    },
+    "model": "posterior_argmax",
+    "route": "expected_bayes_8"
+  },
+  "selectionRule": "maximum sealed Wilson 95% lower bound, then accuracy"
+}

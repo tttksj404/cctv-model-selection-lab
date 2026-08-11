@@ -1,0 +1,15 @@
+SCRIPT=no
+MANIFEST=no
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/tljh/user/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/tljh/user/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'chirla/chirla_identity_manifest.jsonl'
+0, NVIDIA L40S, 45468 MiB
+1, NVIDIA L40S, 45468 MiB
+2, NVIDIA L40S, 45468 MiB
+3, NVIDIA L40S, 23716 MiB

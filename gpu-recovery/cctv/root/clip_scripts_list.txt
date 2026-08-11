@@ -1,0 +1,4 @@
+total 32
+drwxr-xr-x 2 <gpu-user> <gpu-user>  4096 Jul 23 14:30 __pycache__
+-rw-r--r-- 1 <gpu-user> <gpu-user> 11894 Jul 23 14:29 run_solider_proxy_experiment.py
+-rw-r--r-- 1 <gpu-user> <gpu-user> 14897 Jul 23 14:28 train_clip_vitl14_distill.py

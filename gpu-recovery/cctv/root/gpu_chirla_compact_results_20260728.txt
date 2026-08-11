@@ -1,0 +1,6 @@
+result_count=4
+chirla_supcon_arcface_triplet_hybrid_quality_20260728	objective=supcon_arcface_triplet	baseline=0.35	learned=0.25	best_fusion=0.325	counts={'rows': 371, 'trainRows': 56, 'trainIdentities': 15}
+chirla_supcon_ce_hybrid_quality_20260728	objective=supcon_ce	baseline=0.35	learned=0.225	best_fusion=0.275	counts={'rows': 371, 'trainRows': 56, 'trainIdentities': 15}
+chirla_supcon_circle_triplet_hybrid_quality_20260728	objective=supcon_circle_triplet	baseline=0.35	learned=0.225	best_fusion=0.3	counts={'rows': 371, 'trainRows': 56, 'trainIdentities': 15}
+chirla_supcon_cosface_triplet_hybrid_quality_20260728	objective=supcon_cosface_triplet	baseline=0.35	learned=0.25	best_fusion=0.35	counts={'rows': 371, 'trainRows': 56, 'trainIdentities': 15}
+RUNNING=0

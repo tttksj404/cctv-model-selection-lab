@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 243, in <module>
+    main()
+  File "<redacted-local-path>", line 208, in main
+    root = _safe_output_root(args.output_root)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 53, in _safe_output_root
+    candidate.relative_to(data_root)
+  File "/opt/tljh/user/lib/python3.12/pathlib.py", line 682, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: '<redacted-local-path>' is not in the subpath of '<redacted-local-path>'

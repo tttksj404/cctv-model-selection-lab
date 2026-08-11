@@ -1,0 +1,184 @@
+{
+  "status": "valid",
+  "dataset": "tuandunghcmut/PA-100K official parquet split",
+  "split": "official train/val/test; no identity or track IDs",
+  "student_base": "openai/clip-vit-large-patch14",
+  "teacher": "SOLIDER Swin-B PAR backbone plus supervised 26-attribute head",
+  "rows": {
+    "train": 80000,
+    "val": 10000,
+    "test": 10000
+  },
+  "device": "NVIDIA L40S",
+  "runtime": {
+    "python": "3.11.15",
+    "torch": "2.6.0+cu124"
+  },
+  "distillation": {
+    "alpha": 0.65,
+    "temperature": 3.0,
+    "teacher_epochs": 12
+  },
+  "teacher_metrics": {
+    "train": {
+      "mA": 0.864135205745697,
+      "micro_attribute_accuracy": 0.923363447189331,
+      "label_macro_f1": 0.6841484399942251,
+      "InsF1": 0.8405970931053162,
+      "instance_iou": 0.7429913878440857
+    },
+    "val": {
+      "mA": 0.8160662055015564,
+      "micro_attribute_accuracy": 0.9061576724052429,
+      "label_macro_f1": 0.6134405220643833,
+      "InsF1": 0.8088916540145874,
+      "instance_iou": 0.6971403360366821
+    },
+    "test": {
+      "mA": 0.7923980951309204,
+      "micro_attribute_accuracy": 0.9102038741111755,
+      "label_macro_f1": 0.597312317444728,
+      "InsF1": 0.8098726868629456,
+      "instance_iou": 0.6986501812934875
+    }
+  },
+  "arms": {
+    "clip_vitl14_hard": {
+      "thresholds": [
+        0.5,
+        0.30000001192092896,
+        0.44999998807907104,
+        0.44999998807907104,
+        0.5,
+        0.5,
+        0.5,
+        0.3499999940395355,
+        0.5,
+        0.5,
+        0.44999998807907104,
+        0.6000000238418579,
+        0.3499999940395355,
+        0.5,
+        0.5,
+        0.550000011920929,
+        0.5,
+        0.550000011920929,
+        0.44999998807907104,
+        0.20000000298023224,
+        0.4000000059604645,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.4000000059604645
+      ],
+      "metrics": {
+        "train": {
+          "mA": 0.7991328835487366,
+          "micro_attribute_accuracy": 0.7800605893135071,
+          "label_macro_f1": 0.4868796134654146,
+          "InsF1": 0.6218996047973633,
+          "instance_iou": 0.4674590826034546
+        },
+        "val": {
+          "mA": 0.7699325084686279,
+          "micro_attribute_accuracy": 0.7745538353919983,
+          "label_macro_f1": 0.4782793760442963,
+          "InsF1": 0.6143053770065308,
+          "instance_iou": 0.459946870803833
+        },
+        "test": {
+          "mA": 0.736262321472168,
+          "micro_attribute_accuracy": 0.7690615653991699,
+          "label_macro_f1": 0.43832819092159087,
+          "InsF1": 0.5983728766441345,
+          "instance_iou": 0.4431147575378418
+        }
+      },
+      "checkpoint": "<redacted-local-path>",
+      "checkpoint_sha256": "4d48e83d2dfa1f6e58af5bd323fe0b9fa3ebef321a7381f7711ee09affdbf071"
+    },
+    "clip_vitl14_solider_kd": {
+      "thresholds": [
+        0.5,
+        0.20000000298023224,
+        0.800000011920929,
+        0.20000000298023224,
+        0.4000000059604645,
+        0.3499999940395355,
+        0.25,
+        0.25,
+        0.3499999940395355,
+        0.4000000059604645,
+        0.30000001192092896,
+        0.4000000059604645,
+        0.30000001192092896,
+        0.550000011920929,
+        0.44999998807907104,
+        0.20000000298023224,
+        0.25,
+        0.3499999940395355,
+        0.20000000298023224,
+        0.20000000298023224,
+        0.20000000298023224,
+        0.20000000298023224,
+        0.6499999761581421,
+        0.30000001192092896,
+        0.25,
+        0.20000000298023224
+      ],
+      "metrics": {
+        "train": {
+          "mA": 0.7926689386367798,
+          "micro_attribute_accuracy": 0.8464577198028564,
+          "label_macro_f1": 0.5150218858168676,
+          "InsF1": 0.7029621005058289,
+          "instance_iou": 0.5613153576850891
+        },
+        "val": {
+          "mA": 0.7516524791717529,
+          "micro_attribute_accuracy": 0.8380307555198669,
+          "label_macro_f1": 0.4978565524976987,
+          "InsF1": 0.688928484916687,
+          "instance_iou": 0.5436248183250427
+        },
+        "test": {
+          "mA": 0.718700110912323,
+          "micro_attribute_accuracy": 0.8403769135475159,
+          "label_macro_f1": 0.45814937811631423,
+          "InsF1": 0.6823676824569702,
+          "instance_iou": 0.5369496941566467
+        }
+      },
+      "checkpoint": "<redacted-local-path>",
+      "checkpoint_sha256": "78bcc8e733a2ea5fe84ce55f030370c733ecb1879753f7f6528b69c706fc5c92"
+    }
+  },
+  "selected_by_val_mA": "clip_vitl14_hard",
+  "seed": 20260723,
+  "gate": {
+    "target_mA": 0.85,
+    "measured_test_mA": 0.736262321472168,
+    "passed": false,
+    "warning": "PA-100K mA is not CCTV identity or track-heldout accuracy."
+  },
+  "provenance": {
+    "clip_checkpoint": "openai/clip-vit-large-patch14",
+    "teacher_checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+    "script_sha256": "3d87b355483add9a532198c5eedd44311612e3324cddcfa2af464c9d8425b8aa",
+    "data_files": {
+      "train.parquet": {
+        "path": "<redacted-local-path>",
+        "bytes": 356192795
+      },
+      "val.parquet": {
+        "path": "<redacted-local-path>",
+        "bytes": 48321267
+      },
+      "test.parquet": {
+        "path": "<redacted-local-path>",
+        "bytes": 36787908
+      }
+    }
+  }
+}

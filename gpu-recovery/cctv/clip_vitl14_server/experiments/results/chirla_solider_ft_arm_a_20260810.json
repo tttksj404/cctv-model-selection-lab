@@ -1,0 +1,206 @@
+{
+  "baselineValidation": {
+    "eligibleQueries": 10,
+    "mrr": 0.5833333333333333,
+    "queryTracks": 10,
+    "rank1": 0.3,
+    "recallAt5": 1.0,
+    "strictExcludedQueries": 0
+  },
+  "bestEpoch": 0,
+  "bestValidation": {
+    "eligibleQueries": 10,
+    "mrr": 0.5833333333333333,
+    "queryTracks": 10,
+    "rank1": 0.3,
+    "recallAt5": 1.0,
+    "strictExcludedQueries": 0
+  },
+  "checkpointClassifierOmitted": true,
+  "history": [
+    {
+      "epoch": 1,
+      "losses": {
+        "arc": 8.184472465515137,
+        "classifier": 1.7338023376464844,
+        "loss": 9.556340522766114,
+        "part": 0.8753861737251282,
+        "teacher": 0.007549781799316407,
+        "triplet": 0.8424804639816285
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 2,
+      "losses": {
+        "arc": 7.871696834564209,
+        "classifier": 0.8676750183105468,
+        "loss": 9.081736869812012,
+        "part": 0.8836317610740662,
+        "teacher": 0.008471314907073974,
+        "triplet": 0.8513073468208313
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 3,
+      "losses": {
+        "arc": 7.472850112915039,
+        "classifier": 0.606450080871582,
+        "loss": 8.63878360748291,
+        "part": 0.8910848236083985,
+        "teacher": 0.010127568244934082,
+        "triplet": 0.8562987971305848
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 4,
+      "losses": {
+        "arc": 7.101638221740723,
+        "classifier": 0.48482316970825196,
+        "loss": 8.239565544128418,
+        "part": 0.8850533127784729,
+        "teacher": 0.014217264652252197,
+        "triplet": 0.8497347497940063
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 5,
+      "losses": {
+        "arc": 6.848298950195312,
+        "classifier": 0.45814501762390136,
+        "loss": 7.991594867706299,
+        "part": 0.8894791698455811,
+        "teacher": 0.021062934398651124,
+        "triplet": 0.8527081489562989
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 6,
+      "losses": {
+        "arc": 6.585073432922363,
+        "classifier": 0.43359831809997557,
+        "loss": 7.744812164306641,
+        "part": 0.902373173236847,
+        "teacher": 0.02669609069824219,
+        "triplet": 0.8658483529090881
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 7,
+      "losses": {
+        "arc": 6.403993606567383,
+        "classifier": 0.4122588062286377,
+        "loss": 7.555370788574219,
+        "part": 0.8953163838386535,
+        "teacher": 0.02951441764831543,
+        "triplet": 0.8603477549552917
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    },
+    {
+      "epoch": 8,
+      "losses": {
+        "arc": 6.324633197784424,
+        "classifier": 0.3967232131958008,
+        "loss": 7.47092306137085,
+        "part": 0.8951512837409973,
+        "teacher": 0.030552613735198974,
+        "triplet": 0.8573623228073121
+      },
+      "validation": {
+        "eligibleQueries": 10,
+        "mrr": 0.5833333333333333,
+        "queryTracks": 10,
+        "rank1": 0.3,
+        "recallAt5": 1.0,
+        "strictExcludedQueries": 0
+      }
+    }
+  ],
+  "losses": {
+    "ArcFace": true,
+    "batchHardTriplet": true,
+    "partTriplet": true,
+    "rawClassifier": true,
+    "teacherPreservation": true
+  },
+  "manifestSha256": "aa985ba69afb69fc2b7a9e4c4eb0c51d0e4049d688a255a5ec3eb04ffbe94817",
+  "schemaVersion": "chirla-solider-identity-heldout-finetune-v1",
+  "sealedEvaluationRead": false,
+  "selectedCheckpointSha256": "82a4763c3c0340aaf7eb9e816dcf0b0d41adeea52cd219e2ca19f3057b83bef3",
+  "soliderMakeModelSha256": "2b27b21f95d187be918e4d6ce726c6ad8d67a23f0e2f196f6db207489264602f",
+  "soliderRuntimeId": "SOLIDER-REID-runtime-8c08e1c",
+  "sourceCheckpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+  "status": "valid",
+  "trainIdentities": [
+    "-1",
+    "-12",
+    "-13",
+    "-15",
+    "-16",
+    "-2",
+    "-5",
+    "-6",
+    "-8",
+    "11",
+    "18",
+    "19"
+  ],
+  "trainRows": 95,
+  "trainableParameters": 25233728,
+  "validationRows": 39
+}

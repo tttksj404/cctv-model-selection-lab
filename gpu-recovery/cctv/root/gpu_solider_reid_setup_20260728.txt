@@ -1,0 +1,8 @@
+DONE
+Cloning into 'external/SOLIDER-REID'...
+  WARNING: The script gdown is installed in '<redacted-local-path>' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+usage: __main__.py [-h] [-V] [-O OUTPUT] [-q] [--proxy PROXY] [--speed SPEED] [--no-cookies] [--no-check-certificate] [--continue] [--folder] [--json]
+                   [--format FORMAT] [--user-agent USER_AGENT]
+                   url_or_id
+__main__.py: error: unrecognized arguments: --fuzzy

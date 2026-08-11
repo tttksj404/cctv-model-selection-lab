@@ -1,0 +1,14 @@
+Collecting timm==0.6.13
+  Downloading timm-0.6.13-py3-none-any.whl.metadata (38 kB)
+Requirement already satisfied: yacs==0.1.8 in <redacted-local-path> (0.1.8)
+Downloading timm-0.6.13-py3-none-any.whl (549 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 549.1/549.1 kB 58.7 MB/s eta 0:00:00
+Installing collected packages: timm
+  Attempting uninstall: timm
+    Found existing installation: timm 1.0.28
+    Not uninstalling timm at <redacted-local-path> outside environment <redacted-local-path>
+    Can't uninstall 'timm'. No files were found to uninstall.
+Successfully installed timm-0.6.13
+torch 2.6.0+cu124 cuda True NVIDIA L40S
+timm 0.6.13
+venv_ok

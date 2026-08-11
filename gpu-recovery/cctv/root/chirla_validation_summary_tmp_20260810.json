@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "chirla-validation-selection-manifest-v1",
+  "source": "tmp\\chirla_solider_trainval_20260810.jsonl",
+  "output": "tmp\\chirla_solider_validation_20260810.jsonl",
+  "sha256": "b3cfa58ff93496316bcd3ce3946380af03e73ca83406aa3151ab1f6a8c96d3ec",
+  "rows": 39,
+  "galleryRows": 11,
+  "queryRows": 28,
+  "identities": [
+    "-10",
+    "-11",
+    "-4",
+    "-7"
+  ],
+  "identityCount": 4,
+  "selectionRule": "source split=validation and benchmarkRole in {gallery, query}",
+  "sealedEvalExcluded": true
+}

@@ -1,0 +1,17 @@
+RUNNING=0
+nohup: ignoring input
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 549, in <module>
+    main()
+  File "<redacted-local-path>", line 524, in main
+    encoder = ImageEncoder(
+              ^^^^^^^^^^^^^
+  File "<redacted-local-path>", line 235, in __init__
+    from model import make_model
+  File "<redacted-local-path>", line 1, in <module>
+    from .make_model import make_model
+  File "<redacted-local-path>", line 5, in <module>
+    from .backbones.vit_pytorch import vit_base_patch16_224_TransReID, vit_small_patch16_224_TransReID
+  File "<redacted-local-path>", line 30, in <module>
+    from torch._six import container_abcs
+ModuleNotFoundError: No module named 'torch._six'

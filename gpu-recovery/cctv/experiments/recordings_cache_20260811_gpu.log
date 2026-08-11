@@ -1,0 +1,11 @@
+[36m[1mDownloading[0m[39m polars-runtime-32 [2m(54.6MiB)[0m
+[36m[1mDownloading[0m[39m ultralytics [2m(1.4MiB)[0m
+[36m[1mDownloading[0m[39m numpy [2m(15.9MiB)[0m
+ [36m[1mDownloaded[0m[39m ultralytics
+ [36m[1mDownloaded[0m[39m numpy
+ [36m[1mDownloaded[0m[39m polars-runtime-32
+[2mInstalled [1m55 packages[0m [2min 198ms[0m[0m
+Traceback (most recent call last):
+  File "<redacted-local-path>", line 24, in <module>
+    from qwen_backend.cctv_multitrack import format_track_id
+ModuleNotFoundError: No module named 'qwen_backend'

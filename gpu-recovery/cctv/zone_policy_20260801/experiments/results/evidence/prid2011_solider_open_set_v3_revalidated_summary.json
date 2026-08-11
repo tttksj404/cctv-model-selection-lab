@@ -1,0 +1,51 @@
+{
+  "baselineAutomaticDecisionAccuracy": 0.7903225806451613,
+  "cacheMetadataValidated": true,
+  "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+  "improvedBaseline": false,
+  "passedTarget": false,
+  "schemaVersion": "prid2011-solider-open-set-v3-summary",
+  "sealedTestEvaluationCount": 1,
+  "selected": {
+    "checkpoint": "models/solider_reid/swin_base_msmt17.pth",
+    "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+    "epoch": 0,
+    "kind": "baseline",
+    "result": "results/prid2011_solider_open_set_v3_conservative.json",
+    "validation": {
+      "automatic_decision_accuracy": 0.9473684210526315,
+      "distractor_false_match_rate": 0.0,
+      "distractor_queries": 37,
+      "distractor_top1_mean_similarity": 0.9401588069426047,
+      "distractor_top1_p95_similarity": 0.9594669818878173,
+      "false_reject_rate": 0.15,
+      "known_distractor_score_gap": -0.002094411849975497,
+      "known_hard_negative_mean_similarity": 0.9341475248336792,
+      "known_mrr": 1.0,
+      "known_positive_mean_similarity": 0.9688100248575211,
+      "known_queries": 20,
+      "known_rank1": 1.0,
+      "known_recall_at5": 1.0,
+      "known_separation_margin_mean": 0.03466250002384186,
+      "known_separation_margin_p10": 0.016471785306930543,
+      "query_tracks": 57
+    }
+  },
+  "selectionSplit": "validation",
+  "soliderCommit": "8c08e1c3255e8e1e51e006bf189e52cc57b009ed",
+  "sourceManifestSha256": "86b8f48bd4ad2e8b28ffbece11ac61796ce0653d636170f947c044bbdd4b0d6d",
+  "status": "valid",
+  "targetAutomaticDecisionAccuracy": 0.85,
+  "testMetrics": {
+    "automatic_decision_accuracy": 0.7903225806451613,
+    "distractor_false_match_rate": 0.13513513513513514,
+    "distractor_queries": 148,
+    "false_reject_rate": 0.32,
+    "known_mrr": 0.923368149146451,
+    "known_queries": 100,
+    "known_rank1": 0.9,
+    "known_recall_at5": 0.95,
+    "query_tracks": 248
+  },
+  "trackCacheSha256": "d3ea7c575949e4f75beac06cadb422c17e4d149d21c259e42dd1e00c8fd1b445"
+}

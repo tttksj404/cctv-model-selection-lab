@@ -1,0 +1,12 @@
+STAMP=2026-07-23T22:43:19+09:00
+RESULT=RUNNING_OR_MISSING
+LOG
+nohup: ignoring input
+
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 590/590 [00:00<00:00, 6864.01it/s]
+GPU
+0, NVIDIA L40S, 90 %, 11728 MiB
+1, NVIDIA L40S, 0 %, 4955 MiB
+2, NVIDIA L40S, 0 %, 4955 MiB
+3, NVIDIA L40S, 0 %, 5037 MiB
