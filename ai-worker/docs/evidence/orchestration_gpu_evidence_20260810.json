@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "eyesonu-orchestration-gpu-evidence-v1",
+  "date": "2026-08-10",
+  "source": {
+    "environment": "JupyterHub GPU server authenticated from .env.txt",
+    "remoteRoot": "/home/j-i15a204/clip_vitl14_server",
+    "gpu": "NVIDIA L40S",
+    "python": "3.11.15",
+    "torch": "2.6.0+cu124",
+    "dataset": "tuandunghcmut/PA-100K official parquet split",
+    "rows": {
+      "train": 80000,
+      "validation": 10000,
+      "test": 10000
+    },
+    "scope": "attribute proxy; not CCTV identity or track-heldout evidence"
+  },
+  "experiments": [
+    {
+      "name": "clip_vitl14_partial_finetune_5ep",
+      "resultPath": "experiments/results/orchestration_clip_vitl14_finetune_5ep_20260810.json",
+      "resultSha256": "548a5303418d2038f1bee227f7b9f0e2b0485aa5617dac4a31b9ce6b2c285b29",
+      "selection": "epoch 2 by validation mA",
+      "validationMA": 0.8059324622154236,
+      "testMA": 0.7827170491218567,
+      "testMicroAttributeAccuracy": 0.8328538537025452,
+      "testInstanceIoU": 0.5460451245307922
+    },
+    {
+      "name": "clip_solider_kd_alpha015_temperature15",
+      "resultPath": "experiments/results/orchestration_clip_solider_distill_a015_t15_20260810.json",
+      "resultSha256": "914dfcc29f0e00f9028624d245d5e2281ba863568b6a0423e4cc459fa55d8a91",
+      "selectedArm": "clip_vitl14_hard",
+      "distillation": {
+        "alpha": 0.15,
+        "temperature": 1.5,
+        "teacherEpochs": 12
+      },
+      "hardArm": {
+        "validationMA": 0.7615635991096497,
+        "testMA": 0.7271912693977356,
+        "testInsF1": 0.6103845834732056,
+        "testLabelMacroF1": 0.4322160082654311
+      },
+      "kdArm": {
+        "validationMA": 0.7602174282073975,
+        "testMA": 0.7255619764328003,
+        "testInsF1": 0.5905578136444092,
+        "testLabelMacroF1": 0.427020017344218
+      },
+      "teacherTestMA": 0.7928791642189026,
+      "promotionGate": {
+        "targetMA": 0.85,
+        "measuredTestMA": 0.7271912693977356,
+        "passed": false
+      }
+    },
+    {
+      "name": "solider_swin_b_pa_head",
+      "resultPath": "experiments/results/orchestration_solider_pa100k_20260810.json",
+      "checkpointSha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+      "validationMA": 0.785400,
+      "testMA": 0.7567232847213745,
+      "testInsF1": 0.8584181666374207,
+      "testInstanceAccuracy": 0.7631,
+      "testLabelMacroF1": 0.607938
+    }
+  ],
+  "decision": {
+    "proxyWinner": "clip_vitl14_partial_finetune_5ep_epoch2",
+    "soliderDistillationPromoted": false,
+    "identityGeneralization85Evidence": false,
+    "runtimePromotion": false
+  }
+}

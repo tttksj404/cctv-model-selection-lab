@@ -224,10 +224,18 @@ def aggregate_track_scores(
     attributes: SearchAttributes,
     *,
     top_frames: int = 3,
+    ranking_signal: Literal["semantic", "identity"] = "semantic",
 ) -> TrackAttributeScores:
     if not rows:
         raise ValueError("track must contain at least one scored frame")
-    ranked = sorted(rows, key=lambda row: row.semantic, reverse=True)
+    if ranking_signal == "identity":
+        ranked = sorted(
+            rows,
+            key=lambda row: row.identity if row.identity is not None else row.semantic,
+            reverse=True,
+        )
+    else:
+        ranked = sorted(rows, key=lambda row: row.semantic, reverse=True)
     selected = ranked[: max(1, min(top_frames, len(ranked)))]
     semantic = _top_mean([row.semantic for row in selected]) or 0.0
     upper = _top_mean([row.upper_color for row in selected if row.upper_color is not None])
@@ -261,6 +269,23 @@ def aggregate_track_scores(
         score=max(0.0, min(1.0, score)),
         par_attribute=par_attribute,
     )
+
+
+def apply_identity_primary_score(
+    scores: TrackAttributeScores,
+    *,
+    enabled: bool,
+) -> TrackAttributeScores:
+    """Use SOLIDER identity evidence as the ranking score when it is present.
+
+    Attribute, temporal, spatial, and Qwen values remain on the returned
+    object as review evidence.  If the reference-image identity score is
+    unavailable, the ordinary late-fusion score is preserved.
+    """
+
+    if not enabled or scores.identity is None:
+        return scores
+    return replace(scores, score=max(0.0, min(1.0, scores.identity)))
 
 
 def add_track_consistency(

@@ -1,0 +1,207 @@
+{
+  "generated_from": "saved repository evidence; no synthetic values added",
+  "headline": {
+    "selected_orchestration": "hybrid-solider-clip-v1",
+    "role": "Top-K 후보 검색 및 증거 반환 (자동 신원확정 아님)",
+    "baseline_name": "CLIP B/32",
+    "baseline_rank1": 0.1684210526,
+    "best_name": "SOLIDER top-3",
+    "best_rank1": 0.4736842105,
+    "best_tie_names": [
+      "SOLIDER top-3 + TTA",
+      "SOLIDER top-3"
+    ],
+    "best_recall_at_5": 0.7789473684,
+    "best_identity_mrr": 0.6073688008,
+    "rank1_delta_points": 30.526315789999998,
+    "rank1_ratio": 2.8125000003710934
+  },
+  "identity_evidence": {
+    "dataset": "CHIRLA public proxy",
+    "identity_count": 11.0,
+    "strict_query_count": 95.0,
+    "project_video_count": 6.0,
+    "project_multi_person_video_count": 3.0,
+    "project_person_crops": 395.0,
+    "project_reviewed_tracks": 10.0,
+    "project_same_camera_rank1": 1.0,
+    "project_same_camera_scope": "same-camera-temporal-track-proxy",
+    "strict_methods": [
+      {
+        "name": "CLIP ViT-B/32 mean (strict)",
+        "short_name": "CLIP B/32",
+        "family": "frozen_embedding_strict",
+        "rank1": 0.1684210526,
+        "recall_at_5": 0.5894736842,
+        "identity_mrr": 0.3739447103,
+        "rank1_ci_low": 0.0947368421,
+        "rank1_ci_high": 0.2421052632,
+        "parameter_millions": 151.0
+      },
+      {
+        "name": "CLIP ViT-L/14 mean (strict)",
+        "short_name": "CLIP L/14",
+        "family": "frozen_embedding_strict",
+        "rank1": 0.2105263158,
+        "recall_at_5": 0.6105263158,
+        "identity_mrr": 0.4037324372,
+        "rank1_ci_low": 0.1368421053,
+        "rank1_ci_high": 0.2947368421,
+        "parameter_millions": 428.0
+      },
+      {
+        "name": "DINOv2 mean (strict)",
+        "short_name": "DINOv2",
+        "family": "frozen_embedding_strict",
+        "rank1": 0.1894736842,
+        "recall_at_5": 0.6,
+        "identity_mrr": 0.3708840283,
+        "rank1_ci_low": 0.1157894737,
+        "rank1_ci_high": 0.2736842105,
+        "parameter_millions": 86.0
+      },
+      {
+        "name": "SigLIP2 top-3 mean (strict)",
+        "short_name": "SigLIP2",
+        "family": "frozen_embedding_strict",
+        "rank1": 0.3368421053,
+        "recall_at_5": 0.6736842105,
+        "identity_mrr": 0.4881727045,
+        "rank1_ci_low": 0.2421052632,
+        "rank1_ci_high": 0.4315789474,
+        "parameter_millions": 86.0
+      },
+      {
+        "name": "OSNet mean (strict)",
+        "short_name": "OSNet",
+        "family": "frozen_reid_strict",
+        "rank1": 0.2421052632,
+        "recall_at_5": 0.6631578947,
+        "identity_mrr": 0.4295135566,
+        "rank1_ci_low": 0.1578947368,
+        "rank1_ci_high": 0.3263157895,
+        "parameter_millions": 2.2
+      },
+      {
+        "name": "FastReID SBS top-3 mean + hflip (strict)",
+        "short_name": "FastReID SBS + TTA",
+        "family": "frozen_reid_tta_strict",
+        "rank1": 0.4105263158,
+        "recall_at_5": 0.7052631579,
+        "identity_mrr": 0.5506736538,
+        "rank1_ci_low": 0.3157894737,
+        "rank1_ci_high": 0.5052631579,
+        "parameter_millions": 45.0
+      },
+      {
+        "name": "SOLIDER top-3 mean + hflip (strict)",
+        "short_name": "SOLIDER top-3 + TTA",
+        "family": "solider_reid_tta_strict",
+        "rank1": 0.4736842105,
+        "recall_at_5": 0.7789473684,
+        "identity_mrr": 0.6048500038,
+        "rank1_ci_low": 0.3789473684,
+        "rank1_ci_high": 0.5684210526,
+        "parameter_millions": 88.0
+      },
+      {
+        "name": "SOLIDER mean + hflip (strict)",
+        "short_name": "SOLIDER mean + TTA",
+        "family": "solider_reid_tta_strict",
+        "rank1": 0.4210526316,
+        "recall_at_5": 0.8421052632,
+        "identity_mrr": 0.5756899825,
+        "rank1_ci_low": 0.3263157895,
+        "rank1_ci_high": 0.5157894737,
+        "parameter_millions": 88.0
+      },
+      {
+        "name": "SOLIDER max + hflip (strict)",
+        "short_name": "SOLIDER max + TTA",
+        "family": "solider_reid_tta_strict",
+        "rank1": 0.4631578947,
+        "recall_at_5": 0.7789473684,
+        "identity_mrr": 0.5997622845,
+        "rank1_ci_low": 0.3684210526,
+        "rank1_ci_high": 0.5578947368,
+        "parameter_millions": 88.0
+      },
+      {
+        "name": "SOLIDER top-3 mean (strict)",
+        "short_name": "SOLIDER top-3",
+        "family": "solider_reid_strict",
+        "rank1": 0.4736842105,
+        "recall_at_5": 0.7789473684,
+        "identity_mrr": 0.6073688008,
+        "rank1_ci_low": 0.3789473684,
+        "rank1_ci_high": 0.5684210526,
+        "parameter_millions": 88.0
+      }
+    ],
+    "strict_best_rank1": 0.4736842105,
+    "strict_best_recall_at_5": 0.7789473684,
+    "strict_best_mrr": 0.6073688008,
+    "strict_best_method": "SOLIDER-ReID Swin-B MSMT17 top-3 mean without TTA",
+    "overlap_best_rank1": 0.6421052632,
+    "promotion_eligible": false
+  },
+  "attribute_evidence": {
+    "pa100k_train": 80000.0,
+    "pa100k_validation": 10000.0,
+    "pa100k_test": 10000.0,
+    "solider_ft_mA": 0.7733317017555237,
+    "solider_ft_instance_accuracy": 0.77588833885193,
+    "solider_ft_instance_f1": 0.8667089343070984,
+    "solider_ft_label_macro_f1": 0.6346375929334989,
+    "sonnet_pa100k_baseline": 0.9412961602210999,
+    "sonnet_pa100k": 0.944430768498376,
+    "sonnet_pa100k_delta": 0.003134608277276076,
+    "sonnet_cctv_baseline": 0.846153853237915,
+    "sonnet_cctv": 0.8307692408561707,
+    "sonnet_cctv_delta": -0.01538461446762085
+  },
+  "zone_evidence": {
+    "route_results": [
+      {
+        "route": "deployed_runtime_8",
+        "best_model": "posterior_argmax",
+        "accuracy": 0.9206174200661521,
+        "wilson95_lower": 0.9011979427215824,
+        "total": 907.0
+      },
+      {
+        "route": "expected_bayes_8",
+        "best_model": "logistic",
+        "accuracy": 0.9239250275633958,
+        "wilson95_lower": 0.9048272132015974,
+        "total": 907.0
+      },
+      {
+        "route": "representative_4",
+        "best_model": "extra_trees",
+        "accuracy": 0.8886438809261301,
+        "wilson95_lower": 0.8665101077368111,
+        "total": 907.0
+      }
+    ],
+    "selected_model": "logistic",
+    "selected_route": "expected_bayes_8",
+    "selection_validation_accuracy": 0.9239250275633958,
+    "selection_validation_wilson95_lower": 0.9048272132015974,
+    "sealed_accuracy": 0.9188224799286352,
+    "sealed_wilson95_lower": 0.9104656429604002,
+    "promotion_accepted": false,
+    "scope_project_cctv": false,
+    "scope_integrated": false
+  },
+  "provenance": {
+    "cctv_matrix": "experiments\\results\\cctv_generalization_method_matrix_20260728.json",
+    "cctv_matrix_sha256": "ce862e5cbf405da7d48bffc38ac35a8cc1b169c9126926a11ac9157a42ce8f84",
+    "sonnet_comparison": "experiments\\results\\solider_ft_sonnet_comparison_20260724.json",
+    "sonnet_comparison_sha256": "148ef7e99d211c4b55cae91a907fcc98f51b21ba76e30b8d470caa6c96cedd76",
+    "zone_comparison": "experiments\\results\\zone_region_model_comparison_20260802.json",
+    "zone_comparison_sha256": "cd35d7393cff99e3bedbbc8c05bbd23eabb893f35e813c0a7446e06508fdd178",
+    "cctv_evaluated_at": "2026-07-28",
+    "sonnet_generated_at": "2026-07-24"
+  }
+}

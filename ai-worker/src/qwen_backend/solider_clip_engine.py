@@ -91,6 +91,10 @@ class CandidateEngineSettings(BaseSettings):
     reid_weight: float = Field(default=0.75, ge=0.0, le=1.0)
     clip_weight: float = Field(default=0.25, ge=0.0, le=1.0)
     aggregate_top_frames: int = Field(default=3, ge=1, le=100)
+    identity_primary_retrieval: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("QWEN_CANDIDATE_IDENTITY_PRIMARY_RETRIEVAL"),
+    )
     reid_batch_size: int = Field(default=32, ge=1, le=256)
     solider_par_head: Path | None = Field(
         default=None,
@@ -169,6 +173,7 @@ class EngineConfig:
     clip_weight: float
     aggregate_top_frames: int
     reid_batch_size: int
+    identity_primary_retrieval: bool = False
     minimum_person_crop_quality: float = 0.40
     model_directory: str = "models"
     model_manifest: str = "configs/realtime_model_manifest.json"
@@ -216,6 +221,7 @@ class EngineConfig:
             clip_weight=settings.clip_weight,
             aggregate_top_frames=settings.aggregate_top_frames,
             reid_batch_size=settings.reid_batch_size,
+            identity_primary_retrieval=settings.identity_primary_retrieval,
             model_directory=str(settings.model_directory),
             model_manifest=str(settings.model_manifest),
             clip_revision=settings.clip_revision,

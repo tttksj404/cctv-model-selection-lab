@@ -9,6 +9,7 @@ from qwen_backend.attribute_ensemble import (
     FrameAttributeScores,
     add_track_consistency,
     aggregate_track_scores,
+    apply_identity_primary_score,
     color_scores,
     decide_track,
     fuse_track_scores,
@@ -67,6 +68,62 @@ def test_ensemble_does_not_turn_missing_identity_into_a_positive_score() -> None
 
     assert aggregate.identity is None
     assert 0.0 < aggregate.score < 0.9
+
+
+def test_identity_primary_track_aggregation_uses_identity_quality_frames() -> None:
+    attributes = parse_search_attributes("person")
+    rows = (
+        FrameAttributeScores(
+            semantic=0.99,
+            upper_color=None,
+            lower_color=None,
+            fine_attribute=None,
+            identity=0.20,
+            quality=0.9,
+        ),
+        FrameAttributeScores(
+            semantic=0.40,
+            upper_color=None,
+            lower_color=None,
+            fine_attribute=None,
+            identity=0.90,
+            quality=0.9,
+        ),
+    )
+
+    semantic = aggregate_track_scores(rows, attributes, top_frames=1)
+    identity = aggregate_track_scores(
+        rows,
+        attributes,
+        top_frames=1,
+        ranking_signal="identity",
+    )
+
+    assert semantic.identity == 0.20
+    assert identity.identity == 0.90
+
+
+def test_identity_primary_score_keeps_attribute_evidence_but_changes_ranking() -> None:
+    attributes = parse_search_attributes("person")
+    aggregate = aggregate_track_scores(
+        (
+            FrameAttributeScores(
+                semantic=0.95,
+                upper_color=None,
+                lower_color=None,
+                fine_attribute=0.80,
+                identity=0.35,
+                quality=0.9,
+            ),
+        ),
+        attributes,
+    )
+    fused = fuse_track_scores(aggregate)
+    primary = apply_identity_primary_score(fused, enabled=True)
+
+    assert primary.score == 0.35
+    assert primary.semantic == fused.semantic
+    assert primary.fine_attribute == fused.fine_attribute
 
 
 def test_required_color_mismatch_is_not_emitted_even_when_semantic_score_is_high() -> None:

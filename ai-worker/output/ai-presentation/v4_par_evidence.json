@@ -1,0 +1,18 @@
+{
+  "source": "https://github.com/donghyeoni/yopar-train",
+  "source_repository": "yopar-train",
+  "dataset": "PETA + Market-1501",
+  "test_protocol": "repository README test set: 15 images (male 9, female 6)",
+  "metric": "per-attribute classification accuracy and mean",
+  "rows": [
+    {"version": "v1", "gender": 0.73, "upper": 0.53, "lower": 0.73, "sleeve": null, "mean": 0.67, "status": "baseline"},
+    {"version": "v2", "gender": 0.93, "upper": 0.47, "lower": 0.87, "sleeve": null, "mean": 0.76, "status": "comparison"},
+    {"version": "v3", "gender": 0.87, "upper": 0.53, "lower": 1.00, "sleeve": null, "mean": 0.80, "status": "comparison"},
+    {"version": "v4", "gender": 0.87, "upper": 0.80, "lower": 0.87, "sleeve": 1.00, "mean": 0.885, "status": "adopted"},
+    {"version": "v5", "gender": 0.80, "upper": 0.67, "lower": 0.87, "sleeve": 1.00, "mean": 0.835, "status": "not_adopted"}
+  ],
+  "v4_reason": "PETA+Market integration with four heads; highest reported mean",
+  "v5_reason": "README reports stronger augmentation increased blue/achromatic confusion",
+  "deployment_reference": "color_par_v4_multi_resnet50_sleeve.onnx -> TensorRT FP16",
+  "scope_warning": "PAR classification accuracy is separate from CCTV identity ReID Recall@5"
+}

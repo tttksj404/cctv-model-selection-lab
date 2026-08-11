@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "eyesonu-chirla-track-evidence-v1",
+  "dataset": "CHIRLA complete local manifest",
+  "datasetStatus": "public-proxy-not-project-CCTV",
+  "protocol": "strict-cross-camera-sequence",
+  "metricUnit": "persistent-query-track",
+  "model": "SOLIDER official Swin-B MSMT17 checkpoint",
+  "modelArray": "solider_reid_swin_base_msmt17",
+  "aggregation": "mean identity score over frames in one query track",
+  "counts": {
+    "frameQueries": 95,
+    "queryTracks": 40,
+    "galleryIdentities": 11
+  },
+  "frameLevel": {
+    "count": 95,
+    "rank1Hits": 40,
+    "recallAt5Hits": 80,
+    "rank1": 0.42105263157894735,
+    "recallAt5": 0.8421052631578947,
+    "mrr": 0.5756899825320879,
+    "worstRank": 11
+  },
+  "trackLevel": {
+    "count": 40,
+    "rank1Hits": 18,
+    "recallAt5Hits": 35,
+    "rank1": 0.45,
+    "recallAt5": 0.875,
+    "mrr": 0.6031358225108225,
+    "worstRank": 11
+  },
+  "bySequence": {
+    "seq_002": {
+      "count": 4,
+      "rank1Hits": 3,
+      "recallAt5Hits": 4,
+      "rank1": 0.75,
+      "recallAt5": 1.0,
+      "mrr": 0.8125,
+      "worstRank": 4
+    },
+    "seq_004": {
+      "count": 11,
+      "rank1Hits": 5,
+      "recallAt5Hits": 9,
+      "rank1": 0.45454545454545453,
+      "recallAt5": 0.8181818181818182,
+      "mrr": 0.5756887052341597,
+      "worstRank": 11
+    },
+    "seq_007": {
+      "count": 3,
+      "rank1Hits": 2,
+      "recallAt5Hits": 3,
+      "rank1": 0.6666666666666666,
+      "recallAt5": 1.0,
+      "mrr": 0.75,
+      "worstRank": 4
+    },
+    "seq_020": {
+      "count": 10,
+      "rank1Hits": 4,
+      "recallAt5Hits": 8,
+      "rank1": 0.4,
+      "recallAt5": 0.8,
+      "mrr": 0.520952380952381,
+      "worstRank": 7
+    },
+    "seq_024": {
+      "count": 6,
+      "rank1Hits": 3,
+      "recallAt5Hits": 6,
+      "rank1": 0.5,
+      "recallAt5": 1.0,
+      "mrr": 0.6805555555555555,
+      "worstRank": 4
+    },
+    "seq_025": {
+      "count": 6,
+      "rank1Hits": 1,
+      "recallAt5Hits": 5,
+      "rank1": 0.16666666666666666,
+      "recallAt5": 0.8333333333333334,
+      "mrr": 0.5,
+      "worstRank": 6
+    }
+  },
+  "promotion": {
+    "targetRecallAt5": 0.85,
+    "observedRecallAt5": 0.875,
+    "passed": true,
+    "interpretation": "track-level candidate retrieval gate passed on a public proxy; this is not a project-CCTV deployment guarantee"
+  },
+  "provenance": {
+    "scoreMatrixSha256": "fd71aeaf15c7dcd2d1a78ed246b4a574781016c59e837fa732f731249498208d",
+    "metadataSha256": "f59851c67854271b91ba71ee60b5ede38f207b90292989808254a762fa8e68c1",
+    "manifestSha256": "e24d7b2acc1fe491cb8a64ce736c0070b6f2163a6343b551f265ff19a7a243e",
+    "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7"
+  },
+  "trackReceipts": [
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_1/seq_004/imgs/camera_2_2023-06-08-12-29-08/1",
+      "frameCount": 3,
+      "identity": "1",
+      "camera": "camera_2_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_1/seq_004/imgs/camera_2_2023-06-08-12-29-08/3",
+      "frameCount": 3,
+      "identity": "3",
+      "camera": "camera_2_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_1/seq_004/imgs/camera_2_2023-06-08-12-29-08/5",
+      "frameCount": 3,
+      "identity": "5",
+      "camera": "camera_2_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_1/seq_004/imgs/camera_2_2023-06-08-12-29-08/6",
+      "frameCount": 3,
+      "identity": "6",
+      "camera": "camera_2_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_2/seq_007/imgs/camera_1_2023-06-13-13-31-40/1",
+      "frameCount": 3,
+      "identity": "1",
+      "camera": "camera_1_2023-06-13-13:31:40",
+      "sequence": "seq_007"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_2/seq_007/imgs/camera_1_2023-06-13-13-31-40/3",
+      "frameCount": 3,
+      "identity": "3",
+      "camera": "camera_1_2023-06-13-13:31:40",
+      "sequence": "seq_007"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_2/seq_007/imgs/camera_1_2023-06-13-13-31-40/9",
+      "frameCount": 3,
+      "identity": "9",
+      "camera": "camera_1_2023-06-13-13:31:40",
+      "sequence": "seq_007"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_3/seq_002/imgs/camera_3_2023-06-02-12-09-07/1",
+      "frameCount": 3,
+      "identity": "1",
+      "camera": "camera_3_2023-06-02-12:09:07",
+      "sequence": "seq_002"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_3/seq_002/imgs/camera_3_2023-06-02-12-09-07/3",
+      "frameCount": 3,
+      "identity": "3",
+      "camera": "camera_3_2023-06-02-12:09:07",
+      "sequence": "seq_002"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_3/seq_002/imgs/camera_3_2023-06-02-12-09-07/5",
+      "frameCount": 3,
+      "identity": "5",
+      "camera": "camera_3_2023-06-02-12:09:07",
+      "sequence": "seq_002"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_3/seq_002/imgs/camera_3_2023-06-02-12-09-07/6",
+      "frameCount": 3,
+      "identity": "6",
+      "camera": "camera_3_2023-06-02-12:09:07",
+      "sequence": "seq_002"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_4/seq_020/imgs/camera_3_2023-07-26-13-21-40/1",
+      "frameCount": 3,
+      "identity": "1",
+      "camera": "camera_3_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_4/seq_020/imgs/camera_3_2023-07-26-13-21-40/2",
+      "frameCount": 3,
+      "identity": "2",
+      "camera": "camera_3_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_4/seq_020/imgs/camera_3_2023-07-26-13-21-40/3",
+      "frameCount": 3,
+      "identity": "3",
+      "camera": "camera_3_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_4/seq_020/imgs/camera_3_2023-07-26-13-21-40/4",
+      "frameCount": 3,
+      "identity": "4",
+      "camera": "camera_3_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_4/seq_020/imgs/camera_3_2023-07-26-13-21-40/9",
+      "frameCount": 2,
+      "identity": "9",
+      "camera": "camera_3_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_5/seq_020/imgs/camera_5_2023-07-26-13-21-40/1",
+      "frameCount": 2,
+      "identity": "1",
+      "camera": "camera_5_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_5/seq_020/imgs/camera_5_2023-07-26-13-21-40/2",
+      "frameCount": 2,
+      "identity": "2",
+      "camera": "camera_5_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_5/seq_020/imgs/camera_5_2023-07-26-13-21-40/3",
+      "frameCount": 2,
+      "identity": "3",
+      "camera": "camera_5_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_5/seq_020/imgs/camera_5_2023-07-26-13-21-40/4",
+      "frameCount": 2,
+      "identity": "4",
+      "camera": "camera_5_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_5/seq_020/imgs/camera_5_2023-07-26-13-21-40/9",
+      "frameCount": 2,
+      "identity": "9",
+      "camera": "camera_5_2023-07-26-13:21:40",
+      "sequence": "seq_020"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/10",
+      "frameCount": 2,
+      "identity": "10",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/12",
+      "frameCount": 2,
+      "identity": "12",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/2",
+      "frameCount": 2,
+      "identity": "2",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/6",
+      "frameCount": 2,
+      "identity": "6",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/7",
+      "frameCount": 2,
+      "identity": "7",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_6/seq_025/imgs/camera_4_2023-12-04-12-11-17/9",
+      "frameCount": 2,
+      "identity": "9",
+      "camera": "camera_4_2023-12-04-12:11:17",
+      "sequence": "seq_025"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_7/seq_004/imgs/camera_4_2023-06-08-12-29-08/2",
+      "frameCount": 2,
+      "identity": "2",
+      "camera": "camera_4_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_7/seq_004/imgs/camera_4_2023-06-08-12-29-08/5",
+      "frameCount": 2,
+      "identity": "5",
+      "camera": "camera_4_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_7/seq_004/imgs/camera_4_2023-06-08-12-29-08/6",
+      "frameCount": 2,
+      "identity": "6",
+      "camera": "camera_4_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_7/seq_004/imgs/camera_4_2023-06-08-12-29-08/7",
+      "frameCount": 2,
+      "identity": "7",
+      "camera": "camera_4_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/10",
+      "frameCount": 2,
+      "identity": "10",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/14",
+      "frameCount": 2,
+      "identity": "14",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/2",
+      "frameCount": 2,
+      "identity": "2",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/6",
+      "frameCount": 2,
+      "identity": "6",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/7",
+      "frameCount": 2,
+      "identity": "7",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_8/seq_024/imgs/camera_1_2023-12-01-11-05-52/9",
+      "frameCount": 2,
+      "identity": "9",
+      "camera": "camera_1_2023-12-01-11:05:52",
+      "sequence": "seq_024"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_9/seq_004/imgs/camera_6_2023-06-08-12-29-08/2",
+      "frameCount": 2,
+      "identity": "2",
+      "camera": "camera_6_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_9/seq_004/imgs/camera_6_2023-06-08-12-29-08/3",
+      "frameCount": 2,
+      "identity": "3",
+      "camera": "camera_6_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    },
+    {
+      "trackId": "experiments/data/from_local/chirla/benchmark/reid/multi_camera_long_term/test/test_9/seq_004/imgs/camera_6_2023-06-08-12-29-08/7",
+      "frameCount": 2,
+      "identity": "7",
+      "camera": "camera_6_2023-06-08-12:29:08",
+      "sequence": "seq_004"
+    }
+  ]
+}

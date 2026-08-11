@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "project-cctv-manifest-solider-embeddings-v1",
+  "manifest": "C:\\Users\\SSAFY\\Desktop\\2학기\\S15P11A204-deploy-ai-worker-env-fix\\ai-worker\\experiments\\data\\cctv_real\\recordings_cache_20260811\\manifest.enriched.jsonl",
+  "manifestSha256": "36855ac5f299ad07392f8a87b5d70d288792ba3631e6817cdd772c707de985cd",
+  "root": "C:\\Users\\SSAFY\\Desktop\\2학기\\S15P11A204-deploy-ai-worker-env-fix\\ai-worker",
+  "model": "solider-reid-swin-base-msmt17",
+  "checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\models\\solider_reid\\swin_base_msmt17.pth",
+  "soliderRoot": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\external\\SOLIDER-REID-runtime-8c08e1c",
+  "device": "cuda",
+  "tta": "hflip",
+  "neckFeat": "before",
+  "trackCount": 462,
+  "frameCount": 3576,
+  "featureShape": [
+    462,
+    1024
+  ],
+  "frameFeatureShape": [
+    3576,
+    1024
+  ],
+  "maxFramesPerTrack": 16,
+  "identityLabelsCreated": false,
+  "outputSha256": "9a72e1bf1755a9dc6159a4700c0d8026d3dbc96cc932a02cb31be5e2f6c37902"
+}

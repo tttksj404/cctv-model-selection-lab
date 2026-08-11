@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "eyesonu-orchestration-experiment-config-v1",
+  "graph": {
+    "includeTeacherShadow": true,
+    "requiredModels": ["yolo", "clip", "solider"],
+    "optionalModels": ["par", "qwen", "grounding_dino", "sam2", "sonnet"]
+  },
+  "loop": {
+    "rounds": 5,
+    "validationOnlyCalibration": true,
+    "sealedTestEvaluation": true,
+    "selectedArmOnlyTestEvaluation": true,
+    "hardNegativeMining": true
+  },
+  "promotionGate": {
+    "minimumKnownQueries": 100,
+    "minimumDistractorQueries": 100,
+    "knownRank1": 0.85,
+    "knownRecallAt5": 0.95,
+    "automaticDecisionAccuracy": 0.85,
+    "maximumDistractorFalseMatchRate": 0.05,
+    "maximumFalseRejectRate": 0.15
+  }
+}

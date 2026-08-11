@@ -40,7 +40,7 @@ from reportlab.platypus import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "docs" / "AI_WORKER_COMPLETE_GUIDE.md"
-DEFAULT_OUTPUT = ROOT / "output" / "pdf" / "AI_WORKER_COMPLETE_GUIDE.pdf"
+DEFAULT_OUTPUT = ROOT / "output" / "pdf" / "AI_WORKER_COMPLETE_GUIDE_EASY.pdf"
 FONT_REGULAR = Path("C:/Windows/Fonts/malgun.ttf")
 FONT_BOLD = Path("C:/Windows/Fonts/malgunbd.ttf")
 
@@ -260,7 +260,7 @@ def make_pdf(input_path: Path, output_path: Path) -> None:
         Spacer(1, 10 * mm),
         Paragraph("중학교 2학년도 이해할 수 있도록 설명한 현재 상태 보고서", cover_subtitle),
         Spacer(1, 8 * mm),
-        Paragraph("작성 기준일: 2026-08-06", cover_subtitle),
+        Paragraph("작성 기준일: 2026-08-10", cover_subtitle),
         Spacer(1, 25 * mm),
         Table(
             [[Paragraph(inline_markup("현재 기본 후보 엔진"), cover_subtitle),
@@ -281,6 +281,30 @@ def make_pdf(input_path: Path, output_path: Path) -> None:
         ),
         PageBreak(),
     ]
+    if input_path.name == "AI_WORKER_STUDY_GUIDE_MIDDLE_SCHOOL.md":
+        cover[2] = Paragraph("AI Worker 학습·추론 쉬운 안내서", cover_title)
+        cover[4] = Paragraph(
+            "파인튜닝·증류·모델별 역할·CCTV 추론을 한 문서로 설명",
+            cover_subtitle,
+        )
+        cover[6] = Paragraph("중학교 2학년 기준 설명 · 2026-08-10", cover_subtitle)
+        cover[8] = Table(
+            [[Paragraph(inline_markup("학습"), cover_subtitle),
+              Paragraph(inline_markup("CLIP·SOLIDER·Qwen"), cover_subtitle)],
+             [Paragraph(inline_markup("추론"), cover_subtitle),
+              Paragraph(inline_markup("YOLO → 후보 점수 → 관리자 검토"), cover_subtitle)],
+             [Paragraph(inline_markup("읽는 방법"), cover_subtitle),
+              Paragraph(inline_markup("앞 설명부터 읽고 코드는 필요할 때 확인"), cover_subtitle)]],
+            colWidths=[55 * mm, 105 * mm],
+            style=TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F4F8FB")),
+                ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor("#8AA5BF")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#B8C7D9")),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ]),
+        )
     story = cover + parse_markdown(markdown)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     document.build(story, onFirstPage=draw_footer, onLaterPages=draw_footer)

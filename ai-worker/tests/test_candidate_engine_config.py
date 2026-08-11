@@ -19,6 +19,7 @@ def test_candidate_engine_config_reads_all_runtime_thresholds_from_environment(
     monkeypatch.setenv("QWEN_CANDIDATE_REID_WEIGHT", "0.6")
     monkeypatch.setenv("QWEN_CANDIDATE_CLIP_WEIGHT", "0.4")
     monkeypatch.setenv("QWEN_CANDIDATE_AGGREGATE_TOP_FRAMES", "5")
+    monkeypatch.setenv("QWEN_CANDIDATE_IDENTITY_PRIMARY_RETRIEVAL", "true")
     monkeypatch.setenv("QWEN_CANDIDATE_REID_BATCH_SIZE", "16")
 
     config = EngineConfig.from_environment()
@@ -33,6 +34,7 @@ def test_candidate_engine_config_reads_all_runtime_thresholds_from_environment(
     assert config.reid_weight == 0.6
     assert config.clip_weight == 0.4
     assert config.aggregate_top_frames == 5
+    assert config.identity_primary_retrieval is True
     assert config.reid_batch_size == 16
 
 

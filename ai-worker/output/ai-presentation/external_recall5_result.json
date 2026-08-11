@@ -1,0 +1,8 @@
+{
+  "metric": "Recall@5",
+  "value": 0.85,
+  "status": "user_reported_external",
+  "source": "다른 컴퓨터에서 수행한 외부 실험 결과",
+  "verification": "원본 로그·노트북 미수령",
+  "rank1": null
+}
