@@ -6434,6 +6434,48 @@
       "reason": "source_or_experiment_evidence"
     },
     {
+      "source": "notebooks\\agv-grid\\yolov5\\classify\\tutorial.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\agv-grid\\yolov5\\classify\\tutorial.ipynb",
+      "size": 102901,
+      "sha256": "e816f82eda130c350f5ec11f14025accaeb80ef55ac41c848cb5b5ee81fafaf9",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
+      "source": "notebooks\\agv-grid\\yolov5\\segment\\tutorial.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\agv-grid\\yolov5\\segment\\tutorial.ipynb",
+      "size": 42887,
+      "sha256": "96841a0031345b3a28e615e26d088c869f2ac8ec248b00a939803452738965a8",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
+      "source": "notebooks\\agv-grid\\yolov5\\tutorial.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\agv-grid\\yolov5\\tutorial.ipynb",
+      "size": 53842,
+      "sha256": "dfbe1f4121ba0b778334e2d068ff197cd7f483f3490dd2fc21ded8f51177936f",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
+      "source": "notebooks\\qwen3-vl\\cookbooks\\german_document_ocr.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\qwen3-vl\\cookbooks\\german_document_ocr.ipynb",
+      "size": 16905,
+      "sha256": "cad4acb0311ac838d8016810c41c968cc8acba7e7b5ec4b83aef5fd6676b1505",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
+      "source": "notebooks\\qwen3-vl\\cookbooks\\think_with_images.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\qwen3-vl\\cookbooks\\think_with_images.ipynb",
+      "size": 2574737,
+      "sha256": "9e4a3c2d40266ec8cef8b8b77e2ddf351655555ebbb6ae4e32080db5e1c9ad01",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
+      "source": "notebooks\\qwen3-vl\\qwen-vl-finetune\\tools\\process_bbox.ipynb",
+      "destination": "gpu-recovery\\cctv\\notebooks\\qwen3-vl\\qwen-vl-finetune\\tools\\process_bbox.ipynb",
+      "size": 429105,
+      "sha256": "7c320edcdd39f95fd6da236c27ee0b2b4f6a97f0bcb3f8e8c501793a1eddcf08",
+      "reason": "source_or_experiment_evidence"
+    },
+    {
       "source": "qwen3-vl\\cookbooks\\assets\\multimodal_coding\\chart2code_input.png",
       "destination": "gpu-recovery\\cctv\\qwen3-vl\\cookbooks\\assets\\multimodal_coding\\chart2code_input.png",
       "size": 66931,
@@ -8156,13 +8198,13 @@
       "reason": "source_or_experiment_evidence"
     }
   ],
-  "excluded_count": 7782,
+  "excluded_count": 7793,
   "excluded_by_reason": {
     "chunked_video_part": 31,
     "generated_or_environment_directory": 3,
     "private_dataset_or_media_metadata": 628,
     "raw_media_or_binary_asset": 4700,
-    "secret_like_content": 6,
+    "secret_like_content": 17,
     "secret_like_filename": 7,
     "unspecified_image": 2355,
     "unsupported_extension": 52
