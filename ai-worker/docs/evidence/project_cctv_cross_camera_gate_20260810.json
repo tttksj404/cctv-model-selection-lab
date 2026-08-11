@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "project-cctv-cross-camera-track-gate-v1",
+  "dataset": "EyesOnU project CCTV",
+  "datasetStatus": "project-CCTV-manually-adjudicated-cross-video",
+  "protocol": "strict-cross-camera-sequence",
+  "metricUnit": "persistent-query-track",
+  "counts": {
+    "identities": 8,
+    "galleryRecords": 90,
+    "queryRecords": 70,
+    "queryTracks": 11,
+    "galleryVideos": ["IMG_3617"],
+    "queryVideos": ["IMG_3618", "IMG_3620"]
+  },
+  "models": {
+    "solider_reid_swin_base_msmt17": {
+      "rank1": 0.8181818181818182,
+      "recallAt5": 1.0,
+      "mrr": 0.9090909090909091,
+      "worstRank": 2,
+      "passedRecallAt5_85": true
+    },
+    "siglip2_base": {
+      "rank1": 0.36363636363636365,
+      "recallAt5": 1.0,
+      "mrr": 0.6666666666666666,
+      "worstRank": 3,
+      "passedRecallAt5_85": true
+    },
+    "clip_vit_l14": {
+      "rank1": 0.45454545454545453,
+      "recallAt5": 1.0,
+      "mrr": 0.6015151515151514,
+      "worstRank": 5,
+      "passedRecallAt5_85": true
+    },
+    "dinov2_base": {
+      "rank1": 0.2727272727272727,
+      "recallAt5": 0.7272727272727273,
+      "mrr": 0.5167748917748918,
+      "worstRank": 8,
+      "passedRecallAt5_85": false
+    }
+  },
+  "researchProbes": {
+    "mevidArcFaceBatchHardTripletResidual64": {
+      "trainingSource": "MEVID public data; no project identity labels used for fitting",
+      "headSha256": "1a530575e105731c6cd19c5e4bb49e3a9228b25294ecaff615d5d51bf83c2665",
+      "forward": {
+        "trackRank1": 0.9090909090909091,
+        "trackRecallAt5": 1.0,
+        "trackMrr": 0.9545454545454546,
+        "worstRank": 2
+      },
+      "reverse": {
+        "trackRank1": 0.5714285714285714,
+        "trackRecallAt5": 1.0,
+        "trackMrr": 0.7440476190476191,
+        "worstRank": 4
+      },
+      "promotionApproved": false,
+      "promotionReason": "Reverse-direction Rank-1 remains unstable; identity count and independent adjudication are insufficient for automatic 1st-place promotion"
+    },
+    "identityHeldoutOofFusion": {
+      "protocol": "identity-heldout-alpha-selection",
+      "forward": {
+        "queryTracks": 11,
+        "trackRank1": 0.9090909090909091,
+        "trackRecallAt5": 1.0,
+        "trackMrr": 0.9545454545454546,
+        "worstRank": 2
+      },
+      "reverse": {
+        "queryTracks": 14,
+        "trackRank1": 0.5714285714285714,
+        "trackRecallAt5": 1.0,
+        "trackMrr": 0.7321428571428571,
+        "worstRank": 4
+      },
+      "projectIdentityLabelsUsedForMetricHeadFitting": false,
+      "projectIdentityLabelsUsedForOofFusionSelection": true,
+      "heldoutIdentityExcludedFromFusionSelection": true,
+      "promotionApproved": false,
+      "promotionReason": "OOF confirms candidate-list robustness, but the project set has only eight manually adjudicated identities"
+    },
+    "temporalPoolingProbe": {
+      "artifactSha256": "c242f2644eed396389bbc2f8ee3ea696c53451754763de1ab095b56b139778ee",
+      "modes": ["mean", "median", "max", "top2", "top3", "top5", "top10", "softmax0.05", "softmax0.10", "softmax0.20"],
+      "forward": {
+        "rawMeanTrackRecallAt5": 1.0,
+        "rawMeanTrackRank1": 0.8181818181818182,
+        "metricHeadMeanTrackRecallAt5": 1.0,
+        "metricHeadMeanTrackRank1": 0.9090909090909091
+      },
+      "reverse": {
+        "rawMeanTrackRecallAt5": 1.0,
+        "rawMeanTrackRank1": 0.5,
+        "metricHeadMeanTrackRecallAt5": 1.0,
+        "metricHeadMeanTrackRank1": 0.5714285714285714,
+        "bestFixedProbeMode": "metricHead+median",
+        "bestFixedProbeTrackRank1": 0.6428571428571429
+      },
+      "decision": "Keep mean track pooling for the primary candidate gate; every tested pooling mode kept Recall@5 at 100%, while Rank-1 changes are direction-sensitive and not sufficient for automatic promotion"
+    }
+  },
+  "reviewGate": {
+    "manualAdjudicators": 1,
+    "secondAdjudicatorRequired": true,
+    "productionCertification": false,
+    "pointEstimatePass": true,
+    "directionReversalSensitivity": {
+      "galleryVideos": ["IMG_3618", "IMG_3620"],
+      "queryVideos": ["IMG_3617"],
+      "queryTracks": 14,
+      "soliderRank1": 0.5,
+      "soliderRecallAt5": 1.0,
+      "soliderMrr": 0.6964285714285714,
+      "soliderWorstRank": 4,
+      "independentDataset": false
+    }
+  },
+  "provenance": {
+    "scoreMatrixSha256": "4bbb96fd8294649ab37fb48229ceb53c8b29b1947606304b5197e8de456d91a9",
+    "metadataSha256": "946d85d58004bafd38fbb625dff698c62d2feb2cf8ef3a5f78aae2fc14124294",
+    "gateReportSha256": "b317fd6a537b4f2556dc7f09960b20f470d93ccc79257002c384c450be6cdeed",
+    "oofFusionReportSha256": "1e7335b4a90067efec1b6e143ae7d205bc2943a25371d0119cecc1cf9fc34967",
+    "reverseScoreMatrixSha256": "b08bc56e981b9f0ffb19560183dec9ccf82c8ce59a88bc8d1afd9df112447158",
+    "reverseMetadataSha256": "ae34108eaa117050877ab40fdde740829ad24c1891470956eb98c0485780e3e0",
+    "reverseGateReportSha256": "4ef782c0f31a999b1d97ea044b754afa0ea2ce43241afa1054af022abdd6fd8a"
+  }
+}

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#252525"/></marker>
+<marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#A8A8A8"/></marker>
+</defs>
+<rect x="0" y="0" width="1920" height="1080" rx="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="0"/>
+<text x="80" y="62" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="44px" font-weight="750" fill="#171717">AI Worker 모델 오케스트레이션</text>
+<text x="80" y="104" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="22px" font-weight="400" fill="#5A5A5A">하나의 입력을 나눠 보고, 서로 다른 증거를 다시 하나의 후보로 결합한다</text>
+<rect x="1320" y="32" width="520" height="48" rx="10" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="1344" y="63" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#171717">단일 모델 최고 44%</text>
+<text x="1544" y="63" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="20px" font-weight="700" fill="#252525">→</text>
+<text x="1580" y="63" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#252525">Qwen 포함 오케스트레이션 77%</text>
+<line x1="80" y1="140" x2="1840" y2="140" stroke="#D8D8D8" stroke-width="1"/>
+<text x="80" y="190" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">모델 간 연결</text>
+<text x="310" y="190" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">payload가 오케스트레이션의 핵심이다</text>
+<rect x="80" y="330" width="320" height="300" rx="14" fill="#ffffff" stroke="#D8D8D8" stroke-width="1"/><rect x="80" y="330" width="8" height="300" rx="4" fill="#252525" stroke="#252525" stroke-width="0"/><text x="108" y="374" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">공유 입력</text><text x="108" y="408" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">동일한 context를 병렬 전달</text>
+<line x1="112" y1="416" x2="368" y2="416" stroke="#D8D8D8" stroke-width="1"/>
+<text x="112" y="458" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#171717">인상착의 text</text>
+<text x="112" y="512" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#252525">track_crop</text>
+<text x="112" y="566" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#252525">track_id</text>
+<rect x="520" y="210" width="520" height="590" rx="14" fill="#ffffff" stroke="#D8D8D8" stroke-width="1"/>
+<text x="552" y="254" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">병렬 증거 모델</text>
+<text x="552" y="290" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">같은 입력 · 서로 다른 출력</text>
+<rect x="580" y="320" width="400" height="128" rx="12" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="580" y="320" width="6" height="128" rx="3" fill="#252525" stroke="#252525" stroke-width="0"/><text x="602" y="354" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="24px" font-weight="700" fill="#171717">SOLIDER</text><text x="602" y="384" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="17px" font-weight="400" fill="#5A5A5A">신원 증거</text><text x="602" y="416" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#252525">→</text><text x="628" y="416" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="600" fill="#252525">reid_embedding</text><text x="602" y="440" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="400" fill="#5A5A5A">입력: text + crop</text>
+<rect x="580" y="464" width="400" height="128" rx="12" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="580" y="464" width="6" height="128" rx="3" fill="#252525" stroke="#252525" stroke-width="0"/><text x="602" y="498" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="24px" font-weight="700" fill="#171717">CLIP</text><text x="602" y="528" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="17px" font-weight="400" fill="#5A5A5A">의미 증거</text><text x="602" y="560" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#252525">→</text><text x="628" y="560" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="600" fill="#252525">clip_score</text><text x="602" y="584" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="400" fill="#5A5A5A">입력: text + crop</text>
+<rect x="580" y="608" width="400" height="128" rx="12" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="580" y="608" width="6" height="128" rx="3" fill="#252525" stroke="#252525" stroke-width="0"/><text x="602" y="642" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="24px" font-weight="700" fill="#171717">PAR + ROI</text><text x="602" y="672" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="17px" font-weight="400" fill="#5A5A5A">속성 증거</text><text x="602" y="704" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="700" fill="#252525">→</text><text x="628" y="704" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="600" fill="#252525">attr_vector</text><text x="602" y="728" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="400" fill="#5A5A5A">입력: crop + mask</text>
+<line x1="400" y1="480" x2="500" y2="480" stroke="#A8A8A8" stroke-width="1"/>
+<line x1="500" y1="376" x2="500" y2="664" stroke="#A8A8A8" stroke-width="1"/>
+<line x1="500" y1="376" x2="580" y2="376" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<line x1="500" y1="520" x2="580" y2="520" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<line x1="500" y1="664" x2="580" y2="664" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<rect x="1180" y="330" width="320" height="300" rx="14" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="1180" y="330" width="8" height="300" rx="4" fill="#252525" stroke="#252525" stroke-width="0"/><text x="1208" y="374" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">Evidence Contract</text><text x="1208" y="408" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">track 단위로 세 출력을 묶음</text>
+<text x="1212" y="430" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="600" fill="#252525">reid_embedding</text>
+<text x="1212" y="480" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="600" fill="#252525">clip_score</text>
+<text x="1212" y="530" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="600" fill="#252525">attr_vector</text>
+<line x1="980" y1="376" x2="1100" y2="376" stroke="#252525" stroke-width="2"/>
+<path d="M980,376 L1100,376 L1100,430 L1180,430" fill="none" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<path d="M980,520 L1120,520 L1120,480 L1180,480" fill="none" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<path d="M980,664 L1140,664 L1140,530 L1180,530" fill="none" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<text x="1212" y="610" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#252525">track_evidence</text>
+<path d="M1340,630 L1340,680" fill="none" stroke="#252525" stroke-width="2" marker-end="url(#arrow-blue)"/>
+<text x="1186" y="662" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="600" fill="#252525">profile + evidence</text>
+<rect x="1180" y="680" width="320" height="160" rx="14" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="1180" y="680" width="8" height="160" rx="4" fill="#252525" stroke="#252525" stroke-width="0"/><text x="1208" y="724" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">Qwen3-VL</text><text x="1208" y="758" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">의미·속성 검증</text>
+<text x="1212" y="790" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="22px" font-weight="600" fill="#252525">qwen_score</text>
+<text x="1212" y="826" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="16px" font-weight="400" fill="#5A5A5A">입력: profile + evidence</text>
+<rect x="1580" y="330" width="280" height="240" rx="14" fill="#ffffff" stroke="#D8D8D8" stroke-width="1"/><rect x="1580" y="330" width="8" height="240" rx="4" fill="#252525" stroke="#252525" stroke-width="0"/><text x="1608" y="374" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">Late Fusion</text><text x="1608" y="408" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">시각 증거 + Qwen 검증 결합</text>
+<text x="1612" y="430" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#252525">track_evidence</text>
+<text x="1612" y="466" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#252525">qwen_score</text>
+<text x="1612" y="510" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#171717">match_score +</text>
+<text x="1612" y="540" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#171717">uncertainty</text>
+<line x1="1500" y1="430" x2="1580" y2="430" stroke="#252525" stroke-width="3" marker-end="url(#arrow-blue)"/>
+<path d="M1500,790 L1540,790 L1540,466 L1580,466" fill="none" stroke="#252525" stroke-width="3" marker-end="url(#arrow-blue)"/>
+<line x1="1720" y1="570" x2="1720" y2="650" stroke="#252525" stroke-width="3" marker-end="url(#arrow-blue)"/>
+<rect x="1580" y="650" width="280" height="180" rx="14" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/><rect x="1580" y="650" width="8" height="180" rx="4" fill="#252525" stroke="#252525" stroke-width="0"/><text x="1608" y="694" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="28px" font-weight="700" fill="#171717">최종 후보</text><text x="1608" y="728" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="18px" font-weight="400" fill="#5A5A5A">후보 점수와 검토 사유</text>
+<text x="1612" y="754" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="20px" font-weight="600" fill="#252525">candidate_score</text>
+<text x="1612" y="794" font-family="Consolas, SFMono-Regular, Liberation Mono, monospace" font-size="18px" font-weight="600" fill="#171717">review_required</text>
+<line x1="80" y1="900" x2="1840" y2="900" stroke="#D8D8D8" stroke-width="1"/>
+<text x="80" y="956" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="20px" font-weight="700" fill="#252525">발표 한 문장</text>
+<text x="250" y="956" font-family="Pretendard, Noto Sans KR, Arial, sans-serif" font-size="22px" font-weight="600" fill="#171717">같은 입력을 세 시각 증거 모델에 공유하고, Qwen이 속성·의미를 검증한 뒤 Late Fusion에서 하나의 후보 점수로 결합합니다.</text>
+</svg>

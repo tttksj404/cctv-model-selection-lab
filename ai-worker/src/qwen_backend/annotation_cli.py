@@ -15,7 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--teacher-model", required=True)
     parser.add_argument(
         "--source-kind",
-        choices=("human", "open_model", "synthetic_fixture", "florence"),
+        choices=("human", "open_model", "synthetic_fixture", "florence", "sonnet"),
         default="open_model",
     )
     parser.add_argument("--prompt-version", default="candidate-v1")

@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -23,6 +24,12 @@ import cv2
 from qwen_backend.cctv_multitrack import format_track_id
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _short_path_key(value: str) -> str:
+    """Return a stable bounded directory key for a long recording identifier."""
+    digest = hashlib.blake2b(value.encode("utf-8"), digest_size=8).hexdigest()
+    return f"video-{digest}"
 
 
 def _parse_args() -> argparse.Namespace:
@@ -92,7 +99,7 @@ def _process_video(
         raise RuntimeError(f"video_fps_missing: {video_path}")
 
     video_id = video_path.stem
-    crop_root = root / "crops" / video_id
+    crop_root = root / "crops" / _short_path_key(video_id)
     crop_root.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []
     saved_per_track: dict[int, int] = defaultdict(int)
@@ -142,7 +149,7 @@ def _process_video(
             if crop.size == 0:
                 continue
             track_id = format_track_id(video_id, tracker_id)
-            track_root = crop_root / track_id
+            track_root = crop_root / f"track-{tracker_id:04d}"
             track_root.mkdir(parents=True, exist_ok=True)
             crop_path = track_root / f"{frame_index:06d}.jpg"
             _write_image(crop_path, crop)

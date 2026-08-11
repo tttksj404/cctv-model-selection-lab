@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "project-cctv-track-pooling-probe-v1",
+  "protocol": "strict-cross-camera-sequence",
+  "sourceArtifact": "qwen3vl-backend/tmp/project_track_pooling_20260810.json",
+  "sourceArtifactSha256": "c242f2644eed396389bbc2f8ee3ea696c53451754763de1ab095b56b139778ee",
+  "modes": [
+    "mean",
+    "median",
+    "max",
+    "top2",
+    "top3",
+    "top5",
+    "top10",
+    "softmax0.05",
+    "softmax0.10",
+    "softmax0.20"
+  ],
+  "result": {
+    "forward": {
+      "rawMean": {"trackRank1": 0.8181818181818182, "trackRecallAt5": 1.0},
+      "metricHeadMean": {"trackRank1": 0.9090909090909091, "trackRecallAt5": 1.0}
+    },
+    "reverse": {
+      "rawMean": {"trackRank1": 0.5, "trackRecallAt5": 1.0},
+      "metricHeadMean": {"trackRank1": 0.5714285714285714, "trackRecallAt5": 1.0},
+      "metricHeadMedian": {"trackRank1": 0.6428571428571429, "trackRecallAt5": 1.0}
+    }
+  },
+  "decision": {
+    "primaryMetric": "trackRecallAt5",
+    "gate": 0.85,
+    "allTestedModesKeptGate": true,
+    "productionPooling": "mean",
+    "reason": "Mean is fixed and direction-robust for the candidate gate; median Rank-1 improvement is a secondary research observation, not a reason to tune on this small set."
+  }
+}

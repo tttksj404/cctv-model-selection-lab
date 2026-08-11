@@ -17,6 +17,7 @@ from qwen_backend.attribute_ensemble import (
     SearchAttributes,
     add_track_consistency,
     aggregate_track_scores,
+    apply_identity_primary_score,
     color_scores,
     crop_quality,
     decide_track,
@@ -442,6 +443,11 @@ class MultiModelCandidateEngine:
             # being provisioned.
             par_status = f"fallback:CLIP-PETA-PA100k:{self._fine_status}"
 
+        identity_primary = (
+            self._config.identity_primary_retrieval and reid_scores is not None
+        )
+        ranking_signal = "identity" if identity_primary else "semantic"
+
         grouped: dict[int, list[FrameAttributeScores]] = defaultdict(list)
         for index, (frame, semantic) in enumerate(zip(frames, semantic_scores, strict=True)):
             upper_color, lower_color = color_values[id(frame)]
@@ -473,6 +479,7 @@ class MultiModelCandidateEngine:
                     rows,
                     attributes,
                     top_frames=self._config.aggregate_top_frames,
+                    ranking_signal=ranking_signal,
                 ),
                 [frame for frame in frames if frame.track_id == track_id],
             )
@@ -485,9 +492,12 @@ class MultiModelCandidateEngine:
             bundle=bundle,
         )
         fused_by_track = {
-            track_id: fuse_track_scores(
-                scores,
-                historical=historical_by_track.get(track_id),
+            track_id: apply_identity_primary_score(
+                fuse_track_scores(
+                    scores,
+                    historical=historical_by_track.get(track_id),
+                ),
+                enabled=identity_primary,
             )
             for track_id, scores in base_by_track.items()
         }
@@ -523,10 +533,13 @@ class MultiModelCandidateEngine:
             if review is not None:
                 qwen_by_track[track_id] = review.score
         fused_by_track = {
-            track_id: fuse_track_scores(
-                scores,
-                historical=historical_by_track.get(track_id),
-                qwen=qwen_by_track.get(track_id),
+            track_id: apply_identity_primary_score(
+                fuse_track_scores(
+                    scores,
+                    historical=historical_by_track.get(track_id),
+                    qwen=qwen_by_track.get(track_id),
+                ),
+                enabled=identity_primary,
             )
             for track_id, scores in base_by_track.items()
         }
@@ -550,6 +563,10 @@ class MultiModelCandidateEngine:
             ("CLIP-ViT-L/14", "used"),
             ("ROI-color", "used" if attributes.has_color_requirement else "not_required"),
             ("SOLIDER", reid_status),
+            (
+                "Candidate-ranking",
+                "SOLIDER-identity-primary" if identity_primary else "late-fusion",
+            ),
             ("SOLIDER-PAR", par_status),
             ("CLIP-PETA-PA100k", self._fine_status),
             ("Historical-retrieval", historical_status),
@@ -626,6 +643,7 @@ class MultiModelCandidateEngine:
                         f"readableFrames={readable_frame_count};"
                         f"evidenceQuality={evidence_quality_by_track[track_id]:.3f};"
                         f"identityAnchor={anchor_status};"
+                        f"ranking={'SOLIDER-primary' if identity_primary else 'late-fusion'};"
                         "candidateMode=operator_review"
                     )[:2_000],
                 )

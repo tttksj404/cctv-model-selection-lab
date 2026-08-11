@@ -1,6 +1,6 @@
 # EYES:ON U AI Worker 전체 제작·연결·학습 안내서
 
-> 작성 기준일: 2026-08-07
+> 작성 기준일: 2026-08-10
 > 저장소: `S15P11A204-deploy-ai-worker-env-fix`
 > 기준 구현: ServerAI AI Worker (`hybrid-solider-clip-v1`)
 
@@ -602,7 +602,7 @@ GUI의 일반 Python `INFO` 로그는 오류처럼 보이지 않게 표시하고
 ```powershell
 uv sync --extra realtime --frozen
 .\scripts\Start-NotebookAiWorker.ps1 `
-  -EnvFile C:\Users\SSAFY\Desktop\ai.env.txt
+  -EnvFile <worker-env-file>
 ```
 
 바탕화면 실행 파일을 만들 때는 다음 스크립트를 사용한다.
@@ -902,6 +902,361 @@ CHIRLA strict 결과에서도 CLIP+HSV+ArcFace+hard-triplet 계열 track Rank-1�
 승격하는 규칙을 유지했다.
 
 ---
+
+### 13.5 쉽게 이해하고 실제 코드로 보는 파인튜닝
+
+먼저 어려운 단어를 아주 쉽게 바꾸면 다음과 같다.
+
+- **파인튜닝**: 이미 공부한 모델에게 우리 사진과 정답을 더 보여주고, 틀린 부분만 조금 고치는 것
+- **증류**: 잘하는 선생님 모델의 답을 학생 모델이 따라 배우는 것
+- **오케스트레이션**: 한 모델이 모든 일을 하는 대신, 여러 모델이 역할을 나누고 결과를 합치는 것
+- **검수**: 모델의 답을 사람이 확인해서 학습에 써도 되는지 결정하는 것
+
+코드에서 자주 나오는 말도 이렇게 읽으면 된다.
+
+- `feature`: 사진을 숫자로 요약한 값
+- `head`: 그 숫자를 보고 색상·속성·동일인 여부를 판단하는 작은 층
+- `loss`: 모델의 답이 정답에서 얼마나 틀렸는지를 나타내는 점수
+- `logit`: 아직 확률로 바꾸기 전의 원점수
+- `embedding`: 사람 사진의 특징을 모아 만든 숫자 지문
+- `track`: 영상에서 같은 사람으로 묶은 여러 프레임
+
+이 절에서는 “파인튜닝을 했다”는 말을 실제 코드로 확인한다. 모델을 처음부터
+새로 만드는 것이 아니라, 사진을 넣고 정답과 얼마나 다른지(`loss`)를 계산한 뒤
+`backward()`와 `optimizer.step()`으로 필요한 부분의 가중치만 조금씩 바꾼다.
+발표를 준비하는 사람은 각 설명과 결과 표를 먼저 읽고, 아래 코드는 재현이 필요할
+때 확인하면 된다. 현재 저장소에서는 서로 목적이 다른 세 가지 학습 방법을 따로 관리한다.
+
+#### A. CLIP ViT-L/14 속성 head와 SOLIDER logit KD
+
+`scripts/train_clip_vitl14_distill.py`는 CLIP에게 사진의 특징을 뽑게 한 뒤,
+CLIP 본체는 그대로 두고 **속성을 읽는 작은 head**만 학습한다. 예를 들어
+“상의가 파란색인가?” 같은 답을 맞히도록 고친다. 드문 속성이 학습에서 묻히지
+않도록 weighted BCE를 쓰고, SOLIDER가 낸 점수가 있으면 그 점수도 참고한다.
+
+```python
+# scripts/train_clip_vitl14_distill.py의 실제 학습 핵심
+features = _clip_features(clip, pixel_values)
+head = BinaryAttributeHead(features.shape[1]).to(device)
+optimizer = torch.optim.AdamW(head.parameters(), lr=2e-3, weight_decay=1e-4)
+logits = head(features)
+
+hard_loss = _weighted_bce(logits, labels, positive_ratio)
+if teacher_logits is not None and distill_alpha > 0:
+    soft_target = (teacher_logits / temperature).sigmoid()
+    soft_loss = F.binary_cross_entropy_with_logits(
+        logits / temperature, soft_target
+    ) * temperature**2
+    loss = (1 - distill_alpha) * hard_loss + distill_alpha * soft_loss
+else:
+    loss = hard_loss
+
+optimizer.zero_grad(set_to_none=True)
+loss.backward()
+optimizer.step()
+```
+
+기본 원격 실험값은 `distill_alpha=0.35`, `temperature=2.0`이다. 쉽게 말해
+정답을 직접 맞히는 힘을 65%, 선생님 점수를 따라가는 힘을 35%로 두었다는 뜻이다.
+여기서 선생님 점수는 Sonnet API가 아니라 SOLIDER의 PA-100K 속성 head에서 나온다.
+따라서 이 방법은 “점수(logit)를 따라 배우는 증류”이고, 아래 Sonnet 응답을 배우는
+방법과는 다르다. 마지막으로 검증 데이터에서 속성별 기준값을 정하고 mA, InsF1,
+macro-F1, IoU를 기록한다. PA-100K에는 같은 사람을 여러 카메라에서 찾는 identity와
+track 정답이 없으므로, 이 결과를 CCTV 동일인 정확도라고 부르면 안 된다.
+
+#### B. CLIP ViT-L/14 부분 파인튜닝 + Sonnet 속성 보조 loss
+
+`scripts/finetune_clip_l14_sonnet_aux.py`는 CLIP 전체를 다시 학습하지 않는다.
+가장 뒤의 vision block 두 개와 projection만 열고, 사람을 구분하는 부분과 속성을
+판단하는 head를 새로 맞춘다. 학습할 때는 네 가지 신호를 함께 사용한다.
+
+1. 같은 사람인지 맞히기
+2. 같은 사람의 사진은 특징 공간에서 가깝게 만들기
+3. 다른 사람의 사진은 멀리 떨어뜨리기
+4. Sonnet이 알려준 색상·복장 등의 속성을 맞히기
+
+Sonnet은 CLIP의 가중치를 직접 주는 것이 아니라, 이미지별로 정리된 속성 답변을
+제공한다. 그 답변을 속성 head의 정답으로만 사용한다.
+
+```python
+# 실제 파인튜닝 범위: 앞단은 고정, 마지막 두 블록과 projection만 업데이트
+for parameter in model.parameters():
+    parameter.requires_grad = False
+for layer in model.vision_model.encoder.layers[-2:]:
+    for parameter in layer.parameters():
+        parameter.requires_grad = True
+for parameter in model.visual_projection.parameters():
+    parameter.requires_grad = True
+
+identity_loss = F.cross_entropy(classifier(features), identity_labels)
+contrastive_loss = supervised_contrastive(features, identity_labels)
+triplet_loss = batch_hard_triplet(features, identity_labels)
+sonnet_aux, used = sonnet_loss(heads, features, batch_rows, label_map, categories)
+loss = (
+    identity_loss
+    + 0.20 * contrastive_loss
+    + 0.20 * triplet_loss
+    + 0.35 * sonnet_aux
+)
+optimizer.zero_grad(set_to_none=True)
+loss.backward()
+torch.nn.utils.clip_grad_norm_(parameters, 1.0)
+optimizer.step()
+```
+
+학습 데이터는 먼저 사람(identity) 단위로 나눈 뒤 학습용, 기준값 조정용,
+최종 확인용으로 분리한다. 그래야 같은 사람의 거의 똑같은 사진이 학습과 시험에
+동시에 들어가는 실수를 막을 수 있다. 이 방법에서 Sonnet은 전체 모델을 복사하는
+선생님이 아니라 **속성 답변을 알려주는 선생님**이다. 그래서 결과 metadata에도
+“응답 형태의 속성만 사용했고, Sonnet의 내부 점수나 feature는 사용하지 않았다”고
+기록된다.
+
+#### C. SOLIDER ReID backbone 파인튜닝
+
+`scripts/finetune_prid2011_solider_backbone.py`는 “이 사진과 저 사진이 같은 사람인가?”를
+잘 판단하는 ReID 전용 학습이다. 이미 잘하는 SOLIDER 선생님은 고정하고, 학생 모델의
+마지막 부분만 학습한다. 한 batch 안에 같은 사람 사진과 다른 사람 사진을 함께 넣어
+비교하게 만든다.
+
+```python
+# 실제 SOLIDER loss 조합
+arc_loss = F.cross_entropy(
+    arc_head(features, labels), labels, label_smoothing=0.10
+)
+triplet_loss = batch_hard_triplet(features, labels, margin=0.20)
+local_loss = part_triplet(final_map, labels, parts=4, margin=0.20)
+preservation_loss = 1.0 - F.cosine_similarity(
+    features, teacher_features
+).mean()
+loss = (
+    arc_loss
+    + triplet_weight * triplet_loss
+    + part_weight * local_loss
+    + teacher_weight * preservation_loss
+)
+scaler.scale(loss).backward()
+scaler.step(optimizer)
+scaler.update()
+```
+
+코드의 각 항을 쉽게 말하면 다음과 같다. `ArcMarginHead`는 사람 사이에 더 넓은
+간격을 만든다. batch-hard triplet은 가장 헷갈리는 같은 사람·다른 사람 쌍을 골라
+집중적으로 학습한다. `part_triplet`은 머리·몸·다리처럼 사진을 가로 네 부분으로
+나눠 옷이나 가방 같은 세부 특징도 보게 한다. `teacher_preservation`은 학생이
+파인튜닝 후 기존 SOLIDER의 장점을 잃지 않게 붙잡아 준다. 이 결과는 사람 찾기용
+결과이므로 PA-100K 속성 mA와 섞어 하나의 정확도로 말하지 않는다.
+
+### 13.6 쉽게 이해하고 실제 코드로 보는 증류
+
+증류는 **선생님 모델이 낸 정보를 학생 모델에게 보여주며 학습시키는 방법**이다.
+다만 선생님이 주는 정보의 종류가 서로 다르다. 점수를 주는 경우, 글로 정리된
+속성 답변을 주는 경우, 이미지와 JSON 정답을 주는 경우를 구분해야 한다.
+그래서 이번 프로젝트의 증류는 아래 세 가지 경로로 나누어 기록한다.
+
+| 경로 | 선생님이 주는 정보 | 학생이 배우는 방법 | 저장소 상태 |
+| --- | --- | --- | --- |
+| SOLIDER -> CLIP head | 속성 logit | temperature soft target + hard label | 코드와 PA-100K proxy 결과 기록 |
+| Sonnet -> CLIP/SOLIDER attribute head | 구조화된 categorical 응답 | 속성별 cross-entropy auxiliary loss | Claude Code CLI pilot과 proxy 결과 기록 |
+| 검수 레코드 -> Qwen3-VL | 이미지 + 승인된 JSON 답 | multimodal LoRA SFT | 데이터 계약과 변환 코드는 확인, 장시간 weight 학습은 미검증 |
+
+#### A. Sonnet 답변을 안전한 학습 자료로 바꾸는 코드
+
+Sonnet이 답했다고 해서 그 내용을 바로 학습시키지 않는다. 먼저 “어떤 사진을
+봤는지”, “어떤 선생님이 답했는지”, “어떤 질문을 사용했는지”, “사람이 확인했는지”를
+함께 적는다. 사진이 나중에 바뀌지 않았는지도 SHA-256이라는 지문으로 확인한다.
+이 한 줄짜리 기록이 `DistillationSample`이다. 아래 명령은 Sonnet 답변을 학습 자료로
+등록하는 예시다.
+
+```bash
+uv run python -m qwen_backend.annotation_cli \
+  --image datasets/candidate/images/cam01/000001.jpg \
+  --image-root datasets/candidate/images \
+  --sample-id cam01-000001 \
+  --teacher-model claude-sonnet-5 \
+  --source-kind sonnet \
+  --prompt-version sonnet-candidate-v1 \
+  --approval-status approved \
+  --reviewed-by operator-001 \
+  --decision review \
+  --confidence 0.72 \
+  --color gray --clothing shirt --object-name person \
+  --track-id 17 \
+  --output datasets/candidate/distillation.jsonl
+```
+
+`distillation.py`와 `annotation_cli.py`에는 Sonnet을 사용할 수 있도록 등록해 두었다.
+하지만 `approvalStatus=approved` 또는 `teacherAgreement=true`가 없으면 다음 단계에서
+거부된다. 명령어를 실행했다고 자동으로 학습 승인이 생기지는 않는다. 이 장치는
+잘못된 답변이나 검수하지 않은 답변이 학생 모델에 들어가는 것을 막는다.
+
+#### B. 승인·사진 지문 확인 후 Qwen 학습 형식으로 변환
+
+Qwen은 이미지와 질문, JSON 답변이 한 묶음으로 있어야 학습할 수 있다.
+`distillation.py`는 승인된 기록만 골라 이 형식으로 바꾼다. 사진 폴더 밖을 가리키거나,
+사진 지문이 달라졌거나, 승인되지 않은 자료는 Qwen 학습 자료로 만들지 않는다.
+
+```python
+samples = read_distillation_samples(input_jsonl)
+records = tuple(
+    to_qwen_record(sample, image_root, verify_hash=True)
+    for sample in samples
+)
+write_qwen_jsonl(records, output_jsonl)
+```
+
+결과 파일의 한 줄에는 사진, “이 사람이 실종자 특징과 맞는가?”라는 질문,
+`decision`·`attributes`·`confidence`가 들어 있는 JSON 답변이 함께 들어간다.
+즉 Qwen이 나중에 배울 수 있는 “사진-질문-답변” 한 세트가 된다.
+
+```bash
+uv run python -m qwen_backend.distillation_cli validate \
+  --input datasets/candidate/distillation.jsonl \
+  --image-root datasets/candidate/images
+
+uv run python -m qwen_backend.distillation_cli prepare \
+  --input datasets/candidate/distillation.jsonl \
+  --image-root datasets/candidate/images \
+  --output datasets/candidate/qwen_train.jsonl
+```
+
+#### C. Qwen LoRA는 현재 저장소와 GPU 서버를 나누어 기록한다
+
+LoRA는 Qwen 전체를 다시 학습하지 않고, 작은 추가 층만 학습하는 방법이다.
+그래서 학습 비용과 저장 공간을 줄일 수 있다. Qwen3-VL-8B 설정은
+`DISTILLATION_TRAINING_GUIDE.md`에 GPU 서버용 실행 예시로 적혀 있다.
+다만 이 저장소의 `ai-worker/training` 폴더에는 `train_qwen_lora.sh`가 없다.
+따라서 아래 명령은 “GPU 서버에 runner가 준비된 경우의 실행 방법”이지,
+이 저장소에서 이미 Qwen 가중치 학습을 끝냈다는 증거가 아니다.
+
+```bash
+cd /home/j-i15a204/qwen3vl-backend
+DRY_RUN=1 bash training/train_qwen_lora.sh
+DRY_RUN=0 NPROC_PER_NODE=4 bash training/train_qwen_lora.sh \
+  2>&1 | tee /home/j-i15a204/outputs/qwen3vl-train.log
+```
+
+현재 recipe는 사진을 읽는 부분은 고정하고, 언어 모델에 LoRA를 붙인다. GPU 한 장당
+작은 batch를 사용하고 여러 번 누적해 학습한다. 실제로 사용 가능한 모델로 올리려면
+① 짧은 smoke test, ② validation/test 결과, ③ checkpoint 지문, ④ GPU 학습 로그를
+모두 저장해야 한다. 현재 이 자료가 없으므로 문서에서도 Qwen 가중치 학습 완료라고
+말하지 않는다.
+
+### 13.7 쉽게 이해하고 실제 오케스트레이션 코드 보기
+
+오케스트레이션은 여러 모델을 하나로 섞어 거대한 모델을 만드는 것이 아니다.
+각 모델에게 잘하는 일을 맡기고, 마지막에 결과를 모아 판단하는 **역할 분담**이다.
+우리 AI Worker는 다음 순서로 움직인다.
+
+1. YOLO가 영상에서 사람을 찾는다.
+2. 너무 작거나 잘린 사람 사진은 버린다.
+3. CLIP은 인상착의와 비슷한 정도를 보고, 색상 모델은 색을 확인한다.
+4. SOLIDER와 속성 모델은 같은 사람인지, 옷·가방 같은 특징이 맞는지 확인한다.
+5. 여러 프레임의 결과를 사람 한 명의 `track_id`로 묶는다.
+6. 점수가 높은 소수의 후보만 Qwen에게 자세히 설명하게 한다.
+7. 모든 증거를 합쳐 후보로 등록하고, 마지막 확정은 관리자가 한다.
+
+현재 `MultiModelCandidateEngine.analyze()`의 핵심 코드는 다음과 같다.
+
+```python
+detected = detect_person_tracks(video, output_dir, weights=yolo_weights, ...)
+frames = tuple(
+    frame for frame in detected
+    if frame.right > frame.left
+    and frame.bottom > frame.top
+    and crop_quality(frame.crop_path) >= minimum_person_crop_quality
+)
+
+semantic = _contrastive_clip_scores(frames, prompt, exclusion_prompt, clip, device)
+color = _track_color_values(frames, attributes)
+fine = fine_runtime.score(frames) if fine_runtime else {}
+identity = score_solider(frames, identity_anchor, config, solider_encoder)
+par = solider_par.score(frames, solider_encoder) if solider_par else {}
+
+base = aggregate_track_scores(frame_rows, attributes, top_frames=3)
+fused = fuse_track_scores(base, historical=historical_score)
+for track_id in top_tracks(fused, qwen_top_k):
+    qwen_score[track_id] = qwen_review(review_frame(track_id), prompt)
+fused = fuse_track_scores(base, historical=historical_score, qwen=qwen_score)
+decision = decide_track(fused, attributes, minimum_output_score, ...)
+```
+
+실제 구현은 모든 모델이 항상 켜져 있다고 가정하지 않는다. 예를 들어 SOLIDER 기준
+사진이 없으면 그 항목은 비워 둔다. Qwen도 모든 프레임을 보지 않고 점수가 높은
+후보의 대표 사진 `top_k`개만 본다. 어떤 모델이 빠져도 전체 점수가 갑자기 0이 되지
+않도록, 있는 증거만으로 다시 비율을 계산한다. 이것이 `fuse_track_scores()`가 하는
+일이다. 기본 비율은 semantic `.16`, temporal `.06`, spatial `.04`, quality `.04`,
+필수 색상 `.18`, PAR `.20` 또는 fine attribute `.12`, identity `.28`, historical
+`.16`, Qwen `.12`이다. 숫자는 모델의 “확률” 자체가 아니라 여러 증거를 합칠 때의
+가중치다.
+
+모델 결과는 아래와 같은 `RuntimeCandidate` 형식으로 중앙 서버에 전달된다.
+중앙 서버는 이 자료로 “언제, 어디서, 어떤 후보가 나왔는지”를 화면에 보여준다.
+
+```json
+{
+  "candidateKey": "track-17",
+  "frameOffsetMs": 18400,
+  "similarity": 0.731204,
+  "framePath": "candidates/track-17/frame-018400.jpg",
+  "cropPath": "candidates/track-17/crop-018400.jpg",
+  "boundingBox": {"x": 120, "y": 80, "width": 300, "height": 700},
+  "attributeSummary": "models=YOLO=used;SOLIDER=used;Qwen=used:top1;candidateMode=operator_review"
+}
+```
+
+`track_id`는 같은 영상 안에서 같은 사람의 여러 프레임을 묶는 번호다. 서로 다른
+카메라에서 같은 사람이라는 뜻은 아니다. 따라서 최종 상태를 `operator_review`로
+남기고, 모델 점수만으로 실종자를 자동 확정하지 않는다. Grounding DINO, SAM2.1,
+Florence-2, Sonnet은 현재 워커가 매번 반드시 부르는 모델이 아니라, 필요할 때
+오프라인에서 위치·속성 정답을 만드는 선생님 경로다.
+
+### 13.8 현재 상태와 다시 실행하는 방법
+
+이 표의 목적은 “코드가 준비되어 있다”와 “학습을 끝내 실제 서비스 모델로 채택했다”를
+구분하는 것이다. 문서에 명령어가 있다고 해서 그 명령을 이미 실행했다는 뜻은 아니다.
+
+| 경로 | 이 checkout에서 확인한 것 | 현재 상태 |
+| --- | --- | --- |
+| `scripts/train_clip_vitl14_distill.py` | frozen CLIP feature, weighted BCE, SOLIDER logit KD, threshold와 artifact 저장 | PA-100K proxy arm과 원격 결과 manifest 확인 |
+| `scripts/finetune_clip_l14_sonnet_aux.py` | 마지막 2개 vision block, CE/SupCon/triplet, Sonnet auxiliary CE | synthetic CCTV proxy pilot; production 승격 아님 |
+| `scripts/finetune_prid2011_solider_backbone.py` | ArcMargin, global/part triplet, teacher preservation, checkpoint 저장 | 연구용 코드와 테스트 확인; 프로젝트 CCTV 85% 증거 아님 |
+| `src/qwen_backend/distillation.py` / `distillation_cli.py` | schema, allowlist, image-root, SHA-256, approval, Qwen JSONL | unit test로 계약 확인 |
+| `src/qwen_backend/multi_model_candidate_engine.py` | YOLO -> crop quality -> CLIP/ROI/PAR/SOLIDER -> track fusion -> Qwen top-k -> decision | 런타임 경로와 candidate contract 확인 |
+| 외부 `training/train_qwen_lora.sh` | Qwen3-VL LoRA 실행 형식만 문서화 | 이 checkout에 파일 없음; 장시간 weight 학습 미검증 |
+
+GPU 서버에서 실제로 재현할 때의 최소 순서는 다음이다. 먼저 smoke를 돌리고,
+검증·test 결과와 checkpoint를 함께 보관한 뒤에만 전체 실행으로 넘어간다.
+
+```bash
+# 1) CLIP hard/KD attribute arm
+uv run scripts/train_clip_vitl14_distill.py \
+  --output experiments/results/clip-vit-l14-distillation.json \
+  --data-root experiments/data/pa100k_full \
+  --clip-checkpoint openai/clip-vit-large-patch14 \
+  --teacher-checkpoint experiments/models/solider_swin_base.pth \
+  --train-rows 80000 --val-rows 10000 --test-rows 10000 \
+  --distill-alpha 0.35 --temperature 2.0
+
+# 2) 승인된 annotation 검증 -> Qwen JSONL 준비
+uv run python -m qwen_backend.distillation_cli validate \
+  --input datasets/candidate/distillation.jsonl \
+  --image-root datasets/candidate/images
+uv run python -m qwen_backend.distillation_cli prepare \
+  --input datasets/candidate/distillation.jsonl \
+  --image-root datasets/candidate/images \
+  --output datasets/candidate/qwen_train.jsonl
+
+# 3) 후보 결과 평가
+uv run python -m qwen_backend.evaluation_cli \
+  --reference datasets/candidate/distillation.jsonl \
+  --prediction experiments/results/qwen_predictions.jsonl \
+  --output experiments/results/qwen_report.json
+```
+
+파인튜닝 arm의 승격 기준은 PA-100K mA 하나가 아니라, 같은 identity-held-out
+protocol의 Rank-1, Recall@5, distractor false-match, false-reject, review rate와
+latency를 함께 비교하는 것이다. 현재 저장소의 기록만으로는 프로젝트 CCTV 전체
+일반화 85%를 확정하지 않는다.
 
 ## 14. Sonnet teacher를 사용한 결과와 한계
 
@@ -1368,6 +1723,10 @@ p50/p95, GPU memory, JSON valid rate
 - `src/qwen_backend/recording_cache.py`
 - `src/qwen_backend/storage_transfer.py`
 - `src/qwen_backend/distillation.py`
+- `src/qwen_backend/distillation_cli.py`
+- `src/qwen_backend/annotation_cli.py`
+- `src/qwen_backend/multi_model_candidate_engine.py`
+- `src/qwen_backend/attribute_ensemble.py`
 - `src/qwen_backend/worker_settings.py`
 - `configs/realtime_model_manifest.json`
 - `configs/model_selection.json`
@@ -1397,6 +1756,7 @@ p50/p95, GPU memory, JSON valid rate
 - `experiments/results/evidence/prid2011_solider_open_set_v3_revalidated_summary.json`
 - `scripts/train_clip_vitl14_distill.py`
 - `scripts/finetune_clip_l14_sonnet_aux.py`
+- `scripts/finetune_prid2011_solider_backbone.py`
 - `scripts/run_solider_finetune.py`
 - `scripts/run_solider_sonnet_head_pilot.py`
 - `scripts/run_broad_model_comparison.py`
