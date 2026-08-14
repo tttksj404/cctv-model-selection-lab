@@ -9,6 +9,7 @@ This archive contains the code and experiment evidence needed to continue the CC
 - Configuration examples, tests, experiment logs, metric figures, and promotion-gate evidence.
 - Recovery manifests that identify the files, model families, sizes, and verification results.
 - Selected trained checkpoints and runtime artifacts under `weights/`, with SHA-256 values in `manifests/weight_artifacts_20260811.json`.
+- A human-readable experiment, parameter, metric, and weight index in `manifests/experiment_artifacts_summary.md`.
 - The server root snapshot, so the previous workspace layout can be recreated without guessing names.
 
 ## Verified recovery facts
