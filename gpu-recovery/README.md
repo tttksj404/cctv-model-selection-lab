@@ -22,3 +22,4 @@ No TTS project source or TTS media was found in the GPU workspace inventory. No 
 - `manifests/`: recovery verification, model-size summary, and the public inclusion summary.
 - `weights/`: selected SOLIDER, edge-detector, and promoted zone-policy artifacts; verify with `manifests/weight_artifacts_20260811.json`.
 - `IMPLEMENTATION_READY.md`: how to continue the implementation and the reset safety gate.
+- `manifests/recovery_completeness_20260814.md`: what is fully recoverable and what must be backed up privately before reset.
