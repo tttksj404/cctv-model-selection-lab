@@ -1,0 +1,14 @@
+{
+  "expected_records": 8950,
+  "skipped_metadata_directories": [
+    "clip_vitl14_server/experiments/SOLIDER-REID-runtime-8c08e1c\\configs\\"
+  ],
+  "verified_files": 8949,
+  "missing_files": [],
+  "size_mismatch": [],
+  "hash_mismatch": [],
+  "partial_files": [],
+  "verified_bytes": 6323430683,
+  "verified_gib": 5.889,
+  "elapsed_seconds": 24.86
+}

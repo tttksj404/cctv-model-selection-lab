@@ -1,0 +1,82 @@
+﻿[
+    {
+        "source":  "clip_vitl14_server/experiments/models/solider_swin_base.pth",
+        "archive":  "weights/solider/solider_swin_base.pth",
+        "role":  "SOLIDER backbone pretrained weight",
+        "kind":  "large_lfs",
+        "bytes":  1767962390,
+        "sha256":  "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1"
+    },
+    {
+        "source":  "clip_vitl14_server/experiments/models/solider_reid/swin_base_msmt17.pth",
+        "archive":  "weights/solider/swin_base_msmt17.pth",
+        "role":  "SOLIDER ReID pretrained weight",
+        "kind":  "large_lfs",
+        "bytes":  351954370,
+        "sha256":  "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7"
+    },
+    {
+        "source":  "clip_vitl14_server/experiments/results/chirla_solider_ft_arm_a_20260810.pth",
+        "archive":  "weights/solider/chirla_solider_ft_arm_a_20260810.pth",
+        "role":  "project fine-tuned SOLIDER checkpoint",
+        "kind":  "large_lfs",
+        "bytes":  347654412,
+        "sha256":  "82a4763c3c0340aaf7eb9e816dcf0b0d41adeea52cd219e2ca19f3057b83bef3"
+    },
+    {
+        "source":  "agv-grid/runs/agv-grid-8cls/weights/best.pt",
+        "archive":  "weights/edge/agv-grid-8cls-best.pt",
+        "role":  "edge detector best checkpoint",
+        "kind":  "small",
+        "bytes":  14481768,
+        "sha256":  "a95cf8666fca77300db619931fd2a7157d489169cf18afe4c16749ffc9940347"
+    },
+    {
+        "source":  "agv-grid/runs/agv-grid-8cls/weights/last.pt",
+        "archive":  "weights/edge/agv-grid-8cls-last.pt",
+        "role":  "edge detector last checkpoint",
+        "kind":  "small",
+        "bytes":  14481768,
+        "sha256":  "0779ee3f553c43c1d893101cb70aba8dcf68669e98b34c1c4a8b7d1de4d69944"
+    },
+    {
+        "source":  "agv-grid/runs/agv-grid-8cls/weights/best.onnx",
+        "archive":  "weights/edge/agv-grid-8cls-best.onnx",
+        "role":  "edge detector export",
+        "kind":  "small",
+        "bytes":  28587479,
+        "sha256":  "640ade596d3b3b0e671b593f7b354eae3f60b6b44a46fdcf8a69befaf4cc7c3f"
+    },
+    {
+        "source":  "agv-grid/yolov5/yolov5s.pt",
+        "archive":  "weights/edge/yolov5s.pt",
+        "role":  "YOLO base checkpoint",
+        "kind":  "small",
+        "bytes":  14808437,
+        "sha256":  "8b3b748c1e592ddd8868022e8732fde20025197328490623cc16c6f24d0782ee"
+    },
+    {
+        "source":  "experiments/yolo11n.pt",
+        "archive":  "weights/edge/yolo11n.pt",
+        "role":  "YOLO11 checkpoint",
+        "kind":  "small",
+        "bytes":  5613764,
+        "sha256":  "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+    },
+    {
+        "source":  "codex-zone-region-20260802-final/artifacts/models_v7_safe_attested_retry/sealed_selected/expected_bayes_8/logistic/logistic.joblib",
+        "archive":  "weights/zone-policy/v7-logistic.joblib",
+        "role":  "promoted zone-policy artifact",
+        "kind":  "small",
+        "bytes":  1655,
+        "sha256":  "75cd8bcaa07f6312a39fe5422f7bf2c49a58bada89be607d16e63b717d55e11f"
+    },
+    {
+        "source":  "codex-zone-region-20260802-final/artifacts/models_v7_safe_attested_retry/sealed_selected/expected_bayes_8/logistic/logistic.safe.json",
+        "archive":  "weights/zone-policy/v7-logistic.safe.json",
+        "role":  "promoted zone-policy safe artifact",
+        "kind":  "small",
+        "bytes":  7239,
+        "sha256":  "1ea1e3e8a8f0f78fd2ca794ff9fd77fef273e43b7275805846ed3efc457903ee"
+    }
+]

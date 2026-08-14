@@ -1,0 +1,1678 @@
+{
+  "retrieved_at": "2026-08-11T17:31:14+0900",
+  "records": [
+    {
+      "path": "models/Qwen3.5-27B",
+      "name": "Qwen3.5-27B",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T06:05:33.554424Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8",
+      "name": "Qwen3-VL-32B-Thinking-FP8",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T06:05:25.363546Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/MiniCPM-V-4_5",
+      "name": "MiniCPM-V-4_5",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T07:15:32.755969Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B",
+      "name": "Molmo2-8B",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T07:23:49.246186Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/gemma-4-12B",
+      "name": "gemma-4-12B",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T06:05:26.705526Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking",
+      "name": "Qwen3-VL-32B-Thinking",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T06:37:20.888538Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B",
+      "name": "Qwen3.5-9B",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T05:55:37.075285Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B",
+      "name": "InternVL3_5-8B",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T07:10:02.901561Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct",
+      "name": "Qwen2.5-VL-7B-Instruct",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T07:07:13.885043Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct",
+      "name": "Qwen3-VL-8B-Instruct",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-20T05:20:55.321404Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/gemma-4-12B-it",
+      "name": "gemma-4-12B-it",
+      "type": "directory",
+      "size": null,
+      "last_modified": "2026-07-21T06:14:32.475608Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 3353259,
+      "last_modified": "2026-07-21T05:50:23.949935Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Qwen3.5-27B/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 92417,
+      "last_modified": "2026-07-21T05:50:23.394943Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00007-of-00011.safetensors",
+      "name": "model.safetensors-00007-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741496,
+      "last_modified": "2026-07-21T06:02:57.373747Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 6722759,
+      "last_modified": "2026-07-21T06:02:28.957169Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 4134,
+      "last_modified": "2026-07-21T05:50:23.078948Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00003-of-00011.safetensors",
+      "name": "model.safetensors-00003-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741504,
+      "last_modified": "2026-07-21T06:01:38.490919Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/chat_template.jinja",
+      "name": "chat_template.jinja",
+      "type": "file",
+      "size": 7756,
+      "last_modified": "2026-07-21T05:50:23.609940Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00011-of-00011.safetensors",
+      "name": "model.safetensors-00011-of-00011.safetensors",
+      "type": "file",
+      "size": 2148512760,
+      "last_modified": "2026-07-21T06:05:17.322666Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00008-of-00011.safetensors",
+      "name": "model.safetensors-00008-of-00011.safetensors",
+      "type": "file",
+      "size": 5368714128,
+      "last_modified": "2026-07-21T06:03:36.473167Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 390,
+      "last_modified": "2026-07-21T06:01:59.441607Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00004-of-00011.safetensors",
+      "name": "model.safetensors-00004-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741504,
+      "last_modified": "2026-07-21T06:01:27.436083Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 126601,
+      "last_modified": "2026-07-21T06:01:59.117612Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00001-of-00011.safetensors",
+      "name": "model.safetensors-00001-of-00011.safetensors",
+      "type": "file",
+      "size": 5263851872,
+      "last_modified": "2026-07-21T06:01:42.890853Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 385,
+      "last_modified": "2026-07-21T06:02:27.797186Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00006-of-00011.safetensors",
+      "name": "model.safetensors-00006-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741504,
+      "last_modified": "2026-07-21T06:02:43.719950Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/LICENSE",
+      "name": "LICENSE",
+      "type": "file",
+      "size": 11343,
+      "last_modified": "2026-07-21T05:50:23.917935Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00010-of-00011.safetensors",
+      "name": "model.safetensors-00010-of-00011.safetensors",
+      "type": "file",
+      "size": 5347749200,
+      "last_modified": "2026-07-21T06:05:32.444440Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 16710,
+      "last_modified": "2026-07-21T06:02:27.231195Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00002-of-00011.safetensors",
+      "name": "model.safetensors-00002-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741440,
+      "last_modified": "2026-07-21T06:01:58.456622Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00005-of-00011.safetensors",
+      "name": "model.safetensors-00005-of-00011.safetensors",
+      "type": "file",
+      "size": 5347741504,
+      "last_modified": "2026-07-21T06:03:23.577358Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 244,
+      "last_modified": "2026-07-21T05:50:23.327944Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-27B/model.safetensors-00009-of-00011.safetensors",
+      "name": "model.safetensors-00009-of-00011.safetensors",
+      "type": "file",
+      "size": 5347745520,
+      "last_modified": "2026-07-21T06:05:22.812584Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-27B/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 12807982,
+      "last_modified": "2026-07-21T06:02:26.912200Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00002-of-00007.safetensors",
+      "name": "model-00002-of-00007.safetensors",
+      "type": "file",
+      "size": 5365032312,
+      "last_modified": "2026-07-21T06:04:10.381662Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 10437,
+      "last_modified": "2026-07-21T05:50:24.728923Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/chat_template.json",
+      "name": "chat_template.json",
+      "type": "file",
+      "size": 5410,
+      "last_modified": "2026-07-21T05:50:23.440943Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 4957462,
+      "last_modified": "2026-07-21T05:50:27.821877Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 11929,
+      "last_modified": "2026-07-21T05:50:23.762938Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 336,
+      "last_modified": "2026-07-21T05:50:25.535911Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00003-of-00007.safetensors",
+      "name": "model-00003-of-00007.safetensors",
+      "type": "file",
+      "size": 5365032312,
+      "last_modified": "2026-07-21T06:04:51.211054Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00001-of-00007.safetensors",
+      "name": "model-00001-of-00007.safetensors",
+      "type": "file",
+      "size": 5324789312,
+      "last_modified": "2026-07-21T06:05:23.947567Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00005-of-00007.safetensors",
+      "name": "model-00005-of-00007.safetensors",
+      "type": "file",
+      "size": 5365032312,
+      "last_modified": "2026-07-21T06:03:59.448825Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00007-of-00007.safetensors",
+      "name": "model-00007-of-00007.safetensors",
+      "type": "file",
+      "size": 3367015312,
+      "last_modified": "2026-07-21T06:03:08.168587Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 145407,
+      "last_modified": "2026-07-21T05:50:25.292915Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00006-of-00007.safetensors",
+      "name": "model-00006-of-00007.safetensors",
+      "type": "file",
+      "size": 5365032312,
+      "last_modified": "2026-07-21T06:03:58.583838Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 331,
+      "last_modified": "2026-07-21T05:50:27.404884Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/model-00004-of-00007.safetensors",
+      "name": "model-00004-of-00007.safetensors",
+      "type": "file",
+      "size": 5365032312,
+      "last_modified": "2026-07-21T06:03:52.556928Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 10781,
+      "last_modified": "2026-07-21T05:50:27.162887Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 242,
+      "last_modified": "2026-07-21T05:50:23.438942Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking-FP8/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 10179867,
+      "last_modified": "2026-07-21T05:50:26.923891Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/configuration_minicpm.py",
+      "name": "configuration_minicpm.py",
+      "type": "file",
+      "size": 3288,
+      "last_modified": "2026-07-21T07:10:03.643550Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671853,
+      "last_modified": "2026-07-21T07:10:03.699549Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 25454,
+      "last_modified": "2026-07-21T07:10:03.667549Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/added_tokens.json",
+      "name": "added_tokens.json",
+      "type": "file",
+      "size": 2862,
+      "last_modified": "2026-07-21T07:10:03.610550Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/model-00003-of-00004.safetensors",
+      "name": "model-00003-of-00004.safetensors",
+      "type": "file",
+      "size": 4546851120,
+      "last_modified": "2026-07-21T07:14:51.041520Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-21T07:10:04.430538Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 1461,
+      "last_modified": "2026-07-21T07:10:03.638550Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/processing_minicpmv.py",
+      "name": "processing_minicpmv.py",
+      "type": "file",
+      "size": 11026,
+      "last_modified": "2026-07-21T07:10:04.102543Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 714,
+      "last_modified": "2026-07-21T07:10:03.922546Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/model-00001-of-00004.safetensors",
+      "name": "model-00001-of-00004.safetensors",
+      "type": "file",
+      "size": 5286612176,
+      "last_modified": "2026-07-21T07:15:32.290974Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/model-00004-of-00004.safetensors",
+      "name": "model-00004-of-00004.safetensors",
+      "type": "file",
+      "size": 2256571800,
+      "last_modified": "2026-07-21T07:15:18.952132Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/tokenization_minicpmv_fast.py",
+      "name": "tokenization_minicpmv_fast.py",
+      "type": "file",
+      "size": 1647,
+      "last_modified": "2026-07-21T07:10:04.151542Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 72172,
+      "last_modified": "2026-07-21T07:10:03.873546Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/modeling_minicpmv.py",
+      "name": "modeling_minicpmv.py",
+      "type": "file",
+      "size": 18583,
+      "last_modified": "2026-07-21T07:10:03.884546Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/modeling_navit_siglip.py",
+      "name": "modeling_navit_siglip.py",
+      "type": "file",
+      "size": 41835,
+      "last_modified": "2026-07-21T07:10:03.909546Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/model-00002-of-00004.safetensors",
+      "name": "model-00002-of-00004.safetensors",
+      "type": "file",
+      "size": 5301855088,
+      "last_modified": "2026-07-21T07:14:50.255530Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 25786,
+      "last_modified": "2026-07-21T07:10:04.362539Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/special_tokens_map.json",
+      "name": "special_tokens_map.json",
+      "type": "file",
+      "size": 12103,
+      "last_modified": "2026-07-21T07:10:04.129543Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/resampler.py",
+      "name": "resampler.py",
+      "type": "file",
+      "size": 11732,
+      "last_modified": "2026-07-21T07:10:04.128543Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 268,
+      "last_modified": "2026-07-21T07:10:03.624550Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 11437868,
+      "last_modified": "2026-07-21T07:10:13.107412Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/MiniCPM-V-4_5/image_processing_minicpmv.py",
+      "name": "image_processing_minicpmv.py",
+      "type": "file",
+      "size": 20757,
+      "last_modified": "2026-07-21T07:10:03.612550Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/model-00006-of-00008.safetensors",
+      "name": "model-00006-of-00008.safetensors",
+      "type": "file",
+      "size": 4630720320,
+      "last_modified": "2026-07-21T07:21:44.344778Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671853,
+      "last_modified": "2026-07-21T07:15:34.340950Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Molmo2-8B/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 16825,
+      "last_modified": "2026-07-21T07:15:34.079953Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Molmo2-8B/added_tokens.json",
+      "name": "added_tokens.json",
+      "type": "file",
+      "size": 9919,
+      "last_modified": "2026-07-21T07:15:34.123953Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/modeling_molmo2.py",
+      "name": "modeling_molmo2.py",
+      "type": "file",
+      "size": 71560,
+      "last_modified": "2026-07-21T07:20:00.149510Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-21T07:20:11.821273Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 2541,
+      "last_modified": "2026-07-21T07:15:34.083953Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/chat_template.jinja",
+      "name": "chat_template.jinja",
+      "type": "file",
+      "size": 3169,
+      "last_modified": "2026-07-21T07:15:34.066953Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/model-00003-of-00008.safetensors",
+      "name": "model-00003-of-00008.safetensors",
+      "type": "file",
+      "size": 4630720296,
+      "last_modified": "2026-07-21T07:20:42.071769Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 555,
+      "last_modified": "2026-07-21T07:20:00.617492Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/processing_molmo2.py",
+      "name": "processing_molmo2.py",
+      "type": "file",
+      "size": 16627,
+      "last_modified": "2026-07-21T07:20:00.826484Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/model-00002-of-00008.safetensors",
+      "name": "model-00002-of-00008.safetensors",
+      "type": "file",
+      "size": 4630720272,
+      "last_modified": "2026-07-21T07:22:21.100338Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/model-00001-of-00008.safetensors",
+      "name": "model-00001-of-00008.safetensors",
+      "type": "file",
+      "size": 4974567112,
+      "last_modified": "2026-07-21T07:21:53.125681Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/model-00008-of-00008.safetensors",
+      "name": "model-00008-of-00008.safetensors",
+      "type": "file",
+      "size": 2489319552,
+      "last_modified": "2026-07-21T07:21:06.146390Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/configuration_molmo2.py",
+      "name": "configuration_molmo2.py",
+      "type": "file",
+      "size": 13906,
+      "last_modified": "2026-07-21T07:15:34.067953Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/model-00007-of-00008.safetensors",
+      "name": "model-00007-of-00008.safetensors",
+      "type": "file",
+      "size": 4029422080,
+      "last_modified": "2026-07-21T07:19:59.407538Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 75780,
+      "last_modified": "2026-07-21T07:19:59.921518Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/image_processing_molmo2.py",
+      "name": "image_processing_molmo2.py",
+      "type": "file",
+      "size": 21116,
+      "last_modified": "2026-07-21T07:15:34.081953Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/video_processing_molmo2.py",
+      "name": "video_processing_molmo2.py",
+      "type": "file",
+      "size": 37045,
+      "last_modified": "2026-07-21T07:20:11.471281Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/Molmo2-8B/molmo_2_logo_RGB.png",
+      "name": "molmo_2_logo_RGB.png",
+      "type": "file",
+      "size": 26676,
+      "last_modified": "2026-07-21T07:20:00.397501Z",
+      "mimetype": "image/png"
+    },
+    {
+      "path": "models/Molmo2-8B/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 984,
+      "last_modified": "2026-07-21T07:20:11.241285Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/model-00005-of-00008.safetensors",
+      "name": "model-00005-of-00008.safetensors",
+      "type": "file",
+      "size": 4630720320,
+      "last_modified": "2026-07-21T07:20:56.453545Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 64389,
+      "last_modified": "2026-07-21T07:20:11.025290Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/special_tokens_map.json",
+      "name": "special_tokens_map.json",
+      "type": "file",
+      "size": 7908,
+      "last_modified": "2026-07-21T07:20:01.257468Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/model-00004-of-00008.safetensors",
+      "name": "model-00004-of-00008.safetensors",
+      "type": "file",
+      "size": 4630720320,
+      "last_modified": "2026-07-21T07:23:49.030188Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Molmo2-8B/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 117,
+      "last_modified": "2026-07-21T07:15:34.080953Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/processor_config.json",
+      "name": "processor_config.json",
+      "type": "file",
+      "size": 301,
+      "last_modified": "2026-07-21T07:20:01.044476Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Molmo2-8B/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 11477017,
+      "last_modified": "2026-07-21T07:20:10.802294Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 28340,
+      "last_modified": "2026-07-21T05:48:00.170042Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/gemma-4-12B/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 4383,
+      "last_modified": "2026-07-21T05:48:00.290040Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B/model.safetensors",
+      "name": "model.safetensors",
+      "type": "file",
+      "size": 23919549408,
+      "last_modified": "2026-07-21T06:05:26.178534Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/gemma-4-12B/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 888,
+      "last_modified": "2026-07-21T05:48:00.195041Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 233,
+      "last_modified": "2026-07-21T05:48:00.247041Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B/processor_config.json",
+      "name": "processor_config.json",
+      "type": "file",
+      "size": 1382,
+      "last_modified": "2026-07-21T05:48:00.312040Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 32170070,
+      "last_modified": "2026-07-21T05:48:02.576007Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671839,
+      "last_modified": "2026-07-21T06:23:54.156267Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00012-of-00014.safetensors",
+      "name": "model-00012-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:35:58.440729Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 7208,
+      "last_modified": "2026-07-21T06:23:54.158267Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/chat_template.json",
+      "name": "chat_template.json",
+      "type": "file",
+      "size": 5410,
+      "last_modified": "2026-07-21T06:23:54.162267Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00011-of-00014.safetensors",
+      "name": "model-00011-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:36:06.770622Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00004-of-00014.safetensors",
+      "name": "model-00004-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:29:09.752777Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-21T06:29:40.925931Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 1474,
+      "last_modified": "2026-07-21T06:23:54.132268Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00006-of-00014.safetensors",
+      "name": "model-00006-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:29:01.983011Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00005-of-00014.safetensors",
+      "name": "model-00005-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:30:06.443247Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00014-of-00014.safetensors",
+      "name": "model-00014-of-00014.safetensors",
+      "type": "file",
+      "size": 3270697008,
+      "last_modified": "2026-07-21T06:35:36.809118Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 390,
+      "last_modified": "2026-07-21T06:29:38.593991Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00008-of-00014.safetensors",
+      "name": "model-00008-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:29:35.408073Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00013-of-00014.safetensors",
+      "name": "model-00013-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:36:10.284577Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 97831,
+      "last_modified": "2026-07-21T06:29:38.360997Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00002-of-00014.safetensors",
+      "name": "model-00002-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990528,
+      "last_modified": "2026-07-21T06:29:00.588053Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 385,
+      "last_modified": "2026-07-21T06:29:40.346946Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00007-of-00014.safetensors",
+      "name": "model-00007-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:29:11.884712Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00001-of-00014.safetensors",
+      "name": "model-00001-of-00014.safetensors",
+      "type": "file",
+      "size": 4932328944,
+      "last_modified": "2026-07-21T06:28:34.541403Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00009-of-00014.safetensors",
+      "name": "model-00009-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:31:26.147779Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 10781,
+      "last_modified": "2026-07-21T06:29:39.812960Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00010-of-00014.safetensors",
+      "name": "model-00010-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990584,
+      "last_modified": "2026-07-21T06:37:20.364545Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 270,
+      "last_modified": "2026-07-21T06:23:54.111268Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/model-00003-of-00014.safetensors",
+      "name": "model-00003-of-00014.safetensors",
+      "type": "file",
+      "size": 4875990552,
+      "last_modified": "2026-07-21T06:29:17.687550Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-32B-Thinking/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 7032403,
+      "last_modified": "2026-07-21T06:29:39.555966Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/model.safetensors-00001-of-00004.safetensors",
+      "name": "model.safetensors-00001-of-00004.safetensors",
+      "type": "file",
+      "size": 5276436216,
+      "last_modified": "2026-07-21T05:54:40.665123Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 3353259,
+      "last_modified": "2026-07-21T05:48:00.291040Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Qwen3.5-9B/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 77643,
+      "last_modified": "2026-07-21T05:48:00.237041Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen3.5-9B/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 6722759,
+      "last_modified": "2026-07-21T05:48:00.782033Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 3126,
+      "last_modified": "2026-07-21T05:48:00.202041Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/chat_template.jinja",
+      "name": "chat_template.jinja",
+      "type": "file",
+      "size": 7756,
+      "last_modified": "2026-07-21T05:48:00.190041Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 390,
+      "last_modified": "2026-07-21T05:48:00.465037Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/model.safetensors-00003-of-00004.safetensors",
+      "name": "model.safetensors-00003-of-00004.safetensors",
+      "type": "file",
+      "size": 5368717440,
+      "last_modified": "2026-07-21T05:55:36.825289Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 79657,
+      "last_modified": "2026-07-21T05:48:00.425038Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/model.safetensors-00002-of-00004.safetensors",
+      "name": "model.safetensors-00002-of-00004.safetensors",
+      "type": "file",
+      "size": 5335161512,
+      "last_modified": "2026-07-21T05:54:54.884912Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 385,
+      "last_modified": "2026-07-21T05:48:00.636035Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/LICENSE",
+      "name": "LICENSE",
+      "type": "file",
+      "size": 11544,
+      "last_modified": "2026-07-21T05:48:00.171041Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 16710,
+      "last_modified": "2026-07-21T05:48:00.512037Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3.5-9B/model.safetensors-00004-of-00004.safetensors",
+      "name": "model.safetensors-00004-of-00004.safetensors",
+      "type": "file",
+      "size": 3325995712,
+      "last_modified": "2026-07-21T05:52:06.497412Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3.5-9B/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 12807982,
+      "last_modified": "2026-07-21T05:48:22.153725Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/modeling_intern_vit.py",
+      "name": "modeling_intern_vit.py",
+      "type": "file",
+      "size": 18151,
+      "last_modified": "2026-07-21T07:07:14.965027Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/InternVL3_5-8B/conversation.py",
+      "name": "conversation.py",
+      "type": "file",
+      "size": 15309,
+      "last_modified": "2026-07-21T07:07:14.633032Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/InternVL3_5-8B/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671853,
+      "last_modified": "2026-07-21T07:07:14.930027Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/InternVL3_5-8B/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 53703,
+      "last_modified": "2026-07-21T07:07:14.657031Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/InternVL3_5-8B/added_tokens.json",
+      "name": "added_tokens.json",
+      "type": "file",
+      "size": 892,
+      "last_modified": "2026-07-21T07:07:14.752030Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/model-00003-of-00004.safetensors",
+      "name": "model-00003-of-00004.safetensors",
+      "type": "file",
+      "size": 4999903176,
+      "last_modified": "2026-07-21T07:10:02.230570Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-21T07:07:15.508018Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 2481,
+      "last_modified": "2026-07-21T07:07:14.644032Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/configuration_intern_vit.py",
+      "name": "configuration_intern_vit.py",
+      "type": "file",
+      "size": 5546,
+      "last_modified": "2026-07-21T07:07:14.650031Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/InternVL3_5-8B/chat_template.jinja",
+      "name": "chat_template.jinja",
+      "type": "file",
+      "size": 475,
+      "last_modified": "2026-07-21T07:07:14.644032Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 666,
+      "last_modified": "2026-07-21T07:07:15.215023Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/model-00001-of-00004.safetensors",
+      "name": "model-00001-of-00004.safetensors",
+      "type": "file",
+      "size": 4982437672,
+      "last_modified": "2026-07-21T07:10:00.662593Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B/model-00004-of-00004.safetensors",
+      "name": "model-00004-of-00004.safetensors",
+      "type": "file",
+      "size": 3225776168,
+      "last_modified": "2026-07-21T07:09:51.482726Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 68446,
+      "last_modified": "2026-07-21T07:07:14.904028Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 1345,
+      "last_modified": "2026-07-21T07:07:15.442019Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/configuration_internvl_chat.py",
+      "name": "configuration_internvl_chat.py",
+      "type": "file",
+      "size": 4700,
+      "last_modified": "2026-07-21T07:07:14.627032Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/InternVL3_5-8B/model-00002-of-00004.safetensors",
+      "name": "model-00002-of-00004.safetensors",
+      "type": "file",
+      "size": 3848612416,
+      "last_modified": "2026-07-21T07:09:58.741621Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/InternVL3_5-8B/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 7164,
+      "last_modified": "2026-07-21T07:07:15.445019Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/special_tokens_map.json",
+      "name": "special_tokens_map.json",
+      "type": "file",
+      "size": 744,
+      "last_modified": "2026-07-21T07:07:15.227023Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/modeling_internvl_chat.py",
+      "name": "modeling_internvl_chat.py",
+      "type": "file",
+      "size": 16518,
+      "last_modified": "2026-07-21T07:07:15.117024Z",
+      "mimetype": "text/x-python"
+    },
+    {
+      "path": "models/InternVL3_5-8B/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 69,
+      "last_modified": "2026-07-21T07:07:14.877028Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/processor_config.json",
+      "name": "processor_config.json",
+      "type": "file",
+      "size": 72,
+      "last_modified": "2026-07-21T07:07:15.206023Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/InternVL3_5-8B/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 11424300,
+      "last_modified": "2026-07-21T07:07:50.238499Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671839,
+      "last_modified": "2026-07-21T07:01:55.157763Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 18574,
+      "last_modified": "2026-07-21T07:01:55.218762Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/chat_template.json",
+      "name": "chat_template.json",
+      "type": "file",
+      "size": 1050,
+      "last_modified": "2026-07-21T07:01:55.196763Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-21T07:01:55.653756Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 1374,
+      "last_modified": "2026-07-21T07:01:55.183763Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 350,
+      "last_modified": "2026-07-21T07:01:55.410759Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 57619,
+      "last_modified": "2026-07-21T07:01:55.392760Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model-00004-of-00005.safetensors",
+      "name": "model-00004-of-00005.safetensors",
+      "type": "file",
+      "size": 3864733680,
+      "last_modified": "2026-07-21T07:06:18.775862Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model-00001-of-00005.safetensors",
+      "name": "model-00001-of-00005.safetensors",
+      "type": "file",
+      "size": 3900233256,
+      "last_modified": "2026-07-21T07:04:26.136518Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model-00005-of-00005.safetensors",
+      "name": "model-00005-of-00005.safetensors",
+      "type": "file",
+      "size": 1089994880,
+      "last_modified": "2026-07-21T07:03:17.931536Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 5702,
+      "last_modified": "2026-07-21T07:01:55.605757Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model-00002-of-00005.safetensors",
+      "name": "model-00002-of-00005.safetensors",
+      "type": "file",
+      "size": 3864726320,
+      "last_modified": "2026-07-21T07:07:13.666046Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 216,
+      "last_modified": "2026-07-21T07:01:55.127764Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/model-00003-of-00005.safetensors",
+      "name": "model-00003-of-00005.safetensors",
+      "type": "file",
+      "size": 3864726424,
+      "last_modified": "2026-07-21T07:05:09.500909Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen2.5-VL-7B-Instruct/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 7031645,
+      "last_modified": "2026-07-21T07:01:55.481758Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/merges.txt",
+      "name": "merges.txt",
+      "type": "file",
+      "size": 1671839,
+      "last_modified": "2026-07-20T05:16:09.053981Z",
+      "mimetype": "text/plain"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 7133,
+      "last_modified": "2026-07-20T05:16:09.028982Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/chat_template.json",
+      "name": "chat_template.json",
+      "type": "file",
+      "size": 5499,
+      "last_modified": "2026-07-20T05:16:09.024982Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/model-00003-of-00004.safetensors",
+      "name": "model-00003-of-00004.safetensors",
+      "type": "file",
+      "size": 4999831048,
+      "last_modified": "2026-07-20T05:18:29.361768Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/vocab.json",
+      "name": "vocab.json",
+      "type": "file",
+      "size": 2776833,
+      "last_modified": "2026-07-20T05:16:09.530974Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 1474,
+      "last_modified": "2026-07-20T05:16:08.987982Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/preprocessor_config.json",
+      "name": "preprocessor_config.json",
+      "type": "file",
+      "size": 390,
+      "last_modified": "2026-07-20T05:16:09.238978Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/model-00001-of-00004.safetensors",
+      "name": "model-00001-of-00004.safetensors",
+      "type": "file",
+      "size": 4902275944,
+      "last_modified": "2026-07-20T05:18:27.844792Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/model-00004-of-00004.safetensors",
+      "name": "model-00004-of-00004.safetensors",
+      "type": "file",
+      "size": 2716270024,
+      "last_modified": "2026-07-20T05:17:37.870585Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/model.safetensors.index.json",
+      "name": "model.safetensors.index.json",
+      "type": "file",
+      "size": 67759,
+      "last_modified": "2026-07-20T05:16:09.206979Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/video_preprocessor_config.json",
+      "name": "video_preprocessor_config.json",
+      "type": "file",
+      "size": 385,
+      "last_modified": "2026-07-20T05:16:09.421975Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/model-00002-of-00004.safetensors",
+      "name": "model-00002-of-00004.safetensors",
+      "type": "file",
+      "size": 4915962496,
+      "last_modified": "2026-07-20T05:18:28.577780Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 10868,
+      "last_modified": "2026-07-20T05:16:09.377976Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 269,
+      "last_modified": "2026-07-20T05:16:08.955983Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/Qwen3-VL-8B-Instruct/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 7032403,
+      "last_modified": "2026-07-20T05:16:09.356977Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B-it/README.md",
+      "name": "README.md",
+      "type": "file",
+      "size": 28484,
+      "last_modified": "2026-07-21T06:11:19.469465Z",
+      "mimetype": "text/markdown"
+    },
+    {
+      "path": "models/gemma-4-12B-it/config.json",
+      "name": "config.json",
+      "type": "file",
+      "size": 4423,
+      "last_modified": "2026-07-21T06:11:19.365467Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B-it/chat_template.jinja",
+      "name": "chat_template.jinja",
+      "type": "file",
+      "size": 18683,
+      "last_modified": "2026-07-21T06:11:19.453466Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/gemma-4-12B-it/model.safetensors",
+      "name": "model.safetensors",
+      "type": "file",
+      "size": 23919549408,
+      "last_modified": "2026-07-21T06:14:31.452623Z",
+      "mimetype": null
+    },
+    {
+      "path": "models/gemma-4-12B-it/tokenizer_config.json",
+      "name": "tokenizer_config.json",
+      "type": "file",
+      "size": 3089,
+      "last_modified": "2026-07-21T06:11:19.586464Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B-it/generation_config.json",
+      "name": "generation_config.json",
+      "type": "file",
+      "size": 260,
+      "last_modified": "2026-07-21T06:11:19.359467Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B-it/processor_config.json",
+      "name": "processor_config.json",
+      "type": "file",
+      "size": 1382,
+      "last_modified": "2026-07-21T06:11:19.371467Z",
+      "mimetype": "application/json"
+    },
+    {
+      "path": "models/gemma-4-12B-it/tokenizer.json",
+      "name": "tokenizer.json",
+      "type": "file",
+      "size": 32169626,
+      "last_modified": "2026-07-21T06:11:28.847329Z",
+      "mimetype": "application/json"
+    }
+  ],
+  "errors": []
+}

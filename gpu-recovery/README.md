@@ -10,7 +10,7 @@ This directory contains the public-safe part of the CCTV experiments recovered f
 
 ## Deliberately excluded
 
-Raw CCTV video, person crops and frames, personally identifying images, datasets, checkpoints, model weights, credentials, and internal absolute paths are not published here. The model inventory records 305.813 GiB of weights, but the weights themselves remain outside this public archive.
+Raw CCTV video, person crops and frames, personally identifying images, private datasets, credentials, and internal absolute paths are not published here. The complete model inventory records 305.813 GiB of weights and remains outside this public archive; selected project checkpoints and runtime artifacts are included separately under `weights/` using Git LFS.
 
 ## TTS check
 
@@ -20,3 +20,5 @@ No TTS project source or TTS media was found in the GPU workspace inventory. No 
 
 - `cctv/`: public-safe source code, configuration, experiment notes, logs, and selected metric figures.
 - `manifests/`: recovery verification, model-size summary, and the public inclusion summary.
+- `weights/`: selected SOLIDER, edge-detector, and promoted zone-policy artifacts; verify with `manifests/weight_artifacts_20260811.json`.
+- `IMPLEMENTATION_READY.md`: how to continue the implementation and the reset safety gate.
