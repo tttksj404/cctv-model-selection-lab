@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "project-cctv-identity-gate-v1",
+  "metricUnit": "track",
+  "threshold": {
+    "recallAt5": 0.85
+  },
+  "labelRows": 921,
+  "identityGroups": 0,
+  "eligible": false,
+  "blockers": [
+    "need at least 10 identity groups; found 0",
+    "two reviewer fields are not complete",
+    "query/gallery must be separated by video or time condition"
+  ],
+  "evidenceBoundary": {
+    "projectCctv": true,
+    "twoReviewerAdjudication": false,
+    "identityHeldout": false,
+    "crossVideoOrTime": false
+  },
+  "passed85": false
+}

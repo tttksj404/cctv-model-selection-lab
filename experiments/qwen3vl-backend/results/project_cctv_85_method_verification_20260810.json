@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "project-cctv-85-method-verification-v1",
+  "metric": "track-level known-identity Recall@5",
+  "threshold": 0.85,
+  "proxy": {
+    "dataset": "MEVID public identity-disjoint track-heldout fixture",
+    "knownTestQueries": 297,
+    "baseline": {
+      "method": "SOLIDER top-2 pooling",
+      "hits": 265,
+      "recallAt5": 0.8922558922558923
+    },
+    "adapter": {
+      "method": "residual adapter + ArcFace + batch-hard Triplet + SupCon",
+      "hits": 266,
+      "recallAt5": 0.8956228956228957,
+      "rank1": 0.797979797979798,
+      "recallAt10": 0.9292929292929293,
+      "passed85": true,
+      "device": "cuda:0",
+      "gpu": "NVIDIA L40S",
+      "checkpointSha256": "dfef98773e6323b187582e99b31c352b3c47cfe19e902e03b06e035002311cd7"
+    },
+    "validationSelectedRerank": {
+      "method": "csls-5*0.7 + k-reciprocal-20-6-0.3*0.3",
+      "hits": 268,
+      "recallAt5": 0.9023569023569024,
+      "rank1": 0.8316498316498316,
+      "wilson95": [0.8632859725029519, 0.9311524035669084],
+      "passed85": true
+    },
+    "cameraHeldoutDiagnostic": {
+      "knownTestQueries": 297,
+      "hits": 268,
+      "recallAt5": 0.9023569023569024,
+      "wilson95": [0.8632859725029519, 0.9311524035669084],
+      "passed90": true,
+      "artifact": "experiments/results/mevid_camera_heldout_20260810.json"
+    },
+    "adapterSeedStability": {
+      "seeds": 3,
+      "minRecallAt5": 0.8855218855218855,
+      "meanRecallAt5": 0.8900112233445566,
+      "allPassed85": true,
+      "artifact": "experiments/results/mevid_adapter_seed_stability_20260810.json"
+    },
+    "adapterFixedRerankSeedStability": {
+      "seedRecallAt5": {
+        "20260810": 0.898989898989899,
+        "20260811": 0.8855218855218855,
+        "20260812": 0.8956228956228957
+      },
+      "minRecallAt5": 0.8855218855218855,
+      "meanRecallAt5": 0.8933782267115601,
+      "allPassed90": false,
+      "artifact": "experiments/results/mevid_adapter_fixed_rerank_seeds_20260810.json"
+    },
+    "adapterValidationSelectedSeedStability": {
+      "seeds": 3,
+      "minRecallAt5": 0.8922558922558923,
+      "meanRecallAt5": 0.8956228956228957,
+      "allPassed85": true,
+      "allPassed90": false,
+      "artifact": "experiments/results/mevid_adapter_frontier_seeds_20260810.json"
+    },
+    "finalProxyRuntimeSelection": {
+      "method": "frozen SOLIDER top-2 + validation-selected csls-5*0.7+krecip-20-6-0.3*0.3",
+      "reason": "adapter did not maintain 90% across three seeds; frozen runtime is the only verified 90% selection",
+      "recallAt5": 0.9023569023569024
+    }
+  },
+  "projectCctv": {
+    "tracksPrepared": 921,
+    "representativeCropsPrepared": 3684,
+    "withinVideoReviewCandidates": 240,
+    "withinVideoMinimumGapMs": 30000,
+    "minimumAdjudicatedDistractors": 10,
+    "identityGroupsWithAdjudicatedLabels": 0,
+    "adjudicatedDistractors": 0,
+    "eligibleForGeneralizationGate": false,
+    "passed85": false,
+    "reason": "Identity labels and sealed cross-video/time-heldout query-gallery pairs are not complete; the project metric is intentionally not fabricated from model-generated matches."
+  },
+  "verification": {
+    "pytest": "35 passed",
+    "identityGateOutput": "tmp/project_gate_current_recheck_20260810.json",
+    "remoteAdapterResult": "tmp/mevid_project_adapter_fixture_20260810/result_remote.json",
+    "remoteSeedAggregate": "tmp/mevid_project_adapter_fixture_20260810/seed_aggregate_remote.json",
+    "implementationGuide": "docs/PROJECT_CCTV_85_IMPLEMENTATION_GUIDE_20260810.md"
+  }
+}

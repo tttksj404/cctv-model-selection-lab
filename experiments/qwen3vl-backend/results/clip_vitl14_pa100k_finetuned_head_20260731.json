@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "clip-fine-attribute-head-heldout-v1",
+  "dataset": "PA100k",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+  "checkpointTreeDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "splitCounts": {
+    "train": 80000,
+    "val": 10000,
+    "test": 10000
+  },
+  "selectionProtocol": "architecture, epoch, and per-attribute threshold selected only on validation meanAccuracy; test reported once after selection",
+  "validationCandidates": [
+    {
+      "architecture": "linear",
+      "meanAccuracy": 0.726183941700633,
+      "thresholds": [
+        0.48999999999999994,
+        0.185
+      ],
+      "attributeMetrics": [
+        {
+          "accuracy": 0.7912,
+          "meanAccuracy": 0.7697063765356229,
+          "precision": 0.46275699359622513,
+          "recall": 0.7354043920728441,
+          "specificity": 0.8040083609984016,
+          "f1": 0.5680595779892429,
+          "positiveRate": 0.1867,
+          "predictedPositiveRate": 0.2967
+        },
+        {
+          "accuracy": 0.5871,
+          "meanAccuracy": 0.6826615068656432,
+          "precision": 0.07270642201834862,
+          "recall": 0.7866004962779156,
+          "specificity": 0.5787225174533709,
+          "f1": 0.13310938484148646,
+          "positiveRate": 0.0403,
+          "predictedPositiveRate": 0.436
+        }
+      ]
+    },
+    {
+      "architecture": "mlp",
+      "meanAccuracy": 0.7724207169877226,
+      "thresholds": [
+        0.585,
+        0.055
+      ],
+      "attributeMetrics": [
+        {
+          "accuracy": 0.8527,
+          "meanAccuracy": 0.8040076694951783,
+          "precision": 0.5849870578084556,
+          "recall": 0.726298875200857,
+          "specificity": 0.8817164637894995,
+          "f1": 0.6480286738351254,
+          "positiveRate": 0.1867,
+          "predictedPositiveRate": 0.2318
+        },
+        {
+          "accuracy": 0.7056,
+          "meanAccuracy": 0.7408337644802669,
+          "precision": 0.09908488482171032,
+          "recall": 0.7791563275434243,
+          "specificity": 0.7025112014171095,
+          "f1": 0.17581187010078386,
+          "positiveRate": 0.0403,
+          "predictedPositiveRate": 0.3169
+        }
+      ]
+    }
+  ],
+  "selectedArchitecture": "mlp",
+  "testAttributes": [
+    {
+      "attribute": "Glasses",
+      "threshold": 0.585,
+      "metrics": {
+        "accuracy": 0.8429,
+        "meanAccuracy": 0.8173735765296275,
+        "precision": 0.6546588153792865,
+        "recall": 0.7670454545454546,
+        "specificity": 0.8677016985138004,
+        "f1": 0.7064100168192862,
+        "positiveRate": 0.2464,
+        "predictedPositiveRate": 0.2887
+      }
+    },
+    {
+      "attribute": "Hat",
+      "threshold": 0.055,
+      "metrics": {
+        "accuracy": 0.6638,
+        "meanAccuracy": 0.7288733695385078,
+        "precision": 0.06481743560713275,
+        "recall": 0.7979094076655052,
+        "specificity": 0.6598373314115104,
+        "f1": 0.11989528795811519,
+        "positiveRate": 0.0287,
+        "predictedPositiveRate": 0.3533
+      }
+    }
+  ],
+  "testMeanAccuracy": 0.7731234730340677,
+  "weights": {
+    "path": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/models/clip_vitl14_pa100k_finetuned_head_20260731.pt",
+    "sha256": "aafe47a240d0796a09e8a6c11725f28b75c5ced77a9df7cce879fc6f6e127e7c"
+  }
+}

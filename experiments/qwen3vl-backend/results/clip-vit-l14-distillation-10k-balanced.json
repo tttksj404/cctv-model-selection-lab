@@ -1,0 +1,184 @@
+{
+  "status": "valid",
+  "dataset": "tuandunghcmut/PA-100K official parquet split",
+  "split": "official train/val/test; no identity or track IDs",
+  "student_base": "openai/clip-vit-large-patch14",
+  "teacher": "SOLIDER Swin-B PAR backbone plus supervised 26-attribute head",
+  "rows": {
+    "train": 10000,
+    "val": 1000,
+    "test": 1000
+  },
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.11.0+cu128"
+  },
+  "distillation": {
+    "alpha": 0.35,
+    "temperature": 2.0,
+    "teacher_epochs": 8
+  },
+  "teacher_metrics": {
+    "train": {
+      "mA": 0.7596452236175537,
+      "micro_attribute_accuracy": 0.8527076840400696,
+      "label_macro_f1": 0.5191452044707078,
+      "InsF1": 0.7165893912315369,
+      "instance_iou": 0.5759297609329224
+    },
+    "val": {
+      "mA": 0.74208003282547,
+      "micro_attribute_accuracy": 0.844653844833374,
+      "label_macro_f1": 0.5138183399461783,
+      "InsF1": 0.7053176164627075,
+      "instance_iou": 0.5616251230239868
+    },
+    "test": {
+      "mA": 0.7053690552711487,
+      "micro_attribute_accuracy": 0.8469230532646179,
+      "label_macro_f1": 0.46370113698335796,
+      "InsF1": 0.7057240009307861,
+      "instance_iou": 0.5622705221176147
+    }
+  },
+  "arms": {
+    "clip_vitl14_hard": {
+      "thresholds": [
+        0.44999998807907104,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.550000011920929,
+        0.5,
+        0.5,
+        0.550000011920929,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.550000011920929,
+        0.550000011920929,
+        0.550000011920929,
+        0.5,
+        0.5,
+        0.5,
+        0.44999998807907104
+      ],
+      "metrics": {
+        "train": {
+          "mA": 0.7446767091751099,
+          "micro_attribute_accuracy": 0.7831461429595947,
+          "label_macro_f1": 0.444463327455406,
+          "InsF1": 0.6058275699615479,
+          "instance_iou": 0.4520038068294525
+        },
+        "val": {
+          "mA": 0.7172898054122925,
+          "micro_attribute_accuracy": 0.7785384654998779,
+          "label_macro_f1": 0.440191130225475,
+          "InsF1": 0.5986853241920471,
+          "instance_iou": 0.44478386640548706
+        },
+        "test": {
+          "mA": 0.6820805072784424,
+          "micro_attribute_accuracy": 0.7753461599349976,
+          "label_macro_f1": 0.394161333473256,
+          "InsF1": 0.5869438648223877,
+          "instance_iou": 0.43315795063972473
+        }
+      },
+      "checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\clip-vit-l14-distillation-10k-balanced-clip_vitl14_hard.pt",
+      "checkpoint_sha256": "c7860588cce60ed1e33cacaf4e5467cd49b57d5031514d0b6b85718e0850d0e6"
+    },
+    "clip_vitl14_solider_kd": {
+      "thresholds": [
+        0.44999998807907104,
+        0.4000000059604645,
+        0.800000011920929,
+        0.4000000059604645,
+        0.44999998807907104,
+        0.44999998807907104,
+        0.44999998807907104,
+        0.4000000059604645,
+        0.44999998807907104,
+        0.5,
+        0.44999998807907104,
+        0.44999998807907104,
+        0.3499999940395355,
+        0.5,
+        0.5,
+        0.3499999940395355,
+        0.44999998807907104,
+        0.44999998807907104,
+        0.3499999940395355,
+        0.4000000059604645,
+        0.4000000059604645,
+        0.3499999940395355,
+        0.6000000238418579,
+        0.4000000059604645,
+        0.3499999940395355,
+        0.20000000298023224
+      ],
+      "metrics": {
+        "train": {
+          "mA": 0.720432698726654,
+          "micro_attribute_accuracy": 0.7609999775886536,
+          "label_macro_f1": 0.43090466445741743,
+          "InsF1": 0.5833019614219666,
+          "instance_iou": 0.42676079273223877
+        },
+        "val": {
+          "mA": 0.7102811336517334,
+          "micro_attribute_accuracy": 0.7616153955459595,
+          "label_macro_f1": 0.4294785779829209,
+          "InsF1": 0.582566499710083,
+          "instance_iou": 0.4257669150829315
+        },
+        "test": {
+          "mA": 0.6503415703773499,
+          "micro_attribute_accuracy": 0.7590768933296204,
+          "label_macro_f1": 0.3721088186766093,
+          "InsF1": 0.570107638835907,
+          "instance_iou": 0.41535064578056335
+        }
+      },
+      "checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\clip-vit-l14-distillation-10k-balanced-clip_vitl14_solider_kd.pt",
+      "checkpoint_sha256": "5ff2cf7fce5acac54ee9275b967f6e5f5522faf108b9ea664fbb40a5448fcf3f"
+    }
+  },
+  "selected_by_val_mA": "clip_vitl14_hard",
+  "seed": 20260723,
+  "gate": {
+    "target_mA": 0.85,
+    "measured_test_mA": 0.6820805072784424,
+    "passed": false,
+    "warning": "PA-100K mA is not CCTV identity or track-heldout accuracy."
+  },
+  "provenance": {
+    "clip_checkpoint": "openai/clip-vit-large-patch14",
+    "teacher_checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+    "script_sha256": "3d87b355483add9a532198c5eedd44311612e3324cddcfa2af464c9d8425b8aa",
+    "data_files": {
+      "train.parquet": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\pa100k_full\\train.parquet",
+        "bytes": 356192795
+      },
+      "val.parquet": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\pa100k_full\\val.parquet",
+        "bytes": 48321267
+      },
+      "test.parquet": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\pa100k_full\\test.parquet",
+        "bytes": 36787908
+      }
+    }
+  }
+}

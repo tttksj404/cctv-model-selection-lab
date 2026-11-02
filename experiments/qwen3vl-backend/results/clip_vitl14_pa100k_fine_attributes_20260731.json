@@ -1,0 +1,232 @@
+{
+  "schemaVersion": "clip-fine-attribute-heldout-v1",
+  "dataset": "PA100k",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+  "checkpointTreeDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "selectionProtocol": "prompt, region, and threshold selected on validation meanAccuracy; reported once on untouched test split",
+  "validationCount": 10000,
+  "testCount": 10000,
+  "attributes": [
+    {
+      "attribute": "Glasses",
+      "selected": {
+        "region": "head",
+        "positivePrompt": "a face wearing eyeglasses",
+        "negativePrompt": "a face without eyeglasses",
+        "scoreKey": "head:0",
+        "threshold": 0.37999999999999995,
+        "validationMetrics": {
+          "accuracy": 0.8339,
+          "meanAccuracy": 0.7716103483391509,
+          "precision": 0.5447048611111112,
+          "recall": 0.6722013926084628,
+          "specificity": 0.871019304069839,
+          "f1": 0.6017741548789259,
+          "positiveRate": 0.1867,
+          "predictedPositiveRate": 0.2304
+        },
+        "testMetrics": {
+          "accuracy": 0.844,
+          "meanAccuracy": 0.779043276256652,
+          "precision": 0.6961805555555556,
+          "recall": 0.650974025974026,
+          "specificity": 0.9071125265392781,
+          "f1": 0.6728187919463087,
+          "positiveRate": 0.2464,
+          "predictedPositiveRate": 0.2304
+        }
+      },
+      "validationCandidates": [
+        {
+          "region": "full",
+          "positivePrompt": "a face wearing eyeglasses",
+          "negativePrompt": "a face without eyeglasses",
+          "scoreKey": "full:0",
+          "threshold": 0.32499999999999996,
+          "validationMetrics": {
+            "accuracy": 0.8085,
+            "meanAccuracy": 0.7462973789195967,
+            "precision": 0.4902597402597403,
+            "recall": 0.647027316550616,
+            "specificity": 0.8455674412885774,
+            "f1": 0.5578388362964674,
+            "positiveRate": 0.1867,
+            "predictedPositiveRate": 0.2464
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a face wearing eyeglasses",
+          "negativePrompt": "a face without eyeglasses",
+          "scoreKey": "head:0",
+          "threshold": 0.37999999999999995,
+          "validationMetrics": {
+            "accuracy": 0.8339,
+            "meanAccuracy": 0.7716103483391509,
+            "precision": 0.5447048611111112,
+            "recall": 0.6722013926084628,
+            "specificity": 0.871019304069839,
+            "f1": 0.6017741548789259,
+            "positiveRate": 0.1867,
+            "predictedPositiveRate": 0.2304
+          },
+          "testMetrics": {
+            "accuracy": 0.844,
+            "meanAccuracy": 0.779043276256652,
+            "precision": 0.6961805555555556,
+            "recall": 0.650974025974026,
+            "specificity": 0.9071125265392781,
+            "f1": 0.6728187919463087,
+            "positiveRate": 0.2464,
+            "predictedPositiveRate": 0.2304
+          }
+        },
+        {
+          "region": "full",
+          "positivePrompt": "a person with visible eyeglass frames",
+          "negativePrompt": "a person with bare eyes and no glasses",
+          "scoreKey": "full:1",
+          "threshold": 0.8049999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7584,
+            "meanAccuracy": 0.7381933892160137,
+            "precision": 0.41381475667189954,
+            "recall": 0.7059453668987681,
+            "specificity": 0.7704414115332595,
+            "f1": 0.5217735550277118,
+            "positiveRate": 0.1867,
+            "predictedPositiveRate": 0.3185
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a person with visible eyeglass frames",
+          "negativePrompt": "a person with bare eyes and no glasses",
+          "scoreKey": "head:1",
+          "threshold": 0.8499999999999999,
+          "validationMetrics": {
+            "accuracy": 0.796,
+            "meanAccuracy": 0.7660547126570313,
+            "precision": 0.4697022767075307,
+            "recall": 0.7182645956079271,
+            "specificity": 0.8138448297061355,
+            "f1": 0.567979669631512,
+            "positiveRate": 0.1867,
+            "predictedPositiveRate": 0.2855
+          }
+        }
+      ]
+    },
+    {
+      "attribute": "Hat",
+      "selected": {
+        "region": "head",
+        "positivePrompt": "a person wearing a hat",
+        "negativePrompt": "a person with no hat",
+        "scoreKey": "head:2",
+        "threshold": 0.32499999999999996,
+        "validationMetrics": {
+          "accuracy": 0.5908,
+          "meanAccuracy": 0.6810234070769117,
+          "precision": 0.07273569608524438,
+          "recall": 0.7791563275434243,
+          "specificity": 0.5828904866103991,
+          "f1": 0.13305084745762713,
+          "positiveRate": 0.0403,
+          "predictedPositiveRate": 0.4317
+        },
+        "testMetrics": {
+          "accuracy": 0.6738,
+          "meanAccuracy": 0.7559999870858087,
+          "precision": 0.06996241688349233,
+          "recall": 0.8432055749128919,
+          "specificity": 0.6687943992587254,
+          "f1": 0.12920448478376936,
+          "positiveRate": 0.0287,
+          "predictedPositiveRate": 0.3459
+        }
+      },
+      "validationCandidates": [
+        {
+          "region": "full",
+          "positivePrompt": "a person wearing a hat",
+          "negativePrompt": "a person with no hat",
+          "scoreKey": "full:2",
+          "threshold": 0.26999999999999996,
+          "validationMetrics": {
+            "accuracy": 0.5025,
+            "meanAccuracy": 0.6350194475062125,
+            "precision": 0.060384615384615384,
+            "recall": 0.7791563275434243,
+            "specificity": 0.4908825674690007,
+            "f1": 0.11208281277886846,
+            "positiveRate": 0.0403,
+            "predictedPositiveRate": 0.52
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a person wearing a hat",
+          "negativePrompt": "a person with no hat",
+          "scoreKey": "head:2",
+          "threshold": 0.32499999999999996,
+          "validationMetrics": {
+            "accuracy": 0.5908,
+            "meanAccuracy": 0.6810234070769117,
+            "precision": 0.07273569608524438,
+            "recall": 0.7791563275434243,
+            "specificity": 0.5828904866103991,
+            "f1": 0.13305084745762713,
+            "positiveRate": 0.0403,
+            "predictedPositiveRate": 0.4317
+          },
+          "testMetrics": {
+            "accuracy": 0.6738,
+            "meanAccuracy": 0.7559999870858087,
+            "precision": 0.06996241688349233,
+            "recall": 0.8432055749128919,
+            "specificity": 0.6687943992587254,
+            "f1": 0.12920448478376936,
+            "positiveRate": 0.0287,
+            "predictedPositiveRate": 0.3459
+          }
+        },
+        {
+          "region": "full",
+          "positivePrompt": "a pedestrian with visible headwear",
+          "negativePrompt": "a bareheaded pedestrian without headwear",
+          "scoreKey": "full:3",
+          "threshold": 0.36999999999999994,
+          "validationMetrics": {
+            "accuracy": 0.46,
+            "meanAccuracy": 0.6283288486295474,
+            "precision": 0.05786586444877013,
+            "recall": 0.8114143920595533,
+            "specificity": 0.44524330519954153,
+            "f1": 0.10802775024777007,
+            "positiveRate": 0.0403,
+            "predictedPositiveRate": 0.5651
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a pedestrian with visible headwear",
+          "negativePrompt": "a bareheaded pedestrian without headwear",
+          "scoreKey": "head:3",
+          "threshold": 0.4799999999999999,
+          "validationMetrics": {
+            "accuracy": 0.5962,
+            "meanAccuracy": 0.6469903358447158,
+            "precision": 0.06736491311592478,
+            "recall": 0.7022332506203474,
+            "specificity": 0.5917474210690841,
+            "f1": 0.12293657688966117,
+            "positiveRate": 0.0403,
+            "predictedPositiveRate": 0.4201
+          }
+        }
+      ]
+    }
+  ]
+}

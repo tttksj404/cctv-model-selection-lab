@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "project-cctv-solider-track-embeddings-v1",
+  "device": "cuda",
+  "torch": "2.6.0+cu124",
+  "cuda": "NVIDIA L40S",
+  "model": "SOLIDER-ReID Swin-B MSMT17 + horizontal-flip TTA",
+  "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/models/solider_reid/swin_base_msmt17.pth",
+  "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+  "soliderRoot": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/external/SOLIDER-REID-runtime-8c08e1c",
+  "rows": 921,
+  "representativeImages": 3684,
+  "featureShape": [
+    921,
+    1024
+  ],
+  "trackCache": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/project_cctv_solider_track_embeddings_20260810.npz",
+  "trackCacheSha256": "cb99bdf3069e650d0f900a48c944d373e38acd994dad17e9818fcfcedcb0063a",
+  "identityLabelsIncluded": false
+}

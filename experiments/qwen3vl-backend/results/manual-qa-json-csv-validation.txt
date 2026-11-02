@@ -1,0 +1,10 @@
+JSON_FILES=25 PARSED=25
+PROXY_RUNTIME=5 PA100K=3 NONCOMPARABLE=2 FAIR_PENDING=4
+FAILED_CANDIDATES=2 FLORENCE_INVALID_RUNTIME=2
+PROXY_EXAMPLES=[45]
+PROXY_FIELD_CONTRACT=['gender', 'age', 'hair_color', 'viewpoint', 'top_color', 'top_type', 'bottom_color', 'bottom_type', 'accessory']
+CSV_DATA_ROWS=14 CSV_TOTAL_WITH_HEADER=15 JSON_EXPECTED_DATA_ROWS=14
+CHECKS=9 FAILURES=0
+VERDICT=PASS
+EXIT_CODE=0
+NOTE=proxyRuntime contains only valid same-45 measured runs; Florence failures are excluded from measured rows and retained in failedCandidates; Qwen fair-tuning rows remain pending_remote_auth.

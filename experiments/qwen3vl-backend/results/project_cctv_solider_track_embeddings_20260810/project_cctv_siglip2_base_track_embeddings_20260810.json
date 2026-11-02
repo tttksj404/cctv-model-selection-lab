@@ -1,0 +1,12 @@
+{
+  "model": "siglip2-base",
+  "device": "cuda",
+  "torch": "2.6.0+cu124",
+  "cuda": "NVIDIA L40S",
+  "rows": 921,
+  "featureShape": [
+    921,
+    768
+  ],
+  "trackCacheSha256": "c829783f0ccdf62dcde4a0bcf684aa878ff21742477390ca186d7d09a417882a"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "mevid-project-adapter-seeds-v1",
+  "dataset": "MEVID public identity-disjoint track-heldout fixture",
+  "metric": "known-test track-level Recall@5",
+  "knownTestQueries": 297,
+  "training": {
+    "device": "cuda:0",
+    "gpu": "NVIDIA L40S",
+    "torch": "2.6.0+cu124",
+    "method": "SOLIDER top-2 pooling + residual adapter + ArcFace + batch-hard Triplet + SupCon + preserve",
+    "validationSelectedRerank": "not applied; adapter stability is measured before rerank",
+    "checkpointDirectory": "tmp/mevid_project_adapter_fixture_20260810/"
+  },
+  "seeds": [
+    {
+      "seed": 20260810,
+      "hits": 266,
+      "recallAt5": 0.8956228956228957,
+      "rank1": 0.797979797979798,
+      "recallAt10": 0.9292929292929293,
+      "passed85": true,
+      "checkpointSha256": "0b6b1bf7a331ebb1293355083cee940bb50d1e61746015341878e232caa25ac4"
+    },
+    {
+      "seed": 20260811,
+      "hits": 264,
+      "recallAt5": 0.8888888888888888,
+      "rank1": 0.8013468013468014,
+      "recallAt10": 0.9124579124579124,
+      "passed85": true,
+      "checkpointSha256": "d05284d08ddc7c6f21a2690e64664c2ad56f1ebb359ec0c3a1165a3d892a5884"
+    },
+    {
+      "seed": 20260812,
+      "hits": 263,
+      "recallAt5": 0.8855218855218855,
+      "rank1": 0.8114478114478114,
+      "recallAt10": 0.9158249158249159,
+      "passed85": true,
+      "checkpointSha256": "5d7c97bde4212c5302007e5fe7d37cea19d87504c1ab5cd17e257dce339c1bfd"
+    }
+  ],
+  "minRecallAt5": 0.8855218855218855,
+  "meanRecallAt5": 0.8900112233445566,
+  "allPassed85": true,
+  "sourceRemoteArtifact": "qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/seed_aggregate.json"
+}

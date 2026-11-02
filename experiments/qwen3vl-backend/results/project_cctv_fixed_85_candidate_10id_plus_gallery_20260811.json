@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "project-cctv-fixed-85-candidate-diagnostic-v1",
+  "status": "diagnostic_single_manual_adjudicator_not_production_accuracy",
+  "protocol": "cross-video-query-to-gallery-with-long-open-set-stress",
+  "method": {
+    "backbone": "SOLIDER",
+    "neckFeature": "after",
+    "frameAggregation": "symmetric-top4",
+    "galleryIdentityAggregation": "max",
+    "soliderWeight": 0.7,
+    "appearanceWeight": 0.3,
+    "appearanceDescriptor": "cached vertical HSV histogram + luminance/chroma summaries",
+    "selectionPolicy": "fixed before this evaluation; no weight sweep in this command"
+  },
+  "source": {
+    "embeddingsSha256": "139667a4bc4c2ca004ac6c694de5284b72c384e648582d9b2ef19990677a3d23",
+    "visualCacheSha256": "fe1a3ac76c5cbb63ba4859a49e7bc261f11146c140c5331b426b6e13f1a407c4",
+    "adjudicationSha256": "9ba42cea868a6606660ec1e695cd448a2b55b8bebaa2763b2aa9a81cfa3fd0d5",
+    "trackCount": 946,
+    "queryTracks": 11,
+    "galleryTracks": 934,
+    "galleryCandidateCount": 921,
+    "galleryVideo": "IMG_3617",
+    "unlabeledGalleryScope": "videos:20260729_082242,20260729_092211",
+    "identityGroups": 9,
+    "secondAdjudicatorRequired": true
+  },
+  "gate": {
+    "recallAt5Threshold": 0.85,
+    "recallAt5": 1.0,
+    "passed85Diagnostic": true,
+    "productionClaimAllowed": false,
+    "reason": "identity labels still require an independent second adjudicator"
+  },
+  "metrics": {
+    "aggregation": "max",
+    "candidateCount": 921,
+    "count": 11,
+    "rank1": 0.8181818181818182,
+    "recallAt5": 1.0,
+    "recallAt10": 1.0,
+    "mrr": 0.9090909090909091,
+    "worstRank": 2,
+    "ranks": [
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1
+    ],
+    "topFiveCandidates": [
+      [
+        "project-person-10",
+        "unlabeled-distractor-0419",
+        "unlabeled-distractor-0177",
+        "unlabeled-distractor-0429",
+        "unlabeled-distractor-0406"
+      ],
+      [
+        "project-person-02",
+        "unlabeled-distractor-0799",
+        "unlabeled-distractor-0153",
+        "unlabeled-distractor-0271",
+        "unlabeled-distractor-0264"
+      ],
+      [
+        "project-person-01",
+        "unlabeled-distractor-0551",
+        "unlabeled-distractor-0483",
+        "unlabeled-distractor-0305",
+        "unlabeled-distractor-0478"
+      ],
+      [
+        "project-person-02",
+        "project-person-05",
+        "unlabeled-distractor-0149",
+        "unlabeled-distractor-0274",
+        "unlabeled-distractor-0219"
+      ],
+      [
+        "unlabeled-distractor-0784",
+        "project-person-03",
+        "unlabeled-distractor-0654",
+        "unlabeled-distractor-0869",
+        "unlabeled-distractor-0647"
+      ],
+      [
+        "project-person-06",
+        "unlabeled-distractor-0771",
+        "unlabeled-distractor-0255",
+        "unlabeled-distractor-0065",
+        "unlabeled-distractor-0028"
+      ],
+      [
+        "project-person-04",
+        "unlabeled-distractor-0360",
+        "unlabeled-distractor-0349",
+        "unlabeled-distractor-0562",
+        "unlabeled-distractor-0738"
+      ],
+      [
+        "project-person-05",
+        "unlabeled-distractor-0841",
+        "unlabeled-distractor-0770",
+        "unlabeled-distractor-0219",
+        "unlabeled-distractor-0231"
+      ],
+      [
+        "unlabeled-distractor-0738",
+        "project-person-08",
+        "unlabeled-distractor-0438",
+        "project-person-04",
+        "unlabeled-distractor-0471"
+      ],
+      [
+        "project-person-03",
+        "unlabeled-distractor-0225",
+        "project-person-01",
+        "unlabeled-distractor-0481",
+        "unlabeled-distractor-0470"
+      ],
+      [
+        "project-person-07",
+        "project-person-09",
+        "unlabeled-distractor-0065",
+        "unlabeled-distractor-0078",
+        "unlabeled-distractor-0174"
+      ]
+    ]
+  },
+  "queryBreakdownByVideo": {
+    "20260729_092211": {
+      "count": 1,
+      "hitsAt5": 1,
+      "ranks": [
+        1
+      ],
+      "recallAt5": 1.0
+    },
+    "IMG_3618": {
+      "count": 1,
+      "hitsAt5": 1,
+      "ranks": [
+        1
+      ],
+      "recallAt5": 1.0
+    },
+    "IMG_3620": {
+      "count": 9,
+      "hitsAt5": 9,
+      "ranks": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "recallAt5": 1.0
+    }
+  },
+  "openSetStress": {
+    "negativeQueriesAreNotPartOfRecallAt5": true,
+    "negativeResults": [
+      {
+        "trackId": "IMG_3620-track-0003",
+        "videoId": "IMG_3620",
+        "topCandidates": [
+          {
+            "identity": "project-person-05",
+            "score": 2.475872755050659
+          },
+          {
+            "identity": "unlabeled-distractor-0149",
+            "score": 2.288562059402466
+          },
+          {
+            "identity": "unlabeled-distractor-0162",
+            "score": 2.229065179824829
+          },
+          {
+            "identity": "unlabeled-distractor-0173",
+            "score": 2.166409969329834
+          },
+          {
+            "identity": "unlabeled-distractor-0488",
+            "score": 2.100903272628784
+          }
+        ],
+        "topScore": 2.475872755050659,
+        "top2Margin": 0.18731069564819336
+      }
+    ]
+  }
+}

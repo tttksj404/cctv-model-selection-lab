@@ -1,0 +1,153 @@
+{
+  "schemaVersion": "cctv-solider-gpu-sweep-v2",
+  "evaluatedAt": "2026-07-28",
+  "execution": {
+    "location": "authenticated remote Jupyter GPU workspace",
+    "gpu": "NVIDIA L40S",
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124",
+    "timm": "0.6.13",
+    "checkpoint": "models/solider_reid/swin_base_msmt17.pth",
+    "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+    "benchmarkScriptSha256": "95115b1c79beb8b83b3a6168ec278db78d4f21472e0c519eab9f42a17a1ada1f",
+    "rawArtifactsMirroredLocally": true,
+    "rawArtifactsLocation": "experiments/results/gpu_raw_20260728",
+    "strictRunsContainPerQueryRankings": true
+  },
+  "dataset": {
+    "name": "CHIRLA",
+    "status": "public CCTV proxy, not project CCTV",
+    "eligibleGalleryQueryIdentities": 11,
+    "queryCount": 95,
+    "cameraCount": 16,
+    "sequenceCount": 10,
+    "protocolAudit": {
+      "identitiesWithSameCameraAcrossRoles": 7,
+      "queriesWithSameCameraPositive": 29,
+      "queriesWithSameSequencePositive": 95,
+      "strictCrossCameraSequenceEligibleQueries": 95,
+      "evidence": "experiments/results/chirla_protocol_audit_20260728.json"
+    }
+  },
+  "runs": [
+    {
+      "name": "top-3 mean + hflip",
+      "protocol": "gallery-query-with-camera-and-sequence-overlap",
+      "remoteArtifact": "results/chirla_solider_reid_swin_base_msmt17_hflip.json",
+      "rank1": 0.5684210526315789,
+      "recallAt5": 0.9368421052631579,
+      "recallAt10": 1.0,
+      "mAP": 0.7100710108604846,
+      "rank1Ci95Low": 0.47368421052631576,
+      "rank1Ci95High": 0.6631578947368421
+    },
+    {
+      "name": "mean + hflip",
+      "protocol": "gallery-query-with-camera-and-sequence-overlap",
+      "remoteArtifact": "results/chirla_solider_hflip_mean.json",
+      "rank1": 0.6105263157894737,
+      "recallAt5": 0.9157894736842105,
+      "recallAt10": 1.0,
+      "mAP": 0.7313533834586466,
+      "rank1Ci95Low": 0.5052631578947369,
+      "rank1Ci95High": 0.7052631578947368
+    },
+    {
+      "name": "max + hflip",
+      "protocol": "gallery-query-with-camera-and-sequence-overlap",
+      "remoteArtifact": "results/chirla_solider_hflip_max.json",
+      "rank1": 0.6421052631578947,
+      "recallAt5": 0.9368421052631579,
+      "recallAt10": 1.0,
+      "mAP": 0.756299081035923,
+      "rank1Ci95Low": 0.5471052631578948,
+      "rank1Ci95High": 0.7368421052631579
+    },
+    {
+      "name": "top-3 mean, no TTA",
+      "protocol": "gallery-query-with-camera-and-sequence-overlap",
+      "remoteArtifact": "results/chirla_solider_none_topk3.json",
+      "rank1": 0.6105263157894737,
+      "recallAt5": 0.9157894736842105,
+      "recallAt10": 1.0,
+      "mAP": 0.7301002506265662,
+      "rank1Ci95Low": 0.5157894736842106,
+      "rank1Ci95High": 0.7052631578947368
+    }
+  ],
+  "strictRuns": [
+    {
+      "name": "top-3 mean + hflip",
+      "protocol": "strict-cross-camera-sequence",
+      "localArtifact": "experiments/results/gpu_raw_20260728/chirla_solider_strict_hflip_topk3.json",
+      "artifactSha256": "494f5d115cd36cfb94670b10449ce9f52c321ccf0cafb2d1ba98cfa07f033bd8",
+      "queryRankings": 95,
+      "rank1": 0.47368421052631576,
+      "recallAt5": 0.7789473684210526,
+      "recallAt10": 0.9894736842105263,
+      "mAP": 0.6048500037973722,
+      "rank1Ci95Low": 0.37894736842105264,
+      "rank1Ci95High": 0.5684210526315789
+    },
+    {
+      "name": "mean + hflip",
+      "protocol": "strict-cross-camera-sequence",
+      "localArtifact": "experiments/results/gpu_raw_20260728/chirla_solider_strict_hflip_mean.json",
+      "artifactSha256": "6612c48edb413a356386559a2b59a3c4e09535ba94d1f7e97470ac815cf1e60b",
+      "queryRankings": 95,
+      "rank1": 0.42105263157894735,
+      "recallAt5": 0.8421052631578947,
+      "recallAt10": 0.9789473684210527,
+      "mAP": 0.5756899825320879,
+      "rank1Ci95Low": 0.3263157894736842,
+      "rank1Ci95High": 0.5157894736842106
+    },
+    {
+      "name": "max + hflip",
+      "protocol": "strict-cross-camera-sequence",
+      "localArtifact": "experiments/results/gpu_raw_20260728/chirla_solider_strict_hflip_max.json",
+      "artifactSha256": "4095a7771631248b948fbb2468e3d01cc11252f93204accdadf89f5ed0a47bca",
+      "queryRankings": 95,
+      "rank1": 0.4631578947368421,
+      "recallAt5": 0.7789473684210526,
+      "recallAt10": 0.9894736842105263,
+      "mAP": 0.5997622844991267,
+      "rank1Ci95Low": 0.3684210526315789,
+      "rank1Ci95High": 0.5578947368421052
+    },
+    {
+      "name": "top-3 mean, no TTA",
+      "protocol": "strict-cross-camera-sequence",
+      "localArtifact": "experiments/results/gpu_raw_20260728/chirla_solider_strict_none_topk3.json",
+      "artifactSha256": "02fbbeff1496fde5f4ed6e700076803d37f21a5ee2e2b79e47a705a4060db550",
+      "queryRankings": 95,
+      "rank1": 0.47368421052631576,
+      "recallAt5": 0.7789473684210526,
+      "recallAt10": 0.9894736842105263,
+      "mAP": 0.6073688007898534,
+      "rank1Ci95Low": 0.37894736842105264,
+      "rank1Ci95High": 0.5684210526315789
+    }
+  ],
+  "legacyOverlappingBest": {
+    "name": "SOLIDER-ReID Swin-B MSMT17 max + hflip",
+    "rank1": 0.6421052631578947,
+    "recallAt5": 0.9368421052631579,
+    "protocol": "gallery-query-with-camera-and-sequence-overlap"
+  },
+  "bestStrict": {
+    "name": "SOLIDER-ReID Swin-B MSMT17 top-3 mean",
+    "rank1": 0.47368421052631576,
+    "recallAt5": 0.7789473684210526,
+    "rank1Ci95Low": 0.37894736842105264,
+    "protocol": "strict-cross-camera-sequence",
+    "promotionEligible": false,
+    "candidateRetrieverEligible": true,
+    "automaticIdentityMatchEligible": false
+  },
+  "compatibilityFixes": [
+    "used the server CUDA-compatible torch 2.6.0+cu124 environment instead of an isolated latest torch build",
+    "provided the removed torch._six import expected by the official repository",
+    "provided the mmcv.runner import surface that the official Swin file imports but does not call"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "evaluatedAt": "2026-07-28",
+  "status": "failed_generalization_85_gate",
+  "gate": {
+    "rank1Minimum": 0.85,
+    "recallAt5Minimum": 0.95,
+    "promotionEligible": false
+  },
+  "proxy": {
+    "name": "CHIRLA",
+    "root": "chirla",
+    "manifest": "chirla_identity_manifest.jsonl",
+    "galleryIdentityCount": 11,
+    "queryCount": 95,
+    "isProjectCctv": false
+  },
+  "models": [
+    {"model": "clip-vit-b32", "aggregation": "mean", "rank1": 0.24210526315789474, "recallAt5": 0.6736842105263158},
+    {"model": "clip-vit-l14", "aggregation": "mean", "rank1": 0.30526315789473685, "recallAt5": 0.631578947368421},
+    {"model": "dinov2-base", "aggregation": "mean", "rank1": 0.30526315789473685, "recallAt5": 0.5789473684210527},
+    {"model": "osnet-x1-0", "aggregation": "mean", "rank1": 0.35789473684210527, "recallAt5": 0.7157894736842105},
+    {"model": "siglip2-base", "aggregation": "mean", "rank1": 0.37894736842105264, "recallAt5": 0.7578947368421053},
+    {"model": "siglip2-base", "aggregation": "max", "rank1": 0.3684210526315789, "recallAt5": 0.7052631578947368},
+    {"model": "siglip2-base", "aggregation": "topk-mean-k3", "rank1": 0.3894736842105263, "recallAt5": 0.8}
+  ],
+  "identityDisjointAdapter": {
+    "model": "clip-vit-l14",
+    "trainRows": 56,
+    "trainIdentities": 15,
+    "evalQueryTracks": 67,
+    "distractorQueryTracks": 27,
+    "rank1": 0.325,
+    "recallAt5": 0.55,
+    "promotionEligible": false
+  },
+  "rootCausesFixed": [
+    "reviewed manifest is used for training input",
+    "identity-disjoint split enforced for adapter evaluation",
+    "CUDA 12.8 compatible PyTorch installed on L40S server",
+    "CHIRLA root path and project .venv interpreter made explicit",
+    "CLIP vision projection path made compatible with installed transformers"
+  ],
+  "projectDataStatus": {
+    "reviewedRows": 175,
+    "eligibleRows": 175,
+    "identityGroups": 1,
+    "tracks": 3,
+    "unreviewedAugmentedRows": 1225,
+    "unreviewedEligibleRows": 0
+  }
+}

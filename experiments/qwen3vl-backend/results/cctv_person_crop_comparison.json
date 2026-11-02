@@ -1,0 +1,469 @@
+{
+  "status": "measured_proxy_comparison",
+  "contract": {
+    "paired_examples": 45,
+    "datasets": {
+      "simuletic": 15,
+      "pa100k": 30
+    },
+    "metric": "micro attribute accuracy over non-empty target fields",
+    "bootstrap": "10000 dataset-group cluster resamples, seed 20260723",
+    "runtime": "all original and person-only crop runs use transformers 5.14.1"
+  },
+  "crop_generation": {
+    "detector": "fasterrcnn_mobilenet_v3_large_320_fpn",
+    "weights": "DEFAULT",
+    "weights_url": "https://download.pytorch.org/models/fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "detector_weights_sha256": "907ea3f91ff92242bc1baea8049276a3e76bca48ce7560bd268cc029f37977b5",
+    "threshold_configured": 0.0,
+    "margin_fraction": 0.05,
+    "person_score": {
+      "simuletic": {
+        "min": 0.999343,
+        "median": 0.999824,
+        "max": 0.999928,
+        "below_0_5": 0
+      },
+      "pa100k": {
+        "min": 0.053257,
+        "median": 0.991722,
+        "max": 0.999849,
+        "below_0_5": 5
+      }
+    },
+    "crop_area_fraction": {
+      "simuletic": {
+        "min": 0.3808717727661133,
+        "median": 0.4739799499511719,
+        "max": 0.5849609375
+      },
+      "pa100k": {
+        "min": 0.10313588850174216,
+        "median": 0.9658848955415033,
+        "max": 1.0
+      }
+    }
+  },
+  "provenance": {
+    "analysis_script": {
+      "path": "scripts\\analyze_cctv_person_crop_results.py",
+      "sha256": "8cfd01a720f0b58e00c5f891735458e36585ed4c85c183a8318a652e815ffd7c"
+    },
+    "crop_manifest": {
+      "path": "experiments\\data\\cctv_proxy\\person_only\\crop_manifest.jsonl",
+      "sha256": "5e2423bbf2e8d29072674df98a8dbc0e67a29d910a9e28df61dc7777a311729e"
+    },
+    "crop_summary": {
+      "path": "experiments\\data\\cctv_proxy\\person_only\\summary.json",
+      "sha256": "c7a4b7f6fa25d623288a47d74e6040d0a507a78d154382f6b8d8ddec7bedb315"
+    },
+    "build_script": {
+      "path": "scripts/build_cctv_person_crop_dataset.py",
+      "sha256": "5a1a141ec98aea968e3b3eea830d3b58d20f93533331d7e2afbe99f98a7b2947"
+    }
+  },
+  "models": [
+    {
+      "model": "clip-vit-l14",
+      "examples": 45,
+      "original": {
+        "attribute_accuracy": 0.41403508771929826,
+        "field_accuracy": {
+          "gender": 0.5555555555555556,
+          "age": 0.5333333333333333,
+          "hair_color": 0.6666666666666666,
+          "viewpoint": 0.28888888888888886,
+          "top_color": 0.5333333333333333,
+          "top_type": 0.4,
+          "bottom_color": 0.2,
+          "bottom_type": 0.3333333333333333,
+          "footwear": 0.0,
+          "accessory": 0.3111111111111111
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.4888888888888889,
+          "pa100k": 0.3466666666666667
+        },
+        "latency_s_p95": 0.9951714999988326,
+        "structured_valid_rate": 1.0
+      },
+      "person_only_crop": {
+        "attribute_accuracy": 0.43859649122807015,
+        "field_accuracy": {
+          "gender": 0.6222222222222222,
+          "age": 0.4222222222222222,
+          "hair_color": 0.3333333333333333,
+          "viewpoint": 0.4666666666666667,
+          "top_color": 0.6666666666666666,
+          "top_type": 0.7333333333333333,
+          "bottom_color": 0.06666666666666667,
+          "bottom_type": 0.35555555555555557,
+          "footwear": 0.0,
+          "accessory": 0.3111111111111111
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.5481481481481482,
+          "pa100k": 0.34
+        },
+        "latency_s_p95": 1.153709100000924,
+        "structured_valid_rate": 1.0
+      },
+      "delta": {
+        "attribute_accuracy_pp": 2.4561403508771895,
+        "bootstrap_95ci_pp_by_group": [
+          -4.390243902439028,
+          8.30769230769231
+        ],
+        "field_accuracy_pp": {
+          "gender": 6.666666666666665,
+          "age": -11.11111111111111,
+          "hair_color": -33.33333333333333,
+          "viewpoint": 17.777777777777782,
+          "top_color": 13.33333333333333,
+          "top_type": 33.33333333333333,
+          "bottom_color": -13.333333333333336,
+          "bottom_type": 2.2222222222222254,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy_pp": {
+          "simuletic": 5.925925925925929,
+          "pa100k": -0.6666666666666654
+        },
+        "latency_s_p95": 0.1585376000020915,
+        "structured_valid_rate_pp": 0.0
+      },
+      "default_candidate": "person_only_crop",
+      "ci_excludes_zero": false,
+      "provenance": {
+        "original_result": "clip-vit-l14.original-rerun-v5.json",
+        "crop_result": "clip-vit-l14.person-crop-rerun.json",
+        "original_result_sha256": "bdd74a4b030a5ec7bd6775943dcca8e828ae5ea473b51b0b8b8fbb62b5736a60",
+        "crop_result_sha256": "958aa7efbc14bc262da21aaad7486d442b57fcef7609e487522e899d6d9d0f5a"
+      }
+    },
+    {
+      "model": "clip-vit-b32",
+      "examples": 45,
+      "original": {
+        "attribute_accuracy": 0.38596491228070173,
+        "field_accuracy": {
+          "gender": 0.5555555555555556,
+          "age": 0.4444444444444444,
+          "hair_color": 0.6666666666666666,
+          "viewpoint": 0.2222222222222222,
+          "top_color": 0.6666666666666666,
+          "top_type": 0.5333333333333333,
+          "bottom_color": 0.2,
+          "bottom_type": 0.28888888888888886,
+          "footwear": 0.0,
+          "accessory": 0.24444444444444444
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.4,
+          "pa100k": 0.37333333333333335
+        },
+        "latency_s_p95": 0.5179857000002812,
+        "structured_valid_rate": 1.0
+      },
+      "person_only_crop": {
+        "attribute_accuracy": 0.4,
+        "field_accuracy": {
+          "gender": 0.5555555555555556,
+          "age": 0.28888888888888886,
+          "hair_color": 0.6666666666666666,
+          "viewpoint": 0.28888888888888886,
+          "top_color": 1.0,
+          "top_type": 0.6666666666666666,
+          "bottom_color": 0.26666666666666666,
+          "bottom_type": 0.26666666666666666,
+          "footwear": 0.0,
+          "accessory": 0.26666666666666666
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.45185185185185184,
+          "pa100k": 0.35333333333333333
+        },
+        "latency_s_p95": 0.45880810000016936,
+        "structured_valid_rate": 1.0
+      },
+      "delta": {
+        "attribute_accuracy_pp": 1.403508771929829,
+        "bootstrap_95ci_pp_by_group": [
+          -5.454545454545457,
+          7.610830172777076
+        ],
+        "field_accuracy_pp": {
+          "gender": 0.0,
+          "age": -15.555555555555555,
+          "hair_color": 0.0,
+          "viewpoint": 6.666666666666665,
+          "top_color": 33.333333333333336,
+          "top_type": 13.33333333333333,
+          "bottom_color": 6.666666666666665,
+          "bottom_type": -2.2222222222222197,
+          "footwear": 0.0,
+          "accessory": 2.2222222222222228
+        },
+        "dataset_accuracy_pp": {
+          "simuletic": 5.185185185185182,
+          "pa100k": -2.0000000000000018
+        },
+        "latency_s_p95": -0.05917760000011185,
+        "structured_valid_rate_pp": 0.0
+      },
+      "default_candidate": "person_only_crop",
+      "ci_excludes_zero": false,
+      "provenance": {
+        "original_result": "clip-vit-b32.original-rerun-v5.json",
+        "crop_result": "clip-vit-b32.person-crop-rerun.json",
+        "original_result_sha256": "d46e4145f1c4688acb82af41d1ce882e2ab4aa717473258924d9ac5f5838b9c3",
+        "crop_result_sha256": "77492cc0fa2c7639c8a23bf711d1eeb151dade49c51fc21f91a70c3a70de3044"
+      }
+    },
+    {
+      "model": "siglip-base",
+      "examples": 45,
+      "original": {
+        "attribute_accuracy": 0.24210526315789474,
+        "field_accuracy": {
+          "gender": 0.4888888888888889,
+          "age": 0.4444444444444444,
+          "hair_color": 0.0,
+          "viewpoint": 0.37777777777777777,
+          "top_color": 0.26666666666666666,
+          "top_type": 0.3333333333333333,
+          "bottom_color": 0.0,
+          "bottom_type": 0.022222222222222223,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.25925925925925924,
+          "pa100k": 0.22666666666666666
+        },
+        "latency_s_p95": 0.35921719999896595,
+        "structured_valid_rate": 1.0
+      },
+      "person_only_crop": {
+        "attribute_accuracy": 0.22807017543859648,
+        "field_accuracy": {
+          "gender": 0.4666666666666667,
+          "age": 0.4222222222222222,
+          "hair_color": 0.0,
+          "viewpoint": 0.3111111111111111,
+          "top_color": 0.3333333333333333,
+          "top_type": 0.26666666666666666,
+          "bottom_color": 0.06666666666666667,
+          "bottom_type": 0.022222222222222223,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.24444444444444444,
+          "pa100k": 0.21333333333333335
+        },
+        "latency_s_p95": 0.796741899999688,
+        "structured_valid_rate": 1.0
+      },
+      "delta": {
+        "attribute_accuracy_pp": -1.4035087719298263,
+        "bootstrap_95ci_pp_by_group": [
+          -3.414634146341464,
+          0.6153846153846121
+        ],
+        "field_accuracy_pp": {
+          "gender": -2.2222222222222197,
+          "age": -2.2222222222222197,
+          "hair_color": 0.0,
+          "viewpoint": -6.666666666666665,
+          "top_color": 6.666666666666665,
+          "top_type": -6.666666666666665,
+          "bottom_color": 6.666666666666667,
+          "bottom_type": 0.0,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy_pp": {
+          "simuletic": -1.481481481481481,
+          "pa100k": -1.3333333333333308
+        },
+        "latency_s_p95": 0.4375247000007221,
+        "structured_valid_rate_pp": 0.0
+      },
+      "default_candidate": "original",
+      "ci_excludes_zero": false,
+      "provenance": {
+        "original_result": "siglip-base.original-rerun-v5.json",
+        "crop_result": "siglip-base.person-crop-rerun.json",
+        "original_result_sha256": "37171f41461548f9e268e943ec4660052b1b216dab651eba4176e7eebe0691e3",
+        "crop_result_sha256": "613171af2aca6a3498acba67c3de0234c00b1739dca18eb2c6d9386e72036d18"
+      }
+    },
+    {
+      "model": "blip-base",
+      "examples": 45,
+      "original": {
+        "attribute_accuracy": 0.20350877192982456,
+        "field_accuracy": {
+          "gender": 0.7333333333333333,
+          "age": 0.0,
+          "hair_color": 0.0,
+          "viewpoint": 0.08888888888888889,
+          "top_color": 0.0,
+          "top_type": 0.0,
+          "bottom_color": 0.13333333333333333,
+          "bottom_type": 0.0,
+          "footwear": 0.0,
+          "accessory": 0.4222222222222222
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.1259259259259259,
+          "pa100k": 0.2733333333333333
+        },
+        "latency_s_p95": 0.42671490000066115,
+        "structured_valid_rate": 1.0
+      },
+      "person_only_crop": {
+        "attribute_accuracy": 0.19298245614035087,
+        "field_accuracy": {
+          "gender": 0.6888888888888889,
+          "age": 0.0,
+          "hair_color": 0.0,
+          "viewpoint": 0.06666666666666667,
+          "top_color": 0.0,
+          "top_type": 0.0,
+          "bottom_color": 0.13333333333333333,
+          "bottom_type": 0.0,
+          "footwear": 0.0,
+          "accessory": 0.4222222222222222
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.1259259259259259,
+          "pa100k": 0.25333333333333335
+        },
+        "latency_s_p95": 0.3446143999990454,
+        "structured_valid_rate": 1.0
+      },
+      "delta": {
+        "attribute_accuracy_pp": -1.052631578947369,
+        "bootstrap_95ci_pp_by_group": [
+          -2.926829268292683,
+          0.0
+        ],
+        "field_accuracy_pp": {
+          "gender": -4.444444444444439,
+          "age": 0.0,
+          "hair_color": 0.0,
+          "viewpoint": -2.2222222222222228,
+          "top_color": 0.0,
+          "top_type": 0.0,
+          "bottom_color": 0.0,
+          "bottom_type": 0.0,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy_pp": {
+          "simuletic": 0.0,
+          "pa100k": -1.9999999999999962
+        },
+        "latency_s_p95": -0.08210050000161573,
+        "structured_valid_rate_pp": 0.0
+      },
+      "default_candidate": "original",
+      "ci_excludes_zero": false,
+      "provenance": {
+        "original_result": "blip-base.original-rerun-v5.json",
+        "crop_result": "blip-base.person-crop-rerun.json",
+        "original_result_sha256": "388854e382fcd6310fc2442a5195eabe26fc7800d4f6c98ee399b3005c7d6469",
+        "crop_result_sha256": "64d1ec0325748d7947fb88bd067374447cae2fcda08364617dbf05077ce5f3f2"
+      }
+    },
+    {
+      "model": "qwen3-vl-2b",
+      "examples": 45,
+      "original": {
+        "attribute_accuracy": 0.3929824561403509,
+        "field_accuracy": {
+          "gender": 0.37777777777777777,
+          "age": 0.2,
+          "hair_color": 0.6,
+          "viewpoint": 0.4,
+          "top_color": 0.3333333333333333,
+          "top_type": 0.6666666666666666,
+          "bottom_color": 1.0,
+          "bottom_type": 0.26666666666666666,
+          "footwear": 0.0,
+          "accessory": 0.37777777777777777
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.7185185185185186,
+          "pa100k": 0.1
+        },
+        "latency_s_p95": 6.1083010000002105,
+        "structured_valid_rate": 0.5555555555555556
+      },
+      "person_only_crop": {
+        "attribute_accuracy": 0.34035087719298246,
+        "field_accuracy": {
+          "gender": 0.28888888888888886,
+          "age": 0.15555555555555556,
+          "hair_color": 0.4666666666666667,
+          "viewpoint": 0.28888888888888886,
+          "top_color": 0.3333333333333333,
+          "top_type": 0.6666666666666666,
+          "bottom_color": 1.0,
+          "bottom_type": 0.2222222222222222,
+          "footwear": 0.0,
+          "accessory": 0.37777777777777777
+        },
+        "dataset_accuracy": {
+          "simuletic": 0.6666666666666666,
+          "pa100k": 0.04666666666666667
+        },
+        "latency_s_p95": 4.615034300000843,
+        "structured_valid_rate": 0.4888888888888889
+      },
+      "delta": {
+        "attribute_accuracy_pp": -5.263157894736842,
+        "bootstrap_95ci_pp_by_group": [
+          -9.8251012145749,
+          -1.4035087719298234
+        ],
+        "field_accuracy_pp": {
+          "gender": -8.888888888888891,
+          "age": -4.4444444444444455,
+          "hair_color": -13.33333333333333,
+          "viewpoint": -11.111111111111116,
+          "top_color": 0.0,
+          "top_type": 0.0,
+          "bottom_color": 0.0,
+          "bottom_type": -4.4444444444444455,
+          "footwear": 0.0,
+          "accessory": 0.0
+        },
+        "dataset_accuracy_pp": {
+          "simuletic": -5.185185185185192,
+          "pa100k": -5.333333333333334
+        },
+        "latency_s_p95": -1.4932666999993671,
+        "structured_valid_rate_pp": -6.6666666666666705
+      },
+      "default_candidate": "original",
+      "ci_excludes_zero": true,
+      "provenance": {
+        "original_result": "qwen3-vl-2b.original-rerun-v5.json",
+        "crop_result": "qwen3-vl-2b.person-crop-rerun.json",
+        "original_result_sha256": "e501145d348f4118c54259db637172c163c4cc3bfb3fcbbde4ae2903c6e66608",
+        "crop_result_sha256": "6fd180bb79a868fba7efad04d012eb33e7f8923dc20c36e9566ac532ee1896a2"
+      }
+    }
+  ],
+  "decision": {
+    "global_default": "original",
+    "reason": "모델별 크롭 효과가 일관되지 않고 실제 CCTV identity track-heldout 라벨 게이트가 아직 충족되지 않음",
+    "clip_vit_l14": "person_only_crop_candidate",
+    "qwen3_vl_2b": "original",
+    "production_change_allowed": false
+  }
+}

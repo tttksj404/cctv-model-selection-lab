@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "project-cctv-fixed-85-candidate-diagnostic-v1",
+  "status": "diagnostic_single_manual_adjudicator_not_production_accuracy",
+  "protocol": "cross-video-query-to-gallery-with-long-open-set-stress",
+  "method": {
+    "backbone": "SOLIDER",
+    "neckFeature": "after",
+    "frameAggregation": "symmetric-top4",
+    "galleryIdentityAggregation": "max",
+    "soliderWeight": 0.7,
+    "appearanceWeight": 0.3,
+    "appearanceDescriptor": "cached vertical HSV histogram + luminance/chroma summaries",
+    "selectionPolicy": "fixed before this evaluation; no weight sweep in this command"
+  },
+  "source": {
+    "embeddingsSha256": "139667a4bc4c2ca004ac6c694de5284b72c384e648582d9b2ef19990677a3d23",
+    "visualCacheSha256": "fe1a3ac76c5cbb63ba4859a49e7bc261f11146c140c5331b426b6e13f1a407c4",
+    "adjudicationSha256": "2aa532b7428849bee13b4f497fc8c8aca3bc8c771207ddba97f598171a150496",
+    "trackCount": 946,
+    "queryTracks": 12,
+    "galleryTracks": 931,
+    "galleryCandidateCount": 919,
+    "galleryVideo": "IMG_3617",
+    "unlabeledGalleryScope": "videos:20260729_082242,20260729_092211",
+    "identityGroups": 10,
+    "secondAdjudicatorRequired": true
+  },
+  "gate": {
+    "recallAt5Threshold": 0.85,
+    "recallAt5": 0.9166666666666666,
+    "passed85Diagnostic": true,
+    "productionClaimAllowed": false,
+    "reason": "identity labels still require an independent second adjudicator"
+  },
+  "metrics": {
+    "aggregation": "max",
+    "candidateCount": 919,
+    "count": 12,
+    "rank1": 0.75,
+    "recallAt5": 0.9166666666666666,
+    "recallAt10": 1.0,
+    "mrr": 0.8416666666666667,
+    "worstRank": 10,
+    "ranks": [
+      1,
+      10,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1
+    ],
+    "topFiveCandidates": [
+      [
+        "project-person-10",
+        "unlabeled-distractor-0417",
+        "unlabeled-distractor-0175",
+        "unlabeled-distractor-0427",
+        "unlabeled-distractor-0404"
+      ],
+      [
+        "unlabeled-distractor-0684",
+        "unlabeled-distractor-0913",
+        "unlabeled-distractor-0727",
+        "unlabeled-distractor-0874",
+        "unlabeled-distractor-0817"
+      ],
+      [
+        "project-person-02",
+        "unlabeled-distractor-0796",
+        "unlabeled-distractor-0151",
+        "unlabeled-distractor-0269",
+        "unlabeled-distractor-0262"
+      ],
+      [
+        "project-person-01",
+        "unlabeled-distractor-0549",
+        "unlabeled-distractor-0481",
+        "unlabeled-distractor-0303",
+        "unlabeled-distractor-0476"
+      ],
+      [
+        "project-person-02",
+        "project-person-05",
+        "unlabeled-distractor-0147",
+        "unlabeled-distractor-0272",
+        "unlabeled-distractor-0217"
+      ],
+      [
+        "unlabeled-distractor-0781",
+        "project-person-03",
+        "unlabeled-distractor-0652",
+        "unlabeled-distractor-0866",
+        "unlabeled-distractor-0645"
+      ],
+      [
+        "project-person-06",
+        "unlabeled-distractor-0768",
+        "unlabeled-distractor-0253",
+        "unlabeled-distractor-0064",
+        "unlabeled-distractor-0027"
+      ],
+      [
+        "project-person-04",
+        "unlabeled-distractor-0358",
+        "unlabeled-distractor-0347",
+        "unlabeled-distractor-0560",
+        "unlabeled-distractor-0735"
+      ],
+      [
+        "project-person-05",
+        "unlabeled-distractor-0838",
+        "unlabeled-distractor-0767",
+        "unlabeled-distractor-0217",
+        "unlabeled-distractor-0229"
+      ],
+      [
+        "unlabeled-distractor-0735",
+        "project-person-08",
+        "unlabeled-distractor-0436",
+        "project-person-04",
+        "unlabeled-distractor-0469"
+      ],
+      [
+        "project-person-03",
+        "unlabeled-distractor-0223",
+        "project-person-01",
+        "unlabeled-distractor-0479",
+        "unlabeled-distractor-0468"
+      ],
+      [
+        "project-person-07",
+        "unlabeled-distractor-0064",
+        "unlabeled-distractor-0077",
+        "unlabeled-distractor-0172",
+        "project-person-06"
+      ]
+    ]
+  },
+  "queryDetails": [
+    {
+      "trackId": "20260729_092211-track-3715",
+      "videoId": "20260729_092211",
+      "identity": "project-person-10",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "20260729_092211-track-3897",
+      "videoId": "20260729_092211",
+      "identity": "project-person-11",
+      "rank": 10,
+      "hitAt5": false
+    },
+    {
+      "trackId": "IMG_3618-track-0001",
+      "videoId": "IMG_3618",
+      "identity": "project-person-02",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0001",
+      "videoId": "IMG_3620",
+      "identity": "project-person-01",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0002",
+      "videoId": "IMG_3620",
+      "identity": "project-person-02",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0004",
+      "videoId": "IMG_3620",
+      "identity": "project-person-03",
+      "rank": 2,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0005",
+      "videoId": "IMG_3620",
+      "identity": "project-person-06",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0006",
+      "videoId": "IMG_3620",
+      "identity": "project-person-04",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0007",
+      "videoId": "IMG_3620",
+      "identity": "project-person-05",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0058",
+      "videoId": "IMG_3620",
+      "identity": "project-person-08",
+      "rank": 2,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0090",
+      "videoId": "IMG_3620",
+      "identity": "project-person-03",
+      "rank": 1,
+      "hitAt5": true
+    },
+    {
+      "trackId": "IMG_3620-track-0100",
+      "videoId": "IMG_3620",
+      "identity": "project-person-07",
+      "rank": 1,
+      "hitAt5": true
+    }
+  ],
+  "queryBreakdownByVideo": {
+    "20260729_092211": {
+      "count": 2,
+      "hitsAt5": 1,
+      "ranks": [
+        1,
+        10
+      ],
+      "recallAt5": 0.5
+    },
+    "IMG_3618": {
+      "count": 1,
+      "hitsAt5": 1,
+      "ranks": [
+        1
+      ],
+      "recallAt5": 1.0
+    },
+    "IMG_3620": {
+      "count": 9,
+      "hitsAt5": 9,
+      "ranks": [
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "recallAt5": 1.0
+    }
+  },
+  "openSetStress": {
+    "negativeQueriesAreNotPartOfRecallAt5": true,
+    "negativeResults": [
+      {
+        "trackId": "IMG_3620-track-0003",
+        "videoId": "IMG_3620",
+        "topCandidates": [
+          {
+            "identity": "project-person-05",
+            "score": 2.473461866378784
+          },
+          {
+            "identity": "unlabeled-distractor-0147",
+            "score": 2.2864136695861816
+          },
+          {
+            "identity": "unlabeled-distractor-0160",
+            "score": 2.227125406265259
+          },
+          {
+            "identity": "unlabeled-distractor-0171",
+            "score": 2.164496898651123
+          },
+          {
+            "identity": "unlabeled-distractor-0486",
+            "score": 2.0990748405456543
+          }
+        ],
+        "topScore": 2.473461866378784,
+        "top2Margin": 0.18704819679260254
+      }
+    ]
+  }
+}

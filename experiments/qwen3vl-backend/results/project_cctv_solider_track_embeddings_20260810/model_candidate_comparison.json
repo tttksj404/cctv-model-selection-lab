@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "project-cctv-model-candidate-comparison-v1",
+  "candidatePairs": 13,
+  "models": [
+    "SOLIDER",
+    "CLIP-L14",
+    "SigLIP2",
+    "DINOv2"
+  ],
+  "pairRanks": {
+    "SOLIDER": [
+      1,
+      1,
+      1,
+      1,
+      4,
+      1,
+      63,
+      2,
+      5,
+      2,
+      78,
+      20,
+      1
+    ],
+    "CLIP-L14": [
+      207,
+      9,
+      498,
+      662,
+      5,
+      581,
+      573,
+      16,
+      18,
+      8,
+      142,
+      244,
+      572
+    ],
+    "SigLIP2": [
+      350,
+      33,
+      225,
+      315,
+      17,
+      166,
+      572,
+      5,
+      22,
+      1,
+      263,
+      442,
+      654
+    ],
+    "DINOv2": [
+      133,
+      59,
+      327,
+      23,
+      2,
+      17,
+      613,
+      3,
+      37,
+      225,
+      511,
+      347,
+      473
+    ],
+    "rank_fusion:SOLIDER+CLIP-L14+SigLIP2+DINOv2": [
+      114,
+      7,
+      251,
+      180,
+      3,
+      89,
+      493,
+      2,
+      4,
+      26,
+      210,
+      251,
+      505
+    ]
+  },
+  "summary": {
+    "SOLIDER": {
+      "rank1": 0.46153846153846156,
+      "recallAt5": 0.7692307692307693,
+      "medianRank": 2.0
+    },
+    "CLIP-L14": {
+      "rank1": 0.0,
+      "recallAt5": 0.07692307692307693,
+      "medianRank": 207.0
+    },
+    "SigLIP2": {
+      "rank1": 0.07692307692307693,
+      "recallAt5": 0.15384615384615385,
+      "medianRank": 225.0
+    },
+    "DINOv2": {
+      "rank1": 0.0,
+      "recallAt5": 0.15384615384615385,
+      "medianRank": 133.0
+    },
+    "rank_fusion:SOLIDER+CLIP-L14+SigLIP2+DINOv2": {
+      "rank1": 0.0,
+      "recallAt5": 0.23076923076923078,
+      "medianRank": 114.0
+    }
+  },
+  "metricStatus": "candidate_consistency_only_no_identity_ground_truth"
+}

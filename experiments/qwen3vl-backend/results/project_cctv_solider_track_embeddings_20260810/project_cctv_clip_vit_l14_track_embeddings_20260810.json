@@ -1,0 +1,12 @@
+{
+  "model": "clip-vit-l14",
+  "device": "cuda",
+  "torch": "2.6.0+cu124",
+  "cuda": "NVIDIA L40S",
+  "rows": 921,
+  "featureShape": [
+    921,
+    768
+  ],
+  "trackCacheSha256": "0565ceb856a9532ac5df83708061c1801079b3dde6adcab4a6a38351580abf5c"
+}

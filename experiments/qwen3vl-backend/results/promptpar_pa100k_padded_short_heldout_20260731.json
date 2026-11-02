@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "promptpar-heldout-evaluation-v1",
+  "dataset": "PA100k",
+  "promptStyle": "legacy-short",
+  "prompts": [
+    "female",
+    "age over 60",
+    "age 18 to 60",
+    "age less 18",
+    "front",
+    "side",
+    "back",
+    "hat",
+    "glasses",
+    "hand bag",
+    "shoulder bag",
+    "backpack",
+    "hold objects in front",
+    "short sleeve",
+    "long sleeve",
+    "upper stride",
+    "upper logo",
+    "upper plaid",
+    "upper splice",
+    "lower stripe",
+    "lower pattern",
+    "long coat",
+    "trousers",
+    "shorts",
+    "skirt and dress",
+    "boots"
+  ],
+  "checkpoint": "external/PromptPAR-checkpoints/PA100k_Checkpoint.pth",
+  "checkpointSha256": "2876b2024709f388e304ba53edc4cb5ec75ecc28d7e4bed0d7ced3d0809dbb48",
+  "preprocessing": "resize-224-normalize-0.5",
+  "validationCount": 10000,
+  "testCount": 10000,
+  "loadIntegrity": {
+    "missingKeys": [],
+    "disallowedUnexpectedKeys": [],
+    "ignoredPretrainedVitKeyCount": 152
+  },
+  "officialThreshold": {
+    "thresholds": [
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45
+    ],
+    "metrics": {
+      "meanAccuracy": 0.4930231343128332,
+      "instanceAccuracy": 0.3742815909090909,
+      "instancePrecision": 0.5581733333333334,
+      "instanceRecall": 0.49452916666666663,
+      "instanceF1": 0.5201117166167166,
+      "labelMacroF1": 0.12828900046359917,
+      "perAttribute": [
+        {
+          "attribute": "Female",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "AgeOver60",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Age18-60",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.965,
+          "f1": 0.9821882951653944,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "AgeLess18",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Front",
+          "positiveRecall": 0.07010448264239973,
+          "negativeRecall": 0.7567183278828381,
+          "precision": 0.10838978634705576,
+          "f1": 0.08514121981170693,
+          "meanAccuracy": 0.41341140526261894
+        },
+        {
+          "attribute": "Side",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Back",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0014369880729989942,
+          "precision": 0.3044044044044044,
+          "f1": 0.4667331747371652,
+          "meanAccuracy": 0.5007184940364995
+        },
+        {
+          "attribute": "Hat",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Glasses",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "HandBag",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "ShoulderBag",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Backpack",
+          "positiveRecall": 0.6407382992748847,
+          "negativeRecall": 0.1688082046445833,
+          "precision": 0.12115168889442852,
+          "f1": 0.2037735849056604,
+          "meanAccuracy": 0.404773251959734
+        },
+        {
+          "attribute": "HoldObjectsInFront",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "ShortSleeve",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LongSleeve",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.5593,
+          "f1": 0.7173731802731996,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperStride",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperLogo",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperPlaid",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperSplice",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LowerStripe",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LowerPattern",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LongCoat",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Trousers",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.7862,
+          "f1": 0.8803045571604524,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Shorts",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Skirt&Dress",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "boots",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9993966817496229,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.49969834087481146
+        }
+      ]
+    }
+  },
+  "validationCalibratedThreshold": {
+    "thresholds": [
+      0.05,
+      0.05,
+      0.61,
+      0.05,
+      0.24999999999999994,
+      0.05,
+      0.5199999999999999,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.20999999999999996,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.21999999999999997,
+      0.06,
+      0.05,
+      0.6599999999999999,
+      0.05,
+      0.05,
+      0.24
+    ],
+    "metrics": {
+      "meanAccuracy": 0.49996528861745415,
+      "instanceAccuracy": 0.3687606107454637,
+      "instancePrecision": 0.41300993589743595,
+      "instanceRecall": 0.7622530158730159,
+      "instanceF1": 0.5322138547065249,
+      "labelMacroF1": 0.2271801146360824,
+      "perAttribute": [
+        {
+          "attribute": "Female",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "AgeOver60",
+          "positiveRecall": 0.01937984496124031,
+          "negativeRecall": 0.9892219256826114,
+          "precision": 0.045454545454545456,
+          "f1": 0.027173913043478264,
+          "meanAccuracy": 0.5043008853219259
+        },
+        {
+          "attribute": "Age18-60",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.965,
+          "f1": 0.9821882951653944,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "AgeLess18",
+          "positiveRecall": 0.16304347826086957,
+          "negativeRecall": 0.8485062575696407,
+          "precision": 0.009894459102902375,
+          "f1": 0.01865671641791045,
+          "meanAccuracy": 0.5057748679152552
+        },
+        {
+          "attribute": "Front",
+          "positiveRecall": 0.9993259184361307,
+          "negativeRecall": 0.00014218683349921798,
+          "precision": 0.2965889766930079,
+          "f1": 0.45742054921320574,
+          "meanAccuracy": 0.49973405263481496
+        },
+        {
+          "attribute": "Side",
+          "positiveRecall": 0.99874749498998,
+          "negativeRecall": 0.0,
+          "precision": 0.3988994497248624,
+          "f1": 0.5701008078930435,
+          "meanAccuracy": 0.49937374749499
+        },
+        {
+          "attribute": "Back",
+          "positiveRecall": 0.9815850049325879,
+          "negativeRecall": 0.03865497916367294,
+          "precision": 0.3085271317829457,
+          "f1": 0.46948726014469955,
+          "meanAccuracy": 0.5101199920481304
+        },
+        {
+          "attribute": "Hat",
+          "positiveRecall": 0.2508710801393728,
+          "negativeRecall": 0.7315968289920725,
+          "precision": 0.026875699888017916,
+          "f1": 0.048550236008091704,
+          "meanAccuracy": 0.4912339545657226
+        },
+        {
+          "attribute": "Glasses",
+          "positiveRecall": 0.6854707792207793,
+          "negativeRecall": 0.21178343949044587,
+          "precision": 0.22139205662603226,
+          "f1": 0.3346874071138413,
+          "meanAccuracy": 0.44862710935561256
+        },
+        {
+          "attribute": "HandBag",
+          "positiveRecall": 0.01911262798634812,
+          "negativeRecall": 0.9727006444053896,
+          "precision": 0.10727969348659004,
+          "f1": 0.03244495944380069,
+          "meanAccuracy": 0.4959066361958689
+        },
+        {
+          "attribute": "ShoulderBag",
+          "positiveRecall": 0.034271099744245526,
+          "negativeRecall": 0.9357364822871349,
+          "precision": 0.11472602739726027,
+          "f1": 0.052776683733753445,
+          "meanAccuracy": 0.48500379101569024
+        },
+        {
+          "attribute": "Backpack",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.00011788282447247436,
+          "precision": 0.15171517151715172,
+          "f1": 0.26345953456061133,
+          "meanAccuracy": 0.5000589414122363
+        },
+        {
+          "attribute": "HoldObjectsInFront",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9998989796949187,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.49994948984745935
+        },
+        {
+          "attribute": "ShortSleeve",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.4407,
+          "f1": 0.6117859373915457,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LongSleeve",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.5593,
+          "f1": 0.7173731802731996,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperStride",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "UpperLogo",
+          "positiveRecall": 0.12812248186946013,
+          "negativeRecall": 0.9472542527685809,
+          "precision": 0.2560386473429952,
+          "f1": 0.17078410311493022,
+          "meanAccuracy": 0.5376883673190205
+        },
+        {
+          "attribute": "UpperPlaid",
+          "positiveRecall": 0.8187038556193601,
+          "negativeRecall": 0.15886573283225144,
+          "precision": 0.11903625954198473,
+          "f1": 0.2078517130063522,
+          "meanAccuracy": 0.4887847942258058
+        },
+        {
+          "attribute": "UpperSplice",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "LowerStripe",
+          "positiveRecall": 0.08,
+          "negativeRecall": 0.9874686716791979,
+          "precision": 0.015748031496062992,
+          "f1": 0.02631578947368421,
+          "meanAccuracy": 0.533734335839599
+        },
+        {
+          "attribute": "LowerPattern",
+          "positiveRecall": 0.058823529411764705,
+          "negativeRecall": 0.9376581317680397,
+          "precision": 0.011235955056179775,
+          "f1": 0.018867924528301886,
+          "meanAccuracy": 0.4982408305899022
+        },
+        {
+          "attribute": "LongCoat",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "Trousers",
+          "positiveRecall": 0.99834647672348,
+          "negativeRecall": 0.017305893358278764,
+          "precision": 0.7888442211055277,
+          "f1": 0.8813159667639793,
+          "meanAccuracy": 0.5078261850408794
+        },
+        {
+          "attribute": "Shorts",
+          "positiveRecall": 0.003110419906687403,
+          "negativeRecall": 0.9985081478081248,
+          "precision": 0.23529411764705882,
+          "f1": 0.0061396776669224865,
+          "meanAccuracy": 0.5008092838574061
+        },
+        {
+          "attribute": "Skirt&Dress",
+          "positiveRecall": 0.004884004884004884,
+          "negativeRecall": 0.9959699379152598,
+          "precision": 0.0975609756097561,
+          "f1": 0.009302325581395349,
+          "meanAccuracy": 0.5004269713996323
+        },
+        {
+          "attribute": "boots",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9830065359477124,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.4915032679738562
+        }
+      ]
+    }
+  }
+}

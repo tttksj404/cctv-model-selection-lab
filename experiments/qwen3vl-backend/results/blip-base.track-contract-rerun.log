@@ -1,0 +1,48 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+{"index": 1, "dataset": "simuletic", "latency_s": 0.767, "predicted": {"gender": "female", "viewpoint": "side", "accessory": "none"}}
+{"index": 2, "dataset": "simuletic", "latency_s": 0.338, "predicted": {"gender": "female", "viewpoint": "side", "accessory": "none"}}
+{"index": 3, "dataset": "simuletic", "latency_s": 0.297, "predicted": {"gender": "female", "viewpoint": "side", "accessory": "none"}}
+{"index": 4, "dataset": "simuletic", "latency_s": 0.321, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 5, "dataset": "simuletic", "latency_s": 0.301, "predicted": {"gender": "female", "viewpoint": "side", "accessory": "none"}}
+{"index": 6, "dataset": "simuletic", "latency_s": 0.177, "predicted": {"gender": "male", "bottom_color": "black", "accessory": "none"}}
+{"index": 7, "dataset": "simuletic", "latency_s": 0.295, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 8, "dataset": "simuletic", "latency_s": 0.195, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 9, "dataset": "simuletic", "latency_s": 0.314, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 10, "dataset": "simuletic", "latency_s": 0.329, "predicted": {"gender": "male", "bottom_color": "black", "accessory": "none"}}
+{"index": 11, "dataset": "simuletic", "latency_s": 0.185, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 12, "dataset": "simuletic", "latency_s": 0.405, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 13, "dataset": "simuletic", "latency_s": 0.235, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 14, "dataset": "simuletic", "latency_s": 0.334, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 15, "dataset": "simuletic", "latency_s": 0.285, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 16, "dataset": "pa100k", "latency_s": 0.443, "predicted": {"gender": "male", "viewpoint": "side", "accessory": "none"}}
+{"index": 17, "dataset": "pa100k", "latency_s": 0.244, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 18, "dataset": "pa100k", "latency_s": 0.405, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 19, "dataset": "pa100k", "latency_s": 0.326, "predicted": {"accessory": "none"}}
+{"index": 20, "dataset": "pa100k", "latency_s": 0.302, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 21, "dataset": "pa100k", "latency_s": 0.568, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 22, "dataset": "pa100k", "latency_s": 0.506, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 23, "dataset": "pa100k", "latency_s": 0.345, "predicted": {"accessory": "none"}}
+{"index": 24, "dataset": "pa100k", "latency_s": 0.342, "predicted": {"gender": "male", "bottom_color": "black", "bottom_type": "shorts", "accessory": "none"}}
+{"index": 25, "dataset": "pa100k", "latency_s": 0.323, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 26, "dataset": "pa100k", "latency_s": 0.338, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 27, "dataset": "pa100k", "latency_s": 0.286, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 28, "dataset": "pa100k", "latency_s": 0.402, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 29, "dataset": "pa100k", "latency_s": 0.119, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 30, "dataset": "pa100k", "latency_s": 0.291, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 31, "dataset": "pa100k", "latency_s": 0.237, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 32, "dataset": "pa100k", "latency_s": 0.25, "predicted": {"gender": "male", "viewpoint": "side", "accessory": "none"}}
+{"index": 33, "dataset": "pa100k", "latency_s": 0.237, "predicted": {"gender": "male", "viewpoint": "side", "accessory": "none"}}
+{"index": 34, "dataset": "pa100k", "latency_s": 0.248, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 35, "dataset": "pa100k", "latency_s": 0.387, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 36, "dataset": "pa100k", "latency_s": 0.467, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 37, "dataset": "pa100k", "latency_s": 0.238, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 38, "dataset": "pa100k", "latency_s": 0.216, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 39, "dataset": "pa100k", "latency_s": 0.317, "predicted": {"gender": "male", "bottom_color": "black", "accessory": "none"}}
+{"index": 40, "dataset": "pa100k", "latency_s": 0.179, "predicted": {"gender": "female", "accessory": "none"}}
+{"index": 41, "dataset": "pa100k", "latency_s": 0.272, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 42, "dataset": "pa100k", "latency_s": 0.289, "predicted": {"gender": "male", "viewpoint": "side", "accessory": "none"}}
+{"index": 43, "dataset": "pa100k", "latency_s": 0.188, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 44, "dataset": "pa100k", "latency_s": 0.24, "predicted": {"gender": "male", "accessory": "none"}}
+{"index": 45, "dataset": "pa100k", "latency_s": 0.406, "predicted": {"gender": "male", "bottom_color": "khaki", "accessory": "none"}}
+{"model": "blip-base", "examples": 45, "groups": 33, "attribute_accuracy": 0.20350877192982456, "image_exact_match": 0.0, "track_exact_match": 0.0, "track_groups_evaluated": 3, "structured_valid_rate": 1.0, "labeled_field_count": {"simuletic": {"min": 9, "max": 9, "mean": 9.0}, "pa100k": {"min": 5, "max": 5, "mean": 5.0}}, "latency_s_p50": 0.3009781999999177, "latency_s_p95": 0.46657909999976255, "field_accuracy": {"gender": 0.7333333333333333, "age": 0.0, "hair_color": 0.0, "viewpoint": 0.08888888888888889, "top_color": 0.0, "top_type": 0.0, "bottom_color": 0.13333333333333333, "bottom_type": 0.0, "accessory": 0.4222222222222222}, "status": "valid"}

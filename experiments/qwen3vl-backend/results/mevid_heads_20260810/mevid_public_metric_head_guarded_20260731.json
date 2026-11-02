@@ -1,0 +1,157 @@
+{
+  "batchIdentities": 32,
+  "candidates": [
+    {
+      "spec": {
+        "arc_margin": 0.0,
+        "learning_rate": 0.0,
+        "name": "identity-normalized-baseline",
+        "rank": 0,
+        "triplet_margin": 0.0
+      },
+      "trained": false,
+      "validationFeasible": false,
+      "validationMetrics": {
+        "automatic_decision_accuracy": 0.7257462686567164,
+        "distractor_false_match_rate": 0.09507042253521127,
+        "distractor_queries": 284,
+        "false_reject_rate": 0.3492063492063492,
+        "known_mrr": 0.7465984345757457,
+        "known_queries": 252,
+        "known_rank1": 0.6865079365079365,
+        "known_recall_at5": 0.8214285714285714,
+        "query_tracks": 536
+      },
+      "validationThreshold": 0.9856245244250578
+    },
+    {
+      "spec": {
+        "arc_margin": 0.2,
+        "learning_rate": 0.001,
+        "name": "diagonal-arc020-triplet020",
+        "rank": 0,
+        "triplet_margin": 0.2
+      },
+      "trained": true,
+      "validationFeasible": false,
+      "validationMetrics": {
+        "automatic_decision_accuracy": 0.7350746268656716,
+        "distractor_false_match_rate": 0.028169014084507043,
+        "distractor_queries": 284,
+        "false_reject_rate": 0.42857142857142855,
+        "known_mrr": 0.7444010150569544,
+        "known_queries": 252,
+        "known_rank1": 0.6746031746031746,
+        "known_recall_at5": 0.8373015873015873,
+        "query_tracks": 536
+      },
+      "validationThreshold": 0.9564595421155293
+    },
+    {
+      "spec": {
+        "arc_margin": 0.2,
+        "learning_rate": 0.001,
+        "name": "residual32-arc020-triplet020",
+        "rank": 32,
+        "triplet_margin": 0.2
+      },
+      "trained": true,
+      "validationFeasible": false,
+      "validationMetrics": {
+        "automatic_decision_accuracy": 0.7649253731343284,
+        "distractor_false_match_rate": 0.045774647887323945,
+        "distractor_queries": 284,
+        "false_reject_rate": 0.373015873015873,
+        "known_mrr": 0.7699777538029015,
+        "known_queries": 252,
+        "known_rank1": 0.7023809523809523,
+        "known_recall_at5": 0.8373015873015873,
+        "query_tracks": 536
+      },
+      "validationThreshold": 0.849878610349169
+    },
+    {
+      "spec": {
+        "arc_margin": 0.3,
+        "learning_rate": 0.0007,
+        "name": "residual64-arc030-triplet025",
+        "rank": 64,
+        "triplet_margin": 0.25
+      },
+      "trained": true,
+      "validationFeasible": false,
+      "validationMetrics": {
+        "automatic_decision_accuracy": 0.7686567164179104,
+        "distractor_false_match_rate": 0.04929577464788732,
+        "distractor_queries": 284,
+        "false_reject_rate": 0.36904761904761907,
+        "known_mrr": 0.797690729225861,
+        "known_queries": 252,
+        "known_rank1": 0.7380952380952381,
+        "known_recall_at5": 0.8650793650793651,
+        "query_tracks": 536
+      },
+      "validationThreshold": 0.8508311971729876
+    }
+  ],
+  "device": {
+    "name": "NVIDIA L40S",
+    "type": "cuda"
+  },
+  "evidenceBoundary": {
+    "crossCamera": true,
+    "identityDisjoint": true,
+    "projectCctvEvidence": false,
+    "testExcludedFromArchitectureSelection": true,
+    "testExcludedFromTraining": true
+  },
+  "method": "ArcFace plus batch-hard triplet residual metric head",
+  "schemaVersion": "public-reid-metric-head-v1",
+  "selectedSpec": {
+    "arc_margin": 0.3,
+    "learning_rate": 0.0007,
+    "name": "residual64-arc030-triplet025",
+    "rank": 64,
+    "triplet_margin": 0.25
+  },
+  "selectionProtocol": "identity baseline plus heads trained on train identities; candidate selected on validation identities; official test excluded from fitting and selection",
+  "sourceTrackCache": {
+    "metadata": {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/models/solider_reid/swin_base_msmt17.pth",
+      "checkpointSha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+      "model": "solider-reid-swin-base-msmt17",
+      "soliderCommit": "8c08e1c3255e8e1e51e006bf189e52cc57b009ed",
+      "sourceManifestSha256": "3f8f896fa92519aa7eb5252bba86bd9feef0685139cd56328107a83f0f9941b8"
+    },
+    "path": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_full_solider_tracks_20260731.npz",
+    "sha256": "c2efcd31455c88fe84c044c8b545724fad907d1a35d57024b7e2ef9cdc4f860c"
+  },
+  "status": "valid",
+  "steps": 1200,
+  "targetAutomaticDecisionAccuracy": 0.84,
+  "targetMet": false,
+  "testMetrics": {
+    "automatic_decision_accuracy": 0.6640986132511556,
+    "distractor_false_match_rate": 0.3352272727272727,
+    "distractor_queries": 352,
+    "false_reject_rate": 0.26936026936026936,
+    "known_mrr": 0.8448233409055825,
+    "known_queries": 297,
+    "known_rank1": 0.8013468013468014,
+    "known_recall_at5": 0.8922558922558923,
+    "query_tracks": 649
+  },
+  "validationFeasible": false,
+  "validationMetrics": {
+    "automatic_decision_accuracy": 0.7686567164179104,
+    "distractor_false_match_rate": 0.04929577464788732,
+    "distractor_queries": 284,
+    "false_reject_rate": 0.36904761904761907,
+    "known_mrr": 0.797690729225861,
+    "known_queries": 252,
+    "known_rank1": 0.7380952380952381,
+    "known_recall_at5": 0.8650793650793651,
+    "query_tracks": 536
+  },
+  "validationThreshold": 0.8508311971729876
+}

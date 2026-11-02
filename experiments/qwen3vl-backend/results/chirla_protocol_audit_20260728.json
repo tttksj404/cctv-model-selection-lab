@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "chirla-protocol-audit-v1",
+  "manifest": "experiments\\data\\chirla\\chirla_identity_manifest.jsonl",
+  "manifestSha256": "e24d7b2acc1fe491cb8a64ce736c0070b6f2163a6343b551f265ff19a7a243e0",
+  "manifestRows": 371,
+  "galleryQueryIdentityIntersection": 11,
+  "eligibleQueryCount": 95,
+  "identitiesWithSameCameraAcrossRoles": 7,
+  "queriesWithSameCameraPositive": 29,
+  "queriesWithSameSequencePositive": 95,
+  "strictCrossCameraSequenceEligibleQueries": 95,
+  "strictCrossCameraSequenceEvaluationAvailable": true,
+  "conclusion": "CHIRLA gallery/query retrieval proxy has camera and sequence overlap; it is not a strict cross-camera generalization benchmark."
+}

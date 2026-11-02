@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "project-cctv-visual-descriptor-cache-v1",
+  "embeddingSha256": "54a669c51918fb0f87c23d7f51714035be9a86aba2acff28de29966795cae59e",
+  "outputSha256": "fe1a3ac76c5cbb63ba4859a49e7bc261f11146c140c5331b426b6e13f1a407c4",
+  "trackCount": 946,
+  "frameCount": 3844,
+  "descriptorDimensions": {
+    "head": [
+      199
+    ],
+    "upper": [
+      199
+    ],
+    "lower": [
+      199
+    ],
+    "composite": [
+      398
+    ]
+  },
+  "identityLabelsCreated": false
+}

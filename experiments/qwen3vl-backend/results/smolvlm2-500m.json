@@ -1,0 +1,1139 @@
+{
+  "status": "invalid_output_contract",
+  "hardware": "cpu",
+  "torch": "2.13.0+cpu",
+  "runtime": {
+    "python": "3.14.6"
+  },
+  "model": "smolvlm2-500m",
+  "checkpoint": "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+  "provenance": {
+    "script_sha256": "d08d316b47b10460f326a73a25ece52ae5f81f127e28b4700ca1cad7c1a7bd78",
+    "dataset_files": {
+      "experiments\\data\\cctv_proxy\\simuletic\\metadata.jsonl": "dd40611a30d92756f981436d3fe573f539478f4a4e55944b33c92bca44f54d55",
+      "experiments\\data\\cctv_proxy\\pa100k\\manifest.jsonl": "21d8540a6768058343c5ea213f31a68535135c4a4582461ea4912f022f3a8826"
+    },
+    "image_files": [
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img1.png",
+        "sha256": "598974c055e57652a5d9086d0184087a91bc8100252a0219114403a0f22ffd30"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img2.png",
+        "sha256": "4eb28b258e939d3db7083fcef4e0532b27ad3742005dd23fd51a971e341df3ba"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img3.png",
+        "sha256": "628c83be4fa4b61b08fa41a2d36b4eacf93fe24a7d84bc206b2dd0311137cc1d"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img4.png",
+        "sha256": "fddc7e4773a84433f8ff6be27fd8891ca90104e3a65ba64f6c4e18c60b6946ec"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img5.png",
+        "sha256": "132151d3f2c38d616c21396920fcfec4a0c05e6eca4d3c02e45c5c272352d9f0"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img1.png",
+        "sha256": "4083b369e5a22cd9d842dd50c109c58def04c374f4d79fe632cfb69cdb980bec"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img2.png",
+        "sha256": "e6cf3510f81637e830e1506c57d820b02500ed9f441f114a420eb241b94c6c1a"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img3.png",
+        "sha256": "c61f5411955d997f2127fe68ddf813aee44ecf2e38ff22d64bc852fb4e4ec9dd"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img4.png",
+        "sha256": "eefec2b59bb2479092fb3c2c9c97e5f9c5b92a2b8aa01de5edf1a215add23a1a"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img5.png",
+        "sha256": "7cac588c6ff823101699c4805c1d0f14801d2ba51b59cc303af8702d31a9d589"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img1.png",
+        "sha256": "900e0be575c1ca1842f68be8ea3c87fc4b51ca2f33770dd88ff2d79a9f3c656d"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img2.png",
+        "sha256": "f59f5eae4bffb3a10443dfd2f9d894037b71fec91c8007f413177560d8f36531"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img3.png",
+        "sha256": "8fd0c6215f3aff39942256a4774b014b029e688c5bc4e38028e0025068b6610d"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img4.png",
+        "sha256": "f8eecfb206465a7db72026cbfef1006b11a082c8f6c087f8cfa0d91ecf61104e"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img5.png",
+        "sha256": "acfed36896ed798c5fd869636fd0adbea0ed0f95acfb71a58e6a4e49da98f4c8"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090001.jpg",
+        "sha256": "ddecb6f441e349c3e927b373761f4892bc192313357fded1c10aa2bb4a3fa667"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090002.jpg",
+        "sha256": "30ad3641140788d891df86dac11ce9829e71357d73b3947a9d6e143f16c7003e"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090003.jpg",
+        "sha256": "81b6e59bc0f2f98ddb3ce53c9f856adc1ca13fa457f3e9cb72c2ea2337e505e4"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090004.jpg",
+        "sha256": "37ab90f21a3ce36b844d03dccf28106e29f88096da9836ba17e5f96d9df17eb2"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090005.jpg",
+        "sha256": "38cf76b7cc9050678537d3028c0b33764d43b6bcdd87d5ce459ca7b0ca4ceda6"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090006.jpg",
+        "sha256": "46f90c7c4cbaeee15acc176d4b5b38ffb6b7cc0e4adb89f3b378e92f3b26d916"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090007.jpg",
+        "sha256": "cefa8d20dd180582d7ead44db4cbb6af1e4d0e46406227eccfa39725a21ce820"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090008.jpg",
+        "sha256": "eb7afa05a8a4915f18a5ab901382ff365b2d927cd48c7e9067315cb24e0a1735"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090009.jpg",
+        "sha256": "85c5089d8c9e4ab384dd85682e760d462fd029332be2b4787aab140f6f333e42"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090010.jpg",
+        "sha256": "7c21ff2e592c273f654a07317aba25c6fbf073a4ebcd3438b5e2b555494e88ef"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090011.jpg",
+        "sha256": "6a1bc23a03aa8a6cc5dd535628c82ad13377f29be54f465a4b3185ff39ab15ba"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090012.jpg",
+        "sha256": "77d2f3c106d24d7311bf4892fe7991e2fc5fadacda834f23a6e4f7e817b662ff"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090013.jpg",
+        "sha256": "4664a686709d3deefedde64e3bd9cf32ed6b63d6ae7943b0ba5b889ad8fed60e"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090014.jpg",
+        "sha256": "b91f19c27e9eb3e4ef45539cb051c3729d4cdb16ef0c3a708bcd23a93cdd39db"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090015.jpg",
+        "sha256": "1c61d92669c39edb537db526e4c33275df9de750d0234a7f470d0a2e7a29c223"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090016.jpg",
+        "sha256": "98a226e4545acdc5bcae24afd4e99452c04ce83e87ff579bc88d7fcc6e1e8426"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090017.jpg",
+        "sha256": "7f33ac5a313b39e1d0ccf23d95c4b53d8c18c101d1374b3f44aff8442e8d1ebf"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090018.jpg",
+        "sha256": "9af370d34b61ff95c785143ccd6d5d6cf224d816c9fc90cb8b54597c764f10b1"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090019.jpg",
+        "sha256": "0eb82aa7863f342868f80ea234fe5eda0a42bba3fc7defdf1778d48030e2a09c"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090020.jpg",
+        "sha256": "3adaf711e2dccf52331b0321d6fcf4ff90bdc440dd386a045c50961168ac466b"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090021.jpg",
+        "sha256": "b84f949965910c5f0bbea0476f5d10fefc4c2bea39f68a754ad015bfc918ded8"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090022.jpg",
+        "sha256": "dfad71e4cf5753766a67d06fb2e85dfbcef282a45c32dc635792d82e3b20c724"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090023.jpg",
+        "sha256": "43e16a9f63bb57effcaeefa74c26f7821d19c0bd9742c10e2059ccd1c255f299"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090024.jpg",
+        "sha256": "22c2fcbf8e0e1dfffd5e763bfc92343c9b20cd18363f16e751322019a8deedcd"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090025.jpg",
+        "sha256": "0d49e57728d1c710166b758d95b336c3c48e72e96c242ce02511a6db92598482"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090026.jpg",
+        "sha256": "c22795829a0d7708ca4cd7cfe4440e3edf6a7152a0bb64e22ce43f46267164eb"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090027.jpg",
+        "sha256": "c0d13852f8459884b25c8a5e39a7df66ab28fee033f6d0fae4afb9d65799ac9b"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090028.jpg",
+        "sha256": "a0157f5dbe1dee48fad1c75cd5e43053070cdb3976e7edf8fe50d2f5d002290a"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090029.jpg",
+        "sha256": "9dc65b91ea29df9aac08fa610d88835fb99e2288f8f4c5d246eb4d8ebc78daff"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\pa100k\\090030.jpg",
+        "sha256": "9fd65ed6262578cd4f47d8d4269c8d298d642b0c283c753dc70263b31cef99a6"
+      }
+    ],
+    "run_args": {
+      "model": "smolvlm2-500m",
+      "allow_remote_code": "False",
+      "simuletic_root": "experiments\\data\\cctv_proxy\\simuletic",
+      "pa_root": "experiments\\data\\cctv_proxy\\pa100k",
+      "simuletic_groups": "3",
+      "pa_limit": "30",
+      "output": "experiments\\results\\smolvlm2-500m.json"
+    },
+    "evaluation_contract": {
+      "schema_fields": [
+        "gender",
+        "age",
+        "hair_color",
+        "viewpoint",
+        "top_color",
+        "top_type",
+        "bottom_color",
+        "bottom_type",
+        "footwear",
+        "accessory"
+      ],
+      "label_policy": "score every non-empty and non-unknown target field per sample",
+      "p95_definition": "sorted latency index max(0, int(n * 0.95) - 1)"
+    },
+    "checkpoint": "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+    "resolved_model_commit": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+    "checkpoint_manifest": []
+  },
+  "dataset_counts": {
+    "simuletic": 15,
+    "pa100k": 30
+  },
+  "summary": {
+    "model": "smolvlm2-500m",
+    "examples": 45,
+    "groups": 33,
+    "attribute_accuracy": 0.0,
+    "image_exact_match": 0.0,
+    "track_exact_match": 0.0,
+    "track_groups_evaluated": 3,
+    "structured_valid_rate": 0.0,
+    "labeled_field_count": {
+      "simuletic": {
+        "min": 9,
+        "max": 9,
+        "mean": 9.0
+      },
+      "pa100k": {
+        "min": 5,
+        "max": 5,
+        "mean": 5.0
+      }
+    },
+    "latency_s_p50": 10.35706429999982,
+    "latency_s_p95": 17.75858419999986,
+    "field_accuracy": {
+      "gender": 0.0,
+      "age": 0.0,
+      "hair_color": 0.0,
+      "viewpoint": 0.0,
+      "top_color": 0.0,
+      "top_type": 0.0,
+      "bottom_color": 0.0,
+      "bottom_type": 0.0,
+      "accessory": 0.0
+    },
+    "status": "invalid_output_contract"
+  },
+  "predictions": [
+    {
+      "index": 1,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img1.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 15.421962399999984,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 2,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img2.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 14.575542600000063,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 3,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img3.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 14.677625899999839,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 4,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img4.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 15.877563999999893,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 5,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img5.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 15.83539350000001,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 6,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img1.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 16.398914900000136,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 7,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img2.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 15.49211430000014,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 8,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img3.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 15.445449300000064,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 9,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img4.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 18.4392421,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 10,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_3_img5.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 18.83903310000005,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 11,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img1.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 19.649371100000053,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 12,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img2.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 17.062811799999963,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 13,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img3.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 16.01103480000006,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 14,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img4.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 17.75858419999986,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 15,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_4_img5.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 16.22924490000014,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 16,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090001.jpg",
+      "group": "090001.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 10.786489199999778,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 17,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090002.jpg",
+      "group": "090002.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 9.120926900000086,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 18,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090003.jpg",
+      "group": "090003.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 9.12160589999985,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 19,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090004.jpg",
+      "group": "090004.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 9.132430399999976,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 20,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090005.jpg",
+      "group": "090005.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 9.460631400000239,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 21,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090006.jpg",
+      "group": "090006.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 11.961028400000032,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 22,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090007.jpg",
+      "group": "090007.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "skirt"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 8.935676799999783,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 23,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090008.jpg",
+      "group": "090008.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 8.43642200000022,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 24,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090009.jpg",
+      "group": "090009.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "shoulderbag",
+        "bottom_type": "skirt"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 8.660949900000105,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 25,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090010.jpg",
+      "group": "090010.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 9.2201170000003,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 26,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090011.jpg",
+      "group": "090011.jpg",
+      "target": {
+        "gender": "male",
+        "age": "elderly",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 8.594057299999804,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 27,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090012.jpg",
+      "group": "090012.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 10.521615399999973,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 28,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090013.jpg",
+      "group": "090013.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 9.094132000000172,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 29,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090014.jpg",
+      "group": "090014.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "skirt"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 8.599335200000041,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 30,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090015.jpg",
+      "group": "090015.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 8.790516900000057,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 31,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090016.jpg",
+      "group": "090016.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 8.307320599999912,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 32,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090017.jpg",
+      "group": "090017.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 8.893653099999938,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 33,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090018.jpg",
+      "group": "090018.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " boy",
+      "latency_s": 8.499317899999824,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 34,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090019.jpg",
+      "group": "090019.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 9.181573099999696,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 35,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090020.jpg",
+      "group": "090020.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 9.220991400000003,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 36,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090021.jpg",
+      "group": "090021.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 9.448521400000118,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 37,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090022.jpg",
+      "group": "090022.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 9.022477999999865,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 38,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090023.jpg",
+      "group": "090023.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 9.983133199999884,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 39,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090024.jpg",
+      "group": "090024.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 11.544968600000175,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 40,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090025.jpg",
+      "group": "090025.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 10.35706429999982,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 41,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090026.jpg",
+      "group": "090026.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 10.55866240000023,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 42,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090027.jpg",
+      "group": "090027.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " male",
+      "latency_s": 11.193474799999876,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 43,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090028.jpg",
+      "group": "090028.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 10.983519299999898,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 44,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090029.jpg",
+      "group": "090029.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " female",
+      "latency_s": 10.24853800000028,
+      "structured_valid": false,
+      "error": null
+    },
+    {
+      "index": 45,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090030.jpg",
+      "group": "090030.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {},
+      "raw": " null",
+      "latency_s": 9.717707900000278,
+      "structured_valid": false,
+      "error": null
+    }
+  ]
+}

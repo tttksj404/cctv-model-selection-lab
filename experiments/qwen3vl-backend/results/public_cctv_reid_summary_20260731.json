@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "public-cctv-reid-summary-v3",
+  "status": "exploratory-rank1-point-estimate-above-reference-promotion-not-met",
+  "targets": {
+    "exploratoryCandidateSearchKnownRank1Reference": 0.84,
+    "promotionCandidateSearchKnownRank1": 0.85,
+    "promotionCandidateSearchKnownRank1Wilson95Lower": 0.85,
+    "candidateSearchKnownRecallAt5": 0.95,
+    "automaticDecisionAccuracy": 0.84,
+    "maximumDistractorFalseMatchRate": 0.05,
+    "maximumFalseRejectRate": 0.15
+  },
+  "checkpoint": {
+    "model": "solider-reid-swin-base-msmt17",
+    "sha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7",
+    "soliderCommit": "8c08e1c3255e8e1e51e006bf189e52cc57b009ed"
+  },
+  "mevidManifest": {
+    "records": 62898,
+    "tracks": 7972,
+    "trainPeople": 80,
+    "validationPeople": 24,
+    "validationUnknownPeople": 5,
+    "testPeople": 54,
+    "testUnknownPeople": 11,
+    "skippedSingleCameraGroups": 30
+  },
+  "results": [
+    {
+      "dataset": "Market-1501",
+      "method": "SOLIDER raw",
+      "automaticDecisionAccuracy": 0.7397151898734177,
+      "knownRank1": 0.94,
+      "knownRecallAt5": 0.9883333333333333,
+      "distractorFalseMatchRate": 0.3539156626506024,
+      "falseRejectRate": 0.125,
+      "automaticDecisionTargetMet": false
+    },
+    {
+      "dataset": "Market-1501",
+      "method": "SOLIDER gallery-aware head",
+      "automaticDecisionAccuracy": 0.9106012658227848,
+      "knownRank1": 0.94,
+      "knownRecallAt5": 0.9883333333333333,
+      "distractorFalseMatchRate": 0.0858433734939759,
+      "falseRejectRate": 0.085,
+      "automaticDecisionTargetMet": true,
+      "strictSafetyTargetMet": false
+    },
+    {
+      "dataset": "MEVID v1 official test partition/custom same-outfit protocol",
+      "method": "frozen Market-1501 gallery-aware head",
+      "automaticDecisionAccuracy": 0.5855161787365177,
+      "knownRank1": 0.7037037037037037,
+      "knownRecallAt5": 0.7845117845117845,
+      "distractorFalseMatchRate": 0.3778409090909091,
+      "falseRejectRate": 0.4006734006734007,
+      "headFittedOnMevid": false,
+      "automaticDecisionTargetMet": false
+    },
+    {
+      "dataset": "MEVID v1 official test partition/custom same-outfit protocol",
+      "method": "SOLIDER plus ArcFace/Triplet residual64 plus gallery-aware verifier",
+      "automaticDecisionAccuracy": 0.7072419106317411,
+      "knownRank1": 0.8013468013468014,
+      "knownRecallAt5": 0.8922558922558923,
+      "distractorFalseMatchRate": 0.17613636363636365,
+      "falseRejectRate": 0.37373737373737376,
+      "candidateSearchRank1TargetMet": false,
+      "automaticDecisionTargetMet": false
+    },
+    {
+      "dataset": "MEVID v1 official test partition/custom same-outfit protocol",
+      "method": "SOLIDER plus ArcFace/Triplet residual64 plus k-reciprocal 30/6/0.3",
+      "automaticDecisionAccuracy": 0.7426810477657936,
+      "knownRank1": 0.8619528619528619,
+      "knownRecallAt5": 0.8956228956228957,
+      "knownMrr": 0.8851402638677758,
+      "distractorFalseMatchRate": 0.2215909090909091,
+      "falseRejectRate": 0.25252525252525254,
+      "knownRank1Wilson95Lower": 0.818078660943,
+      "candidateSearchPointEstimateAboveReference": true,
+      "candidateSearchPromotionTargetMet": false,
+      "candidateSearchRecallAt5TargetMet": false,
+      "automaticDecisionTargetMet": false
+    },
+    {
+      "dataset": "MEVID v1 official test partition/custom same-outfit protocol",
+      "method": "k-reciprocal plus validation-rate calibration",
+      "automaticDecisionAccuracy": 0.7719568567026194,
+      "knownRank1": 0.8619528619528619,
+      "knownRecallAt5": 0.8956228956228957,
+      "distractorFalseMatchRate": 0.08522727272727272,
+      "falseRejectRate": 0.3501683501683502,
+      "knownRank1Wilson95Lower": 0.818078660943,
+      "candidateSearchPointEstimateAboveReference": true,
+      "candidateSearchPromotionTargetMet": false,
+      "automaticDecisionTargetMet": false,
+      "confirmatoryEvidence": false
+    },
+    {
+      "dataset": "MEVID v1 official test partition/custom same-outfit protocol",
+      "method": "identity-disjoint graph logistic verifier",
+      "automaticDecisionAccuracy": 0.7904468412942989,
+      "knownRank1": 0.8619528619528619,
+      "knownRecallAt5": 0.8956228956228957,
+      "distractorFalseMatchRate": 0.15625,
+      "falseRejectRate": 0.21885521885521886,
+      "knownRank1Wilson95Lower": 0.818078660943,
+      "candidateSearchPointEstimateAboveReference": true,
+      "candidateSearchPromotionTargetMet": false,
+      "automaticDecisionTargetMet": false,
+      "confirmatoryEvidence": false
+    }
+  ],
+  "researchCandidate": {
+    "role": "review-only-top-k-candidate-retrieval",
+    "method": "SOLIDER plus residual64 metric head plus k-reciprocal 30/6/0.3",
+    "metricHeadSha256": "1a530575e105731c6cd19c5e4bb49e3a9228b25294ecaff615d5d51bf83c2665",
+    "runtimeIntegrated": false,
+    "promotionApproved": false,
+    "automaticMatchEnabled": false,
+    "decisionPolicy": "return ranked candidates and require downstream review"
+  },
+  "evidenceBoundary": {
+    "publicDatasetEvidence": true,
+    "projectCctvEvidence": false,
+    "mevidFullTrainResultPending": false,
+    "officialTestHasBeenObserved": true,
+    "futureMethodChangesRequireANewSealedBenchmark": true
+  }
+}

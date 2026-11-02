@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "mevid-adapter-fixed-rerank-seeds-v1",
+  "selectionProtocol": "csls-5 and kreciprocal weights fixed from validation before seed comparison",
+  "device": {
+    "device": "cuda:0",
+    "torch": "2.6.0+cu124",
+    "gpu": "NVIDIA L40S"
+  },
+  "method": "SOLIDER top-2 + residual adapter + fixed csls-5*0.7+krecip-20-6-0.3*0.3",
+  "knownTestQueries": 297,
+  "runs": [
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260810.pt",
+      "recallAt5": 0.898989898989899,
+      "test": {
+        "knownQueries": 297,
+        "rank1Hits": 249,
+        "rank1": 0.8383838383838383,
+        "recallAt5Hits": 267,
+        "recallAt5": 0.898989898989899,
+        "recallAt10Hits": 276,
+        "recallAt10": 0.9292929292929293,
+        "worstRank": 394
+      },
+      "validation": {
+        "knownQueries": 252,
+        "rank1Hits": 191,
+        "rank1": 0.7579365079365079,
+        "recallAt5Hits": 223,
+        "recallAt5": 0.8849206349206349,
+        "recallAt10Hits": 226,
+        "recallAt10": 0.8968253968253969,
+        "worstRank": 606
+      }
+    },
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260811.pt",
+      "recallAt5": 0.8855218855218855,
+      "test": {
+        "knownQueries": 297,
+        "rank1Hits": 245,
+        "rank1": 0.8249158249158249,
+        "recallAt5Hits": 263,
+        "recallAt5": 0.8855218855218855,
+        "recallAt10Hits": 276,
+        "recallAt10": 0.9292929292929293,
+        "worstRank": 419
+      },
+      "validation": {
+        "knownQueries": 252,
+        "rank1Hits": 189,
+        "rank1": 0.75,
+        "recallAt5Hits": 220,
+        "recallAt5": 0.873015873015873,
+        "recallAt10Hits": 229,
+        "recallAt10": 0.9087301587301587,
+        "worstRank": 532
+      }
+    },
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260812.pt",
+      "recallAt5": 0.8956228956228957,
+      "test": {
+        "knownQueries": 297,
+        "rank1Hits": 245,
+        "rank1": 0.8249158249158249,
+        "recallAt5Hits": 266,
+        "recallAt5": 0.8956228956228957,
+        "recallAt10Hits": 274,
+        "recallAt10": 0.9225589225589226,
+        "worstRank": 585
+      },
+      "validation": {
+        "knownQueries": 252,
+        "rank1Hits": 190,
+        "rank1": 0.753968253968254,
+        "recallAt5Hits": 221,
+        "recallAt5": 0.876984126984127,
+        "recallAt10Hits": 225,
+        "recallAt10": 0.8928571428571429,
+        "worstRank": 657
+      }
+    }
+  ],
+  "minRecallAt5": 0.8855218855218855,
+  "meanRecallAt5": 0.8933782267115601,
+  "allPassed90": false
+}

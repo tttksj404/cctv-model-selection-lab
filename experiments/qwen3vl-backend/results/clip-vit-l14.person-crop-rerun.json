@@ -1,0 +1,1637 @@
+{
+  "status": "valid",
+  "hardware": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "runtime": {
+    "python": "3.14.6",
+    "transformers": "5.14.1",
+    "torchvision": "0.26.0+cu128",
+    "cuda": "12.8"
+  },
+  "model": "clip-vit-l14",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "provenance": {
+    "script_sha256": "d08d316b47b10460f326a73a25ece52ae5f81f127e28b4700ca1cad7c1a7bd78",
+    "dataset_files": {
+      "experiments\\data\\cctv_proxy\\person_only\\simuletic\\metadata.jsonl": "f26e2391551284526565756862129e4b79a0c292e4c9ac10c11119df817faf64",
+      "experiments\\data\\cctv_proxy\\person_only\\pa100k\\manifest.jsonl": "298944435863d1698cf6049f610d0270ab315c7351580f1624a9a132ae42a1b3"
+    },
+    "image_files": [
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img1.png",
+        "sha256": "7835bd32d8e9356bc44a7bfc99dda66e0236f839758dae5ccd38168a449733b9"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img2.png",
+        "sha256": "5223bdcc4e93b45f94471f88a667fa777db2f27ca8918526c1e8ff6e28cd9051"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img3.png",
+        "sha256": "826d18197058ee82fe85f10f24f711b054a0c3be3422e59078b3e8e913508cdc"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img4.png",
+        "sha256": "392fc92d0b221d338f581556dd44dda68eee2ca341481b097c90b38108f94c16"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img5.png",
+        "sha256": "c84a48618fc880942a959eda702f797f1e0f8ddf4d631c597af9287470120f96"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img1.png",
+        "sha256": "599cdae015e0aa27bbc8796388c44c6f85c39321e463824d1580eb3b27d6c403"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img2.png",
+        "sha256": "bb447d3910b862722b4ebb8342c3b289e51d6f8a9bb51a3cde2105a24306a03f"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img3.png",
+        "sha256": "d632e4334115b4632cca89cd80fdea33bc6004d067c7ca5d2d91566b8c38064d"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img4.png",
+        "sha256": "4a53981f3abc2cbc589b3914aed47055947e472a79c1b9d17e5bc7d899a45725"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img5.png",
+        "sha256": "08ca5c4ff6679fa7d7cd4a3bef74cc361bbf69f71db94effc34d2e40834ae435"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img1.png",
+        "sha256": "0db31bfbd2bfb3d13c5fa4a2fa60972b2511eeb4ba00989ddd6510a7895375df"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img2.png",
+        "sha256": "b5975b0cdd0ed37d6781eb664b15db605def367203aa0074090b287380768f4f"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img3.png",
+        "sha256": "8c4838013c10e08bb9e70178e61ffe976cf2f008747514edab5089870cf5b1d1"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img4.png",
+        "sha256": "723ccbd43cbcd18f67514be2d33f193684ac5d3d6d70aae22198133fa5021cb7"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img5.png",
+        "sha256": "16e0a06d4ea5a6afed60430b60293bcb0ce9ba37d4aef0a55548aaad317cef18"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090001.jpg",
+        "sha256": "9b36d4bf25e5c866a4ff30a51e54bf0449580c40cb4443df2dfa03f681d216a2"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090002.jpg",
+        "sha256": "1a62b4c5ba65cc3bf8e8078a16f24ef646bc080a898ce5505baa645f651befab"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090003.jpg",
+        "sha256": "ddd7a132be3489d1934b922693209cdceb501c0e19de8ea4df1fc306d0d32d6f"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090004.jpg",
+        "sha256": "eadc11f4a9ca9ace9ada99aa51b7b8b6a3a47f01aaa1552d7e8ff5a59d1b8deb"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090005.jpg",
+        "sha256": "6c8262a56d7a743c191d0857b534a23c7a36edfd6afbf3836cf26ad38177bcda"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090006.jpg",
+        "sha256": "e76ed4b0ceacf3ba112a31b4666525529e7b1ed3cc1ab142f04efb1658a0cce9"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090007.jpg",
+        "sha256": "1346a6291bf6a69ee8963362ca9853f97bc51d0c55822afbe84f3bdf94110c64"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090008.jpg",
+        "sha256": "5ad348cfda2e65ffe26dee09a869ea06eb2df7a48b121c4d8237cc6ae517e504"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090009.jpg",
+        "sha256": "e908c539a1bd5ef5b6edcb22c2b418e23bb620f0dc884a8d7de069b90e23697d"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090010.jpg",
+        "sha256": "e6ba6a8a45f068b84d38fe009281bbf14166d422026bd90754f1ec7e4be88cf7"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090011.jpg",
+        "sha256": "26f9b3b49fc24d3a3bede89cd770366cec2f1ca85da95d3a36614345eee57e30"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090012.jpg",
+        "sha256": "fad7ff6bad2813e746fd3e47c596bafa65ab5ed9d9c119d0fcaad03d86db66aa"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090013.jpg",
+        "sha256": "da3823a134bd310cce600bb20c7f4a84c8ea1bd864ff7505e5f2ea3839329155"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090014.jpg",
+        "sha256": "cb6d5e255fdb74f81bc15af29b8880301a2950eda76693fed90c4987bbdfe4eb"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090015.jpg",
+        "sha256": "9225b3421e581213e5383508c4a32d8a650208ad515b17e0fc3758a0d820f8d6"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090016.jpg",
+        "sha256": "1619815b6441364d426dc53d93c01066faa7546f888037a7d3fbf26c874fd731"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090017.jpg",
+        "sha256": "03dd01e53062f63243ec4b126c9aa612a4ade16715615d3b962da4b3f9b6e362"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090018.jpg",
+        "sha256": "a7574628505e52dff405c275b8329e8b11896cd7ccbd04ffb8db518b890b3af4"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090019.jpg",
+        "sha256": "2b5f145e917eab8500100f781358d68cbfb0d0fb9ecc3e573dc32e6744dff0af"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090020.jpg",
+        "sha256": "066041081a011aaca41e476dbb8a8794581a6a28b77b93f74988449f3de95996"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090021.jpg",
+        "sha256": "19b17038a908812abccaeafe6027a890d3cffe6cf3912925c330ad47258d3e9c"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090022.jpg",
+        "sha256": "ba07c309bae6a83d4c98acd5d9bb6d41634004670faed431e2110a08868db23f"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090023.jpg",
+        "sha256": "f6b9b3e61d3bf96f2a408f9ed4ea7f61276fc8c14d5d77ef17b218d1f7f2cdea"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090024.jpg",
+        "sha256": "5bb0e11a86ebf3737b4e2f2d27da6c31d3c51e79f37c848a552be061526d6a67"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090025.jpg",
+        "sha256": "5347d2fe3cc973178a249bb66c9a5ce3c9ee72a55900bb865c7498e3a34079b6"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090026.jpg",
+        "sha256": "1cf94391175cd06501febdf0fe94ba367823e0600198398ae445bde0134b9ae9"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090027.jpg",
+        "sha256": "2030013480ae05d8535a5b04d5f73409563d8f65e92733143a232650044f9ccc"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090028.jpg",
+        "sha256": "c7b0cd4df6ceca9cfd1cdb330cef09a9d53fc3a44c4b15fcebd7dcade9ef9897"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090029.jpg",
+        "sha256": "bd5d3c6819419c13a6953c0c5297fd6d5f6ea72125307d1794c34de245d4100e"
+      },
+      {
+        "path": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090030.jpg",
+        "sha256": "f6c497468ae90f167ab1dbab2c45087e4fb25483108f89d6a791c791b40ae7a4"
+      }
+    ],
+    "run_args": {
+      "model": "clip-vit-l14",
+      "allow_remote_code": "False",
+      "simuletic_root": "experiments\\data\\cctv_proxy\\person_only\\simuletic",
+      "pa_root": "experiments\\data\\cctv_proxy\\person_only\\pa100k",
+      "simuletic_groups": "3",
+      "pa_limit": "30",
+      "output": "experiments\\results\\clip-vit-l14.person-crop-rerun.json"
+    },
+    "evaluation_contract": {
+      "schema_fields": [
+        "gender",
+        "age",
+        "hair_color",
+        "viewpoint",
+        "top_color",
+        "top_type",
+        "bottom_color",
+        "bottom_type",
+        "footwear",
+        "accessory"
+      ],
+      "label_policy": "score every non-empty and non-unknown target field per sample",
+      "p95_definition": "sorted latency index max(0, int(n * 0.95) - 1)"
+    },
+    "checkpoint": "openai/clip-vit-large-patch14",
+    "resolved_model_commit": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+    "checkpoint_manifest": []
+  },
+  "dataset_counts": {
+    "simuletic": 15,
+    "pa100k": 30
+  },
+  "summary": {
+    "model": "clip-vit-l14",
+    "examples": 45,
+    "groups": 33,
+    "attribute_accuracy": 0.43859649122807015,
+    "image_exact_match": 0.0,
+    "track_exact_match": 0.0,
+    "track_groups_evaluated": 3,
+    "structured_valid_rate": 1.0,
+    "labeled_field_count": {
+      "simuletic": {
+        "min": 9,
+        "max": 9,
+        "mean": 9.0
+      },
+      "pa100k": {
+        "min": 5,
+        "max": 5,
+        "mean": 5.0
+      }
+    },
+    "latency_s_p50": 0.8901445999999851,
+    "latency_s_p95": 1.153709100000924,
+    "field_accuracy": {
+      "gender": 0.6222222222222222,
+      "age": 0.4222222222222222,
+      "hair_color": 0.3333333333333333,
+      "viewpoint": 0.4666666666666667,
+      "top_color": 0.6666666666666666,
+      "top_type": 0.7333333333333333,
+      "bottom_color": 0.06666666666666667,
+      "bottom_type": 0.35555555555555557,
+      "accessory": 0.3111111111111111
+    },
+    "status": "valid"
+  },
+  "predictions": [
+    {
+      "index": 1,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img1.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "leather jacket",
+        "bottom_color": "dark grey",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=blonde; viewpoint=front view; top_color=navy blue; top_type=leather jacket; bottom_color=dark grey; bottom_type=trousers; footwear=boots; accessory=handbag",
+      "latency_s": 1.6632571999998618,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 2,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img2.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "dark grey",
+        "top_type": "leather jacket",
+        "bottom_color": "red",
+        "bottom_type": "trousers",
+        "footwear": "heels",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=blonde; viewpoint=back view; top_color=dark grey; top_type=leather jacket; bottom_color=red; bottom_type=trousers; footwear=heels; accessory=handbag",
+      "latency_s": 0.8770558000014717,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 3,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img3.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "denim jeans",
+        "footwear": "heels",
+        "accessory": "sunglasses"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=blonde; viewpoint=front view; top_color=black; top_type=leather jacket; bottom_color=black; bottom_type=denim jeans; footwear=heels; accessory=sunglasses",
+      "latency_s": 0.8780497999996442,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 4,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img4.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "leather jacket",
+        "bottom_color": "dark grey",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=blonde; viewpoint=front view; top_color=navy blue; top_type=leather jacket; bottom_color=dark grey; bottom_type=trousers; footwear=boots; accessory=handbag",
+      "latency_s": 0.9029399999999441,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 5,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_2_img5.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "dark grey",
+        "top_type": "leather jacket",
+        "bottom_color": "beige",
+        "bottom_type": "trousers",
+        "footwear": "heels",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=blonde; viewpoint=back view; top_color=dark grey; top_type=leather jacket; bottom_color=beige; bottom_type=trousers; footwear=heels; accessory=handbag",
+      "latency_s": 0.9812923000008595,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 6,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img1.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "brown",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "cap"
+      },
+      "raw": "gender=male; age=young adult; hair_color=brown; viewpoint=front view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=trousers; footwear=dress shoes; accessory=cap",
+      "latency_s": 1.2473076000005676,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 7,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img2.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "brown",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "sweatpants",
+        "footwear": "dress shoes",
+        "accessory": "backpack"
+      },
+      "raw": "gender=male; age=young adult; hair_color=brown; viewpoint=front view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=sweatpants; footwear=dress shoes; accessory=backpack",
+      "latency_s": 1.5550612000006367,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 8,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img3.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "sweatpants",
+        "footwear": "dress shoes",
+        "accessory": "cap"
+      },
+      "raw": "gender=male; age=young adult; hair_color=black; viewpoint=front view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=sweatpants; footwear=dress shoes; accessory=cap",
+      "latency_s": 1.1035555999987992,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 9,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img4.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "cap"
+      },
+      "raw": "gender=male; age=teenager; hair_color=brown; viewpoint=front view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=trousers; footwear=dress shoes; accessory=cap",
+      "latency_s": 0.9887579000005644,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 10,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_3_img5.png",
+      "group": "ped_3",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "cap"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "brown",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "dress",
+        "footwear": "dress shoes",
+        "accessory": "cap"
+      },
+      "raw": "gender=female; age=young adult; hair_color=brown; viewpoint=front view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=dress; footwear=dress shoes; accessory=cap",
+      "latency_s": 0.9907690999989427,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 11,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img1.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "blouse",
+        "bottom_color": "navy blue",
+        "bottom_type": "dress",
+        "footwear": "sandals",
+        "accessory": "smartphone"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=gray; viewpoint=front view; top_color=navy blue; top_type=blouse; bottom_color=navy blue; bottom_type=dress; footwear=sandals; accessory=smartphone",
+      "latency_s": 0.9608551000001171,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 12,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img2.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "navy blue",
+        "bottom_type": "jeans",
+        "footwear": "sandals",
+        "accessory": "smartphone"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=gray; viewpoint=front view; top_color=navy blue; top_type=t-shirt; bottom_color=navy blue; bottom_type=jeans; footwear=sandals; accessory=smartphone",
+      "latency_s": 1.153709100000924,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 13,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img3.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "blouse",
+        "bottom_color": "navy blue",
+        "bottom_type": "jeans",
+        "footwear": "sandals",
+        "accessory": "smartphone"
+      },
+      "raw": "gender=female; age=middle-aged; hair_color=gray; viewpoint=front view; top_color=navy blue; top_type=blouse; bottom_color=navy blue; bottom_type=jeans; footwear=sandals; accessory=smartphone",
+      "latency_s": 0.9560170999993716,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 14,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img4.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "blue",
+        "top_type": "blouse",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "sandals",
+        "accessory": "smartphone"
+      },
+      "raw": "gender=female; age=elderly; hair_color=gray; viewpoint=front view; top_color=blue; top_type=blouse; bottom_color=navy blue; bottom_type=skirt; footwear=sandals; accessory=smartphone",
+      "latency_s": 0.8923785999995744,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 15,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\simuletic\\ped_4_img5.png",
+      "group": "ped_4",
+      "target": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "smartphone"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "blouse",
+        "bottom_color": "navy blue",
+        "bottom_type": "dress",
+        "footwear": "sandals",
+        "accessory": "smartphone"
+      },
+      "raw": "gender=female; age=elderly; hair_color=gray; viewpoint=front view; top_color=navy blue; top_type=blouse; bottom_color=navy blue; bottom_type=dress; footwear=sandals; accessory=smartphone",
+      "latency_s": 0.9265157000008912,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 16,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090001.jpg",
+      "group": "090001.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "elderly",
+        "hair_color": "red",
+        "viewpoint": "back",
+        "top_color": "red",
+        "top_type": "jacket",
+        "bottom_color": "red",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "backpack"
+      },
+      "raw": "gender=male; age=elderly; hair_color=red; viewpoint=back view; top_color=red; top_type=jacket; bottom_color=red; bottom_type=trousers; footwear=dress shoes; accessory=backpack",
+      "latency_s": 0.8624902999999904,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 17,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090002.jpg",
+      "group": "090002.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "yellow",
+        "bottom_type": "denim jeans",
+        "footwear": "sandals",
+        "accessory": "sunglasses"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=t-shirt; bottom_color=yellow; bottom_type=denim jeans; footwear=sandals; accessory=sunglasses",
+      "latency_s": 0.8643624999986059,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 18,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090003.jpg",
+      "group": "090003.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "white",
+        "top_type": "t-shirt",
+        "bottom_color": "white",
+        "bottom_type": "shorts",
+        "footwear": "sandals",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=teenager; hair_color=black; viewpoint=front view; top_color=white; top_type=t-shirt; bottom_color=white; bottom_type=shorts; footwear=sandals; accessory=backpack",
+      "latency_s": 0.8918077000016638,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 19,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090004.jpg",
+      "group": "090004.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "dark grey",
+        "top_type": "jacket",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=black; viewpoint=back view; top_color=dark grey; top_type=jacket; bottom_color=navy blue; bottom_type=trousers; footwear=boots; accessory=handbag",
+      "latency_s": 0.8614077000001998,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 20,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090005.jpg",
+      "group": "090005.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "jacket",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=jacket; bottom_color=navy blue; bottom_type=trousers; footwear=boots; accessory=backpack",
+      "latency_s": 0.8893920999998954,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 21,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090006.jpg",
+      "group": "090006.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "hoodie",
+        "bottom_color": "red",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "backpack"
+      },
+      "raw": "gender=male; age=teenager; hair_color=black; viewpoint=back view; top_color=black; top_type=hoodie; bottom_color=red; bottom_type=trousers; footwear=dress shoes; accessory=backpack",
+      "latency_s": 0.8590264000013121,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 22,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090007.jpg",
+      "group": "090007.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "skirt"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "white",
+        "top_type": "blouse",
+        "bottom_color": "white",
+        "bottom_type": "dress",
+        "footwear": "sandals",
+        "accessory": "handbag"
+      },
+      "raw": "gender=male; age=teenager; hair_color=brown; viewpoint=back view; top_color=white; top_type=blouse; bottom_color=white; bottom_type=dress; footwear=sandals; accessory=handbag",
+      "latency_s": 0.8598438000008173,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 23,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090008.jpg",
+      "group": "090008.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "green",
+        "top_type": "jacket",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "backpack"
+      },
+      "raw": "gender=male; age=teenager; hair_color=black; viewpoint=back view; top_color=green; top_type=jacket; bottom_color=navy blue; bottom_type=trousers; footwear=boots; accessory=backpack",
+      "latency_s": 0.8820857999999134,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 24,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090009.jpg",
+      "group": "090009.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "shoulderbag",
+        "bottom_type": "skirt"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "dress",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "sandals",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=dress; bottom_color=navy blue; bottom_type=skirt; footwear=sandals; accessory=handbag",
+      "latency_s": 0.8548885000000155,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 25,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090010.jpg",
+      "group": "090010.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "navy blue",
+        "bottom_type": "shorts",
+        "footwear": "dress shoes",
+        "accessory": "sunglasses"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=t-shirt; bottom_color=navy blue; bottom_type=shorts; footwear=dress shoes; accessory=sunglasses",
+      "latency_s": 0.8782529000000068,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 26,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090011.jpg",
+      "group": "090011.jpg",
+      "target": {
+        "gender": "male",
+        "age": "elderly",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "elderly",
+        "hair_color": "shaved",
+        "viewpoint": "back",
+        "top_color": "white",
+        "top_type": "t-shirt",
+        "bottom_color": "white",
+        "bottom_type": "shorts",
+        "footwear": "sandals",
+        "accessory": "umbrella"
+      },
+      "raw": "gender=male; age=elderly; hair_color=shaved; viewpoint=back view; top_color=white; top_type=t-shirt; bottom_color=white; bottom_type=shorts; footwear=sandals; accessory=umbrella",
+      "latency_s": 0.8887176000007457,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 27,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090012.jpg",
+      "group": "090012.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "red",
+        "viewpoint": "back",
+        "top_color": "red",
+        "top_type": "t-shirt",
+        "bottom_color": "red",
+        "bottom_type": "trousers",
+        "footwear": "sandals",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=young adult; hair_color=red; viewpoint=back view; top_color=red; top_type=t-shirt; bottom_color=red; bottom_type=trousers; footwear=sandals; accessory=backpack",
+      "latency_s": 0.8985233000003063,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 28,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090013.jpg",
+      "group": "090013.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "brown",
+        "viewpoint": "front",
+        "top_color": "dark grey",
+        "top_type": "t-shirt",
+        "bottom_color": "navy blue",
+        "bottom_type": "shorts",
+        "footwear": "dress shoes",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=young adult; hair_color=brown; viewpoint=front view; top_color=dark grey; top_type=t-shirt; bottom_color=navy blue; bottom_type=shorts; footwear=dress shoes; accessory=handbag",
+      "latency_s": 0.8970020000015211,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 29,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090014.jpg",
+      "group": "090014.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "skirt"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "beige",
+        "top_type": "knit sweater",
+        "bottom_color": "beige",
+        "bottom_type": "skirt",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=young adult; hair_color=brown; viewpoint=back view; top_color=beige; top_type=knit sweater; bottom_color=beige; bottom_type=skirt; footwear=boots; accessory=handbag",
+      "latency_s": 0.9089072999995551,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 30,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090015.jpg",
+      "group": "090015.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "dark grey",
+        "top_type": "jacket",
+        "bottom_color": "dark grey",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=black; viewpoint=back view; top_color=dark grey; top_type=jacket; bottom_color=dark grey; bottom_type=trousers; footwear=dress shoes; accessory=handbag",
+      "latency_s": 0.8636817000005976,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 31,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090016.jpg",
+      "group": "090016.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "dress",
+        "bottom_color": "navy blue",
+        "bottom_type": "shorts",
+        "footwear": "dress shoes",
+        "accessory": "handbag"
+      },
+      "raw": "gender=male; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=dress; bottom_color=navy blue; bottom_type=shorts; footwear=dress shoes; accessory=handbag",
+      "latency_s": 0.8823892000000342,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 32,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090017.jpg",
+      "group": "090017.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "khaki",
+        "top_type": "jacket",
+        "bottom_color": "khaki",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=elderly; hair_color=brown; viewpoint=back view; top_color=khaki; top_type=jacket; bottom_color=khaki; bottom_type=trousers; footwear=boots; accessory=backpack",
+      "latency_s": 0.8964707000013732,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 33,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090018.jpg",
+      "group": "090018.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "young adult",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "green",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "umbrella"
+      },
+      "raw": "gender=male; age=young adult; hair_color=black; viewpoint=back view; top_color=green; top_type=knit sweater; bottom_color=navy blue; bottom_type=trousers; footwear=dress shoes; accessory=umbrella",
+      "latency_s": 0.882936800000607,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 34,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090019.jpg",
+      "group": "090019.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "shorts"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "navy blue",
+        "bottom_type": "shorts",
+        "footwear": "sandals",
+        "accessory": "backpack"
+      },
+      "raw": "gender=male; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=t-shirt; bottom_color=navy blue; bottom_type=shorts; footwear=sandals; accessory=backpack",
+      "latency_s": 0.8669890999990457,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 35,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090020.jpg",
+      "group": "090020.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "age": "elderly",
+        "hair_color": "red",
+        "viewpoint": "back",
+        "top_color": "red",
+        "top_type": "knit sweater",
+        "bottom_color": "red",
+        "bottom_type": "trousers",
+        "footwear": "dress shoes",
+        "accessory": "handbag"
+      },
+      "raw": "gender=male; age=elderly; hair_color=red; viewpoint=back view; top_color=red; top_type=knit sweater; bottom_color=red; bottom_type=trousers; footwear=dress shoes; accessory=handbag",
+      "latency_s": 0.8790262999991683,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 36,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090021.jpg",
+      "group": "090021.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "dress",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "dress shoes",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=dress; bottom_color=navy blue; bottom_type=skirt; footwear=dress shoes; accessory=handbag",
+      "latency_s": 0.8700049000017316,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 37,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090022.jpg",
+      "group": "090022.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "leather jacket",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=leather jacket; bottom_color=navy blue; bottom_type=skirt; footwear=boots; accessory=handbag",
+      "latency_s": 0.876575899999807,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 38,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090023.jpg",
+      "group": "090023.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "backpack",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "red",
+        "viewpoint": "back",
+        "top_color": "red",
+        "top_type": "dress",
+        "bottom_color": "red",
+        "bottom_type": "dress",
+        "footwear": "boots",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=teenager; hair_color=red; viewpoint=back view; top_color=red; top_type=dress; bottom_color=red; bottom_type=dress; footwear=boots; accessory=backpack",
+      "latency_s": 0.8545133999996324,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 39,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090024.jpg",
+      "group": "090024.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "gray",
+        "viewpoint": "back",
+        "top_color": "dark grey",
+        "top_type": "jacket",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "dress shoes",
+        "accessory": "umbrella"
+      },
+      "raw": "gender=female; age=young adult; hair_color=gray; viewpoint=back view; top_color=dark grey; top_type=jacket; bottom_color=navy blue; bottom_type=skirt; footwear=dress shoes; accessory=umbrella",
+      "latency_s": 0.8890884000011283,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 40,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090025.jpg",
+      "group": "090025.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "blouse",
+        "bottom_color": "navy blue",
+        "bottom_type": "shorts",
+        "footwear": "dress shoes",
+        "accessory": "cap"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=blouse; bottom_color=navy blue; bottom_type=shorts; footwear=dress shoes; accessory=cap",
+      "latency_s": 0.9007203000001027,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 41,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090026.jpg",
+      "group": "090026.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "black",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "dress",
+        "bottom_color": "navy blue",
+        "bottom_type": "skirt",
+        "footwear": "dress shoes",
+        "accessory": "sunglasses"
+      },
+      "raw": "gender=female; age=young adult; hair_color=black; viewpoint=back view; top_color=navy blue; top_type=dress; bottom_color=navy blue; bottom_type=skirt; footwear=dress shoes; accessory=sunglasses",
+      "latency_s": 0.9581443999995827,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 42,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090027.jpg",
+      "group": "090027.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "young adult",
+        "hair_color": "gray",
+        "viewpoint": "front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "navy blue",
+        "bottom_type": "denim jeans",
+        "footwear": "sandals",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=young adult; hair_color=gray; viewpoint=front view; top_color=navy blue; top_type=t-shirt; bottom_color=navy blue; bottom_type=denim jeans; footwear=sandals; accessory=backpack",
+      "latency_s": 0.9200313000001188,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 43,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090028.jpg",
+      "group": "090028.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "back",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "navy blue",
+        "bottom_type": "dress",
+        "footwear": "dress shoes",
+        "accessory": "backpack"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=back view; top_color=navy blue; top_type=knit sweater; bottom_color=navy blue; bottom_type=dress; footwear=dress shoes; accessory=backpack",
+      "latency_s": 0.8990914000005432,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 44,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090029.jpg",
+      "group": "090029.jpg",
+      "target": {
+        "gender": "female",
+        "age": "young adult",
+        "viewpoint": "back",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "elderly",
+        "hair_color": "red",
+        "viewpoint": "back",
+        "top_color": "red",
+        "top_type": "knit sweater",
+        "bottom_color": "red",
+        "bottom_type": "dress",
+        "footwear": "heels",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=elderly; hair_color=red; viewpoint=back view; top_color=red; top_type=knit sweater; bottom_color=red; bottom_type=dress; footwear=heels; accessory=handbag",
+      "latency_s": 0.8735703000002104,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 45,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\person_only\\pa100k\\090030.jpg",
+      "group": "090030.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "shoulderbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "female",
+        "age": "teenager",
+        "hair_color": "brown",
+        "viewpoint": "side",
+        "top_color": "navy blue",
+        "top_type": "leather jacket",
+        "bottom_color": "dark grey",
+        "bottom_type": "trousers",
+        "footwear": "boots",
+        "accessory": "handbag"
+      },
+      "raw": "gender=female; age=teenager; hair_color=brown; viewpoint=side view; top_color=navy blue; top_type=leather jacket; bottom_color=dark grey; bottom_type=trousers; footwear=boots; accessory=handbag",
+      "latency_s": 0.8901445999999851,
+      "structured_valid": true,
+      "error": null
+    }
+  ]
+}

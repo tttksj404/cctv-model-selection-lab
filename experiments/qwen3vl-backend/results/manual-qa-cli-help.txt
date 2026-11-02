@@ -1,0 +1,5 @@
+﻿Traceback (most recent call last):
+  File "C:\Users\SSAFY\Desktop\2�б�\qwen3vl-backend\scripts\run_cctv_model_comparison.py", line 26, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'
+EXIT_CODE=1

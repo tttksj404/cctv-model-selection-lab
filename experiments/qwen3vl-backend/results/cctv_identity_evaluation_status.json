@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "cctv-identity-evaluation-status-v1",
+  "status": "pilot_identity_labels_available",
+  "profile": "experiments/results/cctv_local_video_profile.json",
+  "videosProfiled": 3,
+  "identityTracksReviewed": 3,
+  "identityLabelsAvailable": true,
+  "trackHeldoutMetricsEligible": false,
+  "proxyMetricsReusedAsIdentity": false,
+  "reason": "The three MOV files now have a reviewed local pilot manifest with one identity across three tracks. Full project promotion remains closed because independent identities, distractors, and attribute model metrics are not yet available.",
+  "nextRequired": [
+    "add at least 10 independently reviewed identities and distractor tracks",
+    "obtain a second independent identity review and adjudication record",
+    "produce model attribute predictions against the reviewed manifest",
+    "seal the expanded test split before model or distillation selection",
+    "run every model arm with the same track manifest"
+  ]
+}

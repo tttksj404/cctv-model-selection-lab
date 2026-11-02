@@ -1,0 +1,2572 @@
+{
+  "schemaVersion": "project-cctv-model-ensemble-diagnostic-v1",
+  "status": "diagnostic_single_adjudicator_not_production_accuracy",
+  "protocol": "cross-video-query-to-IMG_3617-gallery",
+  "source": {
+    "adjudicationSha256": "f54bae2d1dd040a835bcc6ca7d991cc46d2680951fd82b6a76361f7d1b8cfa18",
+    "galleryVideo": "IMG_3617",
+    "arm": "pair-top2",
+    "includeUnlabeledGallery": true,
+    "queryTrackIds": [
+      "IMG_3618-track-0001",
+      "IMG_3620-track-0001",
+      "IMG_3620-track-0002",
+      "IMG_3620-track-0003",
+      "IMG_3620-track-0004",
+      "IMG_3620-track-0005",
+      "IMG_3620-track-0006",
+      "IMG_3620-track-0007",
+      "IMG_3620-track-0058",
+      "IMG_3620-track-0090",
+      "IMG_3620-track-0100"
+    ],
+    "galleryTrackIds": [
+      "IMG_3617-track-0002",
+      "IMG_3617-track-0003",
+      "IMG_3617-track-0004",
+      "IMG_3617-track-0005",
+      "IMG_3617-track-0007",
+      "IMG_3617-track-0008",
+      "IMG_3617-track-0009",
+      "IMG_3617-track-0013",
+      "IMG_3617-track-0017",
+      "IMG_3617-track-0024",
+      "IMG_3617-track-0066",
+      "IMG_3617-track-0108",
+      "IMG_3617-track-0127",
+      "IMG_3617-track-0173",
+      "IMG_3617-track-0001",
+      "IMG_3617-track-0006",
+      "IMG_3617-track-0010",
+      "IMG_3617-track-0011",
+      "IMG_3617-track-0012",
+      "IMG_3617-track-0014",
+      "IMG_3617-track-0015",
+      "IMG_3617-track-0016",
+      "IMG_3617-track-0018",
+      "IMG_3617-track-0019",
+      "IMG_3617-track-0020",
+      "IMG_3617-track-0037",
+      "IMG_3617-track-0064",
+      "IMG_3617-track-0069",
+      "IMG_3617-track-0074",
+      "IMG_3617-track-0082",
+      "IMG_3617-track-0098",
+      "IMG_3617-track-0112",
+      "IMG_3617-track-0144",
+      "IMG_3617-track-0155",
+      "IMG_3617-track-0159",
+      "IMG_3617-track-0177",
+      "IMG_3617-track-0180"
+    ],
+    "galleryCandidateCount": 31,
+    "models": {
+      "SOLIDER": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_old_solider_embeddings_20260810.npz",
+        "sha256": "698eaae105ddb1a370761291bbf4ea19ae69f01fbf24b40c7d35d6fab3b27e77"
+      },
+      "CLIP-L14": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_old_clip_l14_embeddings_20260810.npz",
+        "sha256": "10db7d055f51145999ae2c88ef825f0610fd32283ea17b81056c1b4452651d8e"
+      },
+      "SigLIP2": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_old_siglip2_embeddings_20260810.npz",
+        "sha256": "12a96e03cdfe32788ec37f9ccc6c391d23f960c92c87dd8632cf9a553598147b"
+      },
+      "DINOv2": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_old_dino2_embeddings_20260810.npz",
+        "sha256": "2c374c816ac5a82db19396890141dab53810848be2e2eaed15e64dbd5cfb6fca"
+      }
+    }
+  },
+  "methods": {
+    "single:SOLIDER": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.7651515151515151,
+        "worstRank": 4,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          4,
+          2,
+          3,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "project-person-07"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0027"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "project-person-06",
+            "project-person-05"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "project-person-07"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-01",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0033"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7478354978354979,
+        "worstRank": 7,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          7,
+          1,
+          4,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0027"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "project-person-07",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-08",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-02",
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0033"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7478354978354979,
+        "worstRank": 7,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          7,
+          1,
+          4,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0027"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-02",
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0033"
+          ]
+        ]
+      }
+    },
+    "single:CLIP-L14": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.2727272727272727,
+        "recallAt5": 0.7272727272727273,
+        "recallAt10": 0.8181818181818182,
+        "mrr": 0.46919191919191916,
+        "worstRank": 20,
+        "ranks": [
+          20,
+          1,
+          1,
+          2,
+          12,
+          3,
+          4,
+          2,
+          3,
+          9,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0022",
+            "unlabeled-distractor-0020",
+            "unlabeled-distractor-0034",
+            "unlabeled-distractor-0027",
+            "project-person-05"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "project-person-07",
+            "project-person-02",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-07",
+            "project-person-01",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "project-person-08",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "project-person-07",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0029"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0016",
+            "project-person-06",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0028"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-08",
+            "project-person-02",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0036"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.2727272727272727,
+        "recallAt5": 0.5454545454545454,
+        "recallAt10": 0.8181818181818182,
+        "mrr": 0.4272233614338878,
+        "worstRank": 19,
+        "ranks": [
+          19,
+          1,
+          1,
+          3,
+          12,
+          7,
+          3,
+          2,
+          7,
+          9,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0022",
+            "unlabeled-distractor-0020",
+            "unlabeled-distractor-0034",
+            "unlabeled-distractor-0027",
+            "project-person-05"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "project-person-02",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0017"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "project-person-07",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0029",
+            "unlabeled-distractor-0033"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0028"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-02",
+            "unlabeled-distractor-0018",
+            "project-person-01"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "project-person-05",
+            "unlabeled-distractor-0023",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0036",
+            "unlabeled-distractor-0014"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.2727272727272727,
+        "recallAt5": 0.6363636363636364,
+        "recallAt10": 0.8181818181818182,
+        "mrr": 0.4232190324295587,
+        "worstRank": 19,
+        "ranks": [
+          19,
+          1,
+          1,
+          3,
+          12,
+          8,
+          4,
+          2,
+          5,
+          9,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0022",
+            "unlabeled-distractor-0020",
+            "unlabeled-distractor-0034",
+            "unlabeled-distractor-0027",
+            "project-person-05"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "project-person-02",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0017"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-01",
+            "project-person-07",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0029",
+            "unlabeled-distractor-0033"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "unlabeled-distractor-0028"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "project-person-02",
+            "unlabeled-distractor-0018",
+            "project-person-08"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0036",
+            "unlabeled-distractor-0014"
+          ]
+        ]
+      }
+    },
+    "single:SigLIP2": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 0.8181818181818182,
+        "recallAt10": 1.0,
+        "mrr": 0.5735930735930737,
+        "worstRank": 7,
+        "ranks": [
+          6,
+          1,
+          1,
+          1,
+          2,
+          4,
+          2,
+          2,
+          7,
+          1,
+          4
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0017",
+            "project-person-03"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0015",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0032",
+            "project-person-06"
+          ],
+          [
+            "unlabeled-distractor-0015",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0031",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0026",
+            "project-person-05",
+            "project-person-03",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0031"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "project-person-07",
+            "unlabeled-distractor-0028"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.5343434343434343,
+        "worstRank": 9,
+        "ranks": [
+          5,
+          1,
+          1,
+          5,
+          1,
+          3,
+          2,
+          3,
+          9,
+          1,
+          5
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0017",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-05",
+            "project-person-03",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016",
+            "project-person-05"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0018",
+            "project-person-06",
+            "project-person-05",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "unlabeled-distractor-0026",
+            "project-person-03",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0031"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0024",
+            "project-person-05"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "project-person-05",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0030"
+          ],
+          [
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-07"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.5341991341991341,
+        "worstRank": 7,
+        "ranks": [
+          5,
+          1,
+          1,
+          5,
+          1,
+          4,
+          2,
+          3,
+          7,
+          1,
+          4
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0017",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-05",
+            "project-person-03",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016",
+            "project-person-05"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0015",
+            "project-person-07",
+            "unlabeled-distractor-0018",
+            "project-person-06",
+            "project-person-05"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0031",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0026",
+            "project-person-03",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0031"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0024",
+            "project-person-07"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "project-person-05",
+            "project-person-07",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "project-person-07",
+            "unlabeled-distractor-0028"
+          ]
+        ]
+      }
+    },
+    "single:DINOv2": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 0.6363636363636364,
+        "recallAt10": 0.8181818181818182,
+        "mrr": 0.46317066771612225,
+        "worstRank": 20,
+        "ranks": [
+          5,
+          1,
+          1,
+          1,
+          4,
+          7,
+          20,
+          1,
+          9,
+          11,
+          4
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0017",
+            "project-person-08",
+            "unlabeled-distractor-0028",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-01",
+            "project-person-02",
+            "project-person-03",
+            "unlabeled-distractor-0015",
+            "project-person-08"
+          ],
+          [
+            "project-person-02",
+            "project-person-08",
+            "unlabeled-distractor-0015",
+            "project-person-07",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "project-person-08",
+            "project-person-03",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-05",
+            "project-person-08",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "project-person-07",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0031"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "project-person-08",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "unlabeled-distractor-0031",
+            "project-person-07",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.18181818181818182,
+        "recallAt5": 0.45454545454545453,
+        "recallAt10": 0.6363636363636364,
+        "mrr": 0.32693329397874854,
+        "worstRank": 20,
+        "ranks": [
+          4,
+          1,
+          1,
+          7,
+          2,
+          12,
+          20,
+          6,
+          16,
+          11,
+          4
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-03",
+            "project-person-02",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "project-person-02",
+            "project-person-03",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0029"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-01",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-03",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0031",
+            "project-person-07",
+            "unlabeled-distractor-0036"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0030",
+            "project-person-08",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "unlabeled-distractor-0036",
+            "unlabeled-distractor-0031",
+            "project-person-08",
+            "project-person-07",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.18181818181818182,
+        "recallAt5": 0.45454545454545453,
+        "recallAt10": 0.6363636363636364,
+        "mrr": 0.31367571822117274,
+        "worstRank": 20,
+        "ranks": [
+          4,
+          1,
+          1,
+          7,
+          3,
+          12,
+          20,
+          6,
+          12,
+          11,
+          4
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-03",
+            "project-person-02",
+            "project-person-08"
+          ],
+          [
+            "project-person-01",
+            "project-person-02",
+            "project-person-03",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0029"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-01",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-08",
+            "project-person-03",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "project-person-01",
+            "project-person-08"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0031",
+            "project-person-07",
+            "unlabeled-distractor-0036"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "unlabeled-distractor-0031",
+            "project-person-07",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      }
+    },
+    "fusion:equal": {
+      "weights": {
+        "SOLIDER": 0.25,
+        "CLIP-L14": 0.25,
+        "SigLIP2": 0.25,
+        "DINOv2": 0.25
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.45454545454545453,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.6515151515151515,
+        "worstRank": 4,
+        "ranks": [
+          4,
+          1,
+          1,
+          1,
+          2,
+          3,
+          3,
+          2,
+          4,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-02",
+            "project-person-03"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "project-person-05",
+            "project-person-07",
+            "unlabeled-distractor-0021"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0023",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0030",
+            "project-person-06",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-01",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "project-person-07",
+            "unlabeled-distractor-0018",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "project-person-08",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-03",
+            "project-person-08",
+            "unlabeled-distractor-0030",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.45454545454545453,
+        "recallAt5": 0.8181818181818182,
+        "recallAt10": 1.0,
+        "mrr": 0.6076839826839827,
+        "worstRank": 8,
+        "ranks": [
+          3,
+          1,
+          1,
+          4,
+          1,
+          8,
+          3,
+          2,
+          7,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-02",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "project-person-02",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0021",
+            "project-person-05",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016",
+            "project-person-05",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0016",
+            "project-person-07",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-01",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "project-person-03",
+            "unlabeled-distractor-0028"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0030",
+            "project-person-05",
+            "unlabeled-distractor-0026",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.45454545454545453,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.6174242424242423,
+        "worstRank": 8,
+        "ranks": [
+          3,
+          1,
+          1,
+          4,
+          1,
+          8,
+          3,
+          2,
+          4,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-02",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0021",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016",
+            "project-person-05",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-01",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-08",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0030",
+            "project-person-08",
+            "project-person-07",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-08",
+            "unlabeled-distractor-0025"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-heavy": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.09999999999999999,
+        "SigLIP2": 0.09999999999999999,
+        "DINOv2": 0.09999999999999999
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.7954545454545454,
+        "worstRank": 4,
+        "ranks": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          4,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-07"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0023",
+            "project-person-05"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "project-person-06",
+            "project-person-05"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "project-person-03",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "project-person-07",
+            "unlabeled-distractor-0028"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-05",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "project-person-06",
+            "unlabeled-distractor-0036"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7525252525252526,
+        "worstRank": 9,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          9,
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "project-person-07",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0014",
+            "project-person-03",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-02"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-06"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.5454545454545454,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7222222222222222,
+        "worstRank": 9,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          9,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "project-person-03",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-02"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-06"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-plus-siglip": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.0,
+        "SigLIP2": 0.3,
+        "DINOv2": 0.0
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.7909090909090909,
+        "worstRank": 5,
+        "ranks": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          5,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-07"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "project-person-06"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "project-person-05",
+            "project-person-06"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-07"
+          ],
+          [
+            "project-person-08",
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-05",
+            "unlabeled-distractor-0024"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "project-person-06",
+            "unlabeled-distractor-0036"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7575757575757575,
+        "worstRank": 6,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          6,
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-02"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-06"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.5454545454545454,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7099567099567099,
+        "worstRank": 7,
+        "ranks": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          7,
+          2,
+          2,
+          3,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-05",
+            "unlabeled-distractor-0025"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0035",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0023"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0034",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-02"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-01",
+            "unlabeled-distractor-0015"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0036",
+            "project-person-06"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-plus-clip": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.3,
+        "SigLIP2": 0.0,
+        "DINOv2": 0.0
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.7954545454545454,
+        "worstRank": 4,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          4,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-07"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "unlabeled-distractor-0029",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "project-person-05",
+            "unlabeled-distractor-0029"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "project-person-06",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0016",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "project-person-07"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-08",
+            "project-person-01"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0033",
+            "project-person-08"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7705627705627704,
+        "worstRank": 7,
+        "ranks": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          7,
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-05",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "unlabeled-distractor-0029",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0015",
+            "project-person-05"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "unlabeled-distractor-0015",
+            "project-person-07",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0016",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-04",
+            "project-person-08",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-01",
+            "unlabeled-distractor-0030"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0033",
+            "unlabeled-distractor-0036"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 31,
+        "count": 11,
+        "rank1": 0.5454545454545454,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.7402597402597402,
+        "worstRank": 7,
+        "ranks": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          7,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0017",
+            "project-person-05",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-01",
+            "unlabeled-distractor-0023",
+            "project-person-03",
+            "unlabeled-distractor-0029",
+            "project-person-02"
+          ],
+          [
+            "project-person-02",
+            "unlabeled-distractor-0017",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0015",
+            "project-person-05"
+          ],
+          [
+            "unlabeled-distractor-0018",
+            "project-person-05",
+            "unlabeled-distractor-0032",
+            "unlabeled-distractor-0035",
+            "unlabeled-distractor-0016"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0026",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0029",
+            "unlabeled-distractor-0034"
+          ],
+          [
+            "unlabeled-distractor-0030",
+            "project-person-07",
+            "unlabeled-distractor-0015",
+            "unlabeled-distractor-0016",
+            "unlabeled-distractor-0032"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0014",
+            "unlabeled-distractor-0016",
+            "project-person-03"
+          ],
+          [
+            "unlabeled-distractor-0032",
+            "project-person-05",
+            "unlabeled-distractor-0018",
+            "unlabeled-distractor-0028",
+            "unlabeled-distractor-0035"
+          ],
+          [
+            "unlabeled-distractor-0016",
+            "project-person-08",
+            "project-person-04",
+            "unlabeled-distractor-0024",
+            "unlabeled-distractor-0018"
+          ],
+          [
+            "project-person-03",
+            "unlabeled-distractor-0023",
+            "unlabeled-distractor-0026",
+            "project-person-01",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "unlabeled-distractor-0031",
+            "unlabeled-distractor-0025",
+            "unlabeled-distractor-0033",
+            "project-person-08"
+          ]
+        ]
+      }
+    }
+  }
+}

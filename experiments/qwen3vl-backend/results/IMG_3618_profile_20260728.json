@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "status": "profiled_metadata_only",
+  "videos": [
+    {
+      "fileName": "IMG_3618.mov",
+      "frameCount": 306,
+      "fps": 30.0049,
+      "width": 1920,
+      "height": 1080,
+      "durationSeconds": 10.1983,
+      "aspectRatio": 1.7778,
+      "orientation": "landscape",
+      "sampledFrameCount": 13,
+      "meanLuma": 128.3364
+    }
+  ]
+}

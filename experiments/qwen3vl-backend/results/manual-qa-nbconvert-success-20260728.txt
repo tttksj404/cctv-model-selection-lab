@@ -1,0 +1,10 @@
+STATUS=PASS
+EXECUTED_AT=2026-07-28
+NOTEBOOK=output/jupyter-notebook/cctv_reid_gpu_comparison_20260728.ipynb
+CELLS=14
+EXECUTED_CODE_CELLS=6
+ERROR_OUTPUTS=0
+IDENTITY_MRR_LABEL=true
+SHA256=ce0c408cfc63117419f4070dae2355539beba6b43f11be29c37d77f6fa4a3265
+BYTES=216399
+SUPERSEDES=manual-qa-nbconvert.txt (historical pre-dependency failure)

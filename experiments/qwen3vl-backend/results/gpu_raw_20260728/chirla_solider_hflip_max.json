@@ -1,0 +1,217 @@
+{
+  "schema_version": "cctv-chirla-identity-reid-v1",
+  "model": "solider-reid-swin-base-msmt17",
+  "checkpoint": "models/solider_reid/swin_base_msmt17.pth",
+  "device": "cuda",
+  "dataset": "CHIRLA",
+  "dataset_status": "public-proxy-not-project-CCTV-review",
+  "manifest_sha256": "e24d7b2acc1fe491cb8a64ce736c0070b6f2163a6343b551f265ff19a7a243e0",
+  "counts": {
+    "all_manifest_records": 371,
+    "gallery_records": 118,
+    "query_records": 95,
+    "gallery_identities": 11,
+    "query_identities": 29,
+    "query_gallery_identity_intersection": 11
+  },
+  "split_contract": {
+    "gallery_role": "gallery",
+    "query_role": "query",
+    "identity_aggregation": "max",
+    "gallery_topk": 3,
+    "query_gallery_sequence_overlap": [
+      "seq_002",
+      "seq_004",
+      "seq_007",
+      "seq_020",
+      "seq_024",
+      "seq_025"
+    ],
+    "query_gallery_camera_overlap": [
+      "camera_1_2023-06-13-13:31:40",
+      "camera_3_2023-06-02-12:09:07",
+      "camera_4_2023-06-08-12:29:08"
+    ]
+  },
+  "metrics": {
+    "query_count": 95,
+    "gallery_identity_count": 11,
+    "rank1": 0.6421052631578947,
+    "recall_at_5": 0.9368421052631579,
+    "recall_at_10": 1.0,
+    "map": 0.756299081035923,
+    "minp": 0.756299081035923,
+    "rank1_ci95_low": 0.5471052631578948,
+    "rank1_ci95_high": 0.7368421052631579
+  },
+  "by_camera": {
+    "camera_1_2023-06-13-13:31:40": {
+      "query_count": 9,
+      "gallery_identity_count": 11,
+      "rank1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 1.0,
+      "minp": 1.0,
+      "rank1_ci95_low": 1.0,
+      "rank1_ci95_high": 1.0
+    },
+    "camera_1_2023-12-01-11:05:52": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.7291666666666666,
+      "minp": 0.7291666666666666,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "camera_2_2023-06-08-12:29:08": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.9166666666666666,
+      "recall_at_5": 0.9166666666666666,
+      "recall_at_10": 1.0,
+      "map": 0.9259259259259259,
+      "minp": 0.9259259259259259,
+      "rank1_ci95_low": 0.75,
+      "rank1_ci95_high": 1.0
+    },
+    "camera_3_2023-06-02-12:09:07": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.9166666666666666,
+      "recall_at_5": 0.9166666666666666,
+      "recall_at_10": 1.0,
+      "map": 0.9249999999999999,
+      "minp": 0.9249999999999999,
+      "rank1_ci95_low": 0.75,
+      "rank1_ci95_high": 1.0
+    },
+    "camera_3_2023-07-26-13:21:40": {
+      "query_count": 14,
+      "gallery_identity_count": 11,
+      "rank1": 0.5,
+      "recall_at_5": 0.9285714285714286,
+      "recall_at_10": 1.0,
+      "map": 0.7125850340136054,
+      "minp": 0.7125850340136054,
+      "rank1_ci95_low": 0.21428571428571427,
+      "rank1_ci95_high": 0.7857142857142857
+    },
+    "camera_4_2023-06-08-12:29:08": {
+      "query_count": 8,
+      "gallery_identity_count": 11,
+      "rank1": 0.5,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.65,
+      "minp": 0.65,
+      "rank1_ci95_low": 0.125,
+      "rank1_ci95_high": 0.875
+    },
+    "camera_4_2023-12-04-12:11:17": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.4166666666666667,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.5986111111111111,
+      "minp": 0.5986111111111111,
+      "rank1_ci95_low": 0.16666666666666666,
+      "rank1_ci95_high": 0.6666666666666666
+    },
+    "camera_5_2023-07-26-13:21:40": {
+      "query_count": 10,
+      "gallery_identity_count": 11,
+      "rank1": 0.6,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.75,
+      "minp": 0.75,
+      "rank1_ci95_low": 0.3,
+      "rank1_ci95_high": 0.9
+    },
+    "camera_6_2023-06-08-12:29:08": {
+      "query_count": 6,
+      "gallery_identity_count": 11,
+      "rank1": 0.16666666666666666,
+      "recall_at_5": 0.5,
+      "recall_at_10": 1.0,
+      "map": 0.33796296296296297,
+      "minp": 0.33796296296296297,
+      "rank1_ci95_low": 0.0,
+      "rank1_ci95_high": 0.5
+    }
+  },
+  "by_sequence": {
+    "seq_002": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.9166666666666666,
+      "recall_at_5": 0.9166666666666666,
+      "recall_at_10": 1.0,
+      "map": 0.9249999999999999,
+      "minp": 0.9249999999999999,
+      "rank1_ci95_low": 0.75,
+      "rank1_ci95_high": 1.0
+    },
+    "seq_004": {
+      "query_count": 26,
+      "gallery_identity_count": 11,
+      "rank1": 0.6153846153846154,
+      "recall_at_5": 0.8461538461538461,
+      "recall_at_10": 1.0,
+      "map": 0.7053418803418805,
+      "minp": 0.7053418803418805,
+      "rank1_ci95_low": 0.4230769230769231,
+      "rank1_ci95_high": 0.8076923076923077
+    },
+    "seq_007": {
+      "query_count": 9,
+      "gallery_identity_count": 11,
+      "rank1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 1.0,
+      "minp": 1.0,
+      "rank1_ci95_low": 1.0,
+      "rank1_ci95_high": 1.0
+    },
+    "seq_020": {
+      "query_count": 24,
+      "gallery_identity_count": 11,
+      "rank1": 0.5416666666666666,
+      "recall_at_5": 0.9583333333333334,
+      "recall_at_10": 1.0,
+      "map": 0.7281746031746031,
+      "minp": 0.7281746031746031,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.75
+    },
+    "seq_024": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.7291666666666666,
+      "minp": 0.7291666666666666,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "seq_025": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.4166666666666667,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.5986111111111111,
+      "minp": 0.5986111111111111,
+      "rank1_ci95_low": 0.16666666666666666,
+      "rank1_ci95_high": 0.6666666666666666
+    }
+  },
+  "tta": "hflip"
+}

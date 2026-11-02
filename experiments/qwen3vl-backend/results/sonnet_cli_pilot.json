@@ -1,0 +1,921 @@
+{
+  "generated_at": "2026-07-23T07:24:15.358965+00:00",
+  "teacher_model": "claude-sonnet-5",
+  "dataset": "cctv_proxy/person_only/simuletic",
+  "sample_limit": 15,
+  "metrics": {
+    "evaluated_samples": 15,
+    "exact_record_accuracy": 0.13333333333333333,
+    "exact_stable_record_accuracy": 0.3333333333333333,
+    "field_accuracy": {
+      "gender": 1.0,
+      "age_group": 1.0,
+      "hair_color": 0.3333333333333333,
+      "viewpoint": 0.8,
+      "top_color": 0.6,
+      "top_type": 0.8,
+      "bottom_color": 1.0,
+      "bottom_type": 1.0,
+      "accessory": 0.3333333333333333
+    },
+    "stable_field_accuracy": {
+      "gender": 1.0,
+      "age_group": 1.0,
+      "hair_color": 0.3333333333333333,
+      "top_color": 0.6,
+      "top_type": 0.8,
+      "bottom_color": 1.0,
+      "bottom_type": 1.0,
+      "accessory": 0.3333333333333333
+    },
+    "status": "measured",
+    "scope_warning": "Synthetic CCTV proxy metadata, not real identity/track-heldout CCTV."
+  },
+  "samples": [
+    {
+      "image": "ped_2_img1.png",
+      "sha256": "7835bd32d8e9356bc44a7bfc99dda66e0236f839758dae5ccd38168a449733b9",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": null,
+        "accessory": "sunglasses",
+        "visibility": "partial (lower legs/feet not visible)",
+        "teacher_confidence": 0.8
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 8,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    },
+    {
+      "image": "ped_2_img2.png",
+      "sha256": "5223bdcc4e93b45f94471f88a667fa777db2f27ca8918526c1e8ff6e28cd9051",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": null,
+        "accessory": "sunglasses",
+        "visibility": "partial (feet not visible)",
+        "teacher_confidence": 0.75
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 9,
+        "measured_fields": 9,
+        "exact_record_match": true,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    },
+    {
+      "image": "ped_2_img3.png",
+      "sha256": "826d18197058ee82fe85f10f24f711b054a0c3be3422e59078b3e8e913508cdc",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": null,
+        "accessory": "sunglasses, earrings, ring",
+        "visibility": "upper body and legs visible, feet not visible",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 8,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    },
+    {
+      "image": "ped_2_img4.png",
+      "sha256": "392fc92d0b221d338f581556dd44dda68eee2ca341481b097c90b38108f94c16",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "side",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": "white sneakers",
+        "accessory": "sunglasses, earrings",
+        "visibility": "partial (feet mostly cropped, lower legs cut off)",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 8,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    },
+    {
+      "image": "ped_2_img5.png",
+      "sha256": "c84a48618fc880942a959eda702f797f1e0f8ddf4d631c597af9287470120f96",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": null,
+        "accessory": "sunglasses (worn on head, visible from side)",
+        "visibility": "partial (feet not visible, face mostly turned away)",
+        "teacher_confidence": 0.75
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 9,
+        "measured_fields": 9,
+        "exact_record_match": true,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    },
+    {
+      "image": "ped_3_img1.png",
+      "sha256": "599cdae015e0aa27bbc8796388c44c6f85c39321e463824d1580eb3b27d6c403",
+      "target": {
+        "gender": "man",
+        "age_group": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "wearing a baseball cap"
+      },
+      "prediction": {
+        "gender": "male",
+        "age_group": "young adult",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "blue",
+        "top_type": "sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "footwear": "white sneakers",
+        "accessory": "cap (held in hand, not worn)",
+        "visibility": "upper body and legs fully visible, feet partially visible",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 6,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 5,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_3_img2.png",
+      "sha256": "bb447d3910b862722b4ebb8342c3b289e51d6f8a9bb51a3cde2105a24306a03f",
+      "target": {
+        "gender": "man",
+        "age_group": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "wearing a baseball cap"
+      },
+      "prediction": {
+        "gender": "male",
+        "age_group": "adult",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "navy",
+        "top_type": "sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "footwear": "white sneakers",
+        "accessory": "cap (held in hand, not worn)",
+        "visibility": "clear",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 6,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 5,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_3_img3.png",
+      "sha256": "d632e4334115b4632cca89cd80fdea33bc6004d067c7ca5d2d91566b8c38064d",
+      "target": {
+        "gender": "man",
+        "age_group": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "wearing a baseball cap"
+      },
+      "prediction": {
+        "gender": "male",
+        "age_group": "adult",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "navy",
+        "top_type": "long-sleeve sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "footwear": "white sneakers",
+        "accessory": "cap (held in hand)",
+        "visibility": "clear, full body visible",
+        "teacher_confidence": 0.8
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 5,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 4,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_3_img4.png",
+      "sha256": "4a53981f3abc2cbc589b3914aed47055947e472a79c1b9d17e5bc7d899a45725",
+      "target": {
+        "gender": "man",
+        "age_group": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "wearing a baseball cap"
+      },
+      "prediction": {
+        "gender": "male",
+        "age_group": "young adult",
+        "hair_color": "black",
+        "viewpoint": "front, elevated/overhead",
+        "top_color": "navy",
+        "top_type": "long-sleeve crewneck sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "footwear": "white sneakers",
+        "accessory": "holding a navy baseball cap",
+        "visibility": "clear, unobstructed",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 5,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 4,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_3_img5.png",
+      "sha256": "08ca5c4ff6679fa7d7cd4a3bef74cc361bbf69f71db94effc34d2e40834ae435",
+      "target": {
+        "gender": "man",
+        "age_group": "young adult",
+        "hair_color": "shaved",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "knit sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "accessory": "wearing a baseball cap"
+      },
+      "prediction": {
+        "gender": "male",
+        "age_group": "young adult",
+        "hair_color": "black",
+        "viewpoint": "front",
+        "top_color": "navy",
+        "top_type": "long-sleeve sweater",
+        "bottom_color": "black",
+        "bottom_type": "cargo pants",
+        "footwear": "white sneakers",
+        "accessory": "cap held in hand",
+        "visibility": "clear, full body visible",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 5,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": false,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 4,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_4_img1.png",
+      "sha256": "0db31bfbd2bfb3d13c5fa4a2fa60972b2511eeb4ba00989ddd6510a7895375df",
+      "target": {
+        "gender": "woman",
+        "age_group": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "holding a smartphone"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "senior",
+        "hair_color": "gray/white",
+        "viewpoint": "front, high-angle (overhead CCTV)",
+        "top_color": "navy blue",
+        "top_type": "short-sleeve t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "footwear": "black shoes",
+        "accessory": "smartphone in hand, wristwatch/bracelet, ring",
+        "visibility": "clear, unobstructed",
+        "teacher_confidence": 0.8
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 7,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 6,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_4_img2.png",
+      "sha256": "b5975b0cdd0ed37d6781eb664b15db605def367203aa0074090b287380768f4f",
+      "target": {
+        "gender": "woman",
+        "age_group": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "holding a smartphone"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "senior",
+        "hair_color": "gray/white",
+        "viewpoint": "front, elevated/overhead",
+        "top_color": "navy blue",
+        "top_type": "short-sleeve t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "footwear": "black shoes",
+        "accessory": "smartphone in hand, wristwatch",
+        "visibility": "full body, unobstructed",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 7,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 6,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_4_img3.png",
+      "sha256": "8c4838013c10e08bb9e70178e61ffe976cf2f008747514edab5089870cf5b1d1",
+      "target": {
+        "gender": "woman",
+        "age_group": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "holding a smartphone"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "elderly",
+        "hair_color": "gray/white",
+        "viewpoint": "high-angle front",
+        "top_color": "navy",
+        "top_type": "short-sleeve t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "footwear": null,
+        "accessory": "wristwatch, mobile phone in hand",
+        "visibility": "partial (feet cut off, lower legs partially visible)",
+        "teacher_confidence": 0.75
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 6,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": false,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 5,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_4_img4.png",
+      "sha256": "723ccbd43cbcd18f67514be2d33f193684ac5d3d6d70aae22198133fa5021cb7",
+      "target": {
+        "gender": "woman",
+        "age_group": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "holding a smartphone"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "senior",
+        "hair_color": "gray/white",
+        "viewpoint": "front, high-angle (looking down)",
+        "top_color": "navy blue",
+        "top_type": "short-sleeve t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "footwear": "black shoes",
+        "accessory": "wristwatch/bracelet, holding smartphone",
+        "visibility": "full body, head bowed down looking at phone",
+        "teacher_confidence": 0.8
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 7,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 6,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    },
+    {
+      "image": "ped_4_img5.png",
+      "sha256": "16e0a06d4ea5a6afed60430b60293bcb0ce9ba37d4aef0a55548aaad317cef18",
+      "target": {
+        "gender": "woman",
+        "age_group": "elderly",
+        "hair_color": "grey",
+        "viewpoint": "seen from the front",
+        "top_color": "navy blue",
+        "top_type": "t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings",
+        "accessory": "holding a smartphone"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "senior",
+        "hair_color": "gray/white",
+        "viewpoint": "high-angle front/top-down",
+        "top_color": "navy blue",
+        "top_type": "short-sleeve t-shirt",
+        "bottom_color": "black",
+        "bottom_type": "leggings/capri pants",
+        "footwear": "black sneakers",
+        "accessory": "smartphone in hand",
+        "visibility": "clear, full body visible",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "viewpoint": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "matched_fields": 7,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": false
+        },
+        "stable_matched_fields": 6,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": false
+      }
+    }
+  ]
+}

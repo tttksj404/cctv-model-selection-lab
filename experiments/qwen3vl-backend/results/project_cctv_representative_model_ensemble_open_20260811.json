@@ -1,0 +1,2233 @@
+{
+  "schemaVersion": "project-cctv-model-ensemble-diagnostic-v1",
+  "status": "diagnostic_single_adjudicator_not_production_accuracy",
+  "protocol": "cross-video-query-to-IMG_3617-gallery",
+  "source": {
+    "adjudicationSha256": "f54bae2d1dd040a835bcc6ca7d991cc46d2680951fd82b6a76361f7d1b8cfa18",
+    "galleryVideo": "IMG_3617",
+    "arm": "pair-top2",
+    "includeUnlabeledGallery": true,
+    "queryTrackIds": [
+      "IMG_3618-track-0001",
+      "IMG_3620-track-0001",
+      "IMG_3620-track-0002",
+      "IMG_3620-track-0003",
+      "IMG_3620-track-0004",
+      "IMG_3620-track-0005",
+      "IMG_3620-track-0006",
+      "IMG_3620-track-0007",
+      "IMG_3620-track-0058",
+      "IMG_3620-track-0090",
+      "IMG_3620-track-0100"
+    ],
+    "galleryTrackIds": [
+      "IMG_3617-track-0002",
+      "IMG_3617-track-0003",
+      "IMG_3617-track-0004",
+      "IMG_3617-track-0005",
+      "IMG_3617-track-0007",
+      "IMG_3617-track-0008",
+      "IMG_3617-track-0009",
+      "IMG_3617-track-0013",
+      "IMG_3617-track-0017",
+      "IMG_3617-track-0024",
+      "IMG_3617-track-0066",
+      "IMG_3617-track-0108",
+      "IMG_3617-track-0127",
+      "IMG_3617-track-0173"
+    ],
+    "galleryCandidateCount": 8,
+    "models": {
+      "SOLIDER": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_representative_solider_base_after_20260810.npz",
+        "sha256": "139667a4bc4c2ca004ac6c694de5284b72c384e648582d9b2ef19990677a3d23"
+      },
+      "CLIP-L14": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_representative_clipl14_20260810.npz",
+        "sha256": "12cc59f117bf356ae3da512dff3a636f5d21d3fc6b98861db1e83c3c232518d2"
+      },
+      "SigLIP2": {
+        "path": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\tmp\\project_cctv_representative_siglip2_20260810.npz",
+        "sha256": "50e2e923ced3ab7889eba84de7c5fc97f1a1877ffe1d1fc86da89a1f1f055585"
+      }
+    }
+  },
+  "methods": {
+    "single:SOLIDER": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.8939393939393938,
+        "worstRank": 3,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          3,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-04"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-08"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-04",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.7272727272727273,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.8636363636363636,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-04"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-04"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-04",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-06",
+            "project-person-07",
+            "project-person-02",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-05",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.7272727272727273,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.8636363636363636,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-04"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-04"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-04",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-05",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05"
+          ]
+        ]
+      }
+    },
+    "single:CLIP-L14": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.45454545454545453,
+        "recallAt5": 0.9090909090909091,
+        "recallAt10": 1.0,
+        "mrr": 0.6363636363636364,
+        "worstRank": 6,
+        "ranks": [
+          4,
+          1,
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          4,
+          6,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-02",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-07",
+            "project-person-02",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-07",
+            "project-person-06",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-02",
+            "project-person-03"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-02",
+            "project-person-01",
+            "project-person-08",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.6015151515151514,
+        "worstRank": 5,
+        "ranks": [
+          3,
+          1,
+          1,
+          2,
+          2,
+          3,
+          2,
+          1,
+          4,
+          5,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-02",
+            "project-person-07",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-07",
+            "project-person-02",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-07",
+            "project-person-06",
+            "project-person-01",
+            "project-person-03"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-04",
+            "project-person-08",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-02",
+            "project-person-06",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-07",
+            "project-person-04",
+            "project-person-08",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-02",
+            "project-person-01",
+            "project-person-08",
+            "project-person-04"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-08",
+            "project-person-02",
+            "project-person-03"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.36363636363636365,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.5863636363636364,
+        "worstRank": 5,
+        "ranks": [
+          3,
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          1,
+          4,
+          5,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-02",
+            "project-person-07",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-07",
+            "project-person-02",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-07",
+            "project-person-06",
+            "project-person-01",
+            "project-person-03"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-04",
+            "project-person-08",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-02",
+            "project-person-06",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-02",
+            "project-person-01",
+            "project-person-08",
+            "project-person-04"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "project-person-02",
+            "project-person-03"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ]
+        ]
+      }
+    },
+    "single:SigLIP2": {
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.2727272727272727,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.6212121212121212,
+        "worstRank": 3,
+        "ranks": [
+          2,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          3,
+          2,
+          2
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-07",
+            "project-person-02",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-02",
+            "project-person-08"
+          ],
+          [
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-03",
+            "project-person-08"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-07",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06",
+            "project-person-04"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-08",
+            "project-person-07",
+            "project-person-03",
+            "project-person-04",
+            "project-person-06"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.5454545454545454,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.7575757575757575,
+        "worstRank": 3,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          3,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-02",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-07",
+            "project-person-01",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-08",
+            "project-person-04",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-02",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-04",
+            "project-person-05"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.45454545454545453,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.6969696969696969,
+        "worstRank": 3,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2,
+          2,
+          3,
+          1,
+          2
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-02",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-03",
+            "project-person-08"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-07",
+            "project-person-01",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-08",
+            "project-person-04",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-05",
+            "project-person-08",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-07",
+            "project-person-03",
+            "project-person-04",
+            "project-person-05"
+          ]
+        ]
+      }
+    },
+    "fusion:equal": {
+      "weights": {
+        "SOLIDER": 0.3333333333333333,
+        "CLIP-L14": 0.3333333333333333,
+        "SigLIP2": 0.3333333333333333
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.6363636363636364,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.8181818181818182,
+        "worstRank": 2,
+        "ranks": [
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-05",
+            "project-person-02",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-07",
+            "project-person-02",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-04",
+            "project-person-08",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-07",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-08",
+            "project-person-07",
+            "project-person-04",
+            "project-person-06"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-05",
+            "project-person-08",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-06",
+            "project-person-05"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-07",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-03",
+            "project-person-05",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-01",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-07",
+            "project-person-05",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-02",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05",
+            "project-person-06"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-01"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-04",
+            "project-person-08",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-03",
+            "project-person-05",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-01",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-07",
+            "project-person-04",
+            "project-person-05",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-05",
+            "project-person-02",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05",
+            "project-person-06"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-heavy": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.15,
+        "SigLIP2": 0.15
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.9090909090909091,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9545454545454546,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-08",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-06"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-05",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-07",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-plus-siglip": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.0,
+        "SigLIP2": 0.3
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.8939393939393938,
+        "worstRank": 3,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-03",
+            "project-person-01",
+            "project-person-06"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-06",
+            "project-person-01",
+            "project-person-05",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-05"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.9090909090909091,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9545454545454546,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06",
+            "project-person-05"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-06",
+            "project-person-07",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-05",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-04"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-06",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-06",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-05"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-05",
+            "project-person-02",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-03",
+            "project-person-04"
+          ]
+        ]
+      }
+    },
+    "fusion:solider-plus-clip": {
+      "weights": {
+        "SOLIDER": 0.7,
+        "CLIP-L14": 0.3,
+        "SigLIP2": 0.0
+      },
+      "max": {
+        "aggregation": "max",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.9090909090909091,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9545454545454546,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-05",
+            "project-person-03",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-08",
+            "project-person-04",
+            "project-person-05",
+            "project-person-06",
+            "project-person-01"
+          ],
+          [
+            "project-person-03",
+            "project-person-08",
+            "project-person-01",
+            "project-person-07",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03"
+          ]
+        ]
+      },
+      "mean": {
+        "aggregation": "mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-06",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-03"
+          ],
+          [
+            "project-person-03",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-02"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-03",
+            "project-person-05",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-03",
+            "project-person-02",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-01",
+            "project-person-03",
+            "project-person-05"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-02",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03"
+          ]
+        ]
+      },
+      "top2-mean": {
+        "aggregation": "top2-mean",
+        "candidateCount": 8,
+        "count": 11,
+        "rank1": 0.8181818181818182,
+        "recallAt5": 1.0,
+        "recallAt10": 1.0,
+        "mrr": 0.9090909090909091,
+        "worstRank": 2,
+        "ranks": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "topFiveCandidates": [
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-03",
+            "project-person-07",
+            "project-person-06"
+          ],
+          [
+            "project-person-01",
+            "project-person-03",
+            "project-person-02",
+            "project-person-05",
+            "project-person-07"
+          ],
+          [
+            "project-person-02",
+            "project-person-05",
+            "project-person-07",
+            "project-person-06",
+            "project-person-03"
+          ],
+          [
+            "project-person-05",
+            "project-person-04",
+            "project-person-02",
+            "project-person-07",
+            "project-person-08"
+          ],
+          [
+            "project-person-03",
+            "project-person-07",
+            "project-person-05",
+            "project-person-06",
+            "project-person-08"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-03",
+            "project-person-05",
+            "project-person-02"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-03",
+            "project-person-01",
+            "project-person-02"
+          ],
+          [
+            "project-person-05",
+            "project-person-07",
+            "project-person-03",
+            "project-person-02",
+            "project-person-06"
+          ],
+          [
+            "project-person-04",
+            "project-person-08",
+            "project-person-01",
+            "project-person-03",
+            "project-person-07"
+          ],
+          [
+            "project-person-03",
+            "project-person-01",
+            "project-person-07",
+            "project-person-02",
+            "project-person-05"
+          ],
+          [
+            "project-person-07",
+            "project-person-06",
+            "project-person-08",
+            "project-person-05",
+            "project-person-03"
+          ]
+        ]
+      }
+    }
+  }
+}

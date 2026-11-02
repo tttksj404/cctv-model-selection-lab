@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "project-cctv-cross-video-adjudication-with-provisional-overlay-v1",
+  "identityCount": 10,
+  "trackCount": 34,
+  "recordCount": 160,
+  "protocol": "strict-cross-camera-sequence",
+  "strictCrossCameraEvidence": true,
+  "secondAdjudicatorRequired": true,
+  "groups": [
+    {
+      "identity": "project-person-01",
+      "visualDescription": "black polo + yellow bag",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0002"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0001"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim"
+    },
+    {
+      "identity": "project-person-02",
+      "visualDescription": "white shirt + purple lanyard/laptop",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0004"
+      ],
+      "queryTracks": [
+        "IMG_3618-track-0001",
+        "IMG_3620-track-0002"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim"
+    },
+    {
+      "identity": "project-person-03",
+      "visualDescription": "black shirt man",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0007"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0004",
+        "IMG_3620-track-0090"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim"
+    },
+    {
+      "identity": "project-person-04",
+      "visualDescription": "long dark hair woman",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0003"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0006"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim"
+    },
+    {
+      "identity": "project-person-05",
+      "visualDescription": "white T-shirt seated man",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0005",
+        "IMG_3617-track-0008"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0007"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim",
+      "correctionEvidence": [
+        {
+          "source": "tmp\\project_long_identity_label_overlay_20260811.json",
+          "reason": "crop shows a glasses-wearing woman, not the white-shirt male identity in the gallery",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    },
+    {
+      "identity": "project-person-06",
+      "visualDescription": "blue/gray shirt glasses man",
+      "confidence": "medium-high",
+      "galleryTracks": [
+        "IMG_3617-track-0013",
+        "IMG_3617-track-0108",
+        "20260729_082242-track-0126",
+        "20260729_082242-track-0173",
+        "20260729_082242-track-0178",
+        "20260729_082242-track-0218",
+        "20260729_082242-track-0304"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0005"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim",
+      "overlayEvidence": [
+        {
+          "source": "tmp\\project_long_identity_label_overlay_20260811.json",
+          "reviewer1": "manual visual review 2026-08-11",
+          "reviewer2": null,
+          "confidence": "high",
+          "evidence": "same glasses, hairline, face profile and workstation-side appearance across the long recording; query is a separate short recording",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    },
+    {
+      "identity": "project-person-07",
+      "visualDescription": "blue top ponytail woman",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0017"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0100"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim",
+      "correctionEvidence": [
+        {
+          "source": "tmp\\project_long_identity_label_overlay_20260811.json",
+          "reason": "these tracks show the white-shirt glasses male; the blue-top ponytail woman is represented by the other gallery tracks",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    },
+    {
+      "identity": "project-person-08",
+      "visualDescription": "black shirt + polka bag woman",
+      "confidence": "high",
+      "galleryTracks": [
+        "IMG_3617-track-0009",
+        "IMG_3617-track-0024",
+        "IMG_3617-track-0066",
+        "20260729_092211-track-2628",
+        "20260729_092211-track-2052"
+      ],
+      "queryTracks": [
+        "IMG_3620-track-0058"
+      ],
+      "reviewer": "single manual reviewer; requires second adjudicator before production claim",
+      "overlayEvidence": [
+        {
+          "source": "tmp\\project_long_identity_label_overlay_20260811.json",
+          "reviewer1": "manual visual review 2026-08-11",
+          "reviewer2": null,
+          "confidence": "high",
+          "evidence": "same long dark hair, black top, pink item and seated pose across the long recording; query also contains the distinctive polka-dot bag",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    },
+    {
+      "identity": "project-person-10",
+      "visualDescription": "black-shirt woman with long hair and pink item",
+      "confidence": "high",
+      "galleryTracks": [
+        "20260729_082242-track-1184",
+        "20260729_082242-track-2124"
+      ],
+      "queryTracks": [
+        "20260729_092211-track-3715"
+      ],
+      "reviewer": "manual visual review 2026-08-11",
+      "reviewer2": null,
+      "correctionEvidence": [
+        {
+          "source": "tmp\\project_long_identity_label_overlay_20260811.json",
+          "evidence": "same long dark hair, black top and distinctive pink item across two independent long recordings",
+          "secondAdjudicatorRequired": true
+        }
+      ],
+      "overlayEvidence": [
+        {
+          "source": "tmp\\project_person10_gallery_augmentation_overlay_20260811.json",
+          "reviewer1": "manual visual review 2026-08-11",
+          "reviewer2": null,
+          "confidence": "high",
+          "evidence": "same woman, long dark hair, black top and distinctive pink item as 20260729_082242-track-1184; separate non-overlapping track from the gallery recording",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    },
+    {
+      "identity": "project-person-11",
+      "visualDescription": "short-haired man in a dark brown/black polo shirt",
+      "confidence": "medium-high",
+      "galleryTracks": [
+        "20260729_082242-track-0809"
+      ],
+      "queryTracks": [
+        "20260729_092211-track-3897"
+      ],
+      "reviewer": "manual visual review 2026-08-11",
+      "reviewer2": null,
+      "correctionEvidence": [
+        {
+          "source": "tmp\\project_person11_overlay_20260811.json",
+          "evidence": "same short hair, face profile, dark polo collar and seated workstation context across the two independent long recordings; visually distinct from the already-labelled long-haired woman and glasses/bun identity groups",
+          "secondAdjudicatorRequired": true
+        }
+      ]
+    }
+  ],
+  "manifestSha256": "ea90d236e46557c9d91b0024f16589b973b961668439cbff43d746bdc22c4f73",
+  "status": "provisional_single_manual_adjudicator",
+  "overlaySha256NotIncluded": true
+}

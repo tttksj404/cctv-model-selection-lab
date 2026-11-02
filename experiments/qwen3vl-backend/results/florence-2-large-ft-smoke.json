@@ -1,0 +1,228 @@
+{
+  "hardware": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "model": "florence-2-large",
+  "dataset_counts": {
+    "simuletic": 5,
+    "pa100k": 2
+  },
+  "summary": {
+    "model": "florence-2-large",
+    "examples": 7,
+    "groups": 3,
+    "attribute_accuracy": 0.41818181818181815,
+    "image_exact_match": 0.0,
+    "track_exact_match": 0.0,
+    "structured_valid_rate": 1.0,
+    "latency_s_p50": 0.7470097999903373,
+    "latency_s_p95": 1.0627184999757446,
+    "field_accuracy": {
+      "gender": 1.0,
+      "age": 0.0,
+      "hair_color": 0.0,
+      "viewpoint": 0.0,
+      "top_color": 1.0,
+      "top_type": 0.0,
+      "bottom_color": 1.0,
+      "bottom_type": 0.0,
+      "accessory": 0.8571428571428571
+    }
+  },
+  "predictions": [
+    {
+      "index": 1,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img1.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "viewpoint": "side",
+        "hair_color": "black",
+        "top_color": "black",
+        "top_type": "jacket",
+        "bottom_color": "black",
+        "accessory": "sunglasses"
+      },
+      "raw": "</s><s>A woman is walking down the street. She is wearing a black leather jacket and black pants. She has sunglasses on her eyes and has blonde hair. There is grass on the side of the street behind her.</s>",
+      "latency_s": 2.3036633000010625,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 2,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img2.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "viewpoint": "side",
+        "hair_color": "black",
+        "top_color": "black",
+        "top_type": "jacket",
+        "bottom_color": "black",
+        "accessory": "sunglasses"
+      },
+      "raw": "</s><s>A woman is walking down a sidewalk. She is wearing a black leather jacket and black pants. She has sunglasses on her eyes and blonde hair. There is grass on the side of the sidewalk.</s>",
+      "latency_s": 0.7470097999903373,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 3,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img3.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "viewpoint": "side",
+        "hair_color": "black",
+        "top_color": "black",
+        "top_type": "jacket",
+        "bottom_color": "black",
+        "accessory": "sunglasses"
+      },
+      "raw": "</s><s>A woman is walking down a paved sidewalk. She is wearing a black leather jacket and black pants. She has sunglasses on her eyes and blonde hair. There is grass and dirt on the ground behind the woman.</s>",
+      "latency_s": 0.7292038000305183,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 4,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img4.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "viewpoint": "side",
+        "top_color": "black",
+        "top_type": "jacket",
+        "bottom_color": "black",
+        "accessory": "sunglasses"
+      },
+      "raw": "</s><s>A woman is walking down a paved road. She is wearing a black leather jacket and black pants. She has sunglasses on her face and white shoes on her feet. There is grass on the side of the road next to the woman.</s>",
+      "latency_s": 0.7527603000053205,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 5,
+      "dataset": "simuletic",
+      "image": "experiments\\data\\cctv_proxy\\simuletic\\ped_2_img5.png",
+      "group": "ped_2",
+      "target": {
+        "gender": "female",
+        "age": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "sunglasses"
+      },
+      "predicted": {
+        "gender": "female",
+        "viewpoint": "side",
+        "hair_color": "black",
+        "top_color": "black",
+        "top_type": "jacket",
+        "bottom_color": "black",
+        "accessory": "sunglasses"
+      },
+      "raw": "</s><s>A woman is walking down a paved sidewalk. She is wearing a black leather jacket and black pants. The woman has blonde hair and is wearing black sunglasses. There is grass on the side of the sidewalk.</s>",
+      "latency_s": 0.6946123999659903,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 6,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090001.jpg",
+      "group": "090001.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "side",
+        "accessory": "handbag",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "accessory": "none"
+      },
+      "raw": "</s><s><s><s>A man is sitting on a bench. The man is wearing a hat. The hat is black. The jacket is dark red. The pants are dark blue. The picture is blurry. The mans face is not visible. The wall behind the man is gray. The water is moving. The reflection of the man on the wall is reflecting on the water.</s>",
+      "latency_s": 1.0627184999757446,
+      "structured_valid": true,
+      "error": null
+    },
+    {
+      "index": 7,
+      "dataset": "pa100k",
+      "image": "experiments\\data\\cctv_proxy\\pa100k\\090002.jpg",
+      "group": "090002.jpg",
+      "target": {
+        "gender": "male",
+        "age": "young adult",
+        "viewpoint": "front",
+        "accessory": "none",
+        "bottom_type": "trousers"
+      },
+      "predicted": {
+        "gender": "male",
+        "top_color": "black",
+        "top_type": "shirt",
+        "bottom_color": "black",
+        "bottom_type": "jeans",
+        "accessory": "none"
+      },
+      "raw": "</s><s><s><s>A man is walking down the street. He is wearing a black shirt and blue jeans. He has black shoes on and is wearing glasses. There is a fence behind him. </s>",
+      "latency_s": 0.6300535000045784,
+      "structured_valid": true,
+      "error": null
+    }
+  ]
+}

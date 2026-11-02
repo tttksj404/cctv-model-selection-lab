@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "solider-gpu-sweep-remote-manifest-v1",
+  "measurementStatus": "proxy_measured_production_gate_ineligible",
+  "remoteWorkspace": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer",
+  "runtime": {
+    "host": "Jupyter remote GPU server",
+    "gpu": "NVIDIA L40S",
+    "environment": "qwen3vl Conda environment",
+    "trainRows": 80000,
+    "validationRows": 10000,
+    "testRows": 10000,
+    "extractBatchSize": 128,
+    "decoder": "ThreadPoolExecutor(max_workers=8)"
+  },
+  "evaluationEligibility": {
+    "identityLabelsAvailable": false,
+    "trackHeldoutMetricsEligible": false,
+    "proxyMetricsReusedAsIdentity": false
+  },
+  "metrics": {
+    "metricNote": "proxy masked attribute/field/mA and synthetic group-heldout combined score; not reviewed CCTV identity accuracy",
+    "additionalSweepNote": "gpu_sweep3 emitted proxy all-samples metrics; it did not emit a reviewed identity/track held-out metric, so group-heldout fields for these arms are null.",
+    "arms": [
+      {
+        "arm": "gpu_thread_005",
+        "sonnetWeight": 0.05,
+        "proxyMaskedAttributeAccuracy": 0.8974359035491943,
+        "proxyMaskedFieldMacroAccuracy": 0.8400000055631002,
+        "proxyMaskedMA": 0.5571428601230893,
+        "groupHeldoutBaseline": 0.8410256505012512,
+        "groupHeldoutCombined": 0.8410256505012512,
+        "delta": 0.0,
+        "rawResultPath": "gpu_thread_005/results/result.json"
+      },
+      {
+        "arm": "gpu_thread_010",
+        "sonnetWeight": 0.1,
+        "proxyMaskedAttributeAccuracy": 0.9128205180168152,
+        "proxyMaskedFieldMacroAccuracy": 0.8622222264607747,
+        "proxyMaskedMA": 0.5571428558656147,
+        "groupHeldoutBaseline": 0.8410256505012512,
+        "groupHeldoutCombined": 0.8307692408561707,
+        "delta": -0.010256409645080566,
+        "rawResultPath": "gpu_thread_010/results/result.json"
+      },
+      {
+        "arm": "gpu_thread_020",
+        "sonnetWeight": 0.2,
+        "proxyMaskedAttributeAccuracy": 0.9435897469520569,
+        "proxyMaskedFieldMacroAccuracy": 0.9066666682561239,
+        "proxyMaskedMA": 0.5000000021287373,
+        "groupHeldoutBaseline": 0.8410256505012512,
+        "groupHeldoutCombined": 0.8256410360336304,
+        "delta": -0.01538461446762085,
+        "rawResultPath": "gpu_thread_020/results/result.json"
+      },
+      {
+        "arm": "gpu_thread_040",
+        "sonnetWeight": 0.4,
+        "proxyMaskedAttributeAccuracy": 0.9435897469520569,
+        "proxyMaskedFieldMacroAccuracy": 0.9066666682561239,
+        "proxyMaskedMA": 0.5000000021287373,
+        "groupHeldoutBaseline": 0.8410256505012512,
+        "groupHeldoutCombined": 0.8256410360336304,
+        "delta": -0.01538461446762085,
+        "rawResultPath": "gpu_thread_040/results/result.json",
+        "checkpointNote": "separate remote checkpoint; raw checkpoint remains on the Jupyter server"
+      },
+      {
+        "arm": "gpu_sweep3_thread_001",
+        "sonnetWeight": 0.01,
+        "proxyMaskedAttributeAccuracy": 0.8564102646988721,
+        "proxyMaskedFieldMacroAccuracy": 0.7688888947168986,
+        "proxyMaskedMA": 0.5000000021287373,
+        "groupHeldoutBaseline": null,
+        "groupHeldoutCombined": null,
+        "delta": null,
+        "heldoutMetricStatus": "not_emitted_by_runner",
+        "rawResultPath": "gpu_sweep3_thread_001/results/result.json",
+        "rawLogPath": "gpu_sweep3_thread_001/results/run.log",
+        "summaryPath": "gpu_sweep3_summary.txt"
+      },
+      {
+        "arm": "gpu_sweep3_thread_003",
+        "sonnetWeight": 0.03,
+        "proxyMaskedAttributeAccuracy": 0.8564102646988721,
+        "proxyMaskedFieldMacroAccuracy": 0.7688888947168986,
+        "proxyMaskedMA": 0.5000000021287373,
+        "groupHeldoutBaseline": null,
+        "groupHeldoutCombined": null,
+        "delta": null,
+        "heldoutMetricStatus": "not_emitted_by_runner",
+        "rawResultPath": "gpu_sweep3_thread_003/results/result.json",
+        "rawLogPath": "gpu_sweep3_thread_003/results/run.log",
+        "summaryPath": "gpu_sweep3_summary.txt"
+      },
+      {
+        "arm": "gpu_sweep3_thread_007",
+        "sonnetWeight": 0.07,
+        "proxyMaskedAttributeAccuracy": 0.9076923131942749,
+        "proxyMaskedFieldMacroAccuracy": 0.8577777822812398,
+        "proxyMaskedMA": 0.5714285735733087,
+        "groupHeldoutBaseline": null,
+        "groupHeldoutCombined": null,
+        "delta": null,
+        "heldoutMetricStatus": "not_emitted_by_runner",
+        "rawResultPath": "gpu_sweep3_thread_007/results/result.json",
+        "rawLogPath": "gpu_sweep3_thread_007/results/run.log",
+        "summaryPath": "gpu_sweep3_summary.txt"
+      },
+      {
+        "arm": "gpu_sweep3_thread_015",
+        "sonnetWeight": 0.15,
+        "proxyMaskedAttributeAccuracy": 0.9435897469520569,
+        "proxyMaskedFieldMacroAccuracy": 0.9066666682561239,
+        "proxyMaskedMA": 0.5000000021287373,
+        "groupHeldoutBaseline": null,
+        "groupHeldoutCombined": null,
+        "delta": null,
+        "heldoutMetricStatus": "not_emitted_by_runner",
+        "rawResultPath": "gpu_sweep3_thread_015/results/result.json",
+        "rawLogPath": "gpu_sweep3_thread_015/results/run.log",
+        "summaryPath": "gpu_sweep3_summary.txt"
+      }
+    ]
+  },
+  "dashboard": {
+    "sourceNotebook": "solider_gpu_sweep_dashboard.ipynb",
+    "executedNotebook": "solider_gpu_sweep_dashboard_4arms.executed.ipynb",
+    "executionLog": "dashboard_4arms.log",
+    "svgVerified": true,
+    "armsRendered": 4
+  },
+  "rawArtifactsRemoteOnly": true,
+  "localManifestPurpose": "provenance and exact metric index; use the remote workspace paths above for raw result JSON, logs, checkpoints, and executed notebook"
+}

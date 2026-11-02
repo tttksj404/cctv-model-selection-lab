@@ -1,0 +1,153 @@
+{
+  "schemaVersion": "project-cctv-retrieval-arms-v1",
+  "source": {
+    "queueRows": 921,
+    "candidatePairs": 13,
+    "metricHead": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\results\\mevid_heads_20260810\\mevid_public_metric_head_guarded_20260731.npz",
+    "videos": [
+      "20260729_082242",
+      "20260729_092211"
+    ]
+  },
+  "arms": {
+    "raw:top1_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 0.9230769230769231,
+        "recallAt5": 1.0,
+        "medianRank": 1.0
+      }
+    },
+    "raw:top2_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 1.0,
+        "recallAt5": 1.0,
+        "medianRank": 1.0
+      }
+    },
+    "raw:top4_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 0.9230769230769231,
+        "recallAt5": 1.0,
+        "medianRank": 1.0
+      }
+    },
+    "public_metric_head:top1_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        5,
+        1,
+        3,
+        30,
+        2,
+        1,
+        1,
+        2,
+        16,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 0.5384615384615384,
+        "recallAt5": 0.8461538461538461,
+        "medianRank": 1.0
+      }
+    },
+    "public_metric_head:top2_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        3,
+        44,
+        1,
+        1,
+        1,
+        2,
+        19,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 0.6153846153846154,
+        "recallAt5": 0.8461538461538461,
+        "medianRank": 1.0
+      }
+    },
+    "public_metric_head:top4_pair_mean": {
+      "ranks": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        112,
+        1,
+        1,
+        1,
+        2,
+        30,
+        1
+      ],
+      "summary": {
+        "candidatePairs": 13,
+        "rank1": 0.6153846153846154,
+        "recallAt5": 0.8461538461538461,
+        "medianRank": 1.0
+      }
+    }
+  },
+  "metricStatus": "candidate_consistency_only_no_identity_ground_truth"
+}

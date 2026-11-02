@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "cctv-track-draft-summary-v1",
+  "generatedAt": "2026-07-23T14:14:46.799484+00:00",
+  "weights": "yolo11n.pt",
+  "sampleEverySeconds": 1.0,
+  "confidence": 0.25,
+  "videos": [
+    {
+      "videoId": "IMG_3565",
+      "sourcePath": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\cctv_real\\raw\\IMG_3565.mov",
+      "sourceVideoBytes": 26589364,
+      "sourceVideoSha256": "c572591e5818146e1930a4fb0350aec1bcbbadc420cdaf75ad3d27d2acdae48e",
+      "fps": 30.00367692119132,
+      "totalFrames": 408,
+      "width": 1920,
+      "height": 1080,
+      "sampleStride": 30,
+      "sampledFrames": 14,
+      "framesWithPrimaryPerson": 14,
+      "draftTrackId": "IMG_3565-draft-track-0001",
+      "identityGroupIdAssigned": false
+    },
+    {
+      "videoId": "IMG_3567",
+      "sourcePath": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\cctv_real\\raw\\IMG_3567.mov",
+      "sourceVideoBytes": 25711208,
+      "sourceVideoSha256": "ac7a9a1f2fe4f4f24d29258facd5f74da57ddf859b7ec99b11f82c5a49880707",
+      "fps": 30.00383680777593,
+      "totalFrames": 391,
+      "width": 1920,
+      "height": 1080,
+      "sampleStride": 30,
+      "sampledFrames": 14,
+      "framesWithPrimaryPerson": 14,
+      "draftTrackId": "IMG_3567-draft-track-0001",
+      "identityGroupIdAssigned": false
+    },
+    {
+      "videoId": "IMG_3568",
+      "sourcePath": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\data\\cctv_real\\raw\\IMG_3568.mov",
+      "sourceVideoBytes": 39154429,
+      "sourceVideoSha256": "650f85cf35fe31a0d3d58dcfa32f4ef967fa0820a80be16f94c3ef462daf9028",
+      "fps": 30.00503440174526,
+      "totalFrames": 596,
+      "width": 1080,
+      "height": 1920,
+      "sampleStride": 30,
+      "sampledFrames": 20,
+      "framesWithPrimaryPerson": 20,
+      "draftTrackId": "IMG_3568-draft-track-0001",
+      "identityGroupIdAssigned": false
+    }
+  ],
+  "rows": 48,
+  "evaluationEligibility": {
+    "identityLabelsAvailable": false,
+    "trackHeldoutMetricsEligible": false,
+    "proxyMetricsReusedAsIdentity": false
+  },
+  "annotationStatus": "draft_needs_human_review"
+}

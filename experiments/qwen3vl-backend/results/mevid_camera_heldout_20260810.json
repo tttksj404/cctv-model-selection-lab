@@ -1,0 +1,75 @@
+{
+  "method": "csls-5*0.7+krecip-20-6-0.3*0.3",
+  "schemaVersion": "mevid-camera-heldout-v1",
+  "selectionProtocol": "method fixed from validation-only selection before this diagnostic",
+  "test": {
+    "cameraHeldoutKnownQueries": 297,
+    "knownQueries": 297,
+    "mrr": 0.8629288060883329,
+    "queryCameras": [
+      "camera-301",
+      "camera-329",
+      "camera-330",
+      "camera-336",
+      "camera-340",
+      "camera-436",
+      "camera-505",
+      "camera-507",
+      "camera-508",
+      "camera-509",
+      "camera-639"
+    ],
+    "rank1": 0.8316498316498316,
+    "rank1Hits": 247,
+    "recallAt10": 0.9259259259259259,
+    "recallAt10Hits": 275,
+    "recallAt5": 0.9023569023569024,
+    "recallAt5Hits": 268,
+    "recallAt5Wilson95": [
+      0.8632859725029519,
+      0.9311524035669084
+    ],
+    "worstRank": 531
+  },
+  "testAbove85": true,
+  "testAbove90": true,
+  "trackCache": "experiments\\results\\mevid_public_full_solider_metric_guarded_tracks_20260731.npz",
+  "trackCacheSha256": "3beb8477ec9d8eced0949ab0d1c2ece8f105301f6966f0bc41dc74aec9084259",
+  "validation": {
+    "cameraHeldoutKnownQueries": 252,
+    "knownQueries": 252,
+    "mrr": 0.8076157035810295,
+    "queryCameras": [
+      "camera-299",
+      "camera-300",
+      "camera-326",
+      "camera-328",
+      "camera-329",
+      "camera-330",
+      "camera-331",
+      "camera-339",
+      "camera-340",
+      "camera-341",
+      "camera-419",
+      "camera-420",
+      "camera-421",
+      "camera-423",
+      "camera-424",
+      "camera-505",
+      "camera-506",
+      "camera-508",
+      "camera-638"
+    ],
+    "rank1": 0.753968253968254,
+    "rank1Hits": 190,
+    "recallAt10": 0.8968253968253969,
+    "recallAt10Hits": 226,
+    "recallAt5": 0.876984126984127,
+    "recallAt5Hits": 221,
+    "recallAt5Wilson95": [
+      0.8306801044254594,
+      0.911967318223741
+    ],
+    "worstRank": 487
+  }
+}

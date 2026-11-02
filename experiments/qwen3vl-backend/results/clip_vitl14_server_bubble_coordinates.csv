@@ -1,0 +1,7 @@
+label,model,method,split,metric_scope,train_rows,val_rows,test_rows,test_mA_pct,test_instance_iou_pct,test_insf1_pct,status,comparable,source
+SOLIDER teacher head,SOLIDER Swin-B,teacher/reference,80k/10k/10k,PA-100K attribute proxy,80000,10000,10000,79.23896312713623,69.86130475997925,80.98474740982056,measured,true,PROVENANCE.md#server-full
+CLIP ViT-L/14 fine-tune,CLIP ViT-L/14,last-two vision blocks fine-tune,20k/5k/5k probe,PA-100K attribute proxy,20000,5000,5000,77.90637612342834,55.116623640060425,,measured_probe,false,PROVENANCE.md#finetune-probe
+CLIP ViT-L/14 + SOLIDER KD,CLIP ViT-L/14,frozen encoder plus logit KD,80k/10k/10k,PA-100K attribute proxy,80000,10000,10000,71.5586245059967,45.75352966785431,61.321139305233955,measured,true,PROVENANCE.md#server-full
+CLIP ViT-L/14 hard head,CLIP ViT-L/14,frozen encoder plus hard labels,80k/10k/10k,PA-100K attribute proxy,80000,10000,10000,72.11571931838989,44.03269588947296,59.68109369277954,measured,true,PROVENANCE.md#server-full
+CLIP ViT-L/14 fresh full fine-tune,CLIP ViT-L/14,last-two vision blocks fine-tune,80k/10k/10k,PA-100K attribute proxy,80000,10000,10000,78.241781539917,54.76951003074646,,measured_recheck,true,remote_gpu_recheck_20260723.json#clip_vitl14_last_two_block_finetune
+CLIP ViT-L/14 fresh SOLIDER selection,CLIP ViT-L/14,SOLIDER distillation sweep; validation-selected hard head,80k/10k/10k,PA-100K attribute proxy,80000,10000,10000,73.6262321472168,44.31147575737818,59.83728766441345,measured_recheck,true,remote_gpu_recheck_20260723.json#clip_vitl14_solider_distill_alpha065_temp3

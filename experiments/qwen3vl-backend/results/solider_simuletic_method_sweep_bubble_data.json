@@ -1,0 +1,19 @@
+{
+  "title": "SOLIDER CCTV attribute training comparison",
+  "x": "simu_group_heldout_attribute_accuracy",
+  "y": "pa_test_mA",
+  "bubble_size": "simu_group_exact_rate",
+  "rows": [
+    {"method": "200_base_pa_head", "simu_group_heldout_attribute_accuracy": 0.855944, "pa_test_mA": 0.742916, "simu_group_exact_rate": 0.25},
+    {"method": "200_mixed_weighted_bce", "simu_group_heldout_attribute_accuracy": 0.916040, "pa_test_mA": 0.753987, "simu_group_exact_rate": 0.25},
+    {"method": "200_mixed_asl", "simu_group_heldout_attribute_accuracy": 0.897290, "pa_test_mA": 0.754069, "simu_group_exact_rate": 0.375},
+    {"method": "200_mixed_asl_sonnet", "simu_group_heldout_attribute_accuracy": 0.897290, "pa_test_mA": 0.754803, "simu_group_exact_rate": 0.375},
+    {"method": "963_base_pa_head", "simu_group_heldout_attribute_accuracy": 0.872567, "pa_test_mA": 0.742882, "simu_group_exact_rate": 0.358974},
+    {"method": "963_mixed_weighted_bce", "simu_group_heldout_attribute_accuracy": 0.931501, "pa_test_mA": 0.752240, "simu_group_exact_rate": 0.538462},
+    {"method": "963_mixed_asl", "simu_group_heldout_attribute_accuracy": 0.909148, "pa_test_mA": 0.757773, "simu_group_exact_rate": 0.384615},
+    {"method": "963_mixed_asl_sonnet", "simu_group_heldout_attribute_accuracy": 0.904474, "pa_test_mA": 0.754923, "simu_group_exact_rate": 0.358974},
+    {"method": "963_mixed_asl_graph", "simu_group_heldout_attribute_accuracy": 0.908556, "pa_test_mA": 0.754879, "simu_group_exact_rate": 0.384615},
+    {"method": "963_backbone_finetune", "simu_group_heldout_attribute_accuracy": 0.922327, "pa_test_mA": 0.828148, "simu_group_exact_rate": 0.512821}
+  ],
+  "warning": "Synthetic CCTV attribute proxy comparison only; this chart is not evidence of real identity/track-heldout accuracy."
+}

@@ -1,0 +1,106 @@
+{
+  "schema_version": "cctv-chirla-identity-reid-v1",
+  "model": "osnet-x1-0",
+  "checkpoint": "osnet_x1_0",
+  "device": "cuda",
+  "dataset": "CHIRLA",
+  "dataset_status": "public-proxy-not-project-CCTV-review",
+  "manifest_sha256": "281447bab05191b6379cbc0162c3e30d58c4b85c75b6add8993028e3cb5014f2",
+  "counts": {
+    "all_manifest_records": 487,
+    "gallery_records": 41,
+    "query_records": 42,
+    "gallery_identities": 20,
+    "query_identities": 21,
+    "query_gallery_identity_intersection": 20
+  },
+  "split_contract": {
+    "gallery_role": "gallery",
+    "query_role": "query",
+    "identity_aggregation": "mean",
+    "gallery_topk": 5,
+    "query_gallery_sequence_overlap": [],
+    "query_gallery_camera_overlap": []
+  },
+  "metrics": {
+    "query_count": 42,
+    "gallery_identity_count": 20,
+    "rank1": 0.4523809523809524,
+    "recall_at_5": 0.6904761904761905,
+    "recall_at_10": 0.9047619047619048,
+    "map": 0.5764945372088229,
+    "minp": 0.5764945372088229,
+    "rank1_ci95_low": 0.2857142857142857,
+    "rank1_ci95_high": 0.5952380952380952
+  },
+  "by_camera": {
+    "04": {
+      "query_count": 10,
+      "gallery_identity_count": 20,
+      "rank1": 0.3,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.8,
+      "map": 0.4282972582972583,
+      "minp": 0.4282972582972583,
+      "rank1_ci95_low": 0.0,
+      "rank1_ci95_high": 0.6
+    },
+    "05": {
+      "query_count": 18,
+      "gallery_identity_count": 20,
+      "rank1": 0.6111111111111112,
+      "recall_at_5": 0.7777777777777778,
+      "recall_at_10": 1.0,
+      "map": 0.6929012345679012,
+      "minp": 0.6929012345679012,
+      "rank1_ci95_low": 0.3888888888888889,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "06": {
+      "query_count": 14,
+      "gallery_identity_count": 20,
+      "rank1": 0.35714285714285715,
+      "recall_at_5": 0.7142857142857143,
+      "recall_at_10": 0.8571428571428571,
+      "map": 0.5326839826839826,
+      "minp": 0.5326839826839826,
+      "rank1_ci95_low": 0.14285714285714285,
+      "rank1_ci95_high": 0.6428571428571429
+    }
+  },
+  "by_sequence": {
+    "camera_04": {
+      "query_count": 10,
+      "gallery_identity_count": 20,
+      "rank1": 0.3,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.8,
+      "map": 0.4282972582972583,
+      "minp": 0.4282972582972583,
+      "rank1_ci95_low": 0.0,
+      "rank1_ci95_high": 0.6
+    },
+    "camera_05": {
+      "query_count": 18,
+      "gallery_identity_count": 20,
+      "rank1": 0.6111111111111112,
+      "recall_at_5": 0.7777777777777778,
+      "recall_at_10": 1.0,
+      "map": 0.6929012345679012,
+      "minp": 0.6929012345679012,
+      "rank1_ci95_low": 0.3888888888888889,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "camera_06": {
+      "query_count": 14,
+      "gallery_identity_count": 20,
+      "rank1": 0.35714285714285715,
+      "recall_at_5": 0.7142857142857143,
+      "recall_at_10": 0.8571428571428571,
+      "map": 0.5326839826839826,
+      "minp": 0.5326839826839826,
+      "rank1_ci95_low": 0.14285714285714285,
+      "rank1_ci95_high": 0.6428571428571429
+    }
+  }
+}

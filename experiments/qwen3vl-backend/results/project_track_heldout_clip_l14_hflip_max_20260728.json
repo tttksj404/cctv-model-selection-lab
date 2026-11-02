@@ -1,0 +1,67 @@
+{
+  "schema_version": "cctv-chirla-identity-reid-v1",
+  "model": "clip-vit-l14",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "device": "cuda",
+  "dataset": "EyesOnU project CCTV",
+  "dataset_status": "project-CCTV-same-camera-temporal-track-proxy",
+  "manifest_sha256": "f69d8507f59c7e63cfb02cc2836bfddd743e8086712d1f83f5d82f6946351d61",
+  "counts": {
+    "all_manifest_records": 80,
+    "gallery_records": 40,
+    "query_records": 40,
+    "gallery_identities": 10,
+    "query_identities": 10,
+    "query_gallery_identity_intersection": 10
+  },
+  "split_contract": {
+    "gallery_role": "gallery",
+    "query_role": "query",
+    "identity_aggregation": "max",
+    "gallery_topk": 3,
+    "query_gallery_sequence_overlap": [
+      "IMG_3617"
+    ],
+    "query_gallery_camera_overlap": [
+      "local-IMG_3617"
+    ]
+  },
+  "metrics": {
+    "query_count": 40,
+    "gallery_identity_count": 10,
+    "rank1": 1.0,
+    "recall_at_5": 1.0,
+    "recall_at_10": 1.0,
+    "map": 1.0,
+    "minp": 1.0,
+    "rank1_ci95_low": 1.0,
+    "rank1_ci95_high": 1.0
+  },
+  "by_camera": {
+    "local-IMG_3617": {
+      "query_count": 40,
+      "gallery_identity_count": 10,
+      "rank1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 1.0,
+      "minp": 1.0,
+      "rank1_ci95_low": 1.0,
+      "rank1_ci95_high": 1.0
+    }
+  },
+  "by_sequence": {
+    "IMG_3617": {
+      "query_count": 40,
+      "gallery_identity_count": 10,
+      "rank1": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 1.0,
+      "minp": 1.0,
+      "rank1_ci95_low": 1.0,
+      "rank1_ci95_high": 1.0
+    }
+  },
+  "tta": "hflip"
+}

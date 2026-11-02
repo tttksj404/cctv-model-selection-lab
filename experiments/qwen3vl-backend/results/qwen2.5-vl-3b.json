@@ -1,0 +1,8 @@
+{
+  "status": "pending_download_network",
+  "model": "qwen2.5-vl-3b",
+  "checkpoint": "Qwen/Qwen2.5-VL-3B-Instruct",
+  "dataset_counts": {"simuletic": 15, "pa100k": 30},
+  "error": "7GB급 checkpoint 다운로드가 145MB 이후 로컬 Xet 전송 정지",
+  "summary": {"model": "qwen2.5-vl-3b", "status": "pending_download_network", "examples": 45}
+}

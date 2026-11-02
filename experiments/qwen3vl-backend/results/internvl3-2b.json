@@ -1,0 +1,17 @@
+{
+  "status": "invalid_runtime",
+  "model": "internvl3-2b",
+  "checkpoint": "OpenGVLab/InternVL3-2B",
+  "error_type": "ValueError",
+  "error": "Model type should be one of AriaConfig, AyaVisionConfig, BlipConfig, Blip2Config, ChameleonConfig, Cohere2VisionConfig, Cosmos3OmniConfig, DeepseekOcr2Config, DeepseekVLConfig, DeepseekVLHybridConfig, DiffusionGemmaConfig, Emu3Config, Ernie4_5_VLMoeConfig, EvollaConfig, Exaone4_5_Config, FastVlmConfig, Florence2Config, FuyuConfig, Gemma3Config, Gemma3nConfig, Gemma4Config, Gemma4UnifiedConfig, GitConfig, Glm46VConfig, Glm4vConfig, Glm4vMoeConfig, GlmOcrConfig, GlmgaConfig, GotOcr2Config, Granite4VisionConfig, HunYuanVLConfig, IdeficsConfig, Idefics2Config, Idefics3Config, InklingConfig, InstructBlipConfig, InstructBlipVideoConfig, InternVLConfig, JanusConfig, Kimi_K25Config, Kosmos2Config, Kosmos2_5Config, Lfm2VlConfig, LightOnOcrConfig, Llama4Config, LlavaConfig, LlavaNextConfig, LlavaNextVideoConfig, LlavaOnevisionConfig, MiniCPMV4_6Config, MiniMaxM3VLConfig, Mistral3Config, Mistral4Config, MllamaConfig, Ovis2Config, PaddleOCRVLConfig, PaliGemmaConfig, PerceptionLMConfig, PI0Config, Pix2StructConfig, PPChart2TableConfig, PPFormulaNetConfig, QianfanOCRConfig, Qwen2_5OmniThinkerConfig, Qwen2_5_VLConfig, Qwen2VLConfig, Qwen3_5Config, Qwen3_5MoeConfig, Qwen3OmniMoeThinkerConfig, Qwen3VLConfig, Qwen3VLMoeConfig, ShieldGemma2Config, SmolVLMConfig, T5Gemma2Config, UdopConfig, VideoLlama3Config, VideoLlavaConfig, VipLlavaConfig, VisionEncoderDecoderConfig.",
+  "dataset_counts": {
+    "simuletic": 15,
+    "pa100k": 30
+  },
+  "summary": {
+    "model": "internvl3-2b",
+    "status": "invalid_runtime",
+    "examples": 45,
+    "failed": 45
+  }
+}

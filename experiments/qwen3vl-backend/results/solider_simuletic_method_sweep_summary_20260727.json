@@ -1,0 +1,55 @@
+{
+  "status": "measured_proxy_only",
+  "measured_dataset": {
+    "name": "Simuletic CCTV-Pedestrian-1K",
+    "local_images": 200,
+    "identity_groups": 40,
+    "split": "identity-sorted 60% train, 20% validation, 20% group-heldout test",
+    "mapped_attributes": 26,
+    "unmapped_attributes": ["top_color", "bottom_color", "hair", "age", "angle", "top_type", "bottom_type", "footwear"]
+  },
+  "columns": ["pa_test_mA", "pa_test_InsF1", "simu_all_attribute_accuracy", "simu_image_heldout_attribute_accuracy", "simu_group_heldout_attribute_accuracy", "simu_group_exact_rate"],
+  "methods": [
+    {
+      "name": "base_pa_head",
+      "pa_test_mA": 0.742916,
+      "pa_test_InsF1": 0.849000,
+      "simu_all_attribute_accuracy": 0.810599,
+      "simu_image_heldout_attribute_accuracy": 0.843478,
+      "simu_group_heldout_attribute_accuracy": 0.855944,
+      "simu_group_exact_rate": 0.250000
+    },
+    {
+      "name": "mixed_weighted_bce",
+      "pa_test_mA": 0.753987,
+      "pa_test_InsF1": 0.856033,
+      "simu_all_attribute_accuracy": 0.935023,
+      "simu_image_heldout_attribute_accuracy": 0.886957,
+      "simu_group_heldout_attribute_accuracy": 0.916040,
+      "simu_group_exact_rate": 0.250000
+    },
+    {
+      "name": "mixed_asl",
+      "pa_test_mA": 0.754069,
+      "pa_test_InsF1": 0.857070,
+      "simu_all_attribute_accuracy": 0.897696,
+      "simu_image_heldout_attribute_accuracy": 0.884783,
+      "simu_group_heldout_attribute_accuracy": 0.897290,
+      "simu_group_exact_rate": 0.375000
+    },
+    {
+      "name": "mixed_asl_sonnet",
+      "pa_test_mA": 0.754803,
+      "pa_test_InsF1": 0.857704,
+      "simu_all_attribute_accuracy": 0.898615,
+      "simu_image_heldout_attribute_accuracy": 0.882609,
+      "simu_group_heldout_attribute_accuracy": 0.897290,
+      "simu_group_exact_rate": 0.375000
+    }
+  ],
+  "provenance": {
+    "remote_result": "experiments/results/solider_simuletic_method_sweep_final.json",
+    "measurement_note": "Values rounded to six decimals from the remote GPU result; full public image download and end-to-end backbone fine-tuning are separate pending runs.",
+    "identity_warning": "This is not project CCTV identity/track-heldout evidence. There are no real missing-person identity labels in this measurement."
+  }
+}
