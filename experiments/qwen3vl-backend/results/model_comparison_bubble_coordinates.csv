@@ -1,0 +1,15 @@
+chart,label,x,y,bubble,status,metric,source
+proxyRuntime,Qwen3-VL-2B,39.29824561403509,8.2983398999786,2.0,measured,,experiments/results/qwen3-vl-2b.json
+proxyRuntime,CLIP ViT-B/32,38.59649122807017,0.7225884000072256,0.151,measured,,experiments/results/clip-vit-b32.json
+proxyRuntime,CLIP ViT-L/14,41.40350877192983,4.141123100009281,0.427,measured,,experiments/results/clip-vit-l14.json
+proxyRuntime,SigLIP base,24.210526315789473,0.7783216999960132,0.203,measured,,experiments/results/siglip-base.json
+proxyRuntime,BLIP base,20.350877192982455,0.46848470001714304,0.385,measured,,experiments/results/blip-base.json
+pa100kAttribute,SOLIDER Swin-B frozen head,66.95277094841003,79.04943823814392,10000,measured,,experiments/results/solider-pa100k-weighted-10k.json
+pa100kAttribute,SOLIDER Swin-B fine-tune,69.58211660385132,82.30268955230713,2000,measured,,experiments/results/solider-finetune-2k.json
+pa100kAttribute,CrossPAR reported,86.9,90.6,80000,reported_public,,https://openaccess.thecvf.com/content/ACCV2024/papers/Ngo_CrossPAR_Enhancing_Pedestrian_Attribute_Recognition_with_Vision-Language_Fusion_and_Human-Centric_ACCV2024_paper.pdf
+nonComparableSupplement,SOLIDER Swin-B six-field proxy,79.8333328962326,0,100,not_comparable,field top-1 mean,experiments/results/solider-swin-b-proxy.json
+nonComparableSupplement,CLIP partial fine-tune ceiling,72.666668,1,100,not_comparable,six-field multiclass top-1 mean,experiments/results/attribute-ceiling-ft40.json
+qwenFairFineTuning,Qwen3.5-9B base,,,9.0,pending_remote_auth,,experiments/results/qwen3_5_9b_fair_base.json
+qwenFairFineTuning,Qwen3.5-9B LoRA,,,9.0,pending_remote_auth,,experiments/results/qwen3_5_9b_fair_lora.json
+qwenFairFineTuning,Qwen2.5-VL-7B base,,,7.0,pending_remote_auth,,experiments/results/qwen2_5_vl_7b_fair_base.json
+qwenFairFineTuning,Qwen2.5-VL-7B LoRA,,,7.0,pending_remote_auth,,experiments/results/qwen2_5_vl_7b_fair_lora.json

@@ -1,0 +1,17 @@
+{
+  "status": "invalid_runtime",
+  "model": "gemma3-4b",
+  "checkpoint": "google/gemma-3-4b-it",
+  "error_type": "OSError",
+  "error": "Access to model google/gemma-3-4b-it is restricted and you are not in the authorized list. Visit https://huggingface.co/google/gemma-3-4b-it to ask for access.",
+  "dataset_counts": {
+    "simuletic": 15,
+    "pa100k": 30
+  },
+  "summary": {
+    "model": "gemma3-4b",
+    "status": "invalid_runtime",
+    "examples": 45,
+    "failed": 45
+  }
+}

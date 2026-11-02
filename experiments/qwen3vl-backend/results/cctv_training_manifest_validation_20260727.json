@@ -1,0 +1,18 @@
+{
+  "schema_version": "cctv-attribute-training-report-v1",
+  "status": "valid",
+  "rows": 175,
+  "eligible_rows": 175,
+  "identity_groups": 1,
+  "tracks": 3,
+  "condition_splits": {
+    "landscape_room": [
+      "test_landscape"
+    ],
+    "portrait_fisheye": [
+      "test_portrait_fisheye"
+    ]
+  },
+  "error_count": 0,
+  "errors": []
+}

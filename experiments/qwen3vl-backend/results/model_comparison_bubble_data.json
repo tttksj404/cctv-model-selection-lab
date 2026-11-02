@@ -1,0 +1,217 @@
+{
+  "schemaVersion": "model-comparison-bubble-v1",
+  "generatedFrom": [
+    "experiments/results/qwen3-vl-2b.json",
+    "experiments/results/clip-vit-b32.json",
+    "experiments/results/florence-2-large.json",
+    "experiments/results/florence-2-large-ft.json",
+    "experiments/results/clip-vit-l14.json",
+    "experiments/results/siglip-base.json",
+    "experiments/results/blip-base.json",
+    "experiments/results/solider-pa100k-weighted-10k.json",
+    "experiments/results/solider-finetune-2k.json",
+    "experiments/results/attribute-ceiling-ft40.json"
+  ],
+  "chartContracts": {
+    "proxyRuntime": {
+      "x": "attribute_accuracy_pct",
+      "y": "latency_p95_s_lower_is_better",
+      "bubble": "approximate_parameter_count_billion"
+    },
+    "pa100kAttribute": {
+      "x": "mA_pct",
+      "y": "InsF1_pct",
+      "bubble": "training_rows_log_scaled"
+    },
+    "nonComparableSupplement": {
+      "x": "score_pct",
+      "y": "metric_family_index_not_comparable",
+      "bubble": "examples"
+    },
+    "qwenFairFineTuning": {
+      "x": "six_field_accuracy_pct",
+      "y": "six_field_exact_match_pct",
+      "bubble": "parameter_count_billion"
+    }
+  },
+  "proxyRuntime": [
+    {
+      "label": "Qwen3-VL-2B",
+      "method": "direct VLM structured JSON",
+      "dataset": "CCTV person-crop proxy",
+      "x": 39.29824561403509,
+      "y": 8.2983398999786,
+      "bubble": 2.0,
+      "status": "measured",
+      "source": "experiments/results/qwen3-vl-2b.json"
+    },
+    {
+      "label": "CLIP ViT-B/32",
+      "method": "zero-shot field scoring",
+      "dataset": "CCTV person-crop proxy",
+      "x": 38.59649122807017,
+      "y": 0.7225884000072256,
+      "bubble": 0.151,
+      "status": "measured",
+      "source": "experiments/results/clip-vit-b32.json"
+    },
+    {
+      "label": "CLIP ViT-L/14",
+      "method": "zero-shot field scoring",
+      "dataset": "CCTV person-crop proxy",
+      "x": 41.403508771929826,
+      "y": 4.141123100009281,
+      "bubble": 0.427,
+      "status": "measured",
+      "source": "experiments/results/clip-vit-l14.json"
+    },
+    {
+      "label": "SigLIP base",
+      "method": "zero-shot field scoring",
+      "dataset": "CCTV person-crop proxy",
+      "x": 24.210526315789474,
+      "y": 0.7783216999960132,
+      "bubble": 0.203,
+      "status": "measured",
+      "source": "experiments/results/siglip-base.json"
+    },
+    {
+      "label": "BLIP base",
+      "method": "caption plus attribute parsing",
+      "dataset": "CCTV person-crop proxy",
+      "x": 20.350877192982456,
+      "y": 0.46848470001714304,
+      "bubble": 0.385,
+      "status": "measured",
+      "source": "experiments/results/blip-base.json"
+    }
+  ],
+  "pa100kAttribute": [
+    {
+      "label": "SOLIDER Swin-B frozen head",
+      "method": "frozen backbone plus official weighted linear head",
+      "dataset": "PA-100K 10k/2k/2k subset",
+      "x": 66.95277094841003,
+      "y": 79.04943823814392,
+      "bubble": 10000,
+      "status": "measured",
+      "source": "experiments/results/solider-pa100k-weighted-10k.json"
+    },
+    {
+      "label": "SOLIDER Swin-B fine-tune",
+      "method": "end-to-end one-epoch fine-tune",
+      "dataset": "PA-100K 2k/500/500 subset",
+      "x": 69.58211660385132,
+      "y": 82.30268955230713,
+      "bubble": 2000,
+      "status": "measured",
+      "source": "experiments/results/solider-finetune-2k.json"
+    },
+    {
+      "label": "CrossPAR reported",
+      "method": "public paper reference, not local reproduction",
+      "dataset": "PA-100K public benchmark",
+      "x": 86.9,
+      "y": 90.6,
+      "bubble": 80000,
+      "status": "reported_public",
+      "source": "https://openaccess.thecvf.com/content/ACCV2024/papers/Ngo_CrossPAR_Enhancing_Pedestrian_Attribute_Recognition_with_Vision-Language_Fusion_and_Human-Centric_ACCV2024_paper.pdf"
+    }
+  ],
+  "nonComparableMethods": [
+    {
+      "label": "SOLIDER Swin-B six-field proxy",
+      "metric": "field top-1 mean",
+      "score_pct": 79.8333328962326,
+      "examples": 100,
+      "source": "experiments/results/solider-swin-b-proxy.json"
+    },
+    {
+      "label": "CLIP partial fine-tune ceiling",
+      "metric": "six-field multiclass top-1 mean",
+      "score_pct": 72.666668,
+      "examples": 100,
+      "source": "experiments/results/attribute-ceiling-ft40.json"
+    }
+  ],
+  "failedCandidates": [
+    {
+      "label": "Florence-2-large",
+      "method": "caption plus attribute parsing",
+      "dataset": "CCTV person-crop proxy",
+      "status": "invalid_runtime",
+      "reason": "Florence2LanguageConfig lacks forced_bos_token_id in the current local Transformers runtime",
+      "source": "experiments/results/florence-2-large.json"
+    },
+    {
+      "label": "Florence-2-large-ft",
+      "method": "fine-tuned caption plus attribute parsing",
+      "dataset": "CCTV person-crop proxy",
+      "status": "invalid_runtime",
+      "reason": "Florence2LanguageConfig lacks forced_bos_token_id in the current local Transformers runtime",
+      "source": "experiments/results/florence-2-large-ft.json"
+    }
+  ],
+  "serverCandidates": [
+    {
+      "label": "Qwen3.5-9B",
+      "modelId": "Qwen/Qwen3.5-9B",
+      "status": "not_measured_on_project_cctv",
+      "chartIncluded": false
+    },
+    {
+      "label": "Qwen2.5-VL-7B-Instruct",
+      "modelId": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "status": "fallback_not_measured_on_project_cctv",
+      "chartIncluded": false
+    }
+  ],
+  "qwenFairFineTuning": [
+    {
+      "label": "Qwen3.5-9B base",
+      "modelId": "Qwen/Qwen3.5-9B",
+      "method": "base",
+      "dataset": "PA-100K fixed 70/15/15 six-field proxy",
+      "x": null,
+      "y": null,
+      "bubble": 9.0,
+      "status": "pending_remote_auth",
+      "source": "experiments/results/qwen3_5_9b_fair_base.json"
+    },
+    {
+      "label": "Qwen3.5-9B LoRA",
+      "modelId": "Qwen/Qwen3.5-9B",
+      "method": "lora",
+      "dataset": "PA-100K fixed 70/15/15 six-field proxy",
+      "x": null,
+      "y": null,
+      "bubble": 9.0,
+      "status": "pending_remote_auth",
+      "source": "experiments/results/qwen3_5_9b_fair_lora.json"
+    },
+    {
+      "label": "Qwen2.5-VL-7B base",
+      "modelId": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "method": "base",
+      "dataset": "PA-100K fixed 70/15/15 six-field proxy",
+      "x": null,
+      "y": null,
+      "bubble": 7.0,
+      "status": "pending_remote_auth",
+      "source": "experiments/results/qwen2_5_vl_7b_fair_base.json"
+    },
+    {
+      "label": "Qwen2.5-VL-7B LoRA",
+      "modelId": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "method": "lora",
+      "dataset": "PA-100K fixed 70/15/15 six-field proxy",
+      "x": null,
+      "y": null,
+      "bubble": 7.0,
+      "status": "pending_remote_auth",
+      "source": "experiments/results/qwen2_5_vl_7b_fair_lora.json"
+    }
+  ],
+  "interpretation": "The proxy runtime plot contains only valid runs with the same 45-example contract. Florence failures are retained as failedCandidates and are not plotted. The plots deliberately keep proxy runtime metrics separate from PA-100K mA/InsF1. Neither plot is CCTV identity accuracy.",
+  "status": "valid_for_comparison_not_production_promotion"
+}

@@ -1,0 +1,710 @@
+{
+  "schemaVersion": "promptpar-heldout-evaluation-v1",
+  "dataset": "PETA",
+  "promptStyle": "official-pad",
+  "prompts": [
+    "A pedestrian wearing a hat",
+    "A pedestrian wearing a muffler",
+    "A pedestrian with no headwear",
+    "A pedestrian wearing sunglasses",
+    "A pedestrian with long hair",
+    "A pedestrian in casual upper wear",
+    "A pedestrian in formal upper wear",
+    "A pedestrian in a jacket",
+    "A pedestrian in upper wear with a logo",
+    "A pedestrian in plaid upper wear",
+    "A pedestrian in a short-sleeved top",
+    "A pedestrian in upper wear with thin stripes",
+    "A pedestrian in a t-shirt",
+    "A pedestrian in other upper wear",
+    "A pedestrian in upper wear with a V-neck",
+    "A pedestrian in casual lower wear",
+    "A pedestrian in formal lower wear",
+    "A pedestrian in jeans",
+    "A pedestrian in shorts",
+    "A pedestrian in a short skirt",
+    "A pedestrian in trousers",
+    "A pedestrian in leather shoes",
+    "A pedestrian in sandals",
+    "A pedestrian in other types of shoes",
+    "A pedestrian in sneakers",
+    "A pedestrian with a backpack",
+    "A pedestrian with other types of attachments",
+    "A pedestrian with a messenger bag",
+    "A pedestrian with no attachments",
+    "A pedestrian with plastic bags",
+    "A pedestrian under the age of 30",
+    "A pedestrian between the ages of 30 and 45",
+    "A pedestrian between the ages of 45 and 60",
+    "A pedestrian over the age of 60",
+    "A male pedestrian"
+  ],
+  "checkpoint": "external/PromptPAR-checkpoints/PETA_Checkpoint.pth",
+  "checkpointSha256": "687cd168597c94fdf4602978f5224536316bc8ef0c1d073ae37680df987a7c4e",
+  "preprocessing": "resize-224-normalize-0.5",
+  "validationCount": 1900,
+  "testCount": 7600,
+  "loadIntegrity": {
+    "missingKeys": [],
+    "disallowedUnexpectedKeys": [],
+    "ignoredPretrainedVitKeyCount": 152
+  },
+  "officialThreshold": {
+    "thresholds": [
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45
+    ],
+    "metrics": {
+      "meanAccuracy": 0.4969521394222244,
+      "instanceAccuracy": 0.31623503143912646,
+      "instancePrecision": 0.44300084564558245,
+      "instanceRecall": 0.5001751158198526,
+      "instanceF1": 0.46671098767295177,
+      "labelMacroF1": 0.1793647327261342,
+      "perAttribute": [
+        {
+          "attribute": "accessoryHat",
+          "positiveRecall": 0.9131034482758621,
+          "negativeRecall": 0.04043636363636364,
+          "precision": 0.09119713459154154,
+          "f1": 0.1658316633266533,
+          "meanAccuracy": 0.47676990595611285
+        },
+        {
+          "attribute": "accessoryMuffler",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "accessoryNothing",
+          "positiveRecall": 0.13897596656217345,
+          "negativeRecall": 0.7960172228202368,
+          "precision": 0.6779949022939677,
+          "f1": 0.2306691718456424,
+          "meanAccuracy": 0.46749659469120514
+        },
+        {
+          "attribute": "accessorySunglasses",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9998645353562721,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.49993226767813603
+        },
+        {
+          "attribute": "hairLong",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyCasual",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.8546052631578948,
+          "f1": 0.9216034054629301,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyFormal",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyJacket",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyLogo",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyPlaid",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyShortSleeve",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyThinStripes",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.993979127642494,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.496989563821247
+        },
+        {
+          "attribute": "upperBodyTshirt",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyOther",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.45473684210526316,
+          "f1": 0.6251808972503619,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyVNeck",
+          "positiveRecall": 0.0875,
+          "negativeRecall": 0.8659574468085106,
+          "precision": 0.006896551724137931,
+          "f1": 0.01278538812785388,
+          "meanAccuracy": 0.4767287234042553
+        },
+        {
+          "attribute": "lowerBodyCasual",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.8613157894736843,
+          "f1": 0.9254913049625336,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyFormal",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyJeans",
+          "positiveRecall": 0.002591792656587473,
+          "negativeRecall": 0.9990539262062441,
+          "precision": 0.5454545454545454,
+          "f1": 0.005159071367153913,
+          "meanAccuracy": 0.5008228594314158
+        },
+        {
+          "attribute": "lowerBodyShorts",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyShortSkirt",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyTrousers",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.5196052631578948,
+          "f1": 0.6838687332236557,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "footwearLeatherShoes",
+          "positiveRecall": 0.9372460496613996,
+          "negativeRecall": 0.08765088207985144,
+          "precision": 0.2970382028902561,
+          "f1": 0.4511082138200782,
+          "meanAccuracy": 0.5124484658706255
+        },
+        {
+          "attribute": "footwearSandals",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "footwearShoes",
+          "positiveRecall": 0.2505407354001442,
+          "negativeRecall": 0.7612929962702031,
+          "precision": 0.376285868976719,
+          "f1": 0.3008006924908029,
+          "meanAccuracy": 0.5059168658351736
+        },
+        {
+          "attribute": "footwearSneaker",
+          "positiveRecall": 0.0662686567164179,
+          "negativeRecall": 0.9525738396624472,
+          "precision": 0.28316326530612246,
+          "f1": 0.10740203193033382,
+          "meanAccuracy": 0.5094212481894326
+        },
+        {
+          "attribute": "carryingBackpack",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "carryingOther",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "carryingMessengerBag",
+          "positiveRecall": 0.8404395604395605,
+          "negativeRecall": 0.14122065727699532,
+          "precision": 0.29483423284502697,
+          "f1": 0.4365296803652967,
+          "meanAccuracy": 0.4908301088582779
+        },
+        {
+          "attribute": "carryingNothing",
+          "positiveRecall": 0.975609756097561,
+          "negativeRecall": 0.012161916863314576,
+          "precision": 0.272654370489174,
+          "f1": 0.42619868379818243,
+          "meanAccuracy": 0.49388583648043777
+        },
+        {
+          "attribute": "carryingPlasticBags",
+          "positiveRecall": 0.25982905982905985,
+          "negativeRecall": 0.7481111903064861,
+          "precision": 0.07920792079207921,
+          "f1": 0.12140575079872204,
+          "meanAccuracy": 0.503970125067773
+        },
+        {
+          "attribute": "personalLess30",
+          "positiveRecall": 0.5053510832680762,
+          "negativeRecall": 0.44096577341469884,
+          "precision": 0.4788523373732377,
+          "f1": 0.4917449834899669,
+          "meanAccuracy": 0.47315842834138755
+        },
+        {
+          "attribute": "personalLess45",
+          "positiveRecall": 0.3854977468250717,
+          "negativeRecall": 0.6563287458809847,
+          "precision": 0.34672070744288874,
+          "f1": 0.365082444228904,
+          "meanAccuracy": 0.5209132463530282
+        },
+        {
+          "attribute": "personalLess60",
+          "positiveRecall": 0.0025673940949935813,
+          "negativeRecall": 0.9992669696525436,
+          "precision": 0.2857142857142857,
+          "f1": 0.0050890585241730275,
+          "meanAccuracy": 0.5009171818737685
+        },
+        {
+          "attribute": "personalLarger60",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "personalMale",
+          "positiveRecall": 0.0009645526886906198,
+          "negativeRecall": 0.9252823631624674,
+          "precision": 0.015267175572519083,
+          "f1": 0.001814470401451576,
+          "meanAccuracy": 0.463123457925579
+        }
+      ]
+    }
+  },
+  "validationCalibratedThreshold": {
+    "thresholds": [
+      0.20999999999999996,
+      0.07,
+      0.05,
+      0.06,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.06,
+      0.08,
+      0.05,
+      0.05,
+      0.8099999999999999,
+      0.8599999999999999,
+      0.05,
+      0.05,
+      0.05,
+      0.05,
+      0.8599999999999999,
+      0.4599999999999999,
+      0.05,
+      0.05,
+      0.05,
+      0.06,
+      0.05,
+      0.35999999999999993,
+      0.05,
+      0.10999999999999999,
+      0.05,
+      0.06,
+      0.05,
+      0.05,
+      0.05
+    ],
+    "metrics": {
+      "meanAccuracy": 0.5047562301062386,
+      "instanceAccuracy": 0.372068279996013,
+      "instancePrecision": 0.41971397296125385,
+      "instanceRecall": 0.7488958902939167,
+      "instanceF1": 0.5347407089005647,
+      "labelMacroF1": 0.2689716990375411,
+      "perAttribute": [
+        {
+          "attribute": "accessoryHat",
+          "positiveRecall": 0.9972413793103448,
+          "negativeRecall": 0.0014545454545454545,
+          "precision": 0.09528202424881392,
+          "f1": 0.1739444243955251,
+          "meanAccuracy": 0.49934796238244517
+        },
+        {
+          "attribute": "accessoryMuffler",
+          "positiveRecall": 0.4541139240506329,
+          "negativeRecall": 0.7865958668197475,
+          "precision": 0.16178128523111612,
+          "f1": 0.23857024106400665,
+          "meanAccuracy": 0.6203548954351902
+        },
+        {
+          "attribute": "accessoryNothing",
+          "positiveRecall": 0.8967258794845002,
+          "negativeRecall": 0.07642626480086114,
+          "precision": 0.7500364166059723,
+          "f1": 0.8168477829777109,
+          "meanAccuracy": 0.48657607214268067
+        },
+        {
+          "attribute": "accessorySunglasses",
+          "positiveRecall": 0.027522935779816515,
+          "negativeRecall": 0.9202113248442156,
+          "precision": 0.010084033613445379,
+          "f1": 0.014760147601476016,
+          "meanAccuracy": 0.4738671303120161
+        },
+        {
+          "attribute": "hairLong",
+          "positiveRecall": 0.0565410199556541,
+          "negativeRecall": 0.9366804692891649,
+          "precision": 0.21748400852878466,
+          "f1": 0.08974923009238892,
+          "meanAccuracy": 0.4966107446224095
+        },
+        {
+          "attribute": "upperBodyCasual",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.8546052631578948,
+          "f1": 0.9216034054629301,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyFormal",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyJacket",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyLogo",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.994249726177437,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.4971248630887185
+        },
+        {
+          "attribute": "upperBodyPlaid",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9445721238339867,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.47228606191699335
+        },
+        {
+          "attribute": "upperBodyShortSleeve",
+          "positiveRecall": 0.005504587155963303,
+          "negativeRecall": 0.9944700460829493,
+          "precision": 0.14285714285714285,
+          "f1": 0.01060070671378092,
+          "meanAccuracy": 0.4999873166194563
+        },
+        {
+          "attribute": "upperBodyThinStripes",
+          "positiveRecall": 0.07142857142857142,
+          "negativeRecall": 0.8607171527963607,
+          "precision": 0.008571428571428572,
+          "f1": 0.015306122448979591,
+          "meanAccuracy": 0.46607286211246607
+        },
+        {
+          "attribute": "upperBodyTshirt",
+          "positiveRecall": 0.0,
+          "negativeRecall": 0.9974137931034482,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.4987068965517241
+        },
+        {
+          "attribute": "upperBodyOther",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.45473684210526316,
+          "f1": 0.6251808972503619,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "upperBodyVNeck",
+          "positiveRecall": 0.0125,
+          "negativeRecall": 0.980718085106383,
+          "precision": 0.00684931506849315,
+          "f1": 0.008849557522123894,
+          "meanAccuracy": 0.4966090425531915
+        },
+        {
+          "attribute": "lowerBodyCasual",
+          "positiveRecall": 0.9963336388634281,
+          "negativeRecall": 0.022770398481973434,
+          "precision": 0.8636122881355932,
+          "f1": 0.9252376223577813,
+          "meanAccuracy": 0.5095520186727007
+        },
+        {
+          "attribute": "lowerBodyFormal",
+          "positiveRecall": 0.04793863854266539,
+          "negativeRecall": 0.98810431599817,
+          "precision": 0.390625,
+          "f1": 0.08539709649871906,
+          "meanAccuracy": 0.5180214772704177
+        },
+        {
+          "attribute": "lowerBodyJeans",
+          "positiveRecall": 0.3619870410367171,
+          "negativeRecall": 0.759697256385998,
+          "precision": 0.39753320683111953,
+          "f1": 0.37892832918833375,
+          "meanAccuracy": 0.5608421487113575
+        },
+        {
+          "attribute": "lowerBodyShorts",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyShortSkirt",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "lowerBodyTrousers",
+          "positiveRecall": 0.9977209420106357,
+          "negativeRecall": 0.0030128731854286495,
+          "precision": 0.5197889182058048,
+          "f1": 0.6834937982478968,
+          "meanAccuracy": 0.5003669075980322
+        },
+        {
+          "attribute": "footwearLeatherShoes",
+          "positiveRecall": 0.9318284424379233,
+          "negativeRecall": 0.09285051067780872,
+          "precision": 0.29702115412289537,
+          "f1": 0.45045831514622436,
+          "meanAccuracy": 0.512339476557866
+        },
+        {
+          "attribute": "footwearSandals",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "footwearShoes",
+          "positiveRecall": 0.8940158615717375,
+          "negativeRecall": 0.10111893907998343,
+          "precision": 0.3637430331475506,
+          "f1": 0.5170975813177647,
+          "meanAccuracy": 0.49756740032586044
+        },
+        {
+          "attribute": "footwearSneaker",
+          "positiveRecall": 0.6698507462686567,
+          "negativeRecall": 0.4136708860759494,
+          "precision": 0.24412532637075718,
+          "f1": 0.3578376654441078,
+          "meanAccuracy": 0.5417608161723031
+        },
+        {
+          "attribute": "carryingBackpack",
+          "positiveRecall": 0.0026720106880427524,
+          "negativeRecall": 0.9950843847288219,
+          "precision": 0.11764705882352941,
+          "f1": 0.005225342913128674,
+          "meanAccuracy": 0.49887819770843234
+        },
+        {
+          "attribute": "carryingOther",
+          "positiveRecall": 0.0,
+          "negativeRecall": 1.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "carryingMessengerBag",
+          "positiveRecall": 0.9252747252747253,
+          "negativeRecall": 0.07004694835680751,
+          "precision": 0.29828539039251806,
+          "f1": 0.4511358765537934,
+          "meanAccuracy": 0.4976608368157664
+        },
+        {
+          "attribute": "carryingNothing",
+          "positiveRecall": 1.0,
+          "negativeRecall": 0.0,
+          "precision": 0.2751315789473684,
+          "f1": 0.4315344133732329,
+          "meanAccuracy": 0.5
+        },
+        {
+          "attribute": "carryingPlasticBags",
+          "positiveRecall": 0.811965811965812,
+          "negativeRecall": 0.21596578759800428,
+          "precision": 0.0794979079497908,
+          "f1": 0.1448170731707317,
+          "meanAccuracy": 0.5139657997819082
+        },
+        {
+          "attribute": "personalLess30",
+          "positiveRecall": 0.9877316627512399,
+          "negativeRecall": 0.009551605200318386,
+          "precision": 0.5033923107622722,
+          "f1": 0.6669016566795912,
+          "meanAccuracy": 0.49864163397577915
+        },
+        {
+          "attribute": "personalLess45",
+          "positiveRecall": 0.9487914789020893,
+          "negativeRecall": 0.09323512308586936,
+          "precision": 0.3311409779811267,
+          "f1": 0.4909379968203497,
+          "meanAccuracy": 0.5210133009939794
+        },
+        {
+          "attribute": "personalLess60",
+          "positiveRecall": 0.4017971758664955,
+          "negativeRecall": 0.8253921712358891,
+          "precision": 0.2081117021276596,
+          "f1": 0.2742006132282085,
+          "meanAccuracy": 0.6135946735511923
+        },
+        {
+          "attribute": "personalLarger60",
+          "positiveRecall": 0.02386117136659436,
+          "negativeRecall": 0.8823364616893122,
+          "precision": 0.012925969447708578,
+          "f1": 0.016768292682926827,
+          "meanAccuracy": 0.4530988165279533
+        },
+        {
+          "attribute": "personalMale",
+          "positiveRecall": 0.8073306004340487,
+          "negativeRecall": 0.03591080220098465,
+          "precision": 0.5014227946682642,
+          "f1": 0.6186252771618626,
+          "meanAccuracy": 0.42162070131751667
+        }
+      ]
+    }
+  }
+}

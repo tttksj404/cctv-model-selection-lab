@@ -1,0 +1,9 @@
+{
+  "schema_version": "cctv-promotion-report-v1",
+  "status": "blocked",
+  "passed": false,
+  "reasons": [
+    "manifest file is missing",
+    "evaluation evidence file is missing"
+  ]
+}

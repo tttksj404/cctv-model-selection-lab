@@ -1,0 +1,26 @@
+---chartContracts---
+proxyRuntime: bubble=approximate_parameter_count_billion; x=attribute_accuracy_pct; y=latency_p95_s_lower_is_better
+pa100kAttribute: bubble=training_rows_log_scaled; x=mA_pct; y=InsF1_pct
+qwenFairFineTuning: bubble=parameter_count_billion; x=six_field_accuracy_pct; y=six_field_exact_match_pct
+---proxyRuntime---
+list[5]
+0 {"label":"Qwen3-VL-2B","source":"experiments/results/qwen3-vl-2b.json","status":"measured","x":39.29824561403509,"y":8.16357729997253}
+1 {"label":"CLIP ViT-B/32","source":"experiments/results/clip-vit-b32.json","status":"measured","x":38.59649122807017,"y":0.8549835999729112}
+2 {"label":"CLIP ViT-L/14","source":"experiments/results/clip-vit-l14.json","status":"measured","x":41.403508771929826,"y":1.0855598999769427}
+3 {"label":"SigLIP base","source":"experiments/results/siglip-base.json","status":"measured","x":24.210526315789474,"y":0.5965929999947548}
+4 {"label":"BLIP base","source":"experiments/results/blip-base.json","status":"measured","x":20.350877192982456,"y":0.4684194000195712}
+---failedCandidates---
+list[2]
+0 {"label":"Florence-2-large","status":"invalid_runtime","source":"experiments/results/florence-2-large.json"}
+1 {"label":"Florence-2-large-ft","status":"invalid_runtime","source":"experiments/results/florence-2-large-ft.json"}
+---serverCandidates---
+Qwen3.5-9B: chartIncluded=false; status=not_measured_on_project_cctv
+Qwen2.5-VL-7B-Instruct: chartIncluded=false; status=fallback_not_measured_on_project_cctv
+---qwenFairFineTuning---
+Qwen3.5-9B base/LoRA: pending_remote_auth; x=null; y=null
+Qwen2.5-VL-7B base/LoRA: pending_remote_auth; x=null; y=null
+---interpretation---
+Only valid same-45 measured runs appear in proxyRuntime. Invalid runtime and pending auth rows are not plotted. These plots are not CCTV identity accuracy.
+---status---
+valid_for_comparison_not_production_promotion
+EXIT_CODE=0

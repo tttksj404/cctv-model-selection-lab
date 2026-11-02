@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "mevid-public-reid-artifact-index-v1",
+  "observedAt": "2026-07-31T13:40:00+09:00",
+  "remoteRoot": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results",
+  "artifacts": [
+    {
+      "name": "mevid_public_full_manifest_20260731.jsonl",
+      "bytes": 50446258,
+      "sha256": "3f8f896fa92519aa7eb5252bba86bd9feef0685139cd56328107a83f0f9941b8"
+    },
+    {
+      "name": "mevid_public_full_solider_tracks_20260731.npz",
+      "bytes": 30826796,
+      "sha256": "c2efcd31455c88fe84c044c8b545724fad907d1a35d57024b7e2ef9cdc4f860c"
+    },
+    {
+      "name": "mevid_public_metric_head_guarded_20260731.npz",
+      "bytes": 493167,
+      "sha256": "1a530575e105731c6cd19c5e4bb49e3a9228b25294ecaff615d5d51bf83c2665"
+    },
+    {
+      "name": "mevid_public_full_solider_metric_guarded_tracks_20260731.npz",
+      "bytes": 30461752,
+      "sha256": "3beb8477ec9d8eced0949ab0d1c2ece8f105301f6966f0bc41dc74aec9084259"
+    },
+    {
+      "name": "mevid_public_graph_open_set_calibrated_20260731.json",
+      "bytes": 47379,
+      "sha256": "ef12235077f7db4c598e30d23b7926307bff76475100503f5789294f127ea0e2"
+    },
+    {
+      "name": "mevid_public_graph_verifier_head_20260731.json",
+      "bytes": 1141,
+      "sha256": "9e979367005682aee663a7ef90138cbed512018126594e0cea33bed1280defb3"
+    },
+    {
+      "name": "public_reid_final_remote_verification_20260731.txt",
+      "bytes": 485,
+      "sha256": "9e3b57b76cdce365e3987902cac6929131283032c52737fd229fd80d2c74c08e"
+    }
+  ],
+  "runtimeScripts": [
+    {
+      "remotePath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/scripts/run_mevid_public_reid_gpu.sh",
+      "sha256": "38e5fae26c33b2f17a15eddf0b06c5d44480f7fc6c0c737ff3215835e1a947ea",
+      "remoteReadbackMatchesLocal": true
+    },
+    {
+      "remotePath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/scripts/run_mevid_public_reid_heads_gpu.sh",
+      "sha256": "b944f4bbb329dd77b259d4b2d142a10163a740df225e3282c11b9cf651ca77d7",
+      "remoteReadbackMatchesLocal": true
+    },
+    {
+      "remotePath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/scripts/evaluate_prid2011_graph_open_set.py",
+      "sha256": "f46a4a30ff2326fc28601e09970675869fd0c917d02351a04c6d15d8c5c47b95",
+      "remoteReadbackMatchesLocal": true
+    },
+    {
+      "remotePath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/scripts/tune_public_reid_graph_verifier.py",
+      "sha256": "800897310297d76dca6d6ab0290da25aa209bd5e81ae66729a2fedbb2557c69c",
+      "remoteReadbackMatchesLocal": true
+    },
+    {
+      "remotePath": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/scripts/verify_public_reid_track_cache.py",
+      "sha256": "04e4967a37358c84aefdfde593b00f452290d38e6a5fa109637bc7720d4f6284",
+      "remoteReadbackMatchesLocal": true
+    }
+  ],
+  "checkpoint": {
+    "name": "solider_reid/swin_base_msmt17.pth",
+    "sha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7"
+  },
+  "source": {
+    "soliderCommit": "8c08e1c3255e8e1e51e006bf189e52cc57b009ed",
+    "localExperimentDirectoryIsGitWorktree": false
+  }
+}

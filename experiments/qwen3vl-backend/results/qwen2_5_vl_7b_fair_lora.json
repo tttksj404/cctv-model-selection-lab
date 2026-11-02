@@ -1,0 +1,9 @@
+{
+  "schema": "qwen-fair-score-v1",
+  "status": "pending_remote_auth",
+  "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+  "method": "lora",
+  "dataset": "PA-100K fixed 70/15/15 six-field proxy",
+  "blockingReason": "Authenticated GPU server terminal is not available; request still reaches JupyterHub /hub/login.",
+  "proxyWarning": "PA-100K labels do not measure CCTV identity, colour, texture, or track consistency."
+}

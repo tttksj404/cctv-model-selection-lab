@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "mevid-public-reid-gpu-evidence-v1",
+  "observedAt": "2026-07-31T12:55:00+09:00",
+  "gpuServer": {
+    "gpuModel": "NVIDIA L40S",
+    "gpuCount": 4,
+    "trainingDevice": "cuda:0"
+  },
+  "manifest": {
+    "records": 62898,
+    "tracks": 7972,
+    "trainPeople": 80,
+    "validationPeople": 24,
+    "testPeople": 54
+  },
+  "manifestIntegrity": {
+    "trainValidationPersonOverlap": 0,
+    "trainTestPersonOverlap": 0,
+    "validationTestPersonOverlap": 0,
+    "queryGalleryCameraRoleViolations": 0,
+    "unknownGalleryRows": 0,
+    "localPathMode": "relative-to-dataset-root",
+    "resolvedSampleReadbackStatus": 200
+  },
+  "selectedCandidateSearch": {
+    "status": "exploratory-point-estimate-only",
+    "protocol": "custom same-outfit cross-camera protocol on MEVID official test partition",
+    "officialQueryIndexUsed": false,
+    "backbone": "solider-reid-swin-base-msmt17",
+    "metricHead": "residual64-arc030-triplet025",
+    "reranker": {
+      "method": "k-reciprocal",
+      "k1": 30,
+      "k2": 6,
+      "lambda": 0.3
+    },
+    "testMetrics": {
+      "knownRank1": 0.8619528619528619,
+      "knownRecallAt5": 0.8956228956228957,
+      "knownMrr": 0.8851402638677758
+    },
+    "knownRank1Wilson95": {
+      "successes": 256,
+      "queries": 297,
+      "lower": 0.818078660943,
+      "upper": 0.896583476526,
+      "unitCaveat": "query tracks from the same person are not independent identities"
+    },
+    "exploratoryPointEstimateReference": 0.84,
+    "pointEstimateAboveReference": true,
+    "promotionRank1Target": 0.85,
+    "promotionRank1Wilson95LowerTarget": 0.85,
+    "promotionTargetMet": false
+  },
+  "openSetBoundary": {
+    "bestExploratoryAutomaticDecisionAccuracy": 0.7904468412942989,
+    "target": 0.84,
+    "targetMet": false,
+    "strictSafetyTargetMet": false,
+    "automaticMatchEnabled": false
+  },
+  "remoteArtifacts": {
+    "rawTrackCache": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_full_solider_tracks_20260731.npz",
+    "metricHead": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_metric_head_guarded_20260731.npz",
+    "metricHeadSha256": "1a530575e105731c6cd19c5e4bb49e3a9228b25294ecaff615d5d51bf83c2665",
+    "metricTrackCache": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_full_solider_metric_guarded_tracks_20260731.npz",
+    "graphResult": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_graph_open_set_calibrated_20260731.json",
+    "graphVerifierHead": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_graph_verifier_head_20260731.json",
+    "manifestAudit": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_manifest_audit_20260731.json",
+    "manifestAuditSha256": "3f805ee495b52baf84f76fde7f237adc6795493dfed44607864cb476ce6d0e7f",
+    "finalRemoteVerification": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/public_reid_final_remote_verification_20260731.txt"
+  },
+  "evidenceBoundary": {
+    "identityDisjoint": true,
+    "crossCamera": true,
+    "sameOutfit": true,
+    "trackHeldout": true,
+    "projectCctvEvidence": false,
+    "officialTestPreviouslyObserved": true,
+    "confirmatoryForFutureMethodChanges": false,
+    "officialBenchmarkProtocolUsed": false
+  }
+}

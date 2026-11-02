@@ -1,0 +1,48 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+{"index": 1, "dataset": "simuletic", "latency_s": 5.838, "predicted": {"gender": "female", "age": "middle-aged", "hair_color": "blonde", "viewpoint": "front", "top_color": "black", "top_type": "leather jacket", "bottom_color": "black", "bottom_type": "pants", "accessory": "sunglasses"}}
+{"index": 2, "dataset": "simuletic", "latency_s": 5.477, "predicted": {"gender": "female", "age": "young adult", "hair_color": "blonde", "viewpoint": "back", "top_color": "black", "top_type": "leather jacket", "bottom_color": "black", "bottom_type": "pants", "accessory": "sunglasses"}}
+{"index": 3, "dataset": "simuletic", "latency_s": 4.852, "predicted": {"gender": "female", "age": "middle-aged", "hair_color": "blonde", "viewpoint": "front", "top_color": "black", "top_type": "leather jacket", "bottom_color": "black", "bottom_type": "pants", "accessory": "sunglasses"}}
+{"index": 4, "dataset": "simuletic", "latency_s": 6.072, "predicted": {"gender": "female", "age": "middle-aged", "hair_color": "blonde", "viewpoint": "side", "top_color": "black", "top_type": "leather jacket", "bottom_color": "black", "bottom_type": "pants", "footwear": "white shoes", "accessory": "sunglasses"}}
+{"index": 5, "dataset": "simuletic", "latency_s": 5.722, "predicted": {"gender": "female", "age": "young adult", "hair_color": "blonde", "viewpoint": "back", "top_color": "black", "top_type": "leather jacket", "bottom_color": "black", "bottom_type": "pants", "accessory": "sunglasses"}}
+{"index": 6, "dataset": "simuletic", "latency_s": 4.791, "predicted": {"gender": "male", "age": "teenager", "hair_color": "shaved", "viewpoint": "front", "top_color": "blue", "top_type": "sweater", "bottom_color": "black", "bottom_type": "cargo pants", "footwear": "white shoes", "accessory": "cap"}}
+{"index": 7, "dataset": "simuletic", "latency_s": 5.716, "predicted": {"gender": "male", "age": "teenager", "hair_color": "shaved", "viewpoint": "front", "top_color": "blue", "top_type": "sweater", "bottom_color": "black", "bottom_type": "cargo pants", "footwear": "white sneakers", "accessory": "cap"}}
+{"index": 8, "dataset": "simuletic", "latency_s": 4.807, "predicted": {"gender": "male", "age": "teenager", "hair_color": "shaved", "viewpoint": "front", "top_color": "dark blue", "top_type": "sweatshirt", "bottom_color": "black", "bottom_type": "cargo pants", "footwear": "white sneakers", "accessory": "cap"}}
+{"index": 9, "dataset": "simuletic", "latency_s": 4.394, "predicted": {"top_color": "dark blue", "top_type": "sweater", "bottom_color": "black", "bottom_type": "cargo pants", "footwear": "white sneakers", "accessory": "cap"}}
+{"index": 10, "dataset": "simuletic", "latency_s": 5.065, "predicted": {"viewpoint": "front", "top_color": "dark blue", "top_type": "sweatshirt", "bottom_color": "black", "bottom_type": "cargo pants", "footwear": "white sneakers", "accessory": "cap"}}
+{"index": 11, "dataset": "simuletic", "latency_s": 5.534, "predicted": {"gender": "female", "age": "elderly", "hair_color": "gray", "viewpoint": "front", "top_color": "dark blue", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "leggings", "footwear": "sneakers", "accessory": "smartphone"}}
+{"index": 12, "dataset": "simuletic", "latency_s": 7.317, "predicted": {"gender": "female", "age": "elderly", "hair_color": "gray", "viewpoint": "front", "top_color": "dark blue", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "leggings", "footwear": "sneakers", "accessory": "smartphone"}}
+{"index": 13, "dataset": "simuletic", "latency_s": 8.387, "predicted": {"gender": "female", "age": "elderly", "hair_color": "gray", "viewpoint": "front", "top_color": "dark blue", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "leggings", "accessory": "smartphone"}}
+{"index": 14, "dataset": "simuletic", "latency_s": 6.233, "predicted": {"gender": "female", "age": "elderly", "hair_color": "gray", "viewpoint": "front", "top_color": "dark blue", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "leggings", "footwear": "sneaker", "accessory": "smartphone"}}
+{"index": 15, "dataset": "simuletic", "latency_s": 7.624, "predicted": {"gender": "female", "age": "elderly", "hair_color": "gray", "viewpoint": "front", "top_color": "blue", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "leggings", "footwear": "sneakers", "accessory": "smartphone"}}
+{"index": 16, "dataset": "pa100k", "latency_s": 3.75, "predicted": {}}
+{"index": 17, "dataset": "pa100k", "latency_s": 5.22, "predicted": {"gender": "male", "age": "young adult", "hair_color": "black", "viewpoint": "front", "top_color": "dark gray", "top_type": "t-shirt", "bottom_color": "blue", "bottom_type": "jeans", "footwear": "black shoes", "accessory": "sunglasses"}}
+{"index": 18, "dataset": "pa100k", "latency_s": 3.581, "predicted": {}}
+{"index": 19, "dataset": "pa100k", "latency_s": 2.952, "predicted": {}}
+{"index": 20, "dataset": "pa100k", "latency_s": 4.511, "predicted": {"viewpoint": "back"}}
+{"index": 21, "dataset": "pa100k", "latency_s": 4.752, "predicted": {}}
+{"index": 22, "dataset": "pa100k", "latency_s": 10.625, "predicted": {"gender": "female", "age": "teenager", "hair_color": "black", "viewpoint": "side", "top_color": "white", "top_type": "shirt", "bottom_color": "dark", "bottom_type": "skirt", "footwear": "white shoes", "accessory": "handbag"}}
+{"index": 23, "dataset": "pa100k", "latency_s": 10.072, "predicted": {}}
+{"index": 24, "dataset": "pa100k", "latency_s": 8.791, "predicted": {}}
+{"index": 25, "dataset": "pa100k", "latency_s": 9.898, "predicted": {}}
+{"index": 26, "dataset": "pa100k", "latency_s": 14.683, "predicted": {"viewpoint": "back", "top_color": "white", "top_type": "short-sleeved shirt", "bottom_color": "black", "bottom_type": "pants", "footwear": "sneakers"}}
+{"index": 27, "dataset": "pa100k", "latency_s": 19.156, "predicted": {"top_color": "red", "top_type": "t-shirt", "bottom_color": "blue", "bottom_type": "jeans", "footwear": "sneaker"}}
+{"index": 28, "dataset": "pa100k", "latency_s": 15.341, "predicted": {}}
+{"index": 29, "dataset": "pa100k", "latency_s": 11.848, "predicted": {}}
+{"index": 30, "dataset": "pa100k", "latency_s": 8.329, "predicted": {}}
+{"index": 31, "dataset": "pa100k", "latency_s": 13.207, "predicted": {"gender": "female", "age": "teenager", "hair_color": "black", "viewpoint": "front", "top_color": "white", "top_type": "t-shirt", "bottom_color": "black", "bottom_type": "shorts", "footwear": "shoes", "accessory": "none"}}
+{"index": 32, "dataset": "pa100k", "latency_s": 6.306, "predicted": {}}
+{"index": 33, "dataset": "pa100k", "latency_s": 7.115, "predicted": {}}
+{"index": 34, "dataset": "pa100k", "latency_s": 5.333, "predicted": {}}
+{"index": 35, "dataset": "pa100k", "latency_s": 5.209, "predicted": {}}
+{"index": 36, "dataset": "pa100k", "latency_s": 6.683, "predicted": {"viewpoint": "back"}}
+{"index": 37, "dataset": "pa100k", "latency_s": 10.322, "predicted": {}}
+{"index": 38, "dataset": "pa100k", "latency_s": 10.788, "predicted": {}}
+{"index": 39, "dataset": "pa100k", "latency_s": 12.957, "predicted": {"viewpoint": "back", "top_color": "light blue", "top_type": "shirt", "bottom_color": "dark blue", "bottom_type": "pants", "footwear": "shoes"}}
+{"index": 40, "dataset": "pa100k", "latency_s": 9.941, "predicted": {}}
+{"index": 41, "dataset": "pa100k", "latency_s": 6.113, "predicted": {}}
+{"index": 42, "dataset": "pa100k", "latency_s": 8.066, "predicted": {}}
+{"index": 43, "dataset": "pa100k", "latency_s": 12.083, "predicted": {"top_color": "white and blue", "top_type": "plaid shirt", "bottom_color": "dark blue", "bottom_type": "jeans", "footwear": "sneakers"}}
+{"index": 44, "dataset": "pa100k", "latency_s": 12.17, "predicted": {"viewpoint": "back", "top_color": "red", "top_type": "vest", "bottom_color": "black", "bottom_type": "pants", "footwear": "boot", "accessory": "handbag"}}
+{"index": 45, "dataset": "pa100k", "latency_s": 9.332, "predicted": {}}
+{"model": "qwen3-vl-2b", "examples": 45, "groups": 33, "attribute_accuracy": 0.38596491228070173, "image_exact_match": 0.0, "track_exact_match": 0.0, "track_groups_evaluated": 3, "structured_valid_rate": 0.5555555555555556, "labeled_field_count": {"simuletic": {"min": 9, "max": 9, "mean": 9.0}, "pa100k": {"min": 5, "max": 5, "mean": 5.0}}, "latency_s_p50": 6.682577100000344, "latency_s_p95": 13.20657889999984, "field_accuracy": {"gender": 0.35555555555555557, "age": 0.2, "hair_color": 0.5333333333333333, "viewpoint": 0.4, "top_color": 0.3333333333333333, "top_type": 0.6666666666666666, "bottom_color": 1.0, "bottom_type": 0.26666666666666666, "accessory": 0.37777777777777777}, "status": "valid"}

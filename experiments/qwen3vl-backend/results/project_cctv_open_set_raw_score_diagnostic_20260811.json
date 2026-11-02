@@ -1,0 +1,206 @@
+{
+  "status": "diagnostic",
+  "method": {
+    "soliderWeight": 0.7,
+    "appearanceWeight": 0.3,
+    "arm": "symmetric-top4",
+    "appearanceFrameNormalization": false
+  },
+  "positives": [
+    {
+      "trackId": "20260729_092211-track-3715",
+      "videoId": "20260729_092211",
+      "target": "project-person-10",
+      "top": "project-person-10",
+      "soliderTop": "project-person-10",
+      "appearanceTop": "unlabeled-distractor-0161",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 3.239381790161133,
+      "targetScore": 3.239381790161133,
+      "top2Margin": 0.3118903636932373
+    },
+    {
+      "trackId": "20260729_092211-track-3897",
+      "videoId": "20260729_092211",
+      "target": "project-person-11",
+      "top": "project-person-11",
+      "soliderTop": "project-person-11",
+      "appearanceTop": "unlabeled-distractor-0161",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 3.1001439094543457,
+      "targetScore": 3.1001439094543457,
+      "top2Margin": 0.4827113151550293
+    },
+    {
+      "trackId": "IMG_3618-track-0001",
+      "videoId": "IMG_3618",
+      "target": "project-person-02",
+      "top": "project-person-02",
+      "soliderTop": "unlabeled-distractor-0136",
+      "appearanceTop": "unlabeled-distractor-0751",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 2.4118452072143555,
+      "targetScore": 2.4118452072143555,
+      "top2Margin": 0.06834912300109863
+    },
+    {
+      "trackId": "IMG_3620-track-0001",
+      "videoId": "IMG_3620",
+      "target": "project-person-01",
+      "top": "project-person-01",
+      "soliderTop": "project-person-01",
+      "appearanceTop": "unlabeled-distractor-0515",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 3.85241961479187,
+      "targetScore": 3.85241961479187,
+      "top2Margin": 1.3089666366577148
+    },
+    {
+      "trackId": "IMG_3620-track-0002",
+      "videoId": "IMG_3620",
+      "target": "project-person-02",
+      "top": "project-person-02",
+      "soliderTop": "project-person-02",
+      "appearanceTop": "project-person-05",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 2.5528199672698975,
+      "targetScore": 2.5528199672698975,
+      "top2Margin": 0.021451234817504883
+    },
+    {
+      "trackId": "IMG_3620-track-0004",
+      "videoId": "IMG_3620",
+      "target": "project-person-03",
+      "top": "unlabeled-distractor-0769",
+      "soliderTop": "unlabeled-distractor-0854",
+      "appearanceTop": "unlabeled-distractor-0515",
+      "branchAgreement": false,
+      "rank": 2,
+      "topScore": 1.94777250289917,
+      "targetScore": 1.792271375656128,
+      "top2Margin": 0.155501127243042
+    },
+    {
+      "trackId": "IMG_3620-track-0005",
+      "videoId": "IMG_3620",
+      "target": "project-person-06",
+      "top": "project-person-06",
+      "soliderTop": "project-person-06",
+      "appearanceTop": "unlabeled-distractor-0792",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 1.8109898567199707,
+      "targetScore": 1.8109898567199707,
+      "top2Margin": 0.09138071537017822
+    },
+    {
+      "trackId": "IMG_3620-track-0006",
+      "videoId": "IMG_3620",
+      "target": "project-person-04",
+      "top": "project-person-04",
+      "soliderTop": "unlabeled-distractor-0333",
+      "appearanceTop": "unlabeled-distractor-0751",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 2.267181158065796,
+      "targetScore": 2.267181158065796,
+      "top2Margin": 0.4967302083969116
+    },
+    {
+      "trackId": "IMG_3620-track-0007",
+      "videoId": "IMG_3620",
+      "target": "project-person-05",
+      "top": "project-person-05",
+      "soliderTop": "unlabeled-distractor-0826",
+      "appearanceTop": "unlabeled-distractor-0070",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 2.387105941772461,
+      "targetScore": 2.387105941772461,
+      "top2Margin": 0.01902174949645996
+    },
+    {
+      "trackId": "IMG_3620-track-0058",
+      "videoId": "IMG_3620",
+      "target": "project-person-08",
+      "top": "unlabeled-distractor-0723",
+      "soliderTop": "unlabeled-distractor-0455",
+      "appearanceTop": "unlabeled-distractor-0751",
+      "branchAgreement": false,
+      "rank": 2,
+      "topScore": 1.941859483718872,
+      "targetScore": 1.8751845359802246,
+      "top2Margin": 0.06667494773864746
+    },
+    {
+      "trackId": "IMG_3620-track-0090",
+      "videoId": "IMG_3620",
+      "target": "project-person-03",
+      "top": "project-person-03",
+      "soliderTop": "unlabeled-distractor-0440",
+      "appearanceTop": "unlabeled-distractor-0751",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 1.9840902090072632,
+      "targetScore": 1.9840902090072632,
+      "top2Margin": 0.495815634727478
+    },
+    {
+      "trackId": "IMG_3620-track-0100",
+      "videoId": "IMG_3620",
+      "target": "project-person-07",
+      "top": "project-person-07",
+      "soliderTop": "project-person-07",
+      "appearanceTop": "unlabeled-distractor-0110",
+      "branchAgreement": false,
+      "rank": 1,
+      "topScore": 4.159960746765137,
+      "targetScore": 4.159960746765137,
+      "top2Margin": 0.25460362434387207
+    }
+  ],
+  "negativeQueries": [
+    {
+      "trackId": "IMG_3620-track-0003",
+      "videoId": "IMG_3620",
+      "top": "project-person-05",
+      "soliderTop": "unlabeled-distractor-0145",
+      "appearanceTop": "project-person-05",
+      "branchAgreement": false,
+      "topScore": 2.4745750427246094,
+      "top2Margin": 0.18721914291381836,
+      "topCandidates": [
+        {
+          "identity": "project-person-05",
+          "score": 2.4745750427246094
+        },
+        {
+          "identity": "unlabeled-distractor-0132",
+          "score": 2.287355899810791
+        },
+        {
+          "identity": "unlabeled-distractor-0145",
+          "score": 2.2279715538024902
+        },
+        {
+          "identity": "unlabeled-distractor-0157",
+          "score": 2.165306568145752
+        },
+        {
+          "identity": "unlabeled-distractor-0472",
+          "score": 2.0998265743255615
+        }
+      ]
+    }
+  ],
+  "calibration": {
+    "positiveTopScoreMin": 1.8109898567199707,
+    "positiveTop2MarginMin": 0.01902174949645996,
+    "positiveCorrectTargetScoreMin": 1.792271375656128
+  }
+}

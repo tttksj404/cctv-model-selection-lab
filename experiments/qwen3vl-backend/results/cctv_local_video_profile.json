@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "status": "profiled_metadata_only",
+  "videos": [
+    {
+      "fileName": "IMG_3565.mov",
+      "frameCount": 408,
+      "fps": 30.0037,
+      "width": 1920,
+      "height": 1080,
+      "durationSeconds": 13.5983,
+      "aspectRatio": 1.7778,
+      "orientation": "landscape",
+      "sampledFrameCount": 12,
+      "meanLuma": 105.8203
+    },
+    {
+      "fileName": "IMG_3567.mov",
+      "frameCount": 391,
+      "fps": 30.0038,
+      "width": 1920,
+      "height": 1080,
+      "durationSeconds": 13.0317,
+      "aspectRatio": 1.7778,
+      "orientation": "landscape",
+      "sampledFrameCount": 13,
+      "meanLuma": 107.3324
+    },
+    {
+      "fileName": "IMG_3568.mov",
+      "frameCount": 596,
+      "fps": 30.005,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 19.8633,
+      "aspectRatio": 0.5625,
+      "orientation": "portrait",
+      "sampledFrameCount": 13,
+      "meanLuma": 109.6653
+    }
+  ]
+}

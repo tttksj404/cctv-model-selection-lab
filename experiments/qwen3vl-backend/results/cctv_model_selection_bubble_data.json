@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "1.0",
+  "metricScope": "same_proxy_contract_only",
+  "rows": [
+    {
+      "model": "CLIP ViT-L/14",
+      "role": "teacher/reference",
+      "params_b": 0.427,
+      "attribute_accuracy_pct": 41.4035,
+      "structured_valid_rate_pct": 100.0,
+      "p95_latency_s": 0.9792,
+      "p50_latency_s": 0.8756,
+      "track_exact_match_pct": 0.0,
+      "examples": 45,
+      "groups": 33,
+      "field_accuracy": {
+        "gender": 0.5555555555555556,
+        "age": 0.5333333333333333,
+        "hair_color": 0.6666666666666666,
+        "viewpoint": 0.28888888888888886,
+        "top_color": 0.5333333333333333,
+        "top_type": 0.4,
+        "bottom_color": 0.2,
+        "bottom_type": 0.3333333333333333,
+        "accessory": 0.3111111111111111
+      },
+      "status": "valid",
+      "source": "experiments/results/clip-vit-l14.track-contract-rerun.json"
+    },
+    {
+      "model": "CLIP ViT-B/32",
+      "role": "edge candidate",
+      "params_b": 0.151,
+      "attribute_accuracy_pct": 38.5965,
+      "structured_valid_rate_pct": 100.0,
+      "p95_latency_s": 0.3984,
+      "p50_latency_s": 0.3103,
+      "track_exact_match_pct": 0.0,
+      "examples": 45,
+      "groups": 33,
+      "field_accuracy": {
+        "gender": 0.5555555555555556,
+        "age": 0.4444444444444444,
+        "hair_color": 0.6666666666666666,
+        "viewpoint": 0.2222222222222222,
+        "top_color": 0.6666666666666666,
+        "top_type": 0.5333333333333333,
+        "bottom_color": 0.2,
+        "bottom_type": 0.28888888888888886,
+        "accessory": 0.24444444444444444
+      },
+      "status": "valid",
+      "source": "experiments/results/clip-vit-b32.track-contract-rerun.json"
+    },
+    {
+      "model": "Qwen3-VL-2B",
+      "role": "server VLM",
+      "params_b": 2.0,
+      "attribute_accuracy_pct": 38.5965,
+      "structured_valid_rate_pct": 55.5556,
+      "p95_latency_s": 13.2066,
+      "p50_latency_s": 6.6826,
+      "track_exact_match_pct": 0.0,
+      "examples": 45,
+      "groups": 33,
+      "field_accuracy": {
+        "gender": 0.35555555555555557,
+        "age": 0.2,
+        "hair_color": 0.5333333333333333,
+        "viewpoint": 0.4,
+        "top_color": 0.3333333333333333,
+        "top_type": 0.6666666666666666,
+        "bottom_color": 1.0,
+        "bottom_type": 0.26666666666666666,
+        "accessory": 0.37777777777777777
+      },
+      "status": "valid",
+      "source": "experiments/results/qwen3-vl-2b.track-contract-rerun.json"
+    },
+    {
+      "model": "SigLIP base",
+      "role": "retrieval candidate",
+      "params_b": 0.203,
+      "attribute_accuracy_pct": 24.5614,
+      "structured_valid_rate_pct": 100.0,
+      "p95_latency_s": 0.2919,
+      "p50_latency_s": 0.1887,
+      "track_exact_match_pct": 0.0,
+      "examples": 45,
+      "groups": 33,
+      "field_accuracy": {
+        "gender": 0.4888888888888889,
+        "age": 0.4444444444444444,
+        "hair_color": 0.0,
+        "viewpoint": 0.4,
+        "top_color": 0.26666666666666666,
+        "top_type": 0.3333333333333333,
+        "bottom_color": 0.0,
+        "bottom_type": 0.022222222222222223,
+        "accessory": 0.0
+      },
+      "status": "valid",
+      "source": "experiments/results/siglip-base.track-contract-rerun.json"
+    },
+    {
+      "model": "BLIP base",
+      "role": "caption candidate",
+      "params_b": 0.385,
+      "attribute_accuracy_pct": 20.3509,
+      "structured_valid_rate_pct": 100.0,
+      "p95_latency_s": 0.4666,
+      "p50_latency_s": 0.301,
+      "track_exact_match_pct": 0.0,
+      "examples": 45,
+      "groups": 33,
+      "field_accuracy": {
+        "gender": 0.7333333333333333,
+        "age": 0.0,
+        "hair_color": 0.0,
+        "viewpoint": 0.08888888888888889,
+        "top_color": 0.0,
+        "top_type": 0.0,
+        "bottom_color": 0.13333333333333333,
+        "bottom_type": 0.0,
+        "accessory": 0.4222222222222222
+      },
+      "status": "valid",
+      "source": "experiments/results/blip-base.track-contract-rerun.json"
+    }
+  ]
+}

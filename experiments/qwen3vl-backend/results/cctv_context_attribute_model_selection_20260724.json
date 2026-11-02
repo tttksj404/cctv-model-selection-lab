@@ -1,0 +1,142 @@
+{
+  "schema_version": "cctv-context-attribute-gate-v1",
+  "generated_at": "2026-07-24",
+  "status": "blocked_project_cctv_ground_truth_missing",
+  "scope": "CCTV person-track context and attribute recognition for missing-person candidate narrowing",
+  "gate": {
+    "track_attribute_macro_f1_min": 0.85,
+    "critical_field_macro_f1_min": 0.85,
+    "condition_macro_f1_min": 0.85,
+    "identity_rank1_min": 0.85,
+    "identity_recall5_min": 0.95,
+    "false_match_max": 0.05,
+    "false_reject_max": 0.1,
+    "review_rate_max": 0.3,
+    "ci_rule": {
+      "minimum_metrics": "95% CI lower bound must meet the minimum threshold",
+      "maximum_metrics": "95% CI upper bound must be at or below the maximum threshold"
+    },
+    "unit": "track",
+    "split": "case_identity_camera_condition_track_heldout_with_30s_temporal_embargo"
+  },
+  "project_cctv_dataset": {
+    "source_videos": ["IMG_3565", "IMG_3567", "IMG_3568"],
+    "original_rows": 175,
+    "expanded_rows": 1225,
+    "augmentation_rows": 1050,
+    "identity_groups": 0,
+    "tracks": 0,
+    "training_eligible_rows": 0,
+    "identity_labels_available": false,
+    "human_review_status": "needs_human_review",
+    "promotion_status": "blocked"
+  },
+  "proxy_results": [
+    {
+      "model": "CLIP ViT-L/14",
+      "input": "original",
+      "attribute_accuracy": 0.4140350877,
+      "structured_valid_rate": 1.0,
+      "examples": 45,
+      "scope": "same_proxy_contract_not_project_cctv"
+    },
+    {
+      "model": "CLIP ViT-L/14",
+      "input": "person_only_crop",
+      "attribute_accuracy": 0.4385964912,
+      "delta_pp": 2.4561403509,
+      "bootstrap_95ci_delta_pp": [-4.3902439024, 8.3076923077],
+      "structured_valid_rate": 1.0,
+      "examples": 45,
+      "scope": "same_proxy_contract_not_project_cctv"
+    },
+    {
+      "model": "CLIP ViT-B/32",
+      "input": "person_only_crop",
+      "attribute_accuracy": 0.4,
+      "structured_valid_rate": 1.0,
+      "examples": 45,
+      "scope": "same_proxy_contract_not_project_cctv"
+    },
+    {
+      "model": "Qwen3-VL-2B",
+      "input": "original",
+      "attribute_accuracy": 0.3929824561,
+      "structured_valid_rate": 0.5555555556,
+      "p95_latency_seconds": 6.108301,
+      "examples": 45,
+      "scope": "same_proxy_contract_not_project_cctv"
+    },
+    {
+      "model": "CLIP-B/32 partial fine-tuning",
+      "input": "PA-100K local proxy",
+      "attribute_accuracy": 0.726666677,
+      "macro_f1": 0.4355349701,
+      "scope": "PA-100K_proxy_not_project_cctv"
+    },
+    {
+      "model": "SOLIDER Swin-B + Sonnet response-level auxiliary loss",
+      "input": "GPU remote synthetic/PA-100K proxy",
+      "remote_runtime": "NVIDIA L40S x4; torch 2.6.0+cu124; transformers 5.14.1",
+      "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/solider_full_plus_sonnet_w005_remote.json",
+      "remote_checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/models/solider_sonnet_head_pilot.pt",
+      "gate_passed": false,
+      "gate_reason": "synthetic proxy and response-level labels cannot establish CCTV identity/track-heldout accuracy",
+      "scope": "remote_proxy_not_project_cctv"
+    },
+    {
+      "model": "SOLIDER Swin-B fine-tune vs Sonnet response-level distillation",
+      "input": "PA-100K full original frames + CCTV proxy group-heldout",
+      "remote_runtime": "NVIDIA L40S; torch 2.6.0+cu124; transformers 5.14.1; seed 20260724",
+      "baseline_test_mA": 0.7733317017555237,
+      "baseline_test_label_macro_f1": 0.6346375929334989,
+      "same_run_pa100k_masked_attribute_accuracy": {
+        "baseline": 0.9412961602210999,
+        "sonnet": 0.944430768498376,
+        "delta": 0.003134608277276076
+      },
+      "cctv_proxy_group_heldout_mean": {
+        "baseline": 0.846153853237915,
+        "sonnet": 0.8307692408561707,
+        "delta": -0.01538461446762085
+      },
+      "gate_passed": false,
+      "gate_reason": "group-heldout proxy remains below 0.85 and project CCTV identity/track-heldout labels are unavailable",
+      "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/gpu_arm_040/experiments/results/solider_ft_sonnet_20260724.json",
+      "remote_checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/gpu_arm_040/experiments/models/solider_sonnet_head_pilot.pt",
+      "scope": "remote_proxy_not_project_cctv"
+    },
+    {
+      "model": "SOLIDER saved 79% head checkpoint + Sonnet response-level distillation",
+      "input": "PA-100K full original frames + CCTV proxy group-heldout",
+      "initialization": "saved_pa_head_checkpoint",
+      "pa100k_masked_attribute_accuracy": {"baseline": 0.9326692223548889, "sonnet": 0.9431615471839905, "delta": 0.0104923248291016},
+      "cctv_proxy_group_heldout_mean": {"baseline": 0.8564102649688721, "sonnet": 0.8307692408561707, "delta": -0.025641024112701416},
+      "gate_passed": false,
+      "gate_reason": "Sonnet lowers group-heldout proxy generalization below 85%; project CCTV identity/track-heldout labels are unavailable",
+      "remote_result": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/arm_w010/experiments/results/solider_79_base_sonnet_w010_e40_20260724.json",
+      "remote_checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/models/solider_sonnet_baseline_head.pt",
+      "scope": "remote_proxy_not_project_cctv"
+    }
+  ],
+  "decision": {
+    "promoted_to_production": false,
+    "server_attribute_candidate": "SOLIDER Swin-B + multi-label attribute head",
+    "embedded_retrieval_candidate": "CLIP ViT-L/14",
+    "server_semantic_review_candidate": "Qwen3.5-9B",
+    "teacher_ablation": ["human_only", "teacher_only_excluded_from_gate", "human_plus_sonnet", "human_plus_florence"],
+    "person_crop_status": "keep_as_experimental_arm; do_not_make_global_default_until_project_test_ci_clears_gate",
+    "automatic_match": "disabled_until_all_gates_pass"
+  },
+  "required_data_before_training": {
+    "minimum_identity_groups": 10,
+    "minimum_tracks_per_identity": 3,
+    "minimum_camera_or_condition_groups": 3,
+    "minimum_original_keyframes": 600,
+    "independent_annotators": 2,
+    "hard_negative_tracks": 100,
+    "test_uses_original_frames_only": true,
+    "augmentation_allowed_in_test": false,
+    "required_labels": ["identityGroupId", "targetRole", "color", "clothing", "texture", "carriedItem", "quality", "occlusion", "visibility"]
+  }
+}

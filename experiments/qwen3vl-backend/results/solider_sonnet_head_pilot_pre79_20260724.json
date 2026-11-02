@@ -1,0 +1,166 @@
+{
+  "status": "measured",
+  "model": "SOLIDER Swin-B frozen backbone plus PA-100K 26-attribute head",
+  "method": "PA-100K head training plus masked response-level Sonnet auxiliary loss",
+  "dataset": "PA-100K official parquet plus synthetic CCTV person-crop proxy",
+  "rows": {
+    "pa_train": 2000,
+    "pa_val": 500,
+    "pa_test": 500
+  },
+  "cctv_proxy_samples": 15,
+  "cctv_proxy_groups": [
+    "ped_2",
+    "ped_3",
+    "ped_4"
+  ],
+  "split": "group-held-out by synthetic person track; no reviewed project identity labels",
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.11.0+cu128"
+  },
+  "sonnet_teacher": "claude-sonnet-5 via authenticated Claude Code CLI",
+  "sonnet_label_type": "response-level labels mapped to PA-100K ontology; not logit KD",
+  "sonnet_weight": 0.1,
+  "pa_epochs": 1,
+  "sonnet_epochs": 1,
+  "baseline_initialization": "new_pa_head",
+  "baseline_head_checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\solider_sonnet_baseline_head.pt",
+  "baseline_head_checkpoint_sha256": "27a9274bd9febc19fc15949fa757e1de68e41958a31eec6b960d48789e48b356",
+  "baseline_pa100k": {
+    "val": {
+      "masked_attribute_accuracy": 0.8242307901382446,
+      "masked_field_macro_accuracy": 0.8242307672133813,
+      "masked_mA": 0.16900829708902165,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 13000.0
+    },
+    "test": {
+      "masked_attribute_accuracy": 0.8253076672554016,
+      "masked_field_macro_accuracy": 0.8253076913265082,
+      "masked_mA": 0.15722998097324029,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 13000.0
+    }
+  },
+  "combined_pa100k": {
+    "val": {
+      "masked_attribute_accuracy": 0.8396154046058655,
+      "masked_field_macro_accuracy": 0.8396153839734884,
+      "masked_mA": 0.18354362139227584,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 13000.0
+    },
+    "test": {
+      "masked_attribute_accuracy": 0.8495384454727173,
+      "masked_field_macro_accuracy": 0.849538463812608,
+      "masked_mA": 0.1808740348653653,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 13000.0
+    }
+  },
+  "baseline_proxy_all_samples": {
+    "masked_attribute_accuracy": 0.6512820720672607,
+    "masked_field_macro_accuracy": 0.5644444530208905,
+    "masked_mA": 0.4214285782405308,
+    "balanced_field_count": 7.0,
+    "valid_attribute_count": 195.0
+  },
+  "combined_proxy_all_samples": {
+    "masked_attribute_accuracy": 0.6666666865348816,
+    "masked_field_macro_accuracy": 0.5777777840693792,
+    "masked_mA": 0.37142857323799816,
+    "balanced_field_count": 7.0,
+    "valid_attribute_count": 195.0
+  },
+  "group_heldout": {
+    "folds": [
+      {
+        "heldout_group": "ped_2",
+        "train_groups": [
+          "ped_3",
+          "ped_4"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.7384615540504456,
+          "masked_field_macro_accuracy": 0.7384615391492844,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 0.7692307829856873,
+          "masked_field_macro_accuracy": 0.7692307715232556,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": 0.0307692289352417
+      },
+      {
+        "heldout_group": "ped_3",
+        "train_groups": [
+          "ped_2",
+          "ped_4"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.6153846383094788,
+          "masked_field_macro_accuracy": 0.6153846165308585,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 0.7692307829856873,
+          "masked_field_macro_accuracy": 0.7692307692307693,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": 0.1538461446762085
+      },
+      {
+        "heldout_group": "ped_4",
+        "train_groups": [
+          "ped_2",
+          "ped_3"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.6000000238418579,
+          "masked_field_macro_accuracy": 0.6000000009169946,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 0.4615384638309479,
+          "masked_field_macro_accuracy": 0.46153846153846156,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": -0.13846156001091003
+      }
+    ],
+    "baseline_mean_masked_attribute_accuracy": 0.6512820720672607,
+    "combined_mean_masked_attribute_accuracy": 0.6666666766007742,
+    "mean_delta_masked_attribute_accuracy": 0.015384604533513424
+  },
+  "checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\solider_sonnet_head_pilot.pt",
+  "checkpoint_sha256": "4abcb5dd21e4b11fe63e5272fb65b0ca01492b607fe90d612275c4e347452d33",
+  "provenance": {
+    "script_sha256": "2f1b30c823c391c1fdaaf593365b748933d691c33f7ba4c79045518e8651697c",
+    "solider_checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+    "sonnet_result_sha256": "b79b05d26d8dc82309855eaae8177be104ea8f05e54c9fd9363140678f6a2351",
+    "base_head_checkpoint_sha256": null
+  },
+  "gate": {
+    "target": 0.85,
+    "passed": false,
+    "reason": "Synthetic proxy and response-level labels cannot establish CCTV identity/track-heldout accuracy."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "mevid-public-manifest-audit-v1",
+  "observedAt": "2026-07-31T13:33:00+09:00",
+  "manifest": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/results/mevid_public_full_manifest_20260731.jsonl",
+  "datasetRoot": "/home/j-i15a204/datasets/mevid/extracted",
+  "records": 62898,
+  "personSplitOverlaps": {
+    "trainValidation": 0,
+    "trainTest": 0,
+    "validationTest": 0
+  },
+  "queryGalleryCameraRoleViolations": 0,
+  "unknownGalleryRows": 0,
+  "localPathMode": "relative-to-dataset-root",
+  "resolvedSample": {
+    "relativePath": "bbox_test/0201/0201O003C330T004F00000.jpg",
+    "jupyterContentsStatus": 200,
+    "type": "file",
+    "sizeBytes": 3985
+  },
+  "correctedDiagnostic": {
+    "invalidCheck": "Path(localPath).is_file() from the repository root",
+    "reason": "localPath is relative to the configured dataset root",
+    "validCheck": "Path(datasetRoot) / localPath"
+  }
+}

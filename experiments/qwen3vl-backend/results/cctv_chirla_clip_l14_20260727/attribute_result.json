@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "cctv-attribute-adjudication-v1",
+  "adjudication": "manual contact-sheet review; unknown fields excluded from accuracy",
+  "metrics": {
+    "test": {
+      "track_exact_match": 0.0,
+      "mA": 0.1125,
+      "InsF1": 0.05926024955436719
+    }
+  },
+  "evaluatedInstances": 16,
+  "evaluatedAttributeSlots": 80,
+  "fieldMetrics": {
+    "upper_color": {
+      "count": 16,
+      "accuracy": 0.125,
+      "macro_f1": 0.09090909090909091
+    },
+    "lower_color": {
+      "count": 16,
+      "accuracy": 0.1875,
+      "macro_f1": 0.075
+    },
+    "carrying": {
+      "count": 16,
+      "accuracy": 0.125,
+      "macro_f1": 0.047058823529411764
+    },
+    "headwear": {
+      "count": 16,
+      "accuracy": 0.0,
+      "macro_f1": 0.0
+    },
+    "visibility": {
+      "count": 16,
+      "accuracy": 0.125,
+      "macro_f1": 0.08333333333333333
+    }
+  }
+}

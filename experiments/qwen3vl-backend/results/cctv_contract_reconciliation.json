@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "cctv-contract-reconciliation-v1",
+  "projectIdentityGate": {
+    "status": "blocked_missing_reviewed_identity_labels",
+    "eligibleModels": 0,
+    "reason": "The current MOV profile has no reviewed identity tracks, so proxy attribute scores cannot be promoted to identity scores."
+  },
+  "externalProxyScope": {
+    "dataset": "Simuletic-15-plus-PA-100K-30",
+    "examples": 45,
+    "identityEligible": false,
+    "models": [
+      {
+        "model": "CLIP ViT-L/14",
+        "source": "openai/clip-vit-large-patch14",
+        "attributeAccuracy": 0.4140350877,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 0.9791904,
+        "result": "experiments/results/clip-vit-l14.track-contract-rerun.json"
+      },
+      {
+        "model": "CLIP ViT-B/32",
+        "source": "openai/clip-vit-base-patch32",
+        "attributeAccuracy": 0.3859649123,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 0.3984236,
+        "result": "experiments/results/clip-vit-b32.track-contract-rerun.json"
+      },
+      {
+        "model": "Qwen3-VL-2B",
+        "source": "local Qwen3-VL-2B-Instruct checkpoint",
+        "attributeAccuracy": 0.3859649123,
+        "structuredValidRate": 0.5555555556,
+        "p95LatencySeconds": 13.2065789,
+        "result": "experiments/results/qwen3-vl-2b.track-contract-rerun.json"
+      },
+      {
+        "model": "SigLIP base",
+        "source": "google/siglip-base-patch16-224",
+        "attributeAccuracy": 0.2456140351,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 0.2919459,
+        "result": "experiments/results/siglip-base.track-contract-rerun.json"
+      },
+      {
+        "model": "BLIP base",
+        "source": "Salesforce/blip-image-captioning-base",
+        "attributeAccuracy": 0.2035087719,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 0.4665791,
+        "result": "experiments/results/blip-base.track-contract-rerun.json"
+      },
+      {
+        "model": "SigLIP2 base 384",
+        "source": "google/siglip2-base-patch16-384",
+        "attributeAccuracy": 0.2175,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 8.377,
+        "result": "experiments/results/siglip2-base-384.json"
+      },
+      {
+        "model": "SigLIP2 base 224",
+        "source": "google/siglip2-base-patch16-224",
+        "attributeAccuracy": 0.2035,
+        "structuredValidRate": 1.0,
+        "p95LatencySeconds": 4.31,
+        "result": "experiments/results/siglip2-base-224.json"
+      }
+    ]
+  },
+  "externalIdentityCandidates": [
+    {
+      "model": "FastReID model zoo",
+      "role": "identity embedding",
+      "status": "pending_reviewed_project_tracks"
+    },
+    {
+      "model": "TransReID",
+      "role": "identity embedding",
+      "status": "pending_reviewed_project_tracks"
+    },
+    {
+      "model": "Torchreid OSNet",
+      "role": "lightweight identity embedding",
+      "status": "pending_reviewed_project_tracks"
+    },
+    {
+      "model": "DINOv2",
+      "role": "visual embedding baseline",
+      "status": "pending_reviewed_project_tracks"
+    }
+  ]
+}

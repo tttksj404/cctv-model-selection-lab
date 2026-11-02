@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "cctv-final-artifact-audit-v1",
+  "auditedAt": "2026-07-28",
+  "status": "PASS_WITH_RELEASE_BLOCKERS",
+  "strictGpuResults": {
+    "protocol": "strict-cross-camera-sequence",
+    "rawFileCount": 10,
+    "queryRankingsPerFile": 95,
+    "canonicalBundle": {
+      "path": "experiments/results/gpu_raw_20260728/strict_all_10_bundle_20260728.tgz",
+      "entryCount": 10,
+      "sha256": "74348fc08912bb516d9b1f4472e71d32e347c9cee35b8f84f94e0f61dc8a0371"
+    }
+  },
+  "selectedCandidate": {
+    "model": "SOLIDER-ReID Swin-B",
+    "galleryAggregation": "topk-mean",
+    "galleryTopK": 3,
+    "tta": "none",
+    "rank1": 0.4736842105,
+    "recallAt5": 0.7789473684,
+    "identityMrr": 0.6073688008,
+    "automaticMatchEnabled": false
+  },
+  "checkpoint": {
+    "path": "models/solider_reid/swin_base_msmt17.pth",
+    "bytes": 351954370,
+    "sha256": "81555144f412d46182d9cc8a0a01334f470a3484ce2fede88af9a5779d2a05a7"
+  },
+  "notebook": {
+    "path": "output/jupyter-notebook/cctv_reid_gpu_comparison_20260728.ipynb",
+    "cells": 14,
+    "executedCodeCells": 6,
+    "errorOutputs": 0,
+    "sha256": "ce0c408cfc63117419f4070dae2355539beba6b43f11be29c37d77f6fa4a3265"
+  },
+  "bubbleChart": {
+    "png": {
+      "path": "experiments/results/cctv_reid_bubble_20260728.png",
+      "sha256": "e1b6288be55342aa72e8abb6ac5a815ff451c8e23975d631162a47a6012f7368"
+    },
+    "svg": {
+      "path": "experiments/results/cctv_reid_bubble_20260728.svg",
+      "sha256": "34ec5e96f2c24f499b7aa3bdbe457bc232bd091ac8e1871b63e35b5f1405c1e1"
+    }
+  },
+  "projectVideoData": {
+    "detectedCropCount": 395,
+    "trackerFragmentCount": 57,
+    "manuallyReviewedStableTrackCount": 10,
+    "projectTrackHeldoutRows": 80,
+    "galleryRows": 40,
+    "queryRows": 40,
+    "scope": "same-camera same-track temporal proxy; not cross-camera identity generalization evidence"
+  },
+  "verification": {
+    "pytest": {
+      "passed": 170,
+      "warnings": 1
+    },
+    "ruff": "PASS",
+    "pyCompile": "PASS",
+    "runtimeSourceBasedPyright": "PASS",
+    "liveHttp": {
+      "healthStatus": 200,
+      "mockHealth": "degraded",
+      "highConfidenceDecision": "review",
+      "selectedCandidateId": null,
+      "invalidRequestStatus": 422
+    },
+    "structuralNoExcuse": {
+      "status": "WARN",
+      "violationCount": 33,
+      "scope": "benchmark scripts and pre-existing oversized modules/tests",
+      "runtimeImpact": "none observed in executed tests"
+    }
+  },
+  "releaseBlockers": [
+    "strict public proxy Rank-1 is below the 0.85 automatic-match gate",
+    "project videos lack cross-camera and cross-event identity ground truth",
+    "Sonnet identity strict arm has not been measured",
+    "production Qwen GPU checkpoint load and latency smoke have not been completed"
+  ]
+}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="680" viewBox="0 0 1080 680" role="img" aria-labelledby="title desc">
+  <title id="title">CHIRLA 다중 identity ReID 버블차트</title>
+  <desc id="desc">가로축은 Rank-1, 세로축은 mAP/MINP, 버블 크기는 Recall at 10이다. 85퍼센트 기준선과 현재 최고 SigLIP2 37.89퍼센트를 표시한다.</desc>
+  <rect width="1080" height="680" fill="#ffffff"/>
+  <text x="540" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#172033">CHIRLA 다중 identity ReID 비교</text>
+  <text x="540" y="64" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#586174">11 identities · 95 query · 118 gallery · 공개 proxy · GPU 서버 frozen encoder 평가</text>
+  <rect x="105" y="95" width="870" height="470" fill="#fbfcff" stroke="#cbd5e1"/>
+  <g stroke="#e2e8f0" stroke-width="1">
+    <line x1="105" y1="565" x2="975" y2="565"/><line x1="105" y1="408.3" x2="975" y2="408.3"/><line x1="105" y1="251.7" x2="975" y2="251.7"/><line x1="105" y1="95" x2="975" y2="95"/>
+    <line x1="105" y1="95" x2="105" y2="565"/><line x1="395" y1="95" x2="395" y2="565"/><line x1="685" y1="95" x2="685" y2="565"/><line x1="975" y1="95" x2="975" y2="565"/>
+  </g>
+  <line x1="844.5" y1="95" x2="844.5" y2="565" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="852" y="118" font-family="Arial, sans-serif" font-size="12" fill="#b91c1c">85% 게이트</text>
+  <g font-family="Arial, sans-serif" font-size="12" fill="#475569">
+    <text x="105" y="588" text-anchor="middle">0%</text><text x="322.5" y="588" text-anchor="middle">25%</text><text x="540" y="588" text-anchor="middle">50%</text><text x="757.5" y="588" text-anchor="middle">75%</text><text x="975" y="588" text-anchor="middle">100%</text>
+    <text x="92" y="569" text-anchor="end">0%</text><text x="92" y="412" text-anchor="end">20%</text><text x="92" y="255" text-anchor="end">40%</text><text x="92" y="99" text-anchor="end">60%</text>
+  </g>
+  <text x="540" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#172033">Rank-1 정확도</text>
+  <text x="25" y="330" text-anchor="middle" transform="rotate(-90 25 330)" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#172033">mAP / MINP</text>
+  <g font-family="Arial, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+    <circle cx="434.7" cy="139" r="30" fill="#2563eb" fill-opacity="0.78"/><text x="434.7" y="143" fill="#ffffff">SigLIP2</text>
+    <circle cx="416.4" cy="165" r="30" fill="#16a34a" fill-opacity="0.78"/><text x="416.4" y="169" fill="#ffffff">OSNet</text>
+    <circle cx="370.6" cy="202" r="29" fill="#f97316" fill-opacity="0.78"/><text x="370.6" y="206" fill="#ffffff">L/14</text>
+    <circle cx="370.6" cy="224" r="29" fill="#7c3aed" fill-opacity="0.78"/><text x="370.6" y="228" fill="#ffffff">DINOv2</text>
+    <circle cx="315.6" cy="202" r="27" fill="#e11d48" fill-opacity="0.78"/><text x="315.6" y="206" fill="#ffffff">B/32</text>
+    <circle cx="297.3" cy="262" r="26" fill="#0891b2" fill-opacity="0.78"/><text x="297.3" y="266" fill="#ffffff">L/14 max</text>
+    <circle cx="324.8" cy="225" r="26" fill="#a16207" fill-opacity="0.78"/><text x="324.8" y="229" fill="#ffffff">L/14 top5</text>
+  </g>
+  <rect x="725" y="105" width="230" height="96" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="740" y="128" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#172033">판독</text>
+  <text x="740" y="150" font-family="Arial, sans-serif" font-size="11" fill="#475569">최고: SigLIP2 37.89%</text>
+  <text x="740" y="169" font-family="Arial, sans-serif" font-size="11" fill="#475569">85%까지 47.11%p 부족</text>
+  <text x="740" y="188" font-family="Arial, sans-serif" font-size="11" fill="#b91c1c">자동 승격: 불가</text>
+  <text x="540" y="655" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#64748b">버블 크기 = Recall@10 · 동일 split/동일 query-gallery 계약 · 모델 교체만으로 85%를 만들 수 없음</text>
+</svg>

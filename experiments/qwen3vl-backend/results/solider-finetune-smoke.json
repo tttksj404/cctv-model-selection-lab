@@ -1,0 +1,75 @@
+{
+  "status": "valid",
+  "model": "SOLIDER Swin-B end-to-end fine-tuning with linear PA-100K head",
+  "dataset": "tuandunghcmut/PA-100K parquet",
+  "rows": {
+    "train": 500,
+    "val": 200,
+    "test": 200
+  },
+  "attributes": [
+    "Female",
+    "AgeOver60",
+    "Age18-60",
+    "AgeLess18",
+    "Front",
+    "Side",
+    "Back",
+    "Hat",
+    "Glasses",
+    "HandBag",
+    "ShoulderBag",
+    "Backpack",
+    "HoldObjectsInFront",
+    "ShortSleeve",
+    "LongSleeve",
+    "UpperStride",
+    "UpperLogo",
+    "UpperPlaid",
+    "UpperSplice",
+    "LowerStripe",
+    "LowerPattern",
+    "LongCoat",
+    "Trousers",
+    "Shorts",
+    "Skirt&Dress",
+    "boots"
+  ],
+  "seed": 17,
+  "epochs": 1,
+  "batch_size": 8,
+  "learning_rate": 1e-05,
+  "head_learning_rate": 0.0001,
+  "loss": "SOLIDER official ratio2weight BCE loss",
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "python": "3.14.6",
+  "checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+  "metrics": {
+    "train": {
+      "mA": 0.7119452953338623,
+      "instance_acc": 0.722358763217926,
+      "instance_precision": 0.8589333295822144,
+      "instance_recall": 0.8123571872711182,
+      "InsF1": 0.834996223449707,
+      "label_macro_f1": 0.511518613793529
+    },
+    "val": {
+      "mA": 0.646396279335022,
+      "instance_acc": 0.6012206077575684,
+      "instance_precision": 0.7891230583190918,
+      "instance_recall": 0.7028769850730896,
+      "InsF1": 0.7435072660446167,
+      "label_macro_f1": 0.39118875849705476
+    },
+    "test": {
+      "mA": 0.6470203995704651,
+      "instance_acc": 0.6221825480461121,
+      "instance_precision": 0.8021667003631592,
+      "instance_recall": 0.725440502166748,
+      "InsF1": 0.7618767619132996,
+      "label_macro_f1": 0.3874115261894006
+    }
+  },
+  "metric_warning": "This is PA-100K attribute accuracy, not CCTV track identity accuracy."
+}

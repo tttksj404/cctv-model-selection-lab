@@ -1,0 +1,55 @@
+{
+  "measurementStatus": "identity_measured_sealed_test",
+  "measurementScope": "project_candidate",
+  "promotionEligible": false,
+  "general85Gate": {
+    "passed": false,
+    "identityGatePassed": false,
+    "attributeGatePassed": false,
+    "minimumGalleryIdentities": 10
+  },
+  "evaluationEligibility": {
+    "identityLabelsAvailable": true,
+    "trackHeldoutMetricsEligible": true,
+    "proxyMetricsReusedAsIdentity": false
+  },
+  "provenance": {
+    "sealedTestManifestSha256": "0d9f6687117b5fb908f5edc09e0418b75d60c3d837de376ab938e16ceb7eaf60",
+    "identityLabelSha256": "aeca432ab387b5abe5b56597713eef346558a5b7b644bed72232a32181bc872f",
+    "splitMethod": "identity_group_and_track_heldout",
+    "metricImplementation": "cctv_identity_evaluation_v1",
+    "manifestPath": "experiments\\data\\cctv_external\\chirla_review_20260727\\manifest.jsonl",
+    "predictionPath": "experiments\\results\\cctv_chirla_clip_l14_20260727\\identity_predictions.jsonl",
+    "attributeResultPath": "experiments\\results\\cctv_chirla_clip_l14_20260727\\attribute_result.json"
+  },
+  "metrics": {
+    "test": {
+      "top1_accuracy": 0.45454545454545453,
+      "track_exact_match": 0.0,
+      "mA": 0.1125,
+      "InsF1": 0.05926024955436719
+    }
+  },
+  "identityReport": {
+    "modelName": "clip-vit-l14-zero-shot",
+    "status": "valid",
+    "testTrackCount": 22,
+    "predictedTrackCount": 22,
+    "knownQueryCount": 11,
+    "unlabeledTargetCount": 0,
+    "queryWithoutGalleryCount": 0,
+    "galleryTrackCount": 11,
+    "galleryIdentityCount": 11,
+    "missingPredictionCount": 0,
+    "unknownQueryCount": 0,
+    "distractorQueryCount": 11,
+    "rank1": 0.45454545454545453,
+    "recallAt5": 0.8181818181818182,
+    "recallAt10": 1.0,
+    "meanAveragePrecision": 0.588888888888889,
+    "meanINP": 0.588888888888889,
+    "falseMatchRate": 1.0,
+    "falseRejectRate": 0.0,
+    "reviewRate": 0.0
+  }
+}

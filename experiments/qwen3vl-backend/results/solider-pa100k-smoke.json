@@ -1,0 +1,65 @@
+{
+  "status": "valid",
+  "model": "SOLIDER Swin-B frozen backbone plus PA-100K 26-attribute linear head",
+  "dataset": "tuandunghcmut/PA-100K parquet",
+  "rows": {
+    "train": 1000,
+    "val": 500,
+    "test": 500
+  },
+  "attributes": [
+    "Female",
+    "AgeOver60",
+    "Age18-60",
+    "AgeLess18",
+    "Front",
+    "Side",
+    "Back",
+    "Hat",
+    "Glasses",
+    "HandBag",
+    "ShoulderBag",
+    "Backpack",
+    "HoldObjectsInFront",
+    "ShortSleeve",
+    "LongSleeve",
+    "UpperStride",
+    "UpperLogo",
+    "UpperPlaid",
+    "UpperSplice",
+    "LowerStripe",
+    "LowerPattern",
+    "LongCoat",
+    "Trousers",
+    "Shorts",
+    "Skirt&Dress",
+    "boots"
+  ],
+  "split": "official train/val/test; no identity or track IDs",
+  "seed": 17,
+  "head_epochs": 3,
+  "extract_batch_size": 4,
+  "head_batch_size": 2048,
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "python": "3.14.6",
+  "checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+  "metrics": {
+    "train": {
+      "mA": 0.5051456093788147,
+      "InsF1": 0.5690990090370178,
+      "label_macro_f1": 0.1603737466323834
+    },
+    "val": {
+      "mA": 0.505439817905426,
+      "InsF1": 0.5542769432067871,
+      "label_macro_f1": 0.16370432050182268
+    },
+    "test": {
+      "mA": 0.5062506794929504,
+      "InsF1": 0.5353053212165833,
+      "label_macro_f1": 0.15186965501365754
+    }
+  },
+  "metric_warning": "This head-only experiment is not the official end-to-end SOLIDER fine-tuning recipe and is not CCTV track accuracy."
+}

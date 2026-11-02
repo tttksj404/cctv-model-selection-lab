@@ -1,0 +1,12 @@
+{
+  "model": "dinov2-base",
+  "device": "cuda",
+  "torch": "2.6.0+cu124",
+  "cuda": "NVIDIA L40S",
+  "rows": 921,
+  "featureShape": [
+    921,
+    768
+  ],
+  "trackCacheSha256": "51ea1912b277911472f48e34a4096a9b21539579a3601f2f5a7a59c5e490eeff"
+}

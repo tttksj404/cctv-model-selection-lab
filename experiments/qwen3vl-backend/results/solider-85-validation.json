@@ -1,0 +1,41 @@
+{
+  "status": "blocked",
+  "gate": "project_cctv_85_percent",
+  "passed": false,
+  "public_benchmark": {
+    "solider_swin_b_reported_pa100k_ma": 0.8637,
+    "crosspar_reported_pa100k_ma": 0.869,
+    "crosspar_reported_pa100k_insf1": 0.906,
+    "note": "reported public benchmark values, not local reproduction and not CCTV identity accuracy"
+  },
+  "local_evidence": {
+    "solider_swin_b_proxy_field_accuracy": 0.798333328962326,
+    "solider_weighted_head_only_10k_test_ma": 0.6695277094841003,
+    "solider_finetune_2k_test_ma": 0.6958211660385132,
+    "solider_finetune_2k_test_insf1": 0.8230268955230713,
+    "artifacts": [
+      "experiments/results/solider-swin-b-proxy.json",
+      "experiments/results/solider-pa100k-weighted-10k.json",
+      "experiments/results/solider-finetune-2k.json"
+    ]
+  },
+  "blocking_reasons": [
+    "project CCTV track images are not present in the repository",
+    "same/different identity labels are not available",
+    "track-held-out evaluation has not been run",
+    "full official end-to-end PA-100K reproduction is not complete"
+  ],
+  "promotion_policy": "do_not_claim_project_85_or_enable_automatic_match"
+  ,"reproducibility_review": {
+    "artifact_extract_batch_size": 4,
+    "reproduction_command_matches_artifact": true,
+    "vendor_commit": "b68bf689b29fc62304350c9235da20c34ae1da27",
+    "checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+    "limitations": [
+      "subset uses the first N rows rather than a representative random sample",
+      "fine-tune uses one epoch without the official augmentation and shuffle recipe",
+      "local prediction threshold is >= 0.5 while the official implementation uses > 0.5",
+      "public benchmark values are not local reproduction and not CCTV identity accuracy"
+    ]
+  }
+}

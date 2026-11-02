@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "project-cctv-embedding-lineage-verification-v1",
+  "status": "passed",
+  "errors": [],
+  "source": {
+    "embeddingsSha256": "54a669c51918fb0f87c23d7f51714035be9a86aba2acff28de29966795cae59e",
+    "visualSha256": "fe1a3ac76c5cbb63ba4859a49e7bc261f11146c140c5331b426b6e13f1a407c4",
+    "manifestSha256": "2dd2f31f5094e52bfdbdf4d096b9df917ed67d4bf4d3c4e9c867726825361623",
+    "adjudicationSha256": "754d63d694dc3eb3ce02be25c4cfc5453e3879d66a0c64aa458d045c1f7f7bcc",
+    "trackCount": 946,
+    "frameCount": 3844,
+    "manifestTrackCount": 946,
+    "adjudicatedTrackCount": 34
+  },
+  "checks": {
+    "trackIdsUnique": true,
+    "visualTrackOrderMatches": true,
+    "visualFrameOwnersMatch": true,
+    "visualFramePathsMatch": true,
+    "manifestPathsMatch": true,
+    "allCropFilesExist": true,
+    "videoIdsMatch": true,
+    "allAdjudicatedTracksCovered": true
+  },
+  "pathMismatchTrackIds": [],
+  "missingFileTrackIds": [],
+  "videoMismatchTrackIds": [],
+  "adjudicatedTracksMissingFromEmbeddings": []
+}

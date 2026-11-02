@@ -1,0 +1,17 @@
+{
+  "schema_version": "cctv-attribute-training-report-v1",
+  "status": "blocked",
+  "rows": 1225,
+  "eligible_rows": 0,
+  "identity_groups": 0,
+  "tracks": 0,
+  "condition_splits": {},
+  "error_count": 1227,
+  "errors": [
+    "IMG_3565-000000-original: trainingEligible=false",
+    "IMG_3565-000000-brightness_low: trainingEligible=false",
+    "IMG_3565-000000-brightness_high: trainingEligible=false",
+    "IMG_3565-000000-contrast_low: trainingEligible=false",
+    "IMG_3565-000000-contrast_high: trainingEligible=false"
+  ]
+}

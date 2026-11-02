@@ -1,0 +1,20 @@
+{
+  "status": "measured_proxy_only_partial_download",
+  "dataset": {
+    "name": "Simuletic CCTV-Pedestrian-1K",
+    "metadata_rows": 1005,
+    "downloaded_images": 963,
+    "missing_images": 37,
+    "identity_groups": 39,
+    "split": "identity-sorted 60% train, 20% validation, 20% group-heldout test",
+    "mapped_attributes": 26
+  },
+  "columns": ["pa_test_mA", "pa_test_InsF1", "simu_all_attribute_accuracy", "simu_image_heldout_attribute_accuracy", "simu_group_heldout_attribute_accuracy", "simu_group_exact_rate"],
+  "methods": [
+    {"name": "partial963_base_pa_head", "pa_test_mA": 0.742882, "pa_test_InsF1": 0.849000, "simu_all_attribute_accuracy": 0.828732, "simu_image_heldout_attribute_accuracy": 0.863087, "simu_group_heldout_attribute_accuracy": 0.872567, "simu_group_exact_rate": 0.358974},
+    {"name": "partial963_mixed_weighted_bce", "pa_test_mA": 0.752240, "pa_test_InsF1": 0.858798, "simu_all_attribute_accuracy": 0.922247, "simu_image_heldout_attribute_accuracy": 0.917271, "simu_group_heldout_attribute_accuracy": 0.931501, "simu_group_exact_rate": 0.538462},
+    {"name": "partial963_mixed_asl", "pa_test_mA": 0.757773, "pa_test_InsF1": 0.858832, "simu_all_attribute_accuracy": 0.879454, "simu_image_heldout_attribute_accuracy": 0.891147, "simu_group_heldout_attribute_accuracy": 0.909148, "simu_group_exact_rate": 0.384615},
+    {"name": "partial963_mixed_asl_sonnet", "pa_test_mA": 0.754923, "pa_test_InsF1": 0.855958, "simu_all_attribute_accuracy": 0.876970, "simu_image_heldout_attribute_accuracy": 0.890179, "simu_group_heldout_attribute_accuracy": 0.904474, "simu_group_exact_rate": 0.358974}
+  ],
+  "warning": "963개 이미지는 인증 다운로드가 완료된 부분집합이며, 실제 프로젝트 CCTV identity/track-heldout 자료가 아닌 속성 proxy이다."
+}

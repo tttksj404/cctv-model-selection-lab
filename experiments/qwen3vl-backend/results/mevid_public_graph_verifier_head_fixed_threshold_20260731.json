@@ -1,0 +1,51 @@
+{
+  "c": 1.0,
+  "calibrationPolicy": "identity-disjoint-graph-independent-fixed-threshold",
+  "classWeight": null,
+  "classifierCoef": [
+    1.9824432134628296,
+    -0.6115343570709229,
+    -0.5012936592102051,
+    1.0273014307022095,
+    0.9142884612083435,
+    -0.27070966362953186,
+    0.14478881657123566,
+    -0.1304704248905182
+  ],
+  "classifierIntercept": -1.60005944601918,
+  "confidenceNames": [
+    "top-score",
+    "margin",
+    "row-z",
+    "robust-z",
+    "reciprocal",
+    "mutual-row-z",
+    "joint-gap",
+    "graph-confidence"
+  ],
+  "degree": 1,
+  "matrix": "krecip-30-6-0.3",
+  "scalerMean": [
+    -0.4344794750213623,
+    0.054380569607019424,
+    8.256551742553711,
+    17.705984115600586,
+    0.36742347478866577,
+    8.48318099975586,
+    0.15667162835597992,
+    8.952895164489746
+  ],
+  "scalerScale": [
+    0.23533998429775238,
+    0.0764334425330162,
+    2.921783685684204,
+    10.0554838180542,
+    0.3675664961338043,
+    3.041560173034668,
+    0.1664765179157257,
+    3.1920742988586426
+  ],
+  "schemaVersion": "public-reid-graph-verifier-head-v1",
+  "sourceTrackCacheSha256": "3beb8477ec9d8eced0949ab0d1c2ece8f105301f6966f0bc41dc74aec9084259",
+  "threshold": 0.17272385954856873
+}

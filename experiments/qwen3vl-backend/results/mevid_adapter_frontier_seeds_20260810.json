@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "mevid-adapter-frontier-seeds-v1",
+  "selectionProtocol": "rerank selected independently on validation for each adapter checkpoint; test only reported after selection",
+  "device": {
+    "device": "cuda:0",
+    "torch": "2.6.0+cu124",
+    "gpu": "NVIDIA L40S"
+  },
+  "knownTestQueries": 297,
+  "runs": [
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260810.pt",
+      "selected": {
+        "method": "rank-fusion:csls-5*0.7+krecip-20-6-0.3*0.3",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 191,
+          "rank1": 0.7579365079365079,
+          "recallAt5Hits": 224,
+          "recallAt5": 0.8888888888888888,
+          "recallAt10Hits": 226,
+          "recallAt10": 0.8968253968253969,
+          "worstRank": 606
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 249,
+          "rank1": 0.8383838383838383,
+          "recallAt5Hits": 267,
+          "recallAt5": 0.898989898989899,
+          "recallAt10Hits": 276,
+          "recallAt10": 0.9292929292929293,
+          "worstRank": 394
+        }
+      },
+      "validationCandidateCount": 415,
+      "bestTestCandidateForDiagnostics": {
+        "method": "krecip-10-4-0.3",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 180,
+          "rank1": 0.7142857142857143,
+          "recallAt5Hits": 212,
+          "recallAt5": 0.8412698412698413,
+          "recallAt10Hits": 226,
+          "recallAt10": 0.8968253968253969,
+          "worstRank": 352
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 237,
+          "rank1": 0.797979797979798,
+          "recallAt5Hits": 273,
+          "recallAt5": 0.9191919191919192,
+          "recallAt10Hits": 279,
+          "recallAt10": 0.9393939393939394,
+          "worstRank": 390
+        }
+      }
+    },
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260811.pt",
+      "selected": {
+        "method": "rank-fusion:csls-10*0.4+krecip-20-6-0.5*0.6",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 194,
+          "rank1": 0.7698412698412699,
+          "recallAt5Hits": 222,
+          "recallAt5": 0.8809523809523809,
+          "recallAt10Hits": 227,
+          "recallAt10": 0.9007936507936508,
+          "worstRank": 499
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 248,
+          "rank1": 0.835016835016835,
+          "recallAt5Hits": 265,
+          "recallAt5": 0.8922558922558923,
+          "recallAt10Hits": 278,
+          "recallAt10": 0.936026936026936,
+          "worstRank": 376
+        }
+      },
+      "validationCandidateCount": 415,
+      "bestTestCandidateForDiagnostics": {
+        "method": "rank-fusion:csls-10*0.1+krecip-20-6-0.3*0.9",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 192,
+          "rank1": 0.7619047619047619,
+          "recallAt5Hits": 218,
+          "recallAt5": 0.8650793650793651,
+          "recallAt10Hits": 226,
+          "recallAt10": 0.8968253968253969,
+          "worstRank": 500
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 249,
+          "rank1": 0.8383838383838383,
+          "recallAt5Hits": 273,
+          "recallAt5": 0.9191919191919192,
+          "recallAt10Hits": 279,
+          "recallAt10": 0.9393939393939394,
+          "worstRank": 378
+        }
+      }
+    },
+    {
+      "checkpoint": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/tmp/mevid_project_adapter_fixture_20260810/adapter_seed_20260812.pt",
+      "selected": {
+        "method": "rank-fusion:csls-5*0.7+krecip-20-6-0.3*0.3",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 190,
+          "rank1": 0.753968253968254,
+          "recallAt5Hits": 221,
+          "recallAt5": 0.876984126984127,
+          "recallAt10Hits": 225,
+          "recallAt10": 0.8928571428571429,
+          "worstRank": 657
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 245,
+          "rank1": 0.8249158249158249,
+          "recallAt5Hits": 266,
+          "recallAt5": 0.8956228956228957,
+          "recallAt10Hits": 274,
+          "recallAt10": 0.9225589225589226,
+          "worstRank": 585
+        }
+      },
+      "validationCandidateCount": 415,
+      "bestTestCandidateForDiagnostics": {
+        "method": "rank-fusion:cosine*0.3+krecip-10-4-0.3*0.7",
+        "validation": {
+          "knownQueries": 252,
+          "rank1Hits": 186,
+          "rank1": 0.7380952380952381,
+          "recallAt5Hits": 216,
+          "recallAt5": 0.8571428571428571,
+          "recallAt10Hits": 225,
+          "recallAt10": 0.8928571428571429,
+          "worstRank": 629
+        },
+        "test": {
+          "knownQueries": 297,
+          "rank1Hits": 252,
+          "rank1": 0.8484848484848485,
+          "recallAt5Hits": 274,
+          "recallAt5": 0.9225589225589226,
+          "recallAt10Hits": 278,
+          "recallAt10": 0.936026936026936,
+          "worstRank": 286
+        }
+      }
+    }
+  ],
+  "minSelectedTestRecallAt5": 0.8922558922558923,
+  "meanSelectedTestRecallAt5": 0.8956228956228957,
+  "allSelectedPassed90": false
+}

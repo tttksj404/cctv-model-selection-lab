@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "1.0",
+  "metricScope": "PA-100K attribute proxy; validation-selected checkpoint; no CCTV identity/track-heldout claim",
+  "chartContract": {
+    "question": "서버에서 측정한 CLIP ViT-L/14 학습 방식과 SOLIDER teacher의 속성 성능을 비교한다.",
+    "takeaway": "full split에서는 hard head와 SOLIDER logit KD를 비교하고, fine-tune probe는 별도 관측값으로 표시한다. 85% mA 게이트는 모든 행에 독립적으로 적용한다.",
+    "family": "relationship",
+    "chart": "bubble scatter",
+    "x": "test_mA_pct",
+    "y": "test_instance_iou_pct",
+    "size": "train_rows",
+    "reference": "target_mA_pct=85"
+  },
+  "target_mA_pct": 85.0,
+  "rows": [
+    {
+      "label": "SOLIDER teacher head",
+      "model": "SOLIDER Swin-B",
+      "method": "teacher/reference",
+      "split": "80k/10k/10k",
+      "train_rows": 80000,
+      "val_rows": 10000,
+      "test_rows": 10000,
+      "test_mA_pct": 79.23896312713623,
+      "test_instance_iou_pct": 69.86130475997925,
+      "test_insf1_pct": 80.98474740982056,
+      "status": "measured",
+      "comparable": true,
+      "source": "PROVENANCE.md#server-full"
+    },
+    {
+      "label": "CLIP ViT-L/14 fine-tune",
+      "model": "CLIP ViT-L/14",
+      "method": "last-two vision blocks fine-tune",
+      "split": "20k/5k/5k probe",
+      "train_rows": 20000,
+      "val_rows": 5000,
+      "test_rows": 5000,
+      "test_mA_pct": 77.90637612342834,
+      "test_instance_iou_pct": 55.116623640060425,
+      "test_insf1_pct": null,
+      "status": "measured_probe",
+      "comparable": false,
+      "source": "PROVENANCE.md#finetune-probe"
+    },
+    {
+      "label": "CLIP ViT-L/14 + SOLIDER KD",
+      "model": "CLIP ViT-L/14",
+      "method": "frozen encoder plus logit KD",
+      "split": "80k/10k/10k",
+      "train_rows": 80000,
+      "val_rows": 10000,
+      "test_rows": 10000,
+      "test_mA_pct": 71.5586245059967,
+      "test_instance_iou_pct": 45.75352966785431,
+      "test_insf1_pct": 61.321139305233955,
+      "status": "measured",
+      "comparable": true,
+      "source": "PROVENANCE.md#server-full"
+    },
+    {
+      "label": "CLIP ViT-L/14 hard head",
+      "model": "CLIP ViT-L/14",
+      "method": "frozen encoder plus hard labels",
+      "split": "80k/10k/10k",
+      "train_rows": 80000,
+      "val_rows": 10000,
+      "test_rows": 10000,
+      "test_mA_pct": 72.11571931838989,
+      "test_instance_iou_pct": 44.03269588947296,
+      "test_insf1_pct": 59.68109369277954,
+      "status": "measured",
+      "comparable": true,
+      "source": "PROVENANCE.md#server-full"
+    },
+    {
+      "label": "CLIP ViT-L/14 fresh full fine-tune",
+      "model": "CLIP ViT-L/14",
+      "method": "last-two vision blocks fine-tune",
+      "split": "80k/10k/10k",
+      "train_rows": 80000,
+      "val_rows": 10000,
+      "test_rows": 10000,
+      "test_mA_pct": 78.241781539917,
+      "test_instance_iou_pct": 54.76951003074646,
+      "test_insf1_pct": null,
+      "status": "measured_recheck",
+      "comparable": true,
+      "source": "remote_gpu_recheck_20260723.json#clip_vitl14_last_two_block_finetune"
+    },
+    {
+      "label": "CLIP ViT-L/14 fresh SOLIDER selection",
+      "model": "CLIP ViT-L/14",
+      "method": "SOLIDER distillation sweep; validation-selected hard head",
+      "split": "80k/10k/10k",
+      "train_rows": 80000,
+      "val_rows": 10000,
+      "test_rows": 10000,
+      "test_mA_pct": 73.6262321472168,
+      "test_instance_iou_pct": 44.31147575737818,
+      "test_insf1_pct": 59.83728766441345,
+      "status": "measured_recheck",
+      "comparable": true,
+      "source": "remote_gpu_recheck_20260723.json#clip_vitl14_solider_distill_alpha065_temp3"
+    }
+  ],
+  "distillationComparisons": [
+    {
+      "alpha": 0.35,
+      "temperature": 2.0,
+      "validationSelectedArm": "clip_vitl14_hard",
+      "selectedTest_mA_pct": 73.6262321472168,
+      "soliderKdArmTest_mA_pct": null,
+      "source": "remote_gpu_recheck_20260723.json#clip_vitl14_solider_distill_alpha035_temp2"
+    },
+    {
+      "alpha": 0.65,
+      "temperature": 3.0,
+      "validationSelectedArm": "clip_vitl14_hard",
+      "selectedTest_mA_pct": 73.6262321472168,
+      "soliderKdArmTest_mA_pct": 71.87001129232,
+      "source": "remote_gpu_recheck_20260723.json#clip_vitl14_solider_distill_alpha065_temp3"
+    }
+  ],
+  "notes": [
+    "모델 선택은 validation mA 기준이며 test는 최종 1회 보고에만 사용했다.",
+    "fine-tune probe는 20k/5k/5k라서 80k/10k/10k 실험과 직접 우열 비교하지 않고 별도 표식한다.",
+    "PA-100K mA와 instance IoU는 CCTV identity/track-heldout 정확도가 아니다.",
+    "source는 서버 계정과 절대 경로를 노출하지 않는 상대 provenance ID다."
+  ],
+  "status": "valid"
+}

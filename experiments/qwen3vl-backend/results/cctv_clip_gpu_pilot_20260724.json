@@ -1,0 +1,16 @@
+{
+  "measurementStatus": "gpu_embedding_pilot",
+  "model": "openai/clip-vit-base-patch32",
+  "device": "NVIDIA L40S",
+  "input": [
+    "remote_identity_pilot/IMG_3565.jpg",
+    "remote_identity_pilot/IMG_3567.jpg",
+    "remote_identity_pilot/IMG_3568.jpg"
+  ],
+  "cosineSimilarity": [
+    [1.0, 0.9164451956748962, 0.8160158392562867],
+    [0.9164451956748962, 0.9999998807907104, 0.808864414691925],
+    [0.8160158392562867, 0.808864414691925, 1.0]
+  ],
+  "interpretation": "대표 프레임 간 embedding 산출은 GPU에서 성공했다. 그러나 gallery identity가 1개뿐인 파일럿이라 이 cosine 행렬만으로 Rank-1 정확도나 85% 달성을 주장하지 않는다."
+}

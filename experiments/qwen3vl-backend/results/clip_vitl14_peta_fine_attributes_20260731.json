@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "clip-fine-attribute-heldout-v1",
+  "dataset": "PETA",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+  "checkpointTreeDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "selectionProtocol": "prompt, region, and threshold selected on validation meanAccuracy; reported once on untouched test split",
+  "validationCount": 1900,
+  "testCount": 7600,
+  "attributes": [
+    {
+      "attribute": "hairLong",
+      "selected": {
+        "region": "full",
+        "positivePrompt": "a pedestrian with long hair extending below the ears",
+        "negativePrompt": "a pedestrian with short hair above the ears",
+        "scoreKey": "full:1",
+        "threshold": 0.7499999999999999,
+        "validationMetrics": {
+          "accuracy": 0.7757894736842105,
+          "meanAccuracy": 0.7294593683264021,
+          "precision": 0.5351351351351351,
+          "recall": 0.6387096774193548,
+          "specificity": 0.8202090592334494,
+          "f1": 0.5823529411764706,
+          "positiveRate": 0.24473684210526317,
+          "predictedPositiveRate": 0.29210526315789476
+        },
+        "testMetrics": {
+          "accuracy": 0.766578947368421,
+          "meanAccuracy": 0.7226904708346914,
+          "precision": 0.5065905096660809,
+          "recall": 0.6391352549889135,
+          "specificity": 0.8062456866804693,
+          "f1": 0.5651960784313725,
+          "positiveRate": 0.2373684210526316,
+          "predictedPositiveRate": 0.29947368421052634
+        }
+      },
+      "validationCandidates": [
+        {
+          "region": "full",
+          "positivePrompt": "a person with long hair",
+          "negativePrompt": "a person with short hair",
+          "scoreKey": "full:0",
+          "threshold": 0.95,
+          "validationMetrics": {
+            "accuracy": 0.7431578947368421,
+            "meanAccuracy": 0.6845978045033907,
+            "precision": 0.47920433996383366,
+            "recall": 0.5698924731182796,
+            "specificity": 0.7993031358885018,
+            "f1": 0.5206286836935167,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.2910526315789474
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a person with long hair",
+          "negativePrompt": "a person with short hair",
+          "scoreKey": "head:0",
+          "threshold": 0.9349999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7573684210526316,
+            "meanAccuracy": 0.7136300625679068,
+            "precision": 0.503448275862069,
+            "recall": 0.6279569892473118,
+            "specificity": 0.7993031358885018,
+            "f1": 0.5588516746411484,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.30526315789473685
+          }
+        },
+        {
+          "region": "full",
+          "positivePrompt": "a pedestrian with long hair extending below the ears",
+          "negativePrompt": "a pedestrian with short hair above the ears",
+          "scoreKey": "full:1",
+          "threshold": 0.7499999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7757894736842105,
+            "meanAccuracy": 0.7294593683264021,
+            "precision": 0.5351351351351351,
+            "recall": 0.6387096774193548,
+            "specificity": 0.8202090592334494,
+            "f1": 0.5823529411764706,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.29210526315789476
+          },
+          "testMetrics": {
+            "accuracy": 0.766578947368421,
+            "meanAccuracy": 0.7226904708346914,
+            "precision": 0.5065905096660809,
+            "recall": 0.6391352549889135,
+            "specificity": 0.8062456866804693,
+            "f1": 0.5651960784313725,
+            "positiveRate": 0.2373684210526316,
+            "predictedPositiveRate": 0.29947368421052634
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a pedestrian with long hair extending below the ears",
+          "negativePrompt": "a pedestrian with short hair above the ears",
+          "scoreKey": "head:1",
+          "threshold": 0.4749999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7505263157894737,
+            "meanAccuracy": 0.7200029972649957,
+            "precision": 0.492776886035313,
+            "recall": 0.6602150537634408,
+            "specificity": 0.7797909407665505,
+            "f1": 0.5643382352941176,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.32789473684210524
+          }
+        },
+        {
+          "region": "full",
+          "positivePrompt": "long hairstyle",
+          "negativePrompt": "short hairstyle",
+          "scoreKey": "full:2",
+          "threshold": 0.74,
+          "validationMetrics": {
+            "accuracy": 0.6968421052631579,
+            "meanAccuracy": 0.6888239481473155,
+            "precision": 0.42469470827679784,
+            "recall": 0.6731182795698925,
+            "specificity": 0.7045296167247387,
+            "f1": 0.5207986688851913,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.38789473684210524
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "long hairstyle",
+          "negativePrompt": "short hairstyle",
+          "scoreKey": "head:2",
+          "threshold": 0.7649999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7852631578947369,
+            "meanAccuracy": 0.7241017571466037,
+            "precision": 0.5564356435643565,
+            "recall": 0.6043010752688172,
+            "specificity": 0.8439024390243902,
+            "f1": 0.5793814432989691,
+            "positiveRate": 0.24473684210526317,
+            "predictedPositiveRate": 0.2657894736842105
+          }
+        }
+      ]
+    },
+    {
+      "attribute": "accessorySunglasses",
+      "selected": {
+        "region": "full",
+        "positivePrompt": "a person with dark sunglasses covering the eyes",
+        "negativePrompt": "a person with uncovered eyes and no glasses",
+        "scoreKey": "full:4",
+        "threshold": 0.7449999999999999,
+        "validationMetrics": {
+          "accuracy": 0.7805263157894737,
+          "meanAccuracy": 0.7482827815080652,
+          "precision": 0.07990867579908675,
+          "recall": 0.7142857142857143,
+          "specificity": 0.782279848730416,
+          "f1": 0.1437371663244353,
+          "positiveRate": 0.025789473684210525,
+          "predictedPositiveRate": 0.2305263157894737
+        },
+        "testMetrics": {
+          "accuracy": 0.7811842105263158,
+          "meanAccuracy": 0.7070676502974008,
+          "precision": 0.07969749854566609,
+          "recall": 0.6284403669724771,
+          "specificity": 0.7856949336223246,
+          "f1": 0.14145585957666496,
+          "positiveRate": 0.028684210526315788,
+          "predictedPositiveRate": 0.2261842105263158
+        }
+      },
+      "validationCandidates": [
+        {
+          "region": "full",
+          "positivePrompt": "a face wearing sunglasses",
+          "negativePrompt": "a face without sunglasses",
+          "scoreKey": "full:3",
+          "threshold": 0.30499999999999994,
+          "validationMetrics": {
+            "accuracy": 0.7305263157894737,
+            "meanAccuracy": 0.692819104951543,
+            "precision": 0.06072106261859583,
+            "recall": 0.6530612244897959,
+            "specificity": 0.7325769854132901,
+            "f1": 0.1111111111111111,
+            "positiveRate": 0.025789473684210525,
+            "predictedPositiveRate": 0.2773684210526316
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a face wearing sunglasses",
+          "negativePrompt": "a face without sunglasses",
+          "scoreKey": "head:3",
+          "threshold": 0.4799999999999999,
+          "validationMetrics": {
+            "accuracy": 0.6552631578947369,
+            "meanAccuracy": 0.6442573788024124,
+            "precision": 0.04640718562874251,
+            "recall": 0.6326530612244898,
+            "specificity": 0.655861696380335,
+            "f1": 0.08647140864714087,
+            "positiveRate": 0.025789473684210525,
+            "predictedPositiveRate": 0.35157894736842105
+          }
+        },
+        {
+          "region": "full",
+          "positivePrompt": "a person with dark sunglasses covering the eyes",
+          "negativePrompt": "a person with uncovered eyes and no glasses",
+          "scoreKey": "full:4",
+          "threshold": 0.7449999999999999,
+          "validationMetrics": {
+            "accuracy": 0.7805263157894737,
+            "meanAccuracy": 0.7482827815080652,
+            "precision": 0.07990867579908675,
+            "recall": 0.7142857142857143,
+            "specificity": 0.782279848730416,
+            "f1": 0.1437371663244353,
+            "positiveRate": 0.025789473684210525,
+            "predictedPositiveRate": 0.2305263157894737
+          },
+          "testMetrics": {
+            "accuracy": 0.7811842105263158,
+            "meanAccuracy": 0.7070676502974008,
+            "precision": 0.07969749854566609,
+            "recall": 0.6284403669724771,
+            "specificity": 0.7856949336223246,
+            "f1": 0.14145585957666496,
+            "positiveRate": 0.028684210526315788,
+            "predictedPositiveRate": 0.2261842105263158
+          }
+        },
+        {
+          "region": "head",
+          "positivePrompt": "a person with dark sunglasses covering the eyes",
+          "negativePrompt": "a person with uncovered eyes and no glasses",
+          "scoreKey": "head:4",
+          "threshold": 0.565,
+          "validationMetrics": {
+            "accuracy": 0.71,
+            "meanAccuracy": 0.7220200884243486,
+            "precision": 0.0627177700348432,
+            "recall": 0.7346938775510204,
+            "specificity": 0.7093462992976769,
+            "f1": 0.11556982343499198,
+            "positiveRate": 0.025789473684210525,
+            "predictedPositiveRate": 0.3021052631578947
+          }
+        }
+      ]
+    }
+  ]
+}

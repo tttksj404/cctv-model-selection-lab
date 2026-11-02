@@ -1,0 +1,72 @@
+{
+  "source": {
+    "surface": "authenticated_jupyter_auto_S_terminal",
+    "remoteProject": "/home/j-i15a204/clip_vitl14_server",
+    "gpu": "NVIDIA L40S",
+    "dataset": "PA-100K official parquet",
+    "split": "train=80000,val=10000,test=10000; no identity or track IDs"
+  },
+  "productionEligibility": {
+    "identityLabelsAvailable": false,
+    "trackHeldoutMetricsEligible": false,
+    "proxyMetricsReusedAsIdentity": false
+  },
+  "arms": [
+    {
+      "name": "clip_vitl14_last_two_block_finetune",
+      "status": "valid",
+      "test": {
+        "mA": 0.78241781539917,
+        "microAttributeAccuracy": 0.8332769274711609,
+        "IoU": 0.5476951003074646
+      },
+      "target_mA": 0.85,
+      "passed": false,
+      "remoteResult": "experiments/results/server_recheck_finetune_20260723.json"
+    },
+    {
+      "name": "clip_vitl14_solider_distill_alpha035_temp2",
+      "status": "valid",
+      "selectedArm": "clip_vitl14_hard",
+      "test": {
+        "mA": 0.736262321472168,
+        "microAttributeAccuracy": 0.7690615653991699,
+        "InsF1": 0.5983728766441345
+      },
+      "target_mA": 0.85,
+      "passed": false,
+      "remoteResult": "experiments/results/server_clip_vitl14_solider_distill_20260723.json"
+    },
+    {
+      "name": "clip_vitl14_solider_distill_alpha065_temp3",
+      "status": "valid",
+      "distillation": {
+        "alpha": 0.65,
+        "temperature": 3.0,
+        "teacherEpochs": 12
+      },
+      "selectedArm": "clip_vitl14_hard",
+      "test": {
+        "mA": 0.736262321472168,
+        "microAttributeAccuracy": 0.7690615653991699,
+        "labelMacroF1": 0.43832819092159087,
+        "InsF1": 0.5983728766441345,
+        "IoU": 0.4431147575737818
+      },
+      "comparisonArms": {
+        "clip_vitl14_hard": {
+          "val_mA": 0.7699352084686279,
+          "test_mA": 0.736262321472168
+        },
+        "clip_vitl14_solider_kd": {
+          "val_mA": 0.7516524791717529,
+          "test_mA": 0.7187001129232
+        }
+      },
+      "target_mA": 0.85,
+      "passed": false,
+      "remoteResult": "experiments/results/server_clip_vitl14_solider_distill_alpha065_temp30_20260723.json"
+    }
+  ],
+  "interpretation": "All measured values above are PA-100K attribute proxy values and cannot be reported as CCTV identity or track-heldout accuracy."
+}

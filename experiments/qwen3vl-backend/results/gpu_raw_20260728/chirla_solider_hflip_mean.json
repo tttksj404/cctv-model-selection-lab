@@ -1,0 +1,217 @@
+{
+  "schema_version": "cctv-chirla-identity-reid-v1",
+  "model": "solider-reid-swin-base-msmt17",
+  "checkpoint": "models/solider_reid/swin_base_msmt17.pth",
+  "device": "cuda",
+  "dataset": "CHIRLA",
+  "dataset_status": "public-proxy-not-project-CCTV-review",
+  "manifest_sha256": "e24d7b2acc1fe491cb8a64ce736c0070b6f2163a6343b551f265ff19a7a243e0",
+  "counts": {
+    "all_manifest_records": 371,
+    "gallery_records": 118,
+    "query_records": 95,
+    "gallery_identities": 11,
+    "query_identities": 29,
+    "query_gallery_identity_intersection": 11
+  },
+  "split_contract": {
+    "gallery_role": "gallery",
+    "query_role": "query",
+    "identity_aggregation": "mean",
+    "gallery_topk": 3,
+    "query_gallery_sequence_overlap": [
+      "seq_002",
+      "seq_004",
+      "seq_007",
+      "seq_020",
+      "seq_024",
+      "seq_025"
+    ],
+    "query_gallery_camera_overlap": [
+      "camera_1_2023-06-13-13:31:40",
+      "camera_3_2023-06-02-12:09:07",
+      "camera_4_2023-06-08-12:29:08"
+    ]
+  },
+  "metrics": {
+    "query_count": 95,
+    "gallery_identity_count": 11,
+    "rank1": 0.6105263157894737,
+    "recall_at_5": 0.9157894736842105,
+    "recall_at_10": 1.0,
+    "map": 0.7313533834586466,
+    "minp": 0.7313533834586466,
+    "rank1_ci95_low": 0.5052631578947369,
+    "rank1_ci95_high": 0.7052631578947368
+  },
+  "by_camera": {
+    "camera_1_2023-06-13-13:31:40": {
+      "query_count": 9,
+      "gallery_identity_count": 11,
+      "rank1": 0.8888888888888888,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.9444444444444444,
+      "minp": 0.9444444444444444,
+      "rank1_ci95_low": 0.6666666666666666,
+      "rank1_ci95_high": 1.0
+    },
+    "camera_1_2023-12-01-11:05:52": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.75,
+      "minp": 0.75,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "camera_2_2023-06-08-12:29:08": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5,
+      "recall_at_5": 0.8333333333333334,
+      "recall_at_10": 1.0,
+      "map": 0.6257936507936508,
+      "minp": 0.6257936507936508,
+      "rank1_ci95_low": 0.25,
+      "rank1_ci95_high": 0.75
+    },
+    "camera_3_2023-06-02-12:09:07": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.9166666666666666,
+      "recall_at_5": 0.9166666666666666,
+      "recall_at_10": 1.0,
+      "map": 0.9285714285714285,
+      "minp": 0.9285714285714285,
+      "rank1_ci95_low": 0.75,
+      "rank1_ci95_high": 1.0
+    },
+    "camera_3_2023-07-26-13:21:40": {
+      "query_count": 14,
+      "gallery_identity_count": 11,
+      "rank1": 0.5,
+      "recall_at_5": 0.8571428571428571,
+      "recall_at_10": 1.0,
+      "map": 0.6494897959183674,
+      "minp": 0.6494897959183674,
+      "rank1_ci95_low": 0.21428571428571427,
+      "rank1_ci95_high": 0.7857142857142857
+    },
+    "camera_4_2023-06-08-12:29:08": {
+      "query_count": 8,
+      "gallery_identity_count": 11,
+      "rank1": 0.375,
+      "recall_at_5": 0.875,
+      "recall_at_10": 1.0,
+      "map": 0.5972222222222222,
+      "minp": 0.5972222222222222,
+      "rank1_ci95_low": 0.125,
+      "rank1_ci95_high": 0.75
+    },
+    "camera_4_2023-12-04-12:11:17": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.7208333333333333,
+      "minp": 0.7208333333333333,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "camera_5_2023-07-26-13:21:40": {
+      "query_count": 10,
+      "gallery_identity_count": 11,
+      "rank1": 0.6,
+      "recall_at_5": 0.9,
+      "recall_at_10": 1.0,
+      "map": 0.711111111111111,
+      "minp": 0.711111111111111,
+      "rank1_ci95_low": 0.3,
+      "rank1_ci95_high": 0.9
+    },
+    "camera_6_2023-06-08-12:29:08": {
+      "query_count": 6,
+      "gallery_identity_count": 11,
+      "rank1": 0.5,
+      "recall_at_5": 0.8333333333333334,
+      "recall_at_10": 1.0,
+      "map": 0.6157407407407407,
+      "minp": 0.6157407407407407,
+      "rank1_ci95_low": 0.16666666666666666,
+      "rank1_ci95_high": 0.8333333333333334
+    }
+  },
+  "by_sequence": {
+    "seq_002": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.9166666666666666,
+      "recall_at_5": 0.9166666666666666,
+      "recall_at_10": 1.0,
+      "map": 0.9285714285714285,
+      "minp": 0.9285714285714285,
+      "rank1_ci95_low": 0.75,
+      "rank1_ci95_high": 1.0
+    },
+    "seq_004": {
+      "query_count": 26,
+      "gallery_identity_count": 11,
+      "rank1": 0.46153846153846156,
+      "recall_at_5": 0.8461538461538461,
+      "recall_at_10": 1.0,
+      "map": 0.6146825396825396,
+      "minp": 0.6146825396825396,
+      "rank1_ci95_low": 0.2692307692307692,
+      "rank1_ci95_high": 0.6538461538461539
+    },
+    "seq_007": {
+      "query_count": 9,
+      "gallery_identity_count": 11,
+      "rank1": 0.8888888888888888,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.9444444444444444,
+      "minp": 0.9444444444444444,
+      "rank1_ci95_low": 0.6666666666666666,
+      "rank1_ci95_high": 1.0
+    },
+    "seq_020": {
+      "query_count": 24,
+      "gallery_identity_count": 11,
+      "rank1": 0.5416666666666666,
+      "recall_at_5": 0.875,
+      "recall_at_10": 1.0,
+      "map": 0.675165343915344,
+      "minp": 0.675165343915344,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.75
+    },
+    "seq_024": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.75,
+      "minp": 0.75,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    },
+    "seq_025": {
+      "query_count": 12,
+      "gallery_identity_count": 11,
+      "rank1": 0.5833333333333334,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "map": 0.7208333333333333,
+      "minp": 0.7208333333333333,
+      "rank1_ci95_low": 0.3333333333333333,
+      "rank1_ci95_high": 0.8333333333333334
+    }
+  },
+  "tta": "hflip"
+}

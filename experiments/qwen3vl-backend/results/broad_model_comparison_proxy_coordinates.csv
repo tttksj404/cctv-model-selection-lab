@@ -1,0 +1,8 @@
+label,x,y,bubble,status,source
+clip-vit-l14,41.40350877192983,4.141123100009281,0.427,measured,experiments\results\clip-vit-l14.json
+qwen3-vl-2b,39.29824561403509,8.2983398999786,2.0,measured,experiments\results\qwen3-vl-2b.json
+clip-vit-b32,38.59649122807017,0.7225884000072256,0.151,measured,experiments\results\clip-vit-b32.json
+siglip-base,24.210526315789473,0.7783216999960132,0.203,measured,experiments\results\siglip-base.json
+siglip2-base-384,21.75438596491228,8.377151599999706,0.086,measured,experiments\results\siglip2-base-384.json
+blip-base,20.350877192982455,0.46848470001714304,0.385,measured,experiments\results\blip-base.json
+siglip2-base-224,20.350877192982455,4.310386799999833,0.086,measured,experiments\results\siglip2-base-224.json

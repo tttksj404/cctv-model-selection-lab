@@ -1,0 +1,47 @@
+{
+  "measurementStatus": "identity_measured_sealed_test",
+  "evaluationEligibility": {
+    "identityLabelsAvailable": true,
+    "trackHeldoutMetricsEligible": false,
+    "proxyMetricsReusedAsIdentity": false
+  },
+  "provenance": {
+    "sealedTestManifestSha256": "5a0ff35c10870e04f834c710dbf94cd448691c21d15d0adf6b26002ed8cec1f7",
+    "identityLabelSha256": "be1b451707d9a9945189919f30c643d715267a52847935bbe5fbe2ebae3ca83d",
+    "splitMethod": "identity_group_and_track_heldout",
+    "metricImplementation": "cctv_identity_evaluation_v1",
+    "manifestPath": "experiments\\data\\cctv_real\\manifest.identity_pilot.jsonl",
+    "predictionPath": "experiments\\data\\cctv_real\\predictions.identity_pilot.clip_b32_gpu.jsonl",
+    "attributeResultPath": "experiments\\data\\cctv_real\\attributes.identity_pilot.unmeasured.json"
+  },
+  "metrics": {
+    "test": {
+      "top1_accuracy": 1.0,
+      "track_exact_match": null,
+      "mA": null,
+      "InsF1": null
+    }
+  },
+  "identityReport": {
+    "modelName": "openai_clip_vit_b32_gpu_pilot",
+    "status": "valid",
+    "testTrackCount": 2,
+    "predictedTrackCount": 2,
+    "knownQueryCount": 2,
+    "unlabeledTargetCount": 0,
+    "queryWithoutGalleryCount": 0,
+    "galleryTrackCount": 1,
+    "galleryIdentityCount": 1,
+    "missingPredictionCount": 0,
+    "unknownQueryCount": 0,
+    "distractorQueryCount": 0,
+    "rank1": 1.0,
+    "recallAt5": 1.0,
+    "recallAt10": 1.0,
+    "meanAveragePrecision": 1.0,
+    "meanINP": 1.0,
+    "falseMatchRate": 0.0,
+    "falseRejectRate": 0.0,
+    "reviewRate": 1.0
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "project-cctv-track-pooling-comparison-v1",
+  "candidatePairs": 13,
+  "ranks": {
+    "mean": [
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      115,
+      2,
+      7,
+      1,
+      114,
+      153,
+      1
+    ],
+    "top2_mean": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "top4_mean": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "max": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      3,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "summary": {
+    "mean": {
+      "rank1": 0.5384615384615384,
+      "recallAt5": 0.6923076923076923,
+      "medianRank": 1.0
+    },
+    "top2_mean": {
+      "rank1": 1.0,
+      "recallAt5": 1.0,
+      "medianRank": 1.0
+    },
+    "top4_mean": {
+      "rank1": 0.9230769230769231,
+      "recallAt5": 1.0,
+      "medianRank": 1.0
+    },
+    "max": {
+      "rank1": 0.9230769230769231,
+      "recallAt5": 1.0,
+      "medianRank": 1.0
+    }
+  },
+  "metricStatus": "candidate_consistency_only_no_identity_ground_truth"
+}

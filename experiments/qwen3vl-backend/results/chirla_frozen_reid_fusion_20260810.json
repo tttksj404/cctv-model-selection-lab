@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "cctv-frozen-reid-fusion-v1",
+  "status": "valid",
+  "selectionProtocol": "no sealed-set parameter search; weights and pooling are fixed in the evaluator",
+  "rule": {
+    "models": {
+      "solider": "solider_reid_swin_base_msmt17",
+      "siglip2": "siglip2_base"
+    },
+    "perFrameScore": "cosine-like model score against gallery identity candidates",
+    "perFrameNormalization": "descending gallery rank, zero-based rank negated",
+    "trackPooling": "top2-mean over query frames, independently for each gallery identity",
+    "fusion": {
+      "solider": 0.7,
+      "siglip2": 0.3
+    },
+    "candidateTopK": 5
+  },
+  "protocol": {
+    "dataset": "public-proxy-not-project-CCTV-review",
+    "split": "strict-cross-camera-sequence",
+    "identityCount": 11,
+    "queryRows": 107,
+    "trackCount": 42,
+    "identityDisjoint": true,
+    "crossCamera": true,
+    "sealedUsedForSelection": false
+  },
+  "metrics": {
+    "tracks": 42,
+    "correctTop1": 17,
+    "correctTop5": 38,
+    "rank1": 0.40476190476190477,
+    "recallAt5": 0.9047619047619048,
+    "mrr": 0.5848072562358277,
+    "worstRank": 10
+  },
+  "wilson95": {
+    "rank1": [
+      0.27042861147481323,
+      0.5550568724996064
+    ],
+    "recallAt5": [
+      0.7793489419142897,
+      0.9623377511944261
+    ]
+  },
+  "provenance": {
+    "scoreSha256": "ef600baeddaf338a9806548761da6e250d03a0ff9bccc66ffca031d7d19af6b0",
+    "metadataSha256": "a19f808e68ebb6e38a861b8ef20b0666d56dbe24adc05581b4130bc4b76bef42",
+    "manifestSha256": "7c175eb9398b7a77a659c8759f4765fdb8a63c3ed149ee2e9afa3bd61574fa30",
+    "scoreKeys": [
+      "siglip2",
+      "solider"
+    ]
+  }
+}

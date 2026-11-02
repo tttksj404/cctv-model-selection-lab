@@ -1,0 +1,142 @@
+{
+  "schema_version": "cctv-chirla-reid-comparison-v1",
+  "evaluation_date": "2026-07-24",
+  "dataset": "CHIRLA",
+  "dataset_status": "public-proxy-not-project-CCTV-review",
+  "manifest": {
+    "path": "experiments/data/chirla/chirla_identity_manifest.jsonl",
+    "sha256": "e24d7b2acc1fe491cb8a64ce736c0070b6f2163a6343b551f265ff19a7a243e0",
+    "all_records": 371,
+    "gallery_records_in_manifest": 142,
+    "query_records_in_manifest": 189,
+    "gallery_identities_in_manifest": 19,
+    "query_identities_in_manifest": 29,
+    "eligible_identity_intersection": 11,
+    "eligible_gallery_records": 118,
+    "eligible_query_records": 95,
+    "sequence_overlap": [
+      "seq_002",
+      "seq_004",
+      "seq_007",
+      "seq_020",
+      "seq_024",
+      "seq_025"
+    ],
+    "camera_overlap": [
+      "camera_1_2023-06-13-13:31:40",
+      "camera_3_2023-06-02-12:09:07",
+      "camera_4_2023-06-08-12:29:08"
+    ]
+  },
+  "gate": {
+    "metric": "rank1",
+    "threshold": 0.85,
+    "point_estimate_pass": false,
+    "confidence_lower_bound_pass": false,
+    "best_point_estimate": 0.37894736842105264,
+    "best_model": "siglip2-base",
+    "decision": "not_promoted"
+  },
+  "previous_artifacts_audit": "experiments/results/prior_finetune_distillation_identity_audit_20260724.json",
+  "results": [
+    {
+      "model": "clip-vit-b32",
+      "checkpoint": "openai/clip-vit-base-patch32",
+      "gallery_aggregation": "mean",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.24210526315789474,
+      "recall_at_5": 0.6736842105263158,
+      "recall_at_10": 0.9789473684210527,
+      "map": 0.4351678438520544,
+      "rank1_ci95_low": 0.15789473684210525,
+      "rank1_ci95_high": 0.3263157894736842,
+      "remote_artifact": "results/chirla_reid_clip_b32_r3.json"
+    },
+    {
+      "model": "clip-vit-l14",
+      "checkpoint": "openai/clip-vit-large-patch14",
+      "gallery_aggregation": "mean",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.30526315789473685,
+      "recall_at_5": 0.631578947368421,
+      "recall_at_10": 0.9578947368421052,
+      "map": 0.4633390293916611,
+      "rank1_ci95_low": 0.21052631578947367,
+      "rank1_ci95_high": 0.4,
+      "remote_artifact": "results/chirla_reid_clip_l14_r3.json"
+    },
+    {
+      "model": "clip-vit-l14",
+      "checkpoint": "openai/clip-vit-large-patch14",
+      "gallery_aggregation": "max",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.22105263157894736,
+      "recall_at_5": 0.631578947368421,
+      "recall_at_10": 0.9052631578947369,
+      "map": 0.4064654059390903,
+      "rank1_ci95_low": 0.1368421052631579,
+      "rank1_ci95_high": 0.30526315789473685,
+      "remote_artifact": "results/chirla_reid_clip_l14_max_r5.json"
+    },
+    {
+      "model": "clip-vit-l14",
+      "checkpoint": "openai/clip-vit-large-patch14",
+      "gallery_aggregation": "topk-mean(topk=5)",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.25263157894736843,
+      "recall_at_5": 0.6210526315789474,
+      "recall_at_10": 0.9473684210526315,
+      "map": 0.42870699475962637,
+      "rank1_ci95_low": 0.16842105263157894,
+      "rank1_ci95_high": 0.3473684210526316,
+      "remote_artifact": "results/chirla_reid_clip_l14_topk5_r5.json"
+    },
+    {
+      "model": "dinov2-base",
+      "checkpoint": "facebook/dinov2-base",
+      "gallery_aggregation": "mean",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.30526315789473685,
+      "recall_at_5": 0.5789473684210527,
+      "recall_at_10": 0.9578947368421052,
+      "map": 0.4355904913799652,
+      "rank1_ci95_low": 0.22078947368421054,
+      "rank1_ci95_high": 0.4,
+      "remote_artifact": "results/chirla_reid_dinov2_base_r2.json"
+    },
+    {
+      "model": "siglip2-base",
+      "checkpoint": "google/siglip2-base-patch16-224",
+      "gallery_aggregation": "mean",
+      "training_status": "frozen_zero_shot",
+      "rank1": 0.37894736842105264,
+      "recall_at_5": 0.7578947368421053,
+      "recall_at_10": 0.968421052631579,
+      "map": 0.5435892762208553,
+      "rank1_ci95_low": 0.28421052631578947,
+      "rank1_ci95_high": 0.4842105263157895,
+      "remote_artifact": "results/chirla_reid_siglip2_base_r4.json"
+    },
+    {
+      "model": "osnet-x1-0",
+      "checkpoint": "osnet_x1_0",
+      "gallery_aggregation": "mean",
+      "training_status": "ImageNet_pretrained_not_project_ReID_finetuned",
+      "rank1": 0.35789473684210527,
+      "recall_at_5": 0.7157894736842105,
+      "recall_at_10": 0.9789473684210527,
+      "map": 0.5120183033340929,
+      "rank1_ci95_low": 0.2631578947368421,
+      "rank1_ci95_high": 0.45263157894736844,
+      "remote_artifact": "results/chirla_reid_osnet_x1_0_r6.json"
+    }
+  ],
+  "provenance": {
+    "remote_workspace": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer",
+    "remote_python": "/home/j-i15a204/.conda/envs/qwen3vl/bin/python",
+    "remote_gpu": "NVIDIA L40S 46068 MiB",
+    "evaluation_script": "scripts/benchmark_chirla_reid.py",
+    "evaluation_contract": "gallery/query roles; identity intersection >= 10; image-level query Rank-1 with 2000 bootstrap resamples",
+    "source_note": "Remote JSON artifacts were observed in the authenticated JupyterLab session; this summary preserves their reported metrics and artifact paths."
+  }
+}

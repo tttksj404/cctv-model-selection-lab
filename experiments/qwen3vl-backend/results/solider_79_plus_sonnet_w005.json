@@ -1,0 +1,166 @@
+{
+  "status": "measured",
+  "model": "SOLIDER Swin-B frozen backbone plus PA-100K 26-attribute head",
+  "method": "PA-100K head training plus masked response-level Sonnet auxiliary loss",
+  "dataset": "PA-100K official parquet plus synthetic CCTV person-crop proxy",
+  "rows": {
+    "pa_train": 10000,
+    "pa_val": 10000,
+    "pa_test": 10000
+  },
+  "cctv_proxy_samples": 15,
+  "cctv_proxy_groups": [
+    "ped_2",
+    "ped_3",
+    "ped_4"
+  ],
+  "split": "group-held-out by synthetic person track; no reviewed project identity labels",
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.11.0+cu128"
+  },
+  "sonnet_teacher": "claude-sonnet-5 via authenticated Claude Code CLI",
+  "sonnet_label_type": "response-level labels mapped to PA-100K ontology; not logit KD",
+  "sonnet_weight": 0.05,
+  "pa_epochs": 1,
+  "sonnet_epochs": 12,
+  "baseline_initialization": "saved_pa_head_checkpoint",
+  "baseline_head_checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\solider_sonnet_baseline_head.pt",
+  "baseline_head_checkpoint_sha256": "5cf1efc6cc3789497b09655dd83dc584f93f681e973f5af273aea529d5c71886",
+  "baseline_pa100k": {
+    "val": {
+      "masked_attribute_accuracy": 0.8978769183158875,
+      "masked_field_macro_accuracy": 0.8978769229008601,
+      "masked_mA": 0.2803958198772027,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 260000.0
+    },
+    "test": {
+      "masked_attribute_accuracy": 0.9064884781837463,
+      "masked_field_macro_accuracy": 0.9064884621363419,
+      "masked_mA": 0.276767230574758,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 260000.0
+    }
+  },
+  "combined_pa100k": {
+    "val": {
+      "masked_attribute_accuracy": 0.9138884544372559,
+      "masked_field_macro_accuracy": 0.9138884590222285,
+      "masked_mA": 0.3112764471429378,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 260000.0
+    },
+    "test": {
+      "masked_attribute_accuracy": 0.9191730618476868,
+      "masked_field_macro_accuracy": 0.9191730756026047,
+      "masked_mA": 0.30304736804982196,
+      "balanced_field_count": 26.0,
+      "valid_attribute_count": 260000.0
+    }
+  },
+  "baseline_proxy_all_samples": {
+    "masked_attribute_accuracy": 0.8256410360336304,
+    "masked_field_macro_accuracy": 0.7422222296396891,
+    "masked_mA": 0.48571428869451794,
+    "balanced_field_count": 7.0,
+    "valid_attribute_count": 195.0
+  },
+  "combined_proxy_all_samples": {
+    "masked_attribute_accuracy": 0.8820512890815735,
+    "masked_field_macro_accuracy": 0.8355555613835652,
+    "masked_mA": 0.5000000021287373,
+    "balanced_field_count": 7.0,
+    "valid_attribute_count": 195.0
+  },
+  "group_heldout": {
+    "folds": [
+      {
+        "heldout_group": "ped_2",
+        "train_groups": [
+          "ped_3",
+          "ped_4"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.8461538553237915,
+          "masked_field_macro_accuracy": 0.8461538507388189,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 0.8769230842590332,
+          "masked_field_macro_accuracy": 0.8769230796740606,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": 0.0307692289352417
+      },
+      {
+        "heldout_group": "ped_3",
+        "train_groups": [
+          "ped_2",
+          "ped_4"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.9230769276618958,
+          "masked_field_macro_accuracy": 0.9230769230769231,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 1.0,
+          "masked_field_macro_accuracy": 1.0,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": 0.07692307233810425
+      },
+      {
+        "heldout_group": "ped_4",
+        "train_groups": [
+          "ped_2",
+          "ped_3"
+        ],
+        "test_count": 5,
+        "baseline": {
+          "masked_attribute_accuracy": 0.7076923251152039,
+          "masked_field_macro_accuracy": 0.7076923079215564,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "solider_plus_sonnet": {
+          "masked_attribute_accuracy": 0.7692307829856873,
+          "masked_field_macro_accuracy": 0.7692307692307693,
+          "masked_mA": -1.0,
+          "balanced_field_count": 0.0,
+          "valid_attribute_count": 65.0
+        },
+        "delta_masked_attribute_accuracy": 0.0615384578704834
+      }
+    ],
+    "baseline_mean_masked_attribute_accuracy": 0.8256410360336304,
+    "combined_mean_masked_attribute_accuracy": 0.8820512890815735,
+    "mean_delta_masked_attribute_accuracy": 0.056410253047943115
+  },
+  "checkpoint": "C:\\Users\\SSAFY\\Desktop\\2학기\\qwen3vl-backend\\experiments\\models\\solider_sonnet_head_pilot.pt",
+  "checkpoint_sha256": "ac64ad105b0019cdf09296fb5f1c5aa34b4926189aa9ac966177dbbead99f7d7",
+  "provenance": {
+    "script_sha256": "2f1b30c823c391c1fdaaf593365b748933d691c33f7ba4c79045518e8651697c",
+    "solider_checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+    "sonnet_result_sha256": "b79b05d26d8dc82309855eaae8177be104ea8f05e54c9fd9363140678f6a2351",
+    "base_head_checkpoint_sha256": "44d25d375097996a34c033bab6cca631cf60ce547b5b6c0ed2e80c959bc3a1bc"
+  },
+  "gate": {
+    "target": 0.85,
+    "passed": false,
+    "reason": "Synthetic proxy and response-level labels cannot establish CCTV identity/track-heldout accuracy."
+  }
+}

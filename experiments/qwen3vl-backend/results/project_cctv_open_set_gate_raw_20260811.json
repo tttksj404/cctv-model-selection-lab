@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "project-cctv-open-set-review-gate-v1",
+  "status": "diagnostic_single_adjudicator_not_production_accuracy",
+  "method": {
+    "backbone": "SOLIDER after-neck",
+    "frameAggregation": "symmetric-top4",
+    "appearanceFrameNormalization": false,
+    "soliderWeight": 0.7,
+    "appearanceWeight": 0.3,
+    "identityAggregation": "max",
+    "marginThreshold": 0.2
+  },
+  "metrics": {
+    "positiveQueries": 12,
+    "candidateRecallAt5": 1.0,
+    "candidateHitsAt5": 12,
+    "autoPositiveCount": 6,
+    "autoPositivePrecision": 1.0,
+    "positiveReviewRate": 0.5,
+    "negativeQueries": 1,
+    "negativeAutoFalseAccepts": 0,
+    "negativeAutoFalseAcceptRate": 0.0
+  },
+  "gate": {
+    "passed85CandidateDiagnostic": true,
+    "passedNegativeReviewDiagnostic": true,
+    "productionClaimAllowed": false,
+    "reason": "independent second adjudicator and a larger open-set negative panel are still required"
+  },
+  "positiveResults": [
+    {
+      "trackId": "20260729_092211-track-3715",
+      "videoId": "20260729_092211",
+      "target": "project-person-10",
+      "topCandidate": "project-person-10",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 3.239381790161133,
+      "top2Margin": 0.3118903636932373,
+      "decision": "match"
+    },
+    {
+      "trackId": "20260729_092211-track-3897",
+      "videoId": "20260729_092211",
+      "target": "project-person-11",
+      "topCandidate": "project-person-11",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 3.1001439094543457,
+      "top2Margin": 0.4827113151550293,
+      "decision": "match"
+    },
+    {
+      "trackId": "IMG_3618-track-0001",
+      "videoId": "IMG_3618",
+      "target": "project-person-02",
+      "topCandidate": "project-person-02",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 2.4118452072143555,
+      "top2Margin": 0.06834912300109863,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0001",
+      "videoId": "IMG_3620",
+      "target": "project-person-01",
+      "topCandidate": "project-person-01",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 3.85241961479187,
+      "top2Margin": 1.3089666366577148,
+      "decision": "match"
+    },
+    {
+      "trackId": "IMG_3620-track-0002",
+      "videoId": "IMG_3620",
+      "target": "project-person-02",
+      "topCandidate": "project-person-02",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 2.5528199672698975,
+      "top2Margin": 0.021451234817504883,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0004",
+      "videoId": "IMG_3620",
+      "target": "project-person-03",
+      "topCandidate": "unlabeled-distractor-0769",
+      "rank": 2,
+      "hitAt5": true,
+      "topScore": 1.94777250289917,
+      "top2Margin": 0.155501127243042,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0005",
+      "videoId": "IMG_3620",
+      "target": "project-person-06",
+      "topCandidate": "project-person-06",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 1.8109898567199707,
+      "top2Margin": 0.09138071537017822,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0006",
+      "videoId": "IMG_3620",
+      "target": "project-person-04",
+      "topCandidate": "project-person-04",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 2.267181158065796,
+      "top2Margin": 0.4967302083969116,
+      "decision": "match"
+    },
+    {
+      "trackId": "IMG_3620-track-0007",
+      "videoId": "IMG_3620",
+      "target": "project-person-05",
+      "topCandidate": "project-person-05",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 2.387105941772461,
+      "top2Margin": 0.01902174949645996,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0058",
+      "videoId": "IMG_3620",
+      "target": "project-person-08",
+      "topCandidate": "unlabeled-distractor-0723",
+      "rank": 2,
+      "hitAt5": true,
+      "topScore": 1.941859483718872,
+      "top2Margin": 0.06667494773864746,
+      "decision": "review_required"
+    },
+    {
+      "trackId": "IMG_3620-track-0090",
+      "videoId": "IMG_3620",
+      "target": "project-person-03",
+      "topCandidate": "project-person-03",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 1.9840902090072632,
+      "top2Margin": 0.495815634727478,
+      "decision": "match"
+    },
+    {
+      "trackId": "IMG_3620-track-0100",
+      "videoId": "IMG_3620",
+      "target": "project-person-07",
+      "topCandidate": "project-person-07",
+      "rank": 1,
+      "hitAt5": true,
+      "topScore": 4.159960746765137,
+      "top2Margin": 0.25460362434387207,
+      "decision": "match"
+    }
+  ],
+  "negativeResults": [
+    {
+      "trackId": "IMG_3620-track-0003",
+      "videoId": "IMG_3620",
+      "topCandidate": "project-person-05",
+      "topScore": 2.4745750427246094,
+      "top2Margin": 0.18721914291381836,
+      "decision": "review_required"
+    }
+  ]
+}

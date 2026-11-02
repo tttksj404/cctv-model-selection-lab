@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-07-28T04:08:29.159951+00:00",
+  "teacher_model_requested": "sonnet",
+  "teacher_transport": "claude_cli_oauth",
+  "auth": {
+    "logged_in": true,
+    "auth_method": "claude.ai",
+    "api_provider": "firstParty",
+    "subscription_type": "team"
+  },
+  "dataset": "cctv_proxy/person_only/simuletic",
+  "sample_limit": 1,
+  "metrics": {
+    "evaluated_samples": 1,
+    "exact_record_accuracy": 0.0,
+    "exact_stable_record_accuracy": 1.0,
+    "field_accuracy": {
+      "gender": 1.0,
+      "age_group": 1.0,
+      "hair_color": 1.0,
+      "viewpoint": 0.0,
+      "top_color": 1.0,
+      "top_type": 1.0,
+      "bottom_color": 1.0,
+      "bottom_type": 1.0,
+      "accessory": 1.0
+    },
+    "stable_field_accuracy": {
+      "gender": 1.0,
+      "age_group": 1.0,
+      "hair_color": 1.0,
+      "top_color": 1.0,
+      "top_type": 1.0,
+      "bottom_color": 1.0,
+      "bottom_type": 1.0,
+      "accessory": 1.0
+    },
+    "status": "measured",
+    "scope_warning": "Synthetic CCTV proxy metadata, not real identity/track-heldout CCTV."
+  },
+  "samples": [
+    {
+      "image": "ped_2_img1.png",
+      "sha256": "7835bd32d8e9356bc44a7bfc99dda66e0236f839758dae5ccd38168a449733b9",
+      "target": {
+        "gender": "woman",
+        "age_group": "middle-aged",
+        "hair_color": "blonde",
+        "viewpoint": "seen from the back",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "sweatpants",
+        "accessory": "wearing sunglasses"
+      },
+      "prediction": {
+        "gender": "female",
+        "age_group": "adult",
+        "hair_color": "blonde",
+        "viewpoint": "front",
+        "top_color": "black",
+        "top_type": "leather jacket",
+        "bottom_color": "black",
+        "bottom_type": "pants",
+        "footwear": null,
+        "accessory": "sunglasses",
+        "visibility": "upper body and legs visible, feet cropped out of frame",
+        "teacher_confidence": 0.85
+      },
+      "error": null,
+      "evaluation": {
+        "field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "viewpoint": false,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "matched_fields": 8,
+        "measured_fields": 9,
+        "exact_record_match": false,
+        "stable_field_scores": {
+          "gender": true,
+          "age_group": true,
+          "hair_color": true,
+          "top_color": true,
+          "top_type": true,
+          "bottom_color": true,
+          "bottom_type": true,
+          "accessory": true
+        },
+        "stable_matched_fields": 8,
+        "stable_measured_fields": 8,
+        "exact_stable_record_match": true
+      }
+    }
+  ]
+}

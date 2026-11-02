@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "clip-fine-attribute-head-heldout-v1",
+  "dataset": "PETA",
+  "checkpoint": "openai/clip-vit-large-patch14",
+  "revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+  "checkpointTreeDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "splitCounts": {
+    "train": 9500,
+    "val": 1900,
+    "test": 7600
+  },
+  "selectionProtocol": "architecture, epoch, and per-attribute threshold selected only on validation meanAccuracy; test reported once after selection",
+  "validationCandidates": [
+    {
+      "architecture": "linear",
+      "meanAccuracy": 0.7918823824360063,
+      "thresholds": [
+        0.4799999999999999,
+        0.48499999999999993
+      ],
+      "attributeMetrics": [
+        {
+          "accuracy": 0.7947368421052632,
+          "meanAccuracy": 0.827769660185081,
+          "precision": 0.5496688741721855,
+          "recall": 0.8924731182795699,
+          "specificity": 0.7630662020905923,
+          "f1": 0.680327868852459,
+          "positiveRate": 0.24473684210526317,
+          "predictedPositiveRate": 0.3973684210526316
+        },
+        {
+          "accuracy": 0.7568421052631579,
+          "meanAccuracy": 0.7559951046869315,
+          "precision": 0.07597535934291581,
+          "recall": 0.7551020408163265,
+          "specificity": 0.7568881685575365,
+          "f1": 0.13805970149253732,
+          "positiveRate": 0.025789473684210525,
+          "predictedPositiveRate": 0.2563157894736842
+        }
+      ]
+    },
+    {
+      "architecture": "mlp",
+      "meanAccuracy": 0.8966254640753302,
+      "thresholds": [
+        0.48999999999999994,
+        0.24999999999999994
+      ],
+      "attributeMetrics": [
+        {
+          "accuracy": 0.8857894736842106,
+          "meanAccuracy": 0.8931362631598666,
+          "precision": 0.7080536912751678,
+          "recall": 0.9075268817204301,
+          "specificity": 0.8787456445993032,
+          "f1": 0.7954759660697456,
+          "positiveRate": 0.24473684210526317,
+          "predictedPositiveRate": 0.3136842105263158
+        },
+        {
+          "accuracy": 0.8247368421052632,
+          "meanAccuracy": 0.9001146649907937,
+          "precision": 0.12631578947368421,
+          "recall": 0.9795918367346939,
+          "specificity": 0.8206374932468936,
+          "f1": 0.22377622377622378,
+          "positiveRate": 0.025789473684210525,
+          "predictedPositiveRate": 0.2
+        }
+      ]
+    }
+  ],
+  "selectedArchitecture": "mlp",
+  "testAttributes": [
+    {
+      "attribute": "hairLong",
+      "threshold": 0.48999999999999994,
+      "metrics": {
+        "accuracy": 0.8667105263157895,
+        "meanAccuracy": 0.879205438722936,
+        "precision": 0.6603161734900689,
+        "recall": 0.9029933481152993,
+        "specificity": 0.8554175293305728,
+        "f1": 0.7628190119409974,
+        "positiveRate": 0.2373684210526316,
+        "predictedPositiveRate": 0.32460526315789473
+      }
+    },
+    {
+      "attribute": "accessorySunglasses",
+      "threshold": 0.24999999999999994,
+      "metrics": {
+        "accuracy": 0.8277631578947369,
+        "meanAccuracy": 0.8779507057832218,
+        "precision": 0.13560454241816966,
+        "recall": 0.9311926605504587,
+        "specificity": 0.8247087510159848,
+        "f1": 0.23673469387755103,
+        "positiveRate": 0.028684210526315788,
+        "predictedPositiveRate": 0.19697368421052633
+      }
+    }
+  ],
+  "testMeanAccuracy": 0.8785780722530789,
+  "weights": {
+    "path": "/home/j-i15a204/qwen3vl-backend/gpu_distill_transfer/experiments/models/clip_vitl14_peta_finetuned_head_20260731.pt",
+    "sha256": "87561daaf158f5ad55ab09d67e21a3809b229727ba9e745603860c94b007a0bf"
+  }
+}

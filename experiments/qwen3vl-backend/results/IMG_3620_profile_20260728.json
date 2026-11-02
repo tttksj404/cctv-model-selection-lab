@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "status": "profiled_metadata_only",
+  "videos": [
+    {
+      "fileName": "IMG_3620.mov",
+      "frameCount": 331,
+      "fps": 30.0,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 11.0333,
+      "aspectRatio": 0.5625,
+      "orientation": "portrait",
+      "sampledFrameCount": 13,
+      "meanLuma": 104.2741
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema_version": "prior-finetune-distillation-identity-audit-v1",
+  "evaluation_date": "2026-07-24",
+  "identity_contract": {
+    "reference_result": "experiments/results/chirla_reid_comparison_20260724.json",
+    "metric": "image-level Rank-1",
+    "threshold": 0.85,
+    "eligible_identities": 11,
+    "gallery_records": 118,
+    "query_records": 95,
+    "dataset_status": "public-proxy-not-project-CCTV-review"
+  },
+  "decision": {
+    "previous_artifacts_are_discarded": false,
+    "previous_artifacts_are_directly_comparable": false,
+    "reason": "The previous checkpoints store attribute-classification heads, not identity/ReID embedding weights. Their PA-100K and synthetic proxy scores cannot be converted into CCTV identity Rank-1.",
+    "required_next_run": "Train an identity projection/ReID head or jointly fine-tune the encoder on identityGroupId/track-heldout labels, then run the same CHIRLA/project contract.",
+    "bubble_chart_policy": "Do not plot missing Rank-1 as zero. Keep these artifacts in this eligibility audit until identity evaluation is actually run."
+  },
+  "previous_artifacts": [
+    {
+      "family": "clip-vit-l14-distillation-10k",
+      "arms": [
+        {
+          "name": "clip_vitl14_hard",
+          "checkpoint": "experiments/models/clip_vitl14_hard.pt",
+          "checkpoint_bytes": 82593,
+          "saved_component": "26-attribute linear head state_dict + thresholds + attributes",
+          "encoder": "openai/clip-vit-large-patch14, used frozen during extraction",
+          "old_dataset": "PA-100K official train/val/test",
+          "old_rows": {"train": 10000, "val": 1000, "test": 1000},
+          "old_metric": {"name": "test_mA", "value": 0.5627263784408569},
+          "identity_rank1": null,
+          "identity_eligible": false,
+          "reason": "Checkpoint contains the classifier head only; PA-100K has no identityGroupId or track IDs."
+        },
+        {
+          "name": "clip_vitl14_solider_kd",
+          "checkpoint": "experiments/models/clip_vitl14_solider_kd.pt",
+          "checkpoint_bytes": 82593,
+          "saved_component": "26-attribute linear head state_dict + thresholds + attributes",
+          "encoder": "openai/clip-vit-large-patch14, used frozen during extraction",
+          "old_dataset": "PA-100K official train/val/test",
+          "old_rows": {"train": 10000, "val": 1000, "test": 1000},
+          "old_metric": {"name": "test_mA", "value": 0.529147207736969},
+          "identity_rank1": null,
+          "identity_eligible": false,
+          "reason": "The SOLIDER teacher was distilled into an attribute head; no identity/ReID loss or embedding checkpoint was saved."
+        }
+      ]
+    },
+    {
+      "family": "solider-79-plus-sonnet",
+      "arms": [
+        {
+          "name": "solider_pa_head_baseline",
+          "checkpoint": "experiments/models/solider_sonnet_baseline_head.pt",
+          "checkpoint_bytes": 108965,
+          "saved_component": "PA-100K 26-attribute linear head state_dict",
+          "old_dataset": "PA-100K plus synthetic CCTV person-crop proxy",
+          "old_rows": {"pa_train": 10000, "pa_val": 10000, "pa_test": 10000, "synthetic_proxy_samples": 15},
+          "old_metric": {"name": "synthetic_proxy_masked_attribute_accuracy", "value": 0.8256410360336304},
+          "identity_rank1": null,
+          "identity_eligible": false,
+          "reason": "The SOLIDER Swin-B backbone was frozen and saved separately; this checkpoint is only an attribute head."
+        },
+        {
+          "name": "solider_pa_head_plus_sonnet_response_level",
+          "checkpoint": "experiments/models/solider_sonnet_head_pilot.pt",
+          "checkpoint_bytes": 108901,
+          "saved_component": "PA-100K attribute head after masked Sonnet response-level auxiliary loss",
+          "old_dataset": "PA-100K plus synthetic CCTV person-crop proxy",
+          "old_rows": {"pa_train": 10000, "pa_val": 10000, "pa_test": 10000, "synthetic_proxy_samples": 15},
+          "old_metric": {"name": "synthetic_proxy_masked_attribute_accuracy", "baseline": 0.8256410360336304, "combined": 0.8820512890815735},
+          "identity_rank1": null,
+          "identity_eligible": false,
+          "reason": "Sonnet produced response-level attribute labels, not logits or identity labels; the head cannot produce a valid identity embedding by itself."
+        }
+      ]
+    }
+  ],
+  "what_can_be_reused": [
+    "The old attribute heads can be reused as auxiliary supervision after adding an identity projection and reviewed identity labels.",
+    "The Sonnet response-level labels can be retained as an attribute loss; this is not logit KD.",
+    "The old PA-100K metrics remain valid for the old attribute task and should not be relabeled as CCTV identity accuracy."
+  ],
+  "what_must_be_rerun": [
+    "For each arm, train identity projection/ReID supervision with identityGroupId and track-heldout split.",
+    "Evaluate Rank-1, Recall@5, Recall@10, mAP, open-set false-match rate and abstention on the same gallery/query contract.",
+    "Run the same identity training and evaluation for CLIP ViT-L/14 baseline, CLIP attribute-hard initialization, CLIP SOLIDER-KD initialization, SOLIDER attribute baseline and SOLIDER+Sonnet attribute supervision."
+  ]
+}

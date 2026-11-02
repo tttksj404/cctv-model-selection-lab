@@ -1,0 +1,183 @@
+{
+  "status": "valid",
+  "model": "SOLIDER Swin-B frozen backbone plus supervised six-field linear head",
+  "dataset": "PA-100K local proxy subset",
+  "examples": 100,
+  "split": "deterministic image-level 5-fold; no identity or track IDs",
+  "seed": 17,
+  "head_epochs": 120,
+  "batch_size": 4,
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "torch": "2.11.0+cu128",
+  "python": "3.14.6",
+  "checkpoint_sha256": "20c1105ac7b58f444092d9e3b589150e107a7320a34f321353276ff5c5a9f3d1",
+  "fields": [
+    "gender",
+    "age",
+    "viewpoint",
+    "accessory_present",
+    "sleeve",
+    "bottom_type"
+  ],
+  "aggregate_validation": {
+    "attribute_accuracy": 0.798333328962326,
+    "macro_f1": 0.5510129876872825,
+    "sample_all_field_exact": 0.32000000178813937,
+    "field_accuracy": [
+      0.8599999904632568,
+      0.9399999976158142,
+      0.649999988079071,
+      0.6599999904632569,
+      0.8400000095367431,
+      0.8399999976158142
+    ]
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train": {
+        "field_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attribute_accuracy": 1.0,
+        "macro_f1": 0.8888888888888888,
+        "sample_all_field_exact": 1.0
+      },
+      "validation": {
+        "field_accuracy": [
+          0.8999999761581421,
+          1.0,
+          0.699999988079071,
+          0.800000011920929,
+          0.8500000238418579,
+          0.8999999761581421
+        ],
+        "attribute_accuracy": 0.8583333293596903,
+        "macro_f1": 0.5742388521064992,
+        "sample_all_field_exact": 0.5
+      }
+    },
+    {
+      "fold": 1,
+      "train": {
+        "field_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attribute_accuracy": 1.0,
+        "macro_f1": 0.8888888888888888,
+        "sample_all_field_exact": 1.0
+      },
+      "validation": {
+        "field_accuracy": [
+          0.8999999761581421,
+          0.949999988079071,
+          0.6499999761581421,
+          0.5,
+          0.949999988079071,
+          0.75
+        ],
+        "attribute_accuracy": 0.7833333214124044,
+        "macro_f1": 0.5409201488101744,
+        "sample_all_field_exact": 0.20000000298023224
+      }
+    },
+    {
+      "fold": 2,
+      "train": {
+        "field_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attribute_accuracy": 1.0,
+        "macro_f1": 0.8333333333333334,
+        "sample_all_field_exact": 1.0
+      },
+      "validation": {
+        "field_accuracy": [
+          0.75,
+          0.8500000238418579,
+          0.6499999761581421,
+          0.6499999761581421,
+          0.75,
+          0.949999988079071
+        ],
+        "attribute_accuracy": 0.7666666607062022,
+        "macro_f1": 0.5385251441977336,
+        "sample_all_field_exact": 0.30000001192092896
+      }
+    },
+    {
+      "fold": 3,
+      "train": {
+        "field_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attribute_accuracy": 1.0,
+        "macro_f1": 0.8472222222222222,
+        "sample_all_field_exact": 1.0
+      },
+      "validation": {
+        "field_accuracy": [
+          0.8999999761581421,
+          1.0,
+          0.550000011920929,
+          0.6499999761581421,
+          0.8500000238418579,
+          0.8500000238418579
+        ],
+        "attribute_accuracy": 0.8000000019868215,
+        "macro_f1": 0.5695993518914412,
+        "sample_all_field_exact": 0.3499999940395355
+      }
+    },
+    {
+      "fold": 4,
+      "train": {
+        "field_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attribute_accuracy": 1.0,
+        "macro_f1": 0.8888888888888888,
+        "sample_all_field_exact": 1.0
+      },
+      "validation": {
+        "field_accuracy": [
+          0.8500000238418579,
+          0.8999999761581421,
+          0.699999988079071,
+          0.699999988079071,
+          0.800000011920929,
+          0.75
+        ],
+        "attribute_accuracy": 0.7833333313465118,
+        "macro_f1": 0.5317814414305643,
+        "sample_all_field_exact": 0.25
+      }
+    }
+  ],
+  "metric_warning": "This is not PA-100K mA, not sample-level exact match, not track-level exact match, and not CCTV identity accuracy."
+}

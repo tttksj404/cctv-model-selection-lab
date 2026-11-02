@@ -1,0 +1,15 @@
+{
+  "status": "measured_proxy_only_partial_download",
+  "dataset": {"metadata_rows": 1005, "downloaded_images": 963, "missing_images": 37, "identity_groups": 39, "mapped_attributes": 26},
+  "split": "PA-100K official split; Simuletic identity-sorted 60% train, 20% validation, 20% group-heldout test",
+  "columns": ["pa_test_mA", "pa_test_InsF1", "simu_all_attribute_accuracy", "simu_image_heldout_attribute_accuracy", "simu_group_heldout_attribute_accuracy", "simu_group_exact_rate"],
+  "methods": [
+    {"name": "963_mixed_weighted_bce", "pa_test_mA": 0.752240, "pa_test_InsF1": 0.858798, "simu_all_attribute_accuracy": 0.922247, "simu_image_heldout_attribute_accuracy": 0.917271, "simu_group_heldout_attribute_accuracy": 0.931501, "simu_group_exact_rate": 0.538462, "training": "frozen SOLIDER backbone + mixed weighted BCE"},
+    {"name": "963_mixed_asl", "pa_test_mA": 0.757773, "pa_test_InsF1": 0.858832, "simu_all_attribute_accuracy": 0.879454, "simu_image_heldout_attribute_accuracy": 0.891147, "simu_group_heldout_attribute_accuracy": 0.909148, "simu_group_exact_rate": 0.384615, "training": "frozen SOLIDER backbone + mixed ASL"},
+    {"name": "963_mixed_asl_graph", "pa_test_mA": 0.754879, "pa_test_InsF1": 0.859511, "simu_all_attribute_accuracy": 0.878785, "simu_image_heldout_attribute_accuracy": 0.892598, "simu_group_heldout_attribute_accuracy": 0.908556, "simu_group_exact_rate": 0.384615, "training": "frozen SOLIDER backbone + ASL + PA label co-occurrence consistency"},
+    {"name": "963_mixed_asl_sonnet", "pa_test_mA": 0.754923, "pa_test_InsF1": 0.855958, "simu_all_attribute_accuracy": 0.876970, "simu_image_heldout_attribute_accuracy": 0.890179, "simu_group_heldout_attribute_accuracy": 0.904474, "simu_group_exact_rate": 0.358974, "training": "frozen SOLIDER backbone + ASL + response-level Sonnet BCE"},
+    {"name": "963_backbone_finetune", "pa_test_mA": 0.828148, "pa_test_InsF1": 0.898026, "simu_all_attribute_accuracy": 0.880600, "simu_image_heldout_attribute_accuracy": 0.902274, "simu_group_heldout_attribute_accuracy": 0.922327, "simu_group_exact_rate": 0.512821, "training": "full SOLIDER Swin-B fine-tune with PA weighted BCE + Simuletic masked ASL"}
+  ],
+  "decision": "현재 proxy 기준 최우선 후보는 group-heldout 93.15%의 frozen mixed_weighted_bce이며, PA 보존 성능까지 보면 full backbone fine-tune이 82.81% mA와 89.80% InsF1로 유력한 2순위 후보이다.",
+  "warning": "이 결과는 실제 프로젝트 identity/track-heldout CCTV 정확도가 아니며, 85% 일반 신원 판정 보증으로 사용하면 안 된다."
+}

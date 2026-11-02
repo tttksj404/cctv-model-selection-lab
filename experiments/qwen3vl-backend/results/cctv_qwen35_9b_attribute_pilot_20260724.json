@@ -1,0 +1,36 @@
+{
+  "measurementStatus": "gpu_vlm_attribute_pilot",
+  "model": "Qwen/Qwen3.5-9B",
+  "device": "NVIDIA L40S",
+  "promptMode": "enable_thinking_false_json_only",
+  "frames": {
+    "IMG_3565": {
+      "clothing_color": "black",
+      "clothing_type": "hoodie",
+      "outerwear": true,
+      "visible_items": ["hoodie", "glasses"],
+      "pose_or_view": "standing, side view",
+      "image_quality": "medium",
+      "uncertainty": "low"
+    },
+    "IMG_3567": {
+      "clothing_color": "dark blue",
+      "clothing_type": "t-shirt",
+      "outerwear": null,
+      "visible_items": ["t-shirt", "glasses"],
+      "pose_or_view": "standing, side view",
+      "image_quality": "medium",
+      "uncertainty": "low"
+    },
+    "IMG_3568": {
+      "clothing_color": "dark blue",
+      "clothing_type": "t-shirt, pants",
+      "outerwear": null,
+      "visible_items": ["t-shirt", "pants", "sneakers"],
+      "pose_or_view": "standing, front view",
+      "image_quality": "medium",
+      "uncertainty": "low"
+    }
+  },
+  "interpretation": "Qwen3.5-9B가 대표 프레임의 색상·복장·시점 속성을 생성했지만, 이 파일럿에는 속성 ground truth가 없으므로 속성 정확도나 85% 달성으로 해석하지 않는다."
+}
