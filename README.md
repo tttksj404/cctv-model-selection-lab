@@ -96,3 +96,7 @@ python -m nbconvert --to notebook --execute --inplace notebooks/model_selection_
 ## 공개 범위
 
 실제 CCTV 영상·프레임·개인 식별자·인증 정보·내부 비밀 경로는 포함하지 않습니다. 선택된 공개 가능 가중치는 `gpu-recovery/weights/`에 Git LFS로 보존했으며, 전체 모델 바이너리와 원본 데이터는 별도 비공개 복원이 필요합니다. 이 저장소는 원본 데이터를 재배포하지 않고, 어떤 증거가 있어야 모델 선택 또는 승격이 가능한지 재현 가능한 의사결정 구조로 공개합니다.
+
+## 경험 기록
+
+이 프로젝트를 왜 시작했는지, 무엇을 직접 판단했는지, 결과가 어땠는지는 [docs/experience-record.md](docs/experience-record.md)에 정리했습니다.
